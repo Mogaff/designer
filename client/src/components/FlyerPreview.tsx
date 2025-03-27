@@ -4,18 +4,6 @@ import { GeneratedFlyer } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { Download, Share2, Image } from "lucide-react";
 
-type Template = {
-  name: string;
-  value: string;
-};
-
-const templates: Template[] = [
-  { name: "Default", value: "default" },
-  { name: "Minimal", value: "minimal" },
-  { name: "Bold", value: "bold" },
-  { name: "Elegant", value: "elegant" },
-];
-
 type FlyerPreviewProps = {
   generatedFlyer: GeneratedFlyer | null;
   isGenerating: boolean;
@@ -87,10 +75,10 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
         {!generatedFlyer && !isGenerating ? (
           <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
             <div className="glass-panel p-4 rounded-full mb-4">
-              <Image className="h-12 w-12 text-rose-300/70" />
+              <Image className="h-12 w-12 text-white/70" />
             </div>
             <h3 className="text-lg font-medium text-white/90 mb-2">Your flyer will appear here</h3>
-            <p className="text-sm text-white/60 max-w-xs">Fill out the form and click "Generate Flyer" to create your custom design</p>
+            <p className="text-sm text-white/60 max-w-xs">Fill out the form and click "Generate Design" to create your custom flyer</p>
           </div>
         ) : (
           <div className="w-full">
@@ -114,68 +102,6 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
             </div>
           </div>
         )}
-      </div>
-      
-      {/* Sample Templates */}
-      <div className="mt-6">
-        <h3 className="text-sm font-medium text-white/90 mb-3">Design Styles</h3>
-        <div className="grid grid-cols-4 gap-4">
-          {templates.map((template) => (
-            <div 
-              key={template.value}
-              className={`border ${
-                generatedFlyer?.template === template.value 
-                  ? 'border-white border-2' 
-                  : 'border-white/10'
-              } rounded-md p-2 hover:border-white/50 cursor-pointer bg-black/20 backdrop-blur-sm transition-all`}
-            >
-              <div className="aspect-[1/1.414] bg-gradient-to-b from-white/5 to-gray-800/10 flex flex-col items-center justify-center p-2 rounded-md">
-                {template.value === 'default' && (
-                  <>
-                    <div className="w-full h-1/3 bg-white/10 mb-2 rounded-md"></div>
-                    <div className="w-3/4 h-2 bg-white/70 mb-1 rounded-full"></div>
-                    <div className="w-1/2 h-2 bg-white/70 mb-3 rounded-full"></div>
-                    <div className="w-5/6 h-1 bg-white/40 mb-1 rounded-full"></div>
-                    <div className="w-5/6 h-1 bg-white/40 mb-1 rounded-full"></div>
-                    <div className="w-5/6 h-1 bg-white/40 rounded-full"></div>
-                  </>
-                )}
-                {template.value === 'minimal' && (
-                  <>
-                    <div className="w-2/3 h-2 bg-white/90 mb-1 rounded-full"></div>
-                    <div className="w-1/2 h-2 bg-white/90 mb-4 rounded-full"></div>
-                    <div className="w-full h-1/3 bg-white/10 mb-4 rounded-md"></div>
-                    <div className="w-3/4 h-1 bg-white/40 mb-1 rounded-full"></div>
-                    <div className="w-3/4 h-1 bg-white/40 mb-1 rounded-full"></div>
-                    <div className="w-3/4 h-1 bg-white/40 rounded-full"></div>
-                  </>
-                )}
-                {template.value === 'bold' && (
-                  <>
-                    <div className="w-5/6 h-3 bg-white/90 mb-1 rounded-full"></div>
-                    <div className="w-3/4 h-3 bg-white/90 mb-3 rounded-full"></div>
-                    <div className="w-full h-1/4 bg-white/20 mb-3 rounded-md"></div>
-                    <div className="w-3/4 h-1 bg-white/40 mb-1 rounded-full"></div>
-                    <div className="w-3/4 h-1 bg-white/40 mb-1 rounded-full"></div>
-                    <div className="w-3/4 h-1 bg-white/40 rounded-full"></div>
-                  </>
-                )}
-                {template.value === 'elegant' && (
-                  <>
-                    <div className="w-1/2 h-1 bg-white/60 mb-1 rounded-full"></div>
-                    <div className="w-3/4 h-3 bg-white/80 my-1 rounded-full"></div>
-                    <div className="w-1/2 h-1 bg-white/60 mb-3 rounded-full"></div>
-                    <div className="w-2/3 h-1/3 bg-white/10 mb-3 rounded-md"></div>
-                    <div className="w-3/4 h-1 bg-white/40 mb-1 rounded-full"></div>
-                    <div className="w-3/4 h-1 bg-white/40 mb-1 rounded-full"></div>
-                    <div className="w-1/2 h-1 bg-white/40 rounded-full"></div>
-                  </>
-                )}
-              </div>
-              <p className="text-xs text-center mt-2 text-white/70">{template.name}</p>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );

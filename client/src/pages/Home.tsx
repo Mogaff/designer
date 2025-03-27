@@ -1,18 +1,13 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import FlyerForm from "@/components/FlyerForm";
 import AiFlyerForm from "@/components/AiFlyerForm";
 import FlyerPreview from "@/components/FlyerPreview";
-import FlyerExamples from "@/components/FlyerExamples";
 import { useState } from "react";
 import { GeneratedFlyer } from "@/lib/types";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sparkles, Palette } from "lucide-react";
 
 export default function Home() {
   const [generatedFlyer, setGeneratedFlyer] = useState<GeneratedFlyer | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [activeTab, setActiveTab] = useState("ai");
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -21,7 +16,7 @@ export default function Home() {
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 flex-grow">
         <section className="mb-16">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-3 text-white gradient-text">
+            <h1 className="text-4xl font-bold mb-3 text-white">
               ha'itu
             </h1>
             <p className="text-white/70 max-w-2xl mx-auto">
@@ -31,57 +26,21 @@ export default function Home() {
           </div>
           
           <div className="glass-panel p-8 mb-12">
-            <Tabs defaultValue="ai" onValueChange={setActiveTab} className="w-full">
-              <TabsList className="pill-nav mx-auto mb-8 bg-black/40 p-1.5">
-                <TabsTrigger 
-                  value="ai" 
-                  className="rounded-full flex items-center"
-                >
-                  <Sparkles className="h-4 w-4 mr-1.5" />
-                  AI Designer
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="template" 
-                  className="rounded-full flex items-center"
-                >
-                  <Palette className="h-4 w-4 mr-1.5" />
-                  Template Designer
-                </TabsTrigger>
-              </TabsList>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                <div>
-                  <TabsContent value="ai" className="mt-0">
-                    <AiFlyerForm
-                      setGeneratedFlyer={setGeneratedFlyer}
-                      isGenerating={isGenerating}
-                      setIsGenerating={setIsGenerating}
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent value="template" className="mt-0">
-                    <FlyerForm
-                      setGeneratedFlyer={setGeneratedFlyer}
-                      isGenerating={isGenerating}
-                      setIsGenerating={setIsGenerating}
-                    />
-                  </TabsContent>
-                </div>
-                
-                <FlyerPreview 
-                  generatedFlyer={generatedFlyer} 
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+              <div>
+                <AiFlyerForm
+                  setGeneratedFlyer={setGeneratedFlyer}
                   isGenerating={isGenerating}
+                  setIsGenerating={setIsGenerating}
                 />
               </div>
-            </Tabs>
-          </div>
-          
-          {/* Only show examples when template tab is active */}
-          {activeTab === "template" && (
-            <div className="glass-panel p-8">
-              <FlyerExamples />
+              
+              <FlyerPreview 
+                generatedFlyer={generatedFlyer} 
+                isGenerating={isGenerating}
+              />
             </div>
-          )}
+          </div>
         </section>
       </main>
       
