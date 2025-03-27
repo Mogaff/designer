@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import path from "path";
 import fs from "fs";
 import { generateFlyer } from "./flyerGenerator";
+import { renderFlyerFromGemini } from "./geminiFlyer";
 import multer from "multer";
 import { log } from "./vite";
 
@@ -18,7 +19,35 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // API endpoint to generate a flyer
+  // API endpoint to generate a flyer using Gemini AI
+  app.post("/api/generate-ai", async (req: Request, res: Response) => {
+    try {
+      log("AI Flyer generation started", "generator");
+      
+      const { prompt } = req.body;
+      
+      if (!prompt) {
+        return res.status(400).json({ message: "Prompt is required" });
+      }
+      
+      log(`Generating AI flyer with prompt: ${prompt}`, "generator");
+      
+      // Generate the flyer using Gemini AI
+      const screenshot = await renderFlyerFromGemini(prompt);
+      
+      log("AI Flyer generation completed", "generator");
+      
+      // Send the screenshot as response
+      res.contentType("image/png");
+      res.send(screenshot);
+    } catch (error) {
+      log(`Error generating AI flyer: ${error}`, "generator");
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to generate AI flyer: ${errorMessage}` });
+    }
+  });
+
+  // Legacy API endpoint to generate a flyer with uploaded image
   app.post(
     "/api/generate",
     upload.single("image"),
