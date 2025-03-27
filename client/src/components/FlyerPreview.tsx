@@ -46,43 +46,43 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
   };
 
   return (
-    <div className="glass-card bg-black/30">
-      <div className="mb-4 flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-white">Preview</h2>
+    <div className="h-full flex flex-col">
+      <div className="mb-2 flex justify-between items-center">
+        <h2 className="text-base font-semibold text-white">Preview</h2>
         <div className="flex space-x-2">
           <Button
-            className="btn-primary"
+            className="btn-primary h-8 px-3 py-1 text-xs"
             size="sm"
             onClick={handleDownload}
             disabled={!generatedFlyer}
           >
-            <Download className="h-4 w-4 mr-1.5" />
+            <Download className="h-3 w-3 mr-1" />
             Download
           </Button>
           <Button
-            className="btn-secondary"
+            className="btn-secondary h-8 px-3 py-1 text-xs"
             size="sm"
             onClick={handleShare}
             disabled={!generatedFlyer}
           >
-            <Share2 className="h-4 w-4 mr-1.5" />
+            <Share2 className="h-3 w-3 mr-1" />
             Share
           </Button>
         </div>
       </div>
       
-      <div className="bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 p-6 flex flex-col items-center">
+      <div className="bg-black/40 backdrop-blur-md rounded-xl border border-white/10 p-3 flex flex-col items-center flex-grow">
         {!generatedFlyer && !isGenerating ? (
-          <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
-            <div className="glass-panel p-4 rounded-full mb-4">
-              <Image className="h-12 w-12 text-white/70" />
+          <div className="flex flex-col items-center justify-center py-6 px-4 text-center h-full">
+            <div className="glass-panel p-3 rounded-full mb-2">
+              <Image className="h-8 w-8 text-white/70" />
             </div>
-            <h3 className="text-lg font-medium text-white/90 mb-2">Your flyer will appear here</h3>
-            <p className="text-sm text-white/60 max-w-xs">Fill out the form and click "Generate Design" to create your custom flyer</p>
+            <h3 className="text-base font-medium text-white/90 mb-1">Your flyer will appear here</h3>
+            <p className="text-xs text-white/60 max-w-xs">Fill out the form and click "Generate Design"</p>
           </div>
         ) : (
-          <div className="w-full">
-            <div className="relative page-preview rounded-xl overflow-hidden border border-white/20" style={{ aspectRatio: '1 / 1.414' }}>
+          <div className="w-full h-full flex items-center justify-center">
+            <div className="relative page-preview rounded-xl overflow-hidden border border-white/20 h-full" style={{ aspectRatio: '1 / 1.414', maxHeight: '100%' }}>
               {generatedFlyer && (
                 <img 
                   ref={imageRef}
@@ -94,8 +94,8 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
               {isGenerating && (
                 <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center">
                   <div className="flex flex-col items-center">
-                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
-                    <p className="mt-4 text-sm font-medium text-white/90">Generating your design...</p>
+                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                    <p className="mt-2 text-xs font-medium text-white/90">Generating...</p>
                   </div>
                 </div>
               )}
