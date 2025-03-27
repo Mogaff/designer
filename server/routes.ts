@@ -1,4 +1,4 @@
-import type { Express, Request, Response } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import path from "path";
@@ -6,6 +6,8 @@ import fs from "fs";
 import { generateFlyer } from "./flyerGenerator";
 import multer from "multer";
 import { log } from "./vite";
+
+// Using the built-in type definitions from @types/multer
 
 // Set up multer storage for file uploads
 const upload = multer({
@@ -23,6 +25,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     async (req: Request, res: Response) => {
       try {
         log("Flyer generation started", "generator");
+
+        // Debug request
+        log(`Request body keys: ${Object.keys(req.body).join(", ")}`, "generator");
+        log(`Files: ${req.file ? "Yes" : "No"}`, "generator");
 
         // Validate request
         if (!req.file) {
@@ -43,6 +49,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         const imagePath = path.join(tempDir, `upload-${Date.now()}-${req.file.originalname}`);
         fs.writeFileSync(imagePath, req.file.buffer);
+
+        log(`Image saved to: ${imagePath}`, "generator");
 
         // Generate the flyer
         const screenshot = await generateFlyer({
@@ -68,6 +76,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     }
   );
+
+  // Add a test route to verify server is working
+  app.get("/api/test", (req: Request, res: Response) => {
+    res.json({ status: "ok", message: "Server is running correctly" });
+  });
 
   const httpServer = createServer(app);
 

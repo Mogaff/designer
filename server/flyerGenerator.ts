@@ -2,6 +2,8 @@ import puppeteer from "puppeteer";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { log } from "./vite";
+import fs from "fs";
+import path from "path";
 
 const execAsync = promisify(exec);
 
@@ -77,6 +79,16 @@ export async function generateFlyer(options: FlyerOptions): Promise<Buffer> {
   log("Starting flyer generation with Puppeteer", "generator");
   
   try {
+    // Verify the image exists
+    if (!fs.existsSync(options.imageUrl)) {
+      log(`Image file not found at path: ${options.imageUrl}`, "generator");
+      throw new Error(`Image file not found at path: ${options.imageUrl}`);
+    }
+    
+    // Get absolute path to the image
+    const imagePath = path.resolve(options.imageUrl);
+    log(`Using image at: ${imagePath}`, "generator");
+    
     // Get Chromium executable path
     const { stdout: chromiumPath } = await execAsync("which chromium");
     log(`Found Chromium at: ${chromiumPath.trim()}`, "generator");
@@ -84,7 +96,12 @@ export async function generateFlyer(options: FlyerOptions): Promise<Buffer> {
     // Launch puppeteer with specific settings for Replit environment
     const browser = await puppeteer.launch({
       headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      args: [
+        "--no-sandbox", 
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu"
+      ],
       executablePath: chromiumPath.trim(),
     });
     
@@ -107,6 +124,12 @@ export async function generateFlyer(options: FlyerOptions): Promise<Buffer> {
       
       // Generate prompts styling
       const promptStyle = applyPromptStyle(options.prompt);
+      
+      // Base64 encode the image to avoid file path issues
+      const imageData = fs.readFileSync(imagePath);
+      const base64Image = imageData.toString('base64');
+      const mimeType = 'image/jpeg'; // Adjust based on actual image type if needed
+      const dataUri = `data:${mimeType};base64,${base64Image}`;
       
       // Create HTML for the flyer
       const html = `
@@ -145,7 +168,7 @@ export async function generateFlyer(options: FlyerOptions): Promise<Buffer> {
           <h1 class="text-4xl font-bold ${style.headingColor} mb-4 text-center">${options.headline}</h1>
           
           <div class="${style.imageWrapperClass} flex justify-center">
-            <img src="file://${options.imageUrl}" alt="Flyer Image" />
+            <img src="${dataUri}" alt="Flyer Image" />
           </div>
           
           <div class="text-center ${style.textColor} whitespace-pre-line">
@@ -184,7 +207,7 @@ export async function generateFlyer(options: FlyerOptions): Promise<Buffer> {
       });
       
       // Add a small delay to ensure all fonts are loaded
-      await page.waitForTimeout(500);
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Take screenshot
       log("Taking screenshot of the flyer", "generator");
@@ -193,7 +216,10 @@ export async function generateFlyer(options: FlyerOptions): Promise<Buffer> {
         fullPage: true,
       });
       
-      return screenshot;
+      // Convert Uint8Array to Buffer if needed
+      const buffer = Buffer.from(screenshot);
+      
+      return buffer;
     } finally {
       await browser.close();
       log("Puppeteer browser closed", "generator");
