@@ -60,10 +60,10 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
   return (
     <div className="glass-card bg-black/30">
       <div className="mb-4 flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-white gradient-text">Preview</h2>
+        <h2 className="text-xl font-semibold text-white">Preview</h2>
         <div className="flex space-x-2">
           <Button
-            className="btn-teal"
+            className="btn-primary"
             size="sm"
             onClick={handleDownload}
             disabled={!generatedFlyer}
@@ -72,7 +72,7 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
             Download
           </Button>
           <Button
-            className="btn-coral"
+            className="btn-secondary"
             size="sm"
             onClick={handleShare}
             disabled={!generatedFlyer}
@@ -106,7 +106,7 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
               {isGenerating && (
                 <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center">
                   <div className="flex flex-col items-center">
-                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-teal-400 border-t-transparent"></div>
+                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
                     <p className="mt-4 text-sm font-medium text-white/90">Generating your design...</p>
                   </div>
                 </div>
@@ -125,14 +125,14 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
               key={template.value}
               className={`border ${
                 generatedFlyer?.template === template.value 
-                  ? 'border-teal-500/70 border-2' 
+                  ? 'border-white border-2' 
                   : 'border-white/10'
-              } rounded-xl p-2 hover:border-teal-500/70 cursor-pointer bg-black/20 backdrop-blur-sm transition-all`}
+              } rounded-md p-2 hover:border-white/50 cursor-pointer bg-black/20 backdrop-blur-sm transition-all`}
             >
-              <div className="aspect-[1/1.414] bg-gradient-to-b from-teal-500/10 to-coral-500/10 flex flex-col items-center justify-center p-2 rounded-lg">
+              <div className="aspect-[1/1.414] bg-gradient-to-b from-white/5 to-gray-800/10 flex flex-col items-center justify-center p-2 rounded-md">
                 {template.value === 'default' && (
                   <>
-                    <div className="w-full h-1/3 bg-teal-500/20 mb-2 rounded-md"></div>
+                    <div className="w-full h-1/3 bg-white/10 mb-2 rounded-md"></div>
                     <div className="w-3/4 h-2 bg-white/70 mb-1 rounded-full"></div>
                     <div className="w-1/2 h-2 bg-white/70 mb-3 rounded-full"></div>
                     <div className="w-5/6 h-1 bg-white/40 mb-1 rounded-full"></div>
@@ -154,7 +154,7 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
                   <>
                     <div className="w-5/6 h-3 bg-white/90 mb-1 rounded-full"></div>
                     <div className="w-3/4 h-3 bg-white/90 mb-3 rounded-full"></div>
-                    <div className="w-full h-1/4 bg-coral-500/40 mb-3 rounded-md"></div>
+                    <div className="w-full h-1/4 bg-white/20 mb-3 rounded-md"></div>
                     <div className="w-3/4 h-1 bg-white/40 mb-1 rounded-full"></div>
                     <div className="w-3/4 h-1 bg-white/40 mb-1 rounded-full"></div>
                     <div className="w-3/4 h-1 bg-white/40 rounded-full"></div>

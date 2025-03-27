@@ -1,40 +1,31 @@
-import { Sparkles, ImageIcon, Home } from "lucide-react";
+import { Menu, Home, LucideImage } from "lucide-react";
 
 export default function Header() {
   return (
     <header className="pt-6 pb-4 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
-        <div className="flex items-center space-x-3">
-          <div className="glass-panel p-2.5">
-            <Sparkles className="h-7 w-7 text-teal-300" />
-          </div>
+        <div className="flex items-center">
           <div>
-            <h1 className="text-2xl font-semibold text-white gradient-text">ha'itu</h1>
-            <p className="text-xs text-white/70">Powered by Google Gemini</p>
+            <h1 className="text-2xl font-semibold text-white">ha'itu</h1>
+            <p className="text-xs text-white/50">AI-Powered Design</p>
           </div>
         </div>
         
-        {/* Pill-shaped navigation */}
-        <div className="pill-nav">
-          <button className="pill-nav-item active">
-            <Home className="h-4 w-4 mr-1" /> 
+        {/* Minimal navigation */}
+        <div className="bg-black/30 backdrop-blur-md border border-white/10 rounded-md p-1 flex items-center">
+          <button className="px-4 py-2 text-white/70 hover:text-white hover:bg-white/10 transition-all rounded-sm">
             Home
           </button>
-          <button className="pill-nav-item">
-            <ImageIcon className="h-4 w-4 mr-1" />
+          <button className="px-4 py-2 text-white/70 hover:text-white hover:bg-white/10 transition-all rounded-sm">
             Gallery
-          </button>
-          <button className="pill-nav-item">
-            <Sparkles className="h-4 w-4 mr-1" />
-            AI Lab
           </button>
         </div>
         
-        {/* Status badge */}
+        {/* Menu button for mobile */}
         <div className="flex items-center space-x-3">
-          <span className="pill-container bg-black/30 text-xs text-teal-300 font-medium">
-            <Sparkles className="h-3 w-3" /> Powered by AI
-          </span>
+          <button className="btn-glass">
+            <Menu className="h-5 w-5" />
+          </button>
         </div>
       </div>
     </header>
