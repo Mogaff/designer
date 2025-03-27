@@ -21,10 +21,10 @@ export default function Home() {
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 flex-grow">
         <section className="mb-16">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-3 text-white gradient-text">
+            <h1 className="text-4xl font-bold mb-3 gradient-text">
               AI Flyer Designer
             </h1>
-            <p className="text-white/70 max-w-2xl mx-auto">
+            <p className="text-slate-600 max-w-2xl mx-auto">
               Generate stunning, professional-quality flyers with just a text prompt. 
               Powered by cutting-edge AI to create designs that stand out.
             </p>
@@ -32,7 +32,7 @@ export default function Home() {
           
           <div className="glass-panel p-8 mb-12">
             <Tabs defaultValue="ai" onValueChange={setActiveTab} className="w-full">
-              <TabsList className="pill-nav mx-auto mb-8 bg-black/40 p-1.5">
+              <TabsList className="pill-nav mx-auto mb-8 p-1.5">
                 <TabsTrigger 
                   value="ai" 
                   className="rounded-full flex items-center"
