@@ -249,7 +249,7 @@ export default function FlyerForm({
         {/* Generate Button */}
         <Button
           type="submit"
-          className="w-full font-medium rounded-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 border-0"
+          className="w-full font-medium rounded-lg bg-gradient-to-r from-coral-400 to-coral-500 hover:from-coral-500 hover:to-coral-600 border-0"
           disabled={isGenerating}
           size="lg"
         >

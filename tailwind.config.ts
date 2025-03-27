@@ -44,6 +44,23 @@ export default {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
+        coral: {
+          "200": "#ffccbc",
+          "300": "#ffab91",
+          "400": "#ff8a65",
+          "500": "#ff7043",
+          "600": "#f4511e",
+        },
+        teal: {
+          "200": "#80cbc4",
+          "300": "#4db6ac",
+          "400": "#26a69a",
+          "500": "#009688",
+          "600": "#00796b",
+          "700": "#00695c",
+          "800": "#004d40",
+          "900": "#00352e",
+        },
         chart: {
           "1": "hsl(var(--chart-1))",
           "2": "hsl(var(--chart-2))",

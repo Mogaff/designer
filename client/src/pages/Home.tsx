@@ -22,11 +22,11 @@ export default function Home() {
         <section className="mb-16">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold mb-3 text-white gradient-text">
-              AI Flyer Designer
+              ha'itu
             </h1>
             <p className="text-white/70 max-w-2xl mx-auto">
               Generate stunning, professional-quality flyers with just a text prompt. 
-              Powered by cutting-edge AI to create designs that stand out.
+              Powered by cutting-edge AI to create designs that truly stand out.
             </p>
           </div>
           

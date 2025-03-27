@@ -6,10 +6,10 @@ export default function Header() {
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
         <div className="flex items-center space-x-3">
           <div className="glass-panel p-2.5">
-            <Sparkles className="h-7 w-7 text-rose-300" />
+            <Sparkles className="h-7 w-7 text-teal-300" />
           </div>
           <div>
-            <h1 className="text-2xl font-semibold text-white gradient-text">AI Flyer Generator</h1>
+            <h1 className="text-2xl font-semibold text-white gradient-text">ha'itu</h1>
             <p className="text-xs text-white/70">Powered by Google Gemini</p>
           </div>
         </div>
@@ -32,7 +32,7 @@ export default function Header() {
         
         {/* Status badge */}
         <div className="flex items-center space-x-3">
-          <span className="pill-container bg-black/30 text-xs text-rose-300 font-medium">
+          <span className="pill-container bg-black/30 text-xs text-teal-300 font-medium">
             <Sparkles className="h-3 w-3" /> Powered by AI
           </span>
         </div>
