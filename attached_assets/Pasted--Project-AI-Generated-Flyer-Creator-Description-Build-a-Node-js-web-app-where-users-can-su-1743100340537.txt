@@ -1,0 +1,34 @@
+**Project:** AI-Generated Flyer Creator
+
+**Description:** Build a Node.js web app where users can submit a text prompt, an image, and some text (flyer headline/body). The app uses an AI (or predefined logic) to generate a stylized HTML flyer (A4 size) with TailwindCSS for styling and possibly Three.js for visuals. The flyer is then rendered in a headless browser (Chromium via Puppeteer) and a screenshot is taken and returned as an image.
+
+**Tech Stack & Requirements:**
+- Node.js + Express server.
+- TailwindCSS for styling (you can use the Tailwind CDN for simplicity to avoid build steps).
+- Optionally integrate shadcn/ui components for nicer UI elements (not required, but if easy, demonstrate one).
+- Puppeteer for headless browser screenshot.
+- The server should expose an endpoint (e.g. POST `/generate`) to accept user input:
+  - JSON with keys: `prompt` (style instructions, e.g. "make it look like a vintage poster"), `text` (HTML or plaintext for flyer content), and `imageUrl` (link or path to an image to include).
+- The endpoint generates an HTML page (with Tailwind classes, and possibly some Three.js script if `prompt` suggests 3D elements).
+- Use Puppeteer to open this page (could be served at an internal route or via `page.setContent`).
+- After rendering, take a screenshot of the full page.
+- Respond with the screenshot image (PNG format, or JPG if easier).
+- Ensure to close the Puppeteer browser after each capture to free memory.
+- Provide basic logging of steps (console logs when generation starts, ends, etc.).
+
+**Key Points:**
+- Add `pkgs.chromium` to `replit.nix` so Chromium is available for Puppeteer.
+- Use `puppeteer.launch({ headless: true, args: ["--no-sandbox"] })` and get the `executablePath` of Chromium via `which chromium`.
+- Use Tailwind CDN by including `<script src="https://cdn.tailwindcss.com"></script>` in the generated HTML, with a `<style>` tag defining any custom config if needed (or use default config).
+- Safe handling: validate that `imageUrl` is a valid image (maybe only allow certain extensions or use try/catch on loading).
+- The flyer HTML can be simple: a `<div class="p-8 bg-white">` as the page background, then incorporate the image and text with styling from the prompt (like if prompt says "vintage", maybe use a sepia filter via CSS, etc.).
+- If possible, demonstrate including a shadcn/ui component or styling element (like a fancy button or card) just to confirm integration. (This can be static HTML since shadcn/ui provides class names and structure).
+- Three.js usage: only if prompt includes something like "3D background", include a basic Three.js script (e.g., rotating cube or particles). Otherwise, it's optional.
+- The output image resolution: aim for ~1280x[appropriate height] for a decent quality. (We don’t need print-quality 300dpi; screen-quality is fine.)
+
+**Deliverable:** 
+- `index.js` (or `server.js`): sets up Express, Puppeteer, and the `/generate` route.
+- You might create a simple frontend page with an HTML form for convenience (so I can test by uploading an image and entering text).
+- Remember to test the Puppeteer functionality by generating a sample flyer with dummy data, and saving the screenshot to the Repl filesystem (e.g., `flyer.png`) before sending it in the response.
+
+Let's build this step by step.
