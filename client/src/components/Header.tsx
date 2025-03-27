@@ -2,7 +2,7 @@ import { Menu, Home, LucideImage } from "lucide-react";
 
 export default function Header() {
   return (
-    <header className="pt-6 pb-4 px-4 sm:px-6 lg:px-8">
+    <header className="fixed top-0 left-0 right-0 z-50 pt-6 pb-4 px-4 sm:px-6 lg:px-8 bg-black/50 backdrop-blur-md">
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
         <div className="flex items-center">
           <div>

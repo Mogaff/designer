@@ -13,7 +13,7 @@ export default function Home() {
     <div className="flex flex-col min-h-screen">
       <Header />
       
-      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 flex-grow">
+      <main className="max-w-7xl mx-auto pt-28 pb-8 px-4 sm:px-6 lg:px-8 flex-grow">
         <section className="mb-16">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold mb-3 text-white">
