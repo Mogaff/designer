@@ -217,7 +217,7 @@ export default function AiFlyerForm({
         <Separator className="bg-white/10 my-2" />
         
         {/* Background Image Upload */}
-        <div className="flex-grow flex flex-col min-h-0 mb-3">
+        <div className="mb-1.5">
           <div className="flex items-center mb-1">
             <ImageIcon className="h-3 w-3 mr-1 text-white/80" />
             <Label htmlFor="background-image-upload" className="text-sm font-medium text-white/90">
@@ -225,9 +225,9 @@ export default function AiFlyerForm({
             </Label>
           </div>
           
-          <div className="mt-1 flex-grow">
+          <div className="mt-1">
             {backgroundImagePreview ? (
-              <div className="relative rounded-md overflow-hidden border border-white/20 glass-panel h-full max-h-24">
+              <div className="relative rounded-md overflow-hidden border border-white/20 glass-panel h-16">
                 <img 
                   src={backgroundImagePreview} 
                   alt="Background Preview" 
@@ -244,33 +244,35 @@ export default function AiFlyerForm({
                 </Button>
               </div>
             ) : (
-              <div className="border border-dashed border-white/20 rounded-md p-2 text-center bg-white/5 hover:bg-white/10 transition-all flex flex-col items-center justify-center h-full max-h-24">
-                <Upload className="h-5 w-5 mx-auto text-white/40 mb-0.5" />
-                <p className="text-xs text-white/70 mb-0.5">
-                  Select a background image
-                </p>
-                <Input
-                  id="background-image-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleBackgroundImageChange}
-                  className="hidden"
-                />
-                <Button 
-                  type="button" 
-                  className="btn-secondary h-6 text-xs px-2 py-0"
-                  size="sm"
-                  onClick={() => document.getElementById('background-image-upload')?.click()}
-                >
-                  Select Image
-                </Button>
+              <div className="border border-dashed border-white/20 rounded-md p-2 text-center bg-white/5 hover:bg-white/10 transition-all flex items-center justify-center h-16">
+                <div className="flex items-center">
+                  <Upload className="h-4 w-4 text-white/40 mr-1.5" />
+                  <p className="text-xs text-white/70 mr-2">
+                    Select a background image
+                  </p>
+                  <Input
+                    id="background-image-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleBackgroundImageChange}
+                    className="hidden"
+                  />
+                  <Button 
+                    type="button" 
+                    className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-6 text-xs px-2 py-0 hover:bg-indigo-500/30"
+                    size="sm"
+                    onClick={() => document.getElementById('background-image-upload')?.click()}
+                  >
+                    Select Image
+                  </Button>
+                </div>
               </div>
             )}
           </div>
         </div>
         
         {/* Logo Upload */}
-        <div className="flex-grow flex flex-col min-h-0">
+        <div className="mb-3">
           <div className="flex items-center mb-1">
             <ImageIcon className="h-3 w-3 mr-1 text-white/80" />
             <Label htmlFor="logo-upload" className="text-sm font-medium text-white/90">
@@ -278,14 +280,16 @@ export default function AiFlyerForm({
             </Label>
           </div>
           
-          <div className="mt-1 flex-grow">
+          <div className="mt-1">
             {logoPreview ? (
-              <div className="relative rounded-md overflow-hidden border border-white/20 glass-panel h-full max-h-24">
-                <img 
-                  src={logoPreview} 
-                  alt="Logo Preview" 
-                  className="w-full h-full object-contain p-2 bg-white/10" 
-                />
+              <div className="relative rounded-md overflow-hidden border border-white/20 glass-panel h-16">
+                <div className="flex items-center justify-center bg-white/10 h-full p-2">
+                  <img 
+                    src={logoPreview} 
+                    alt="Logo Preview" 
+                    className="max-h-full max-w-full object-contain" 
+                  />
+                </div>
                 <Button 
                   type="button" 
                   variant="destructive" 
@@ -297,26 +301,28 @@ export default function AiFlyerForm({
                 </Button>
               </div>
             ) : (
-              <div className="border border-dashed border-white/20 rounded-md p-2 text-center bg-white/5 hover:bg-white/10 transition-all flex flex-col items-center justify-center h-full max-h-24">
-                <Upload className="h-5 w-5 mx-auto text-white/40 mb-0.5" />
-                <p className="text-xs text-white/70 mb-0.5">
-                  Select your logo
-                </p>
-                <Input
-                  id="logo-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleLogoChange}
-                  className="hidden"
-                />
-                <Button 
-                  type="button" 
-                  className="btn-secondary h-6 text-xs px-2 py-0"
-                  size="sm"
-                  onClick={() => document.getElementById('logo-upload')?.click()}
-                >
-                  Select Logo
-                </Button>
+              <div className="border border-dashed border-white/20 rounded-md p-2 text-center bg-white/5 hover:bg-white/10 transition-all flex items-center justify-center h-16">
+                <div className="flex items-center">
+                  <Upload className="h-4 w-4 text-white/40 mr-1.5" />
+                  <p className="text-xs text-white/70 mr-2">
+                    Select your logo
+                  </p>
+                  <Input
+                    id="logo-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoChange}
+                    className="hidden"
+                  />
+                  <Button 
+                    type="button" 
+                    className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-6 text-xs px-2 py-0 hover:bg-indigo-500/30"
+                    size="sm"
+                    onClick={() => document.getElementById('logo-upload')?.click()}
+                  >
+                    Select Logo
+                  </Button>
+                </div>
               </div>
             )}
           </div>
