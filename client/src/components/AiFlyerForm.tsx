@@ -57,11 +57,25 @@ export default function AiFlyerForm({
     },
     onError: (error) => {
       setIsGenerating(false);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to generate AI flyer",
-        variant: "destructive",
-      });
+      
+      // Get the error message
+      let errorMessage = error instanceof Error ? error.message : "Failed to generate AI flyer";
+      
+      // Check if it's a quota limit error
+      if (errorMessage.includes("API quota limit reached")) {
+        toast({
+          title: "API Quota Limit Reached",
+          description: "The Gemini AI API free tier limit has been reached for today. Please try again tomorrow.",
+          variant: "destructive",
+          duration: 7000,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     }
   });
 

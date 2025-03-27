@@ -55,7 +55,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       log(`Error generating AI flyer: ${error}`, "generator");
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      res.status(500).json({ message: `Failed to generate AI flyer: ${errorMessage}` });
+      
+      // Handle API quota limit errors
+      if (errorMessage.includes("API quota limit reached")) {
+        // Send 429 Too Many Requests status code for quota limit errors
+        res.status(429).json({ 
+          message: errorMessage,
+          quotaExceeded: true
+        });
+      } else {
+        // Send 500 Internal Server Error for other errors
+        res.status(500).json({ message: `Failed to generate AI flyer: ${errorMessage}` });
+      }
     }
   });
 

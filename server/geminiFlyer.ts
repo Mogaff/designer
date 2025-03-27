@@ -105,8 +105,15 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     }
     
     throw new Error("Could not extract valid HTML from the Gemini response");
-  } catch (error) {
+  } catch (error: any) {
     log(`Error generating content with Gemini: ${error}`, "gemini");
+    
+    // Check for quota limit exceeded error
+    const errorMessage = String(error);
+    if (errorMessage.includes("429 Too Many Requests") && errorMessage.includes("quota")) {
+      throw new Error("API quota limit reached: The Gemini AI API free tier limit has been reached for today. Please try again tomorrow or upgrade to a paid plan.");
+    }
+    
     throw error;
   }
 }
@@ -254,8 +261,15 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
       await browser.close();
       log("Puppeteer browser closed", "gemini");
     }
-  } catch (error) {
+  } catch (error: any) {
     log(`Error in Gemini flyer generation: ${error}`, "gemini");
+    
+    // Check for quota limit exceeded error
+    const errorMessage = String(error);
+    if (errorMessage.includes("429 Too Many Requests") && errorMessage.includes("quota")) {
+      throw new Error("API quota limit reached: The Gemini AI API free tier limit has been reached for today. Please try again tomorrow or upgrade to a paid plan.");
+    }
+    
     throw error;
   }
 }
