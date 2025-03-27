@@ -5,12 +5,11 @@ import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { GeneratedFlyer } from "@/lib/types";
+import { GeneratedFlyer, AiFlyerGenerationRequest } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ImageIcon, Upload, Sparkles, AlertTriangle } from "lucide-react";
+import { ImageIcon, Upload, AlertTriangle } from "lucide-react";
 
 type AiFlyerFormProps = {
   setGeneratedFlyer: (flyer: GeneratedFlyer | null) => void;
@@ -24,17 +23,23 @@ export default function AiFlyerForm({
   setIsGenerating
 }: AiFlyerFormProps) {
   const [prompt, setPrompt] = useState("");
-  const [image, setImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [backgroundImage, setBackgroundImage] = useState<File | null>(null);
+  const [backgroundImagePreview, setBackgroundImagePreview] = useState<string | null>(null);
+  const [logo, setLogo] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const { toast } = useToast();
 
   const generateAiFlyerMutation = useMutation({
-    mutationFn: async (data: { prompt: string; image?: File }) => {
+    mutationFn: async (data: AiFlyerGenerationRequest) => {
       const formData = new FormData();
       formData.append("prompt", data.prompt);
       
-      if (data.image) {
-        formData.append("image", data.image);
+      if (data.backgroundImage) {
+        formData.append("backgroundImage", data.backgroundImage);
+      }
+      
+      if (data.logo) {
+        formData.append("logo", data.logo);
       }
       
       const response = await apiRequest("POST", "/api/generate-ai", formData, {}, true);
@@ -79,7 +84,7 @@ export default function AiFlyerForm({
     }
   });
 
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleBackgroundImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       // Check file type
@@ -102,12 +107,46 @@ export default function AiFlyerForm({
         return;
       }
       
-      setImage(file);
+      setBackgroundImage(file);
       
       // Create image preview
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string);
+        setBackgroundImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  
+  const handleLogoChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check file type
+      if (!file.type.match('image.*')) {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload an image file",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please upload an image smaller than 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setLogo(file);
+      
+      // Create image preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -126,12 +165,21 @@ export default function AiFlyerForm({
     }
 
     setIsGenerating(true);
-    generateAiFlyerMutation.mutate({ prompt, image: image || undefined });
+    generateAiFlyerMutation.mutate({ 
+      prompt, 
+      backgroundImage: backgroundImage || undefined,
+      logo: logo || undefined
+    });
   };
 
-  const clearImage = () => {
-    setImage(null);
-    setImagePreview(null);
+  const clearBackgroundImage = () => {
+    setBackgroundImage(null);
+    setBackgroundImagePreview(null);
+  };
+  
+  const clearLogo = () => {
+    setLogo(null);
+    setLogoPreview(null);
   };
 
   return (
@@ -141,7 +189,7 @@ export default function AiFlyerForm({
       </div>
       
       <p className="text-xs text-white/70 mb-3">
-        Enter a detailed prompt and optionally upload an image for your flyer.
+        Enter a detailed prompt and optionally upload background image and logo for your flyer.
       </p>
       
       <form onSubmit={handleSubmit} className="space-y-3 flex-grow flex flex-col">
@@ -168,57 +216,107 @@ export default function AiFlyerForm({
         
         <Separator className="bg-white/10 my-2" />
         
-        {/* Image Upload - Optional */}
-        <div className="flex-grow flex flex-col min-h-0">
+        {/* Background Image Upload */}
+        <div className="flex-grow flex flex-col min-h-0 mb-3">
           <div className="flex items-center mb-1">
             <ImageIcon className="h-3 w-3 mr-1 text-white/80" />
-            <Label htmlFor="image-upload" className="text-sm font-medium text-white/90">
-              Upload Image (Optional)
+            <Label htmlFor="background-image-upload" className="text-sm font-medium text-white/90">
+              Upload Background Image (Optional)
             </Label>
           </div>
           
           <div className="mt-1 flex-grow">
-            {imagePreview ? (
-              <div className="relative rounded-md overflow-hidden border border-white/20 glass-panel h-full max-h-32">
+            {backgroundImagePreview ? (
+              <div className="relative rounded-md overflow-hidden border border-white/20 glass-panel h-full max-h-24">
                 <img 
-                  src={imagePreview} 
-                  alt="Preview" 
+                  src={backgroundImagePreview} 
+                  alt="Background Preview" 
                   className="w-full h-full object-cover" 
                 />
                 <Button 
                   type="button" 
                   variant="destructive" 
                   size="sm" 
-                  onClick={clearImage}
+                  onClick={clearBackgroundImage}
                   className="absolute top-1 right-1 opacity-90 rounded-md h-6 text-xs px-2 py-0"
                 >
                   Remove
                 </Button>
               </div>
             ) : (
-              <div className="border border-dashed border-white/20 rounded-md p-3 text-center bg-white/5 hover:bg-white/10 transition-all flex flex-col items-center justify-center h-full max-h-32">
-                <Upload className="h-6 w-6 mx-auto text-white/40 mb-1" />
-                <p className="text-xs text-white/70 mb-1">
-                  Drag and drop an image, or click to select
+              <div className="border border-dashed border-white/20 rounded-md p-2 text-center bg-white/5 hover:bg-white/10 transition-all flex flex-col items-center justify-center h-full max-h-24">
+                <Upload className="h-5 w-5 mx-auto text-white/40 mb-0.5" />
+                <p className="text-xs text-white/70 mb-0.5">
+                  Select a background image
                 </p>
                 <Input
-                  id="image-upload"
+                  id="background-image-upload"
                   type="file"
                   accept="image/*"
-                  onChange={handleImageChange}
+                  onChange={handleBackgroundImageChange}
                   className="hidden"
                 />
                 <Button 
                   type="button" 
                   className="btn-secondary h-6 text-xs px-2 py-0"
                   size="sm"
-                  onClick={() => document.getElementById('image-upload')?.click()}
+                  onClick={() => document.getElementById('background-image-upload')?.click()}
                 >
                   Select Image
                 </Button>
-                <p className="text-xs text-white/50 mt-1">
-                  Max: 5MB
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Logo Upload */}
+        <div className="flex-grow flex flex-col min-h-0">
+          <div className="flex items-center mb-1">
+            <ImageIcon className="h-3 w-3 mr-1 text-white/80" />
+            <Label htmlFor="logo-upload" className="text-sm font-medium text-white/90">
+              Upload Logo (Optional)
+            </Label>
+          </div>
+          
+          <div className="mt-1 flex-grow">
+            {logoPreview ? (
+              <div className="relative rounded-md overflow-hidden border border-white/20 glass-panel h-full max-h-24">
+                <img 
+                  src={logoPreview} 
+                  alt="Logo Preview" 
+                  className="w-full h-full object-contain p-2 bg-white/10" 
+                />
+                <Button 
+                  type="button" 
+                  variant="destructive" 
+                  size="sm" 
+                  onClick={clearLogo}
+                  className="absolute top-1 right-1 opacity-90 rounded-md h-6 text-xs px-2 py-0"
+                >
+                  Remove
+                </Button>
+              </div>
+            ) : (
+              <div className="border border-dashed border-white/20 rounded-md p-2 text-center bg-white/5 hover:bg-white/10 transition-all flex flex-col items-center justify-center h-full max-h-24">
+                <Upload className="h-5 w-5 mx-auto text-white/40 mb-0.5" />
+                <p className="text-xs text-white/70 mb-0.5">
+                  Select your logo
                 </p>
+                <Input
+                  id="logo-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoChange}
+                  className="hidden"
+                />
+                <Button 
+                  type="button" 
+                  className="btn-secondary h-6 text-xs px-2 py-0"
+                  size="sm"
+                  onClick={() => document.getElementById('logo-upload')?.click()}
+                >
+                  Select Logo
+                </Button>
               </div>
             )}
           </div>

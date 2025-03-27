@@ -18,9 +18,15 @@ const upload = multer({
   },
 });
 
+// Create a multer middleware that can handle multiple files
+const uploadFields = upload.fields([
+  { name: 'backgroundImage', maxCount: 1 },
+  { name: 'logo', maxCount: 1 }
+]);
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // API endpoint to generate a flyer using Gemini AI
-  app.post("/api/generate-ai", upload.single("image"), async (req: Request, res: Response) => {
+  app.post("/api/generate-ai", uploadFields, async (req: Request, res: Response) => {
     try {
       log("AI Flyer generation started", "generator");
       
@@ -33,15 +39,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       log(`Generating AI flyer with prompt: ${prompt}`, "generator");
       
       // Generate options for Gemini
-      const generationOptions: { prompt: string; imageBase64?: string } = {
+      const generationOptions: { 
+        prompt: string; 
+        backgroundImageBase64?: string;
+        logoBase64?: string;
+      } = {
         prompt: prompt
       };
       
-      // Add image to options if provided
-      if (req.file) {
-        log("Image file received for AI generation", "generator");
-        const imageBase64 = req.file.buffer.toString('base64');
-        generationOptions.imageBase64 = imageBase64;
+      // Add images to options if provided (using type assertion for files)
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      
+      if (files && files.backgroundImage && files.backgroundImage[0]) {
+        log("Background image received for AI generation", "generator");
+        const backgroundImageBase64 = files.backgroundImage[0].buffer.toString('base64');
+        generationOptions.backgroundImageBase64 = backgroundImageBase64;
+      }
+      
+      if (files && files.logo && files.logo[0]) {
+        log("Logo image received for AI generation", "generator");
+        const logoBase64 = files.logo[0].buffer.toString('base64');
+        generationOptions.logoBase64 = logoBase64;
       }
       
       // Generate the flyer using Gemini AI

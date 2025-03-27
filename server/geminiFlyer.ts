@@ -19,7 +19,8 @@ type GeminiResponse = {
 
 interface GenerationOptions {
   prompt: string;
-  imageBase64?: string;
+  backgroundImageBase64?: string;
+  logoBase64?: string;
 }
 
 /**
@@ -61,18 +62,33 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     // Create parts for the generation
     const parts: Part[] = [{ text: systemPrompt }];
     
-    // Add image to the parts if provided
-    if (options.imageBase64) {
+    // Add background image to the parts if provided
+    if (options.backgroundImageBase64) {
       parts.push({
         inlineData: {
           mimeType: "image/jpeg",
-          data: options.imageBase64
+          data: options.backgroundImageBase64
         }
       });
       
       // Add explicit instructions to use the image as background
       parts.push({
-        text: "IMPORTANT: Use the provided image as the BACKGROUND of your flyer design. Do not try to reference it with an img tag - I will handle embedding it for you. Instead, directly create HTML that assumes the image is already the background. Use appropriate text colors that contrast well with the image's colors. Add overlays or semi-transparent elements as needed to maintain text readability over the background image."
+        text: "IMPORTANT: Use the above image as the BACKGROUND of your flyer design. Do not try to reference it with an img tag - I will handle embedding it for you. Instead, directly create HTML that assumes the image is already the background. Use appropriate text colors that contrast well with the image's colors. Add overlays or semi-transparent elements as needed to maintain text readability over the background image."
+      });
+    }
+    
+    // Add logo to the parts if provided
+    if (options.logoBase64) {
+      parts.push({
+        inlineData: {
+          mimeType: "image/jpeg",
+          data: options.logoBase64
+        }
+      });
+      
+      // Add explicit instructions for logo placement
+      parts.push({
+        text: "IMPORTANT: Use the above image as a LOGO in your flyer design. This is a company or event logo that should be prominently displayed in the design, typically at the top or in a strategic position that complements the overall layout. I will provide you with CSS to properly size and position it."
       });
     }
 
@@ -130,12 +146,12 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
     
     // Create a complete HTML document with the generated content
     // Add background image styling if an image was provided
-    const backgroundStyle = options.imageBase64 
+    const backgroundStyle = options.backgroundImageBase64 
       ? `
           body {
             margin: 0;
             padding: 0;
-            background-image: url('data:image/jpeg;base64,${options.imageBase64}');
+            background-image: url('data:image/jpeg;base64,${options.backgroundImageBase64}');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -148,6 +164,27 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
             padding: 0;
           }
         `;
+        
+    // Add logo styling if a logo was provided
+    const logoStyle = options.logoBase64
+      ? `
+          /* Logo styling */
+          .logo-container {
+            display: inline-block;
+            position: relative;
+          }
+          .logo-image {
+            max-width: 100%;
+            height: auto;
+          }
+          #company-logo {
+            content: url('data:image/jpeg;base64,${options.logoBase64}');
+            max-width: 200px;
+            max-height: 100px;
+            object-fit: contain;
+          }
+        `
+      : '';
         
     const fullHtml = `
       <!DOCTYPE html>
@@ -182,6 +219,7 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
         </script>
         <style>
           ${backgroundStyle}
+          ${logoStyle}
           
           /* Advanced effects */
           .gradient-text {

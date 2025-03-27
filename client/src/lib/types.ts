@@ -13,3 +13,9 @@ export type FlyerGenerationRequest = {
   template: string;
   image: File;
 };
+
+export type AiFlyerGenerationRequest = {
+  prompt: string;
+  backgroundImage?: File;
+  logo?: File;
+};
