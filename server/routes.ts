@@ -20,7 +20,7 @@ const upload = multer({
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API endpoint to generate a flyer using Gemini AI
-  app.post("/api/generate-ai", async (req: Request, res: Response) => {
+  app.post("/api/generate-ai", upload.single("image"), async (req: Request, res: Response) => {
     try {
       log("AI Flyer generation started", "generator");
       
@@ -32,8 +32,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       log(`Generating AI flyer with prompt: ${prompt}`, "generator");
       
+      // Generate options for Gemini
+      const generationOptions: { prompt: string; imageBase64?: string } = {
+        prompt: prompt
+      };
+      
+      // Add image to options if provided
+      if (req.file) {
+        log("Image file received for AI generation", "generator");
+        const imageBase64 = req.file.buffer.toString('base64');
+        generationOptions.imageBase64 = imageBase64;
+      }
+      
       // Generate the flyer using Gemini AI
-      const screenshot = await renderFlyerFromGemini(prompt);
+      const screenshot = await renderFlyerFromGemini(generationOptions);
       
       log("AI Flyer generation completed", "generator");
       

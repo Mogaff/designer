@@ -11,16 +11,27 @@ export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
+  headers?: Record<string, string>,
+  isRawFormData?: boolean
 ): Promise<Response> {
   // Check if data is FormData (for file uploads)
   const isFormData = data instanceof FormData;
   
+  // Prepare headers
+  let requestHeaders: Record<string, string> = {
+    ...(headers || {})
+  };
+  
+  // Only add content-type for JSON data (browser will set it automatically for FormData with boundary)
+  if (data && !isFormData && !isRawFormData) {
+    requestHeaders["Content-Type"] = "application/json";
+  }
+  
   const res = await fetch(url, {
     method,
-    // Only add content-type for JSON data (browser will set it automatically for FormData with boundary)
-    headers: data && !isFormData ? { "Content-Type": "application/json" } : {},
-    // If it's FormData, send directly, otherwise stringify
-    body: isFormData ? data as FormData : data ? JSON.stringify(data) : undefined,
+    headers: requestHeaders,
+    // If it's FormData or explicitly marked as raw form data, send directly, otherwise stringify
+    body: (isFormData || isRawFormData) ? data as FormData : data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
 

@@ -1,4 +1,4 @@
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, ChangeEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -6,6 +6,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { GeneratedFlyer } from "@/lib/types";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ImageIcon, Upload, Sparkles, AlertTriangle } from "lucide-react";
 
 type AiFlyerFormProps = {
   setGeneratedFlyer: (flyer: GeneratedFlyer | null) => void;
@@ -19,11 +24,20 @@ export default function AiFlyerForm({
   setIsGenerating
 }: AiFlyerFormProps) {
   const [prompt, setPrompt] = useState("");
+  const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const { toast } = useToast();
 
   const generateAiFlyerMutation = useMutation({
-    mutationFn: async (promptData: { prompt: string }) => {
-      const response = await apiRequest("POST", "/api/generate-ai", promptData);
+    mutationFn: async (data: { prompt: string; image?: File }) => {
+      const formData = new FormData();
+      formData.append("prompt", data.prompt);
+      
+      if (data.image) {
+        formData.append("image", data.image);
+      }
+      
+      const response = await apiRequest("POST", "/api/generate-ai", formData, {}, true);
       return response.blob();
     },
     onSuccess: (blob) => {
@@ -51,6 +65,40 @@ export default function AiFlyerForm({
     }
   });
 
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check file type
+      if (!file.type.match('image.*')) {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload an image file",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please upload an image smaller than 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setImage(file);
+      
+      // Create image preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     
@@ -64,46 +112,128 @@ export default function AiFlyerForm({
     }
 
     setIsGenerating(true);
-    generateAiFlyerMutation.mutate({ prompt });
+    generateAiFlyerMutation.mutate({ prompt, image: image || undefined });
+  };
+
+  const clearImage = () => {
+    setImage(null);
+    setImagePreview(null);
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-      <h2 className="text-xl font-semibold mb-6">AI Flyer Generator</h2>
+    <Card className="p-6 border-slate-200">
+      <div className="flex items-center mb-4">
+        <Sparkles className="h-5 w-5 text-primary mr-2" />
+        <h2 className="text-xl font-semibold">Award-Winning Design AI</h2>
+      </div>
+      
+      <p className="text-sm text-slate-600 mb-6">
+        Our AI is trained to create stunning, creative designs using modern design principles.
+        Enter a detailed prompt below and optionally upload an image to include in your flyer.
+      </p>
       
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Prompt Input */}
-        <div>
-          <Label htmlFor="prompt" className="block text-sm font-medium text-slate-700 mb-1">
+        <div className="space-y-2">
+          <Label htmlFor="prompt" className="font-medium text-slate-700">
             Describe Your Flyer
           </Label>
           <Textarea
             id="prompt"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            rows={6}
-            placeholder="Describe the flyer you want to create in detail. For example: 'Create a modern tech conference flyer with a blue theme, featuring information about AI and machine learning talks on May 15th at the Tech Hub.'"
-            className="block w-full"
+            rows={5}
+            placeholder="Be specific and detailed! Example: 'Create a bold, modern tech event flyer with neon gradients, asymmetrical layout, and 3D elements. The event is called FUTURE TECH 2025, happening March 15-17 at Innovation Center. Include details about AI workshops and VR experiences.'"
+            className="block w-full resize-none"
           />
-          <p className="mt-1 text-xs text-slate-500">Be specific about what you want - include details about colors, style, content, and layout.</p>
+          <div className="flex flex-wrap gap-1 mt-2">
+            <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200">mention colors</Badge>
+            <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200">layout style</Badge>
+            <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200">typography</Badge>
+            <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200">visual effects</Badge>
+          </div>
+        </div>
+        
+        <Separator />
+        
+        {/* Image Upload - Optional */}
+        <div>
+          <div className="flex items-center mb-2">
+            <ImageIcon className="h-4 w-4 mr-2 text-slate-700" />
+            <Label htmlFor="image-upload" className="font-medium text-slate-700">
+              Upload Image (Optional)
+            </Label>
+          </div>
+          
+          <div className="mt-2">
+            {imagePreview ? (
+              <div className="relative rounded-md overflow-hidden bg-slate-100 border border-slate-200">
+                <img 
+                  src={imagePreview} 
+                  alt="Preview" 
+                  className="w-full h-40 object-cover" 
+                />
+                <Button 
+                  type="button" 
+                  variant="destructive" 
+                  size="sm" 
+                  onClick={clearImage}
+                  className="absolute top-2 right-2 opacity-90"
+                >
+                  Remove
+                </Button>
+              </div>
+            ) : (
+              <div className="border-2 border-dashed border-slate-200 rounded-md p-6 text-center">
+                <Upload className="h-8 w-8 mx-auto text-slate-400 mb-2" />
+                <p className="text-sm text-slate-600 mb-2">
+                  Drag and drop an image, or click to select
+                </p>
+                <Input
+                  id="image-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => document.getElementById('image-upload')?.click()}
+                >
+                  Select Image
+                </Button>
+                <p className="text-xs text-slate-500 mt-2">
+                  Max file size: 5MB
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        <div className="flex items-center px-3 py-2 bg-amber-50 text-amber-800 rounded-md">
+          <AlertTriangle className="h-4 w-4 mr-2 text-amber-500" />
+          <p className="text-xs">For best results, include specific details about colors, layout, style, and content in your prompt.</p>
         </div>
         
         {/* Generate Button */}
         <Button
           type="submit"
-          className="w-full bg-primary hover:bg-primary/90"
+          className="w-full font-medium"
           disabled={isGenerating}
+          size="lg"
         >
           {isGenerating ? (
             <>
-              <span>Generating AI Flyer...</span>
+              <span>Creating Masterpiece...</span>
               <div className="ml-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
             </>
           ) : (
-            <span>Generate AI Flyer</span>
+            <span>Generate Award-Winning Design</span>
           )}
         </Button>
       </form>
-    </div>
+    </Card>
   );
 }

@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, Part } from "@google/generative-ai";
 import { log } from "./vite";
 import puppeteer from "puppeteer";
 import { exec } from "child_process";
@@ -17,34 +17,67 @@ type GeminiResponse = {
   cssStyles: string;
 };
 
+interface GenerationOptions {
+  prompt: string;
+  imageBase64?: string;
+}
+
 /**
  * Generate HTML and CSS for a flyer based on a prompt using Gemini AI
  */
-export async function generateFlyerContent(prompt: string): Promise<GeminiResponse> {
+export async function generateFlyerContent(options: GenerationOptions): Promise<GeminiResponse> {
   log("Generating flyer content with Gemini AI", "gemini");
   
   try {
-    // Create a comprehensive prompt for the AI
-    const systemPrompt = `You are an expert web designer specialized in creating beautiful flyers using Tailwind CSS.
+    // Create a comprehensive prompt for the AI with enhanced design instructions
+    const systemPrompt = `You are an award-winning graphic designer and web developer who creates stunning, visually exciting flyers using modern web technologies. You specialize in creating visually striking designs with bold typography, creative layouts, and innovative use of color.
     
-    Create the HTML and CSS for a visually appealing flyer based on the following prompt:
-    "${prompt}"
+    Create an exceptionally creative and professional flyer using Tailwind CSS and modern design techniques based on the following prompt:
+    "${options.prompt}"
     
-    The HTML should:
-    1. Use Tailwind CSS classes for styling
-    2. Be responsive and visually appealing
-    3. Include placeholder text that's relevant to the prompt if specific content isn't mentioned
-    4. Have a clean, modern design
-    5. Be fully self-contained in a single HTML file with inline CSS
+    Your design should:
+    1. Use Tailwind CSS with creative, non-conventional layouts - avoid boring grid layouts and basic designs
+    2. Implement bold, eye-catching typography with font combinations that create visual hierarchy
+    3. Use gradients, overlays, and creative backgrounds that feel modern and professional
+    4. Incorporate creative use of shapes, diagonal elements, and asymmetrical layouts
+    5. Include subtle animations using CSS where appropriate (hover effects, etc.)
+    6. Make the design feel like it was created by a professional graphic designer
+    7. Incorporate striking visual elements like creative dividers, cut-out shapes or perspective effects
+    8. Use a bold, modern color palette with thoughtful color theory
+    9. Draw inspiration from award-winning poster designs and current design trends
+    
+    Absolutely avoid:
+    - Boring, templated layouts with basic grids
+    - Outdated or generic design elements
+    - Flat, uninteresting color schemes
+    - Basic rectangular layouts and standard columns
     
     Return your response in the following JSON format:
     {
       "htmlContent": "the complete HTML code for the flyer",
-      "cssStyles": "any additional custom CSS styles needed (if any)"
+      "cssStyles": "any custom CSS styles needed to create advanced effects"
     }`;
 
+    // Create parts for the generation
+    const parts: Part[] = [{ text: systemPrompt }];
+    
+    // Add image to the parts if provided
+    if (options.imageBase64) {
+      parts.push({
+        inlineData: {
+          mimeType: "image/jpeg",
+          data: options.imageBase64
+        }
+      });
+      
+      // Add additional context for the image
+      parts.push({
+        text: "Incorporate this uploaded image into your flyer design creatively. You can use it as a background, feature element, or integrate it into the design in a way that enhances the overall aesthetic."
+      });
+    }
+
     // Generate content using Gemini
-    const result = await model.generateContent(systemPrompt);
+    const result = await model.generateContent(parts);
     const response = await result.response;
     const text = response.text();
     
@@ -81,12 +114,12 @@ export async function generateFlyerContent(prompt: string): Promise<GeminiRespon
 /**
  * Render the Gemini-generated flyer content and take a screenshot
  */
-export async function renderFlyerFromGemini(prompt: string): Promise<Buffer> {
+export async function renderFlyerFromGemini(options: GenerationOptions): Promise<Buffer> {
   log("Starting Gemini-powered flyer generation", "gemini");
   
   try {
     // Generate the flyer content using Gemini AI
-    const { htmlContent, cssStyles } = await generateFlyerContent(prompt);
+    const { htmlContent, cssStyles } = await generateFlyerContent(options);
     
     // Create a complete HTML document with the generated content
     const fullHtml = `
@@ -97,10 +130,44 @@ export async function renderFlyerFromGemini(prompt: string): Promise<Buffer> {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Gemini Generated Flyer</title>
         <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+          tailwind.config = {
+            theme: {
+              extend: {
+                animation: {
+                  'gradient': 'gradient 8s ease infinite',
+                  'float': 'float 6s ease-in-out infinite',
+                  'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                },
+                keyframes: {
+                  gradient: {
+                    '0%, 100%': { backgroundPosition: '0% 50%' },
+                    '50%': { backgroundPosition: '100% 50%' },
+                  },
+                  float: {
+                    '0%, 100%': { transform: 'translateY(0)' },
+                    '50%': { transform: 'translateY(-10px)' },
+                  }
+                }
+              }
+            }
+          }
+        </script>
         <style>
           body {
             margin: 0;
             padding: 0;
+          }
+          /* Advanced effects */
+          .gradient-text {
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            background-image: linear-gradient(to right, var(--tw-gradient-stops));
+          }
+          .gradient-bg {
+            background-size: 200% 200%;
+            animation: gradient 15s ease infinite;
           }
           ${cssStyles}
         </style>
