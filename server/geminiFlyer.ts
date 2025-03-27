@@ -70,9 +70,9 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
         }
       });
       
-      // Add additional context for the image
+      // Add explicit instructions to use the image as background
       parts.push({
-        text: "Incorporate this uploaded image into your flyer design creatively. You can use it as a background, feature element, or integrate it into the design in a way that enhances the overall aesthetic."
+        text: "IMPORTANT: Use the provided image as the BACKGROUND of your flyer design. Do not try to reference it with an img tag - I will handle embedding it for you. Instead, directly create HTML that assumes the image is already the background. Use appropriate text colors that contrast well with the image's colors. Add overlays or semi-transparent elements as needed to maintain text readability over the background image."
       });
     }
 
@@ -122,6 +122,26 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
     const { htmlContent, cssStyles } = await generateFlyerContent(options);
     
     // Create a complete HTML document with the generated content
+    // Add background image styling if an image was provided
+    const backgroundStyle = options.imageBase64 
+      ? `
+          body {
+            margin: 0;
+            padding: 0;
+            background-image: url('data:image/jpeg;base64,${options.imageBase64}');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+          }
+        `
+      : `
+          body {
+            margin: 0;
+            padding: 0;
+          }
+        `;
+        
     const fullHtml = `
       <!DOCTYPE html>
       <html lang="en">
@@ -154,10 +174,8 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
           }
         </script>
         <style>
-          body {
-            margin: 0;
-            padding: 0;
-          }
+          ${backgroundStyle}
+          
           /* Advanced effects */
           .gradient-text {
             background-clip: text;
