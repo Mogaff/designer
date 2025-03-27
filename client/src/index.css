@@ -10,8 +10,9 @@
   --color-dark-teal: #00796b;
   --color-light-coral: #ffab91;
   --color-black: #121212;
-  --color-charcoal: #263238;
-  --background-gradient: linear-gradient(135deg, var(--color-dark-teal) 0%, var(--color-teal) 60%, var(--color-charcoal) 100%);
+  --color-charcoal: #1a1a1a;
+  --color-dark-grey: #212121;
+  --background-gradient: linear-gradient(135deg, var(--color-dark-grey) 0%, var(--color-charcoal) 100%);
 }
 
 @layer base {
