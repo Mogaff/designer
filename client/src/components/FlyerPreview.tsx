@@ -58,9 +58,9 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
   };
 
   return (
-    <div className="glass-card">
+    <div className="glass-card bg-black/30">
       <div className="mb-4 flex justify-between items-center">
-        <h2 className="text-xl font-semibold gradient-text">Preview</h2>
+        <h2 className="text-xl font-semibold text-white gradient-text">Preview</h2>
         <div className="flex space-x-2">
           <Button
             className="btn-glass"
@@ -83,18 +83,18 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
         </div>
       </div>
       
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col items-center">
+      <div className="bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 p-6 flex flex-col items-center">
         {!generatedFlyer && !isGenerating ? (
           <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
-            <div className="glass-panel p-4 rounded-full mb-4 bg-primary/10">
-              <Image className="h-12 w-12 text-primary" />
+            <div className="glass-panel p-4 rounded-full mb-4">
+              <Image className="h-12 w-12 text-rose-300/70" />
             </div>
-            <h3 className="text-lg font-medium text-slate-800 mb-2">Your flyer will appear here</h3>
-            <p className="text-sm text-slate-500 max-w-xs">Fill out the form and click "Generate Flyer" to create your custom design</p>
+            <h3 className="text-lg font-medium text-white/90 mb-2">Your flyer will appear here</h3>
+            <p className="text-sm text-white/60 max-w-xs">Fill out the form and click "Generate Flyer" to create your custom design</p>
           </div>
         ) : (
           <div className="w-full">
-            <div className="relative page-preview rounded-xl overflow-hidden border border-slate-200 shadow-sm" style={{ aspectRatio: '1 / 1.414' }}>
+            <div className="relative page-preview rounded-xl overflow-hidden border border-white/20" style={{ aspectRatio: '1 / 1.414' }}>
               {generatedFlyer && (
                 <img 
                   ref={imageRef}
@@ -104,10 +104,10 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
                 />
               )}
               {isGenerating && (
-                <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center">
+                <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center">
                   <div className="flex flex-col items-center">
-                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-                    <p className="mt-4 text-sm font-medium text-slate-700">Generating your masterpiece...</p>
+                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-rose-400 border-t-transparent"></div>
+                    <p className="mt-4 text-sm font-medium text-white/90">Generating your masterpiece...</p>
                   </div>
                 </div>
               )}
@@ -118,61 +118,61 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
       
       {/* Sample Templates */}
       <div className="mt-6">
-        <h3 className="text-sm font-medium text-slate-700 mb-3">Design Styles</h3>
+        <h3 className="text-sm font-medium text-white/90 mb-3">Design Styles</h3>
         <div className="grid grid-cols-4 gap-4">
           {templates.map((template) => (
             <div 
               key={template.value}
               className={`border ${
                 generatedFlyer?.template === template.value 
-                  ? 'border-primary border-2' 
-                  : 'border-slate-200'
-              } rounded-xl p-2 hover:border-primary cursor-pointer bg-white shadow-sm transition-all`}
+                  ? 'border-rose-500/70 border-2' 
+                  : 'border-white/10'
+              } rounded-xl p-2 hover:border-rose-500/70 cursor-pointer bg-black/20 backdrop-blur-sm transition-all`}
             >
-              <div className="aspect-[1/1.414] bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col items-center justify-center p-2 rounded-lg">
+              <div className="aspect-[1/1.414] bg-gradient-to-b from-rose-500/10 to-purple-500/10 flex flex-col items-center justify-center p-2 rounded-lg">
                 {template.value === 'default' && (
                   <>
-                    <div className="w-full h-1/3 bg-primary/10 mb-2 rounded-md"></div>
-                    <div className="w-3/4 h-2 bg-slate-700 mb-1 rounded-full"></div>
-                    <div className="w-1/2 h-2 bg-slate-700 mb-3 rounded-full"></div>
-                    <div className="w-5/6 h-1 bg-slate-400 mb-1 rounded-full"></div>
-                    <div className="w-5/6 h-1 bg-slate-400 mb-1 rounded-full"></div>
-                    <div className="w-5/6 h-1 bg-slate-400 rounded-full"></div>
+                    <div className="w-full h-1/3 bg-rose-500/20 mb-2 rounded-md"></div>
+                    <div className="w-3/4 h-2 bg-white/70 mb-1 rounded-full"></div>
+                    <div className="w-1/2 h-2 bg-white/70 mb-3 rounded-full"></div>
+                    <div className="w-5/6 h-1 bg-white/40 mb-1 rounded-full"></div>
+                    <div className="w-5/6 h-1 bg-white/40 mb-1 rounded-full"></div>
+                    <div className="w-5/6 h-1 bg-white/40 rounded-full"></div>
                   </>
                 )}
                 {template.value === 'minimal' && (
                   <>
-                    <div className="w-2/3 h-2 bg-slate-800 mb-1 rounded-full"></div>
-                    <div className="w-1/2 h-2 bg-slate-800 mb-4 rounded-full"></div>
-                    <div className="w-full h-1/3 bg-slate-100 mb-4 rounded-md"></div>
-                    <div className="w-3/4 h-1 bg-slate-400 mb-1 rounded-full"></div>
-                    <div className="w-3/4 h-1 bg-slate-400 mb-1 rounded-full"></div>
-                    <div className="w-3/4 h-1 bg-slate-400 rounded-full"></div>
+                    <div className="w-2/3 h-2 bg-white/90 mb-1 rounded-full"></div>
+                    <div className="w-1/2 h-2 bg-white/90 mb-4 rounded-full"></div>
+                    <div className="w-full h-1/3 bg-white/10 mb-4 rounded-md"></div>
+                    <div className="w-3/4 h-1 bg-white/40 mb-1 rounded-full"></div>
+                    <div className="w-3/4 h-1 bg-white/40 mb-1 rounded-full"></div>
+                    <div className="w-3/4 h-1 bg-white/40 rounded-full"></div>
                   </>
                 )}
                 {template.value === 'bold' && (
                   <>
-                    <div className="w-5/6 h-3 bg-slate-900 mb-1 rounded-full"></div>
-                    <div className="w-3/4 h-3 bg-slate-900 mb-3 rounded-full"></div>
-                    <div className="w-full h-1/4 bg-primary/20 mb-3 rounded-md"></div>
-                    <div className="w-3/4 h-1 bg-slate-400 mb-1 rounded-full"></div>
-                    <div className="w-3/4 h-1 bg-slate-400 mb-1 rounded-full"></div>
-                    <div className="w-3/4 h-1 bg-slate-400 rounded-full"></div>
+                    <div className="w-5/6 h-3 bg-white/90 mb-1 rounded-full"></div>
+                    <div className="w-3/4 h-3 bg-white/90 mb-3 rounded-full"></div>
+                    <div className="w-full h-1/4 bg-rose-500/40 mb-3 rounded-md"></div>
+                    <div className="w-3/4 h-1 bg-white/40 mb-1 rounded-full"></div>
+                    <div className="w-3/4 h-1 bg-white/40 mb-1 rounded-full"></div>
+                    <div className="w-3/4 h-1 bg-white/40 rounded-full"></div>
                   </>
                 )}
                 {template.value === 'elegant' && (
                   <>
-                    <div className="w-1/2 h-1 bg-slate-600 mb-1 rounded-full"></div>
-                    <div className="w-3/4 h-3 bg-slate-800 my-1 rounded-full"></div>
-                    <div className="w-1/2 h-1 bg-slate-600 mb-3 rounded-full"></div>
-                    <div className="w-2/3 h-1/3 bg-slate-100 mb-3 rounded-md"></div>
-                    <div className="w-3/4 h-1 bg-slate-400 mb-1 rounded-full"></div>
-                    <div className="w-3/4 h-1 bg-slate-400 mb-1 rounded-full"></div>
-                    <div className="w-1/2 h-1 bg-slate-400 rounded-full"></div>
+                    <div className="w-1/2 h-1 bg-white/60 mb-1 rounded-full"></div>
+                    <div className="w-3/4 h-3 bg-white/80 my-1 rounded-full"></div>
+                    <div className="w-1/2 h-1 bg-white/60 mb-3 rounded-full"></div>
+                    <div className="w-2/3 h-1/3 bg-white/10 mb-3 rounded-md"></div>
+                    <div className="w-3/4 h-1 bg-white/40 mb-1 rounded-full"></div>
+                    <div className="w-3/4 h-1 bg-white/40 mb-1 rounded-full"></div>
+                    <div className="w-1/2 h-1 bg-white/40 rounded-full"></div>
                   </>
                 )}
               </div>
-              <p className="text-xs text-center mt-2 text-slate-600">{template.name}</p>
+              <p className="text-xs text-center mt-2 text-white/70">{template.name}</p>
             </div>
           ))}
         </div>
