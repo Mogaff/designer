@@ -121,13 +121,13 @@ export default function AiFlyerForm({
   };
 
   return (
-    <Card className="p-6 border-slate-200">
+    <div className="glass-card bg-black/30">
       <div className="flex items-center mb-4">
-        <Sparkles className="h-5 w-5 text-primary mr-2" />
-        <h2 className="text-xl font-semibold">Award-Winning Design AI</h2>
+        <Sparkles className="h-6 w-6 text-rose-300 mr-2" />
+        <h2 className="text-xl font-semibold text-white gradient-text">Award-Winning Design AI</h2>
       </div>
       
-      <p className="text-sm text-slate-600 mb-6">
+      <p className="text-sm text-white/70 mb-6">
         Our AI is trained to create stunning, creative designs using modern design principles.
         Enter a detailed prompt below and optionally upload an image to include in your flyer.
       </p>
@@ -135,7 +135,7 @@ export default function AiFlyerForm({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Prompt Input */}
         <div className="space-y-2">
-          <Label htmlFor="prompt" className="font-medium text-slate-700">
+          <Label htmlFor="prompt" className="font-medium text-white/90">
             Describe Your Flyer
           </Label>
           <Textarea
@@ -144,49 +144,49 @@ export default function AiFlyerForm({
             onChange={(e) => setPrompt(e.target.value)}
             rows={5}
             placeholder="Be specific and detailed! Example: 'Create a bold, modern tech event flyer with neon gradients, asymmetrical layout, and 3D elements. The event is called FUTURE TECH 2025, happening March 15-17 at Innovation Center. Include details about AI workshops and VR experiences.'"
-            className="block w-full resize-none"
+            className="block w-full resize-none bg-white/10 border-white/10 text-white placeholder:text-white/50"
           />
-          <div className="flex flex-wrap gap-1 mt-2">
-            <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200">mention colors</Badge>
-            <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200">layout style</Badge>
-            <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200">typography</Badge>
-            <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200">visual effects</Badge>
+          <div className="flex flex-wrap gap-1 mt-3">
+            <Badge className="bg-white/10 text-rose-200 border-rose-300/20 hover:bg-white/20">mention colors</Badge>
+            <Badge className="bg-white/10 text-amber-200 border-amber-300/20 hover:bg-white/20">layout style</Badge>
+            <Badge className="bg-white/10 text-pink-200 border-pink-300/20 hover:bg-white/20">typography</Badge>
+            <Badge className="bg-white/10 text-indigo-200 border-indigo-300/20 hover:bg-white/20">visual effects</Badge>
           </div>
         </div>
         
-        <Separator />
+        <Separator className="bg-white/10" />
         
         {/* Image Upload - Optional */}
         <div>
           <div className="flex items-center mb-2">
-            <ImageIcon className="h-4 w-4 mr-2 text-slate-700" />
-            <Label htmlFor="image-upload" className="font-medium text-slate-700">
+            <ImageIcon className="h-4 w-4 mr-2 text-white/80" />
+            <Label htmlFor="image-upload" className="font-medium text-white/90">
               Upload Image (Optional)
             </Label>
           </div>
           
           <div className="mt-2">
             {imagePreview ? (
-              <div className="relative rounded-md overflow-hidden bg-slate-100 border border-slate-200">
+              <div className="relative rounded-2xl overflow-hidden border border-white/20 glass-panel">
                 <img 
                   src={imagePreview} 
                   alt="Preview" 
-                  className="w-full h-40 object-cover" 
+                  className="w-full h-48 object-cover" 
                 />
                 <Button 
                   type="button" 
                   variant="destructive" 
                   size="sm" 
                   onClick={clearImage}
-                  className="absolute top-2 right-2 opacity-90"
+                  className="absolute top-2 right-2 opacity-90 rounded-full"
                 >
                   Remove
                 </Button>
               </div>
             ) : (
-              <div className="border-2 border-dashed border-slate-200 rounded-md p-6 text-center">
-                <Upload className="h-8 w-8 mx-auto text-slate-400 mb-2" />
-                <p className="text-sm text-slate-600 mb-2">
+              <div className="border-2 border-dashed border-white/20 rounded-2xl p-6 text-center bg-white/5 hover:bg-white/10 transition-all">
+                <Upload className="h-8 w-8 mx-auto text-white/40 mb-2" />
+                <p className="text-sm text-white/70 mb-2">
                   Drag and drop an image, or click to select
                 </p>
                 <Input
@@ -198,13 +198,13 @@ export default function AiFlyerForm({
                 />
                 <Button 
                   type="button" 
-                  variant="outline" 
+                  className="btn-glass"
                   size="sm"
                   onClick={() => document.getElementById('image-upload')?.click()}
                 >
                   Select Image
                 </Button>
-                <p className="text-xs text-slate-500 mt-2">
+                <p className="text-xs text-white/50 mt-2">
                   Max file size: 5MB
                 </p>
               </div>
@@ -212,15 +212,15 @@ export default function AiFlyerForm({
           </div>
         </div>
         
-        <div className="flex items-center px-3 py-2 bg-amber-50 text-amber-800 rounded-md">
-          <AlertTriangle className="h-4 w-4 mr-2 text-amber-500" />
+        <div className="flex items-center px-4 py-3 bg-[#42164B]/50 backdrop-blur-sm text-amber-200 rounded-2xl border border-amber-500/20">
+          <AlertTriangle className="h-4 w-4 mr-2 text-amber-400" />
           <p className="text-xs">For best results, include specific details about colors, layout, style, and content in your prompt.</p>
         </div>
         
         {/* Generate Button */}
         <Button
           type="submit"
-          className="w-full font-medium"
+          className="w-full font-medium rounded-full bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 border-0"
           disabled={isGenerating}
           size="lg"
         >
@@ -234,6 +234,6 @@ export default function AiFlyerForm({
           )}
         </Button>
       </form>
-    </Card>
+    </div>
   );
 }
