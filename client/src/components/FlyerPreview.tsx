@@ -51,7 +51,7 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
         <h2 className="text-base font-semibold text-white">Preview</h2>
         <div className="flex space-x-2">
           <Button
-            className="bg-green-800/30 backdrop-blur-sm border-none text-white h-7 px-3 py-1 text-xs hover:bg-green-800/40"
+            className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-7 px-3 py-1 text-xs hover:bg-indigo-500/30"
             size="sm"
             onClick={handleDownload}
             disabled={!generatedFlyer}
@@ -60,7 +60,7 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
             Download
           </Button>
           <Button
-            className="bg-indigo-500/30 backdrop-blur-sm border-none text-white h-7 px-3 py-1 text-xs hover:bg-indigo-500/40"
+            className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-7 px-3 py-1 text-xs hover:bg-indigo-500/30"
             size="sm"
             onClick={handleShare}
             disabled={!generatedFlyer}
@@ -78,7 +78,7 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
               <Image className="h-12 w-12 text-white/70" />
             </div>
             <h3 className="text-base font-medium text-white/90 mb-1">Your flyer will appear here</h3>
-            <p className="text-xs text-white/60 max-w-xs">Fill out the form and click "Generate FLYER"</p>
+            <p className="text-xs text-white/60 max-w-xs">Fill out the form and click "Generate Design"</p>
           </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center">
