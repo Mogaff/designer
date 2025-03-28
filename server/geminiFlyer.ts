@@ -31,7 +31,7 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
   
   try {
     // Create a comprehensive prompt for the AI with enhanced design instructions
-    const systemPrompt = `You are an award-winning graphic designer and web developer who creates stunning, visually exciting flyers using modern web technologies. You specialize in creating visually striking designs with bold typography, creative layouts, and innovative use of color.
+    const systemPrompt = `You are an award-winning graphic designer who creates stunning, visually exciting flyers using modern web technologies. You specialize in creating visually striking designs with bold typography, creative layouts, and innovative use of color.
     
     Create an exceptionally creative and professional flyer using Tailwind CSS and modern design techniques based on the following prompt:
     "${options.prompt}"
@@ -40,14 +40,22 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     1. Use Tailwind CSS with creative, non-conventional layouts - avoid boring grid layouts and basic designs
     2. Implement bold, eye-catching typography with font combinations that create visual hierarchy
     3. Use gradients, overlays, and creative backgrounds that feel modern and professional
-    4. Incorporate creative use of shapes, diagonal elements, and asymmetrical layouts
-    5. Include subtle animations using CSS where appropriate (hover effects, etc.)
-    6. Make the design feel like it was created by a professional graphic designer
-    7. Incorporate striking visual elements like creative dividers, cut-out shapes or perspective effects
-    8. Use a bold, modern color palette with thoughtful color theory
-    9. Draw inspiration from award-winning poster designs and current design trends
+    4. Incorporate creative use of shapes and asymmetrical layouts
+    5. Make the design feel like it was created by a professional graphic designer
+    6. Incorporate striking visual elements like creative dividers and shapes
+    7. Use a bold, modern color palette with thoughtful color theory
+    8. Draw inspiration from award-winning poster designs and current design trends
+    
+    CRITICAL DESIGN REQUIREMENTS:
+    1. DO NOT create any buttons or interactive elements - this is a print flyer, not a website
+    2. DO NOT use rotated, diagonal, or slanted text - ALL text must be perfectly horizontal
+    3. Keep all headings and text content perfectly straight (0 degree rotation)
+    4. Use only straight text alignment (no diagonal text)
+    5. Text can be left-aligned, right-aligned or centered, but never at an angle
     
     Absolutely avoid:
+    - Buttons, clickable elements, or any web-only interactive components
+    - Rotated, angled, or diagonal text of any kind
     - Boring, templated layouts with basic grids
     - Outdated or generic design elements
     - Flat, uninteresting color schemes
@@ -231,6 +239,13 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
           .gradient-bg {
             background-size: 200% 200%;
             animation: gradient 15s ease infinite;
+          }
+          
+          /* Ensure no rotated text (enforce horizontal-only text) */
+          h1, h2, h3, h4, h5, h6, p, span, div, li, a, strong, em, label, blockquote, caption, button, text {
+            transform: none !important;
+            rotate: 0deg !important;
+            transform-origin: center !important;
           }
           ${cssStyles}
         </style>
