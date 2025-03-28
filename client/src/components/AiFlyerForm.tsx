@@ -184,8 +184,13 @@ export default function AiFlyerForm({
 
   return (
     <div className="h-full flex flex-col">
-      <div className="mb-2">
+      <div className="mb-1">
         <h2 className="text-base font-semibold text-white">Create Flyer</h2>
+      </div>
+      
+      <div className="flex items-center px-2 py-2 bg-orange-500/30 backdrop-blur-sm text-white rounded-md border border-orange-300/20 mb-2">
+        <AlertTriangle className="h-3 w-3 flex-shrink-0 mr-1 text-white" />
+        <p className="text-xs">Include details about colors, layout, style, and content in your prompt.</p>
       </div>
       
       <p className="text-xs text-white/70 mb-3">
@@ -311,11 +316,6 @@ export default function AiFlyerForm({
               )}
             </div>
           </div>
-        </div>
-        
-        <div className="flex items-center px-2 py-2 bg-gray-800/30 backdrop-blur-sm text-white rounded-md border border-white/10">
-          <AlertTriangle className="h-3 w-3 flex-shrink-0 mr-1 text-white" />
-          <p className="text-xs">Include details about colors, layout, style, and content in your prompt.</p>
         </div>
         
         {/* Generate Button */}
