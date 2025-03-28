@@ -326,7 +326,10 @@ export default function AiFlyerForm({
                       type="button" 
                       variant="destructive" 
                       size="sm" 
-                      onClick={clearBackgroundImage}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        clearBackgroundImage();
+                      }}
                       className="rounded-md h-7 text-xs px-3"
                     >
                       Remove
@@ -345,7 +348,10 @@ export default function AiFlyerForm({
                   <Button 
                     type="button" 
                     className="bg-[#1A1B29] text-white rounded-full w-32 h-8 text-sm hover:bg-[#2D2E3D] transition-all shadow-md hover:shadow-indigo-500/20"
-                    onClick={() => document.getElementById('background-image-upload')?.click()}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      document.getElementById('background-image-upload')?.click();
+                    }}
                   >
                     Select Image
                   </Button>
@@ -375,7 +381,10 @@ export default function AiFlyerForm({
                       type="button" 
                       variant="destructive" 
                       size="sm" 
-                      onClick={clearLogo}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        clearLogo();
+                      }}
                       className="rounded-md h-7 text-xs px-3"
                     >
                       Remove
@@ -394,7 +403,10 @@ export default function AiFlyerForm({
                   <Button 
                     type="button" 
                     className="bg-[#1A1B29] text-white rounded-full w-32 h-8 text-sm hover:bg-[#2D2E3D] transition-all shadow-md hover:shadow-indigo-500/20"
-                    onClick={() => document.getElementById('logo-upload')?.click()}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      document.getElementById('logo-upload')?.click();
+                    }}
                   >
                     Select Logo
                   </Button>
@@ -422,25 +434,37 @@ export default function AiFlyerForm({
           <div className="flex flex-wrap gap-1 mt-1">
             <Badge 
               className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0 cursor-pointer"
-              onClick={() => addSuggestionToPrompt('colors')}
+              onClick={(e) => {
+                e.preventDefault();
+                addSuggestionToPrompt('colors');
+              }}
             >
               colors
             </Badge>
             <Badge 
               className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0 cursor-pointer"
-              onClick={() => addSuggestionToPrompt('layout')}
+              onClick={(e) => {
+                e.preventDefault();
+                addSuggestionToPrompt('layout');
+              }}
             >
               layout
             </Badge>
             <Badge 
               className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0 cursor-pointer"
-              onClick={() => addSuggestionToPrompt('typography')}
+              onClick={(e) => {
+                e.preventDefault();
+                addSuggestionToPrompt('typography');
+              }}
             >
               typography
             </Badge>
             <Badge 
               className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0 cursor-pointer"
-              onClick={() => addSuggestionToPrompt('effects')}
+              onClick={(e) => {
+                e.preventDefault();
+                addSuggestionToPrompt('effects');
+              }}
             >
               effects
             </Badge>
