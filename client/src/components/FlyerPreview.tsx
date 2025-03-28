@@ -71,17 +71,28 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
         </div>
       </div>
       
-      <div className="bg-black/40 backdrop-blur-md rounded-xl border border-white/10 p-3 flex flex-col items-center flex-grow">
+      <div className="relative bg-black/40 backdrop-blur-md rounded-xl border border-white/10 p-3 flex flex-col items-center flex-grow overflow-hidden">
+        {/* Crossed background pattern */}
+        <div className="absolute inset-0 z-0" style={{ 
+          backgroundImage: `
+            linear-gradient(45deg, #2D2E40 25%, transparent 25%, transparent 75%, #2D2E40 75%, #2D2E40),
+            linear-gradient(45deg, #2D2E40 25%, transparent 25%, transparent 75%, #2D2E40 75%, #2D2E40)
+          `, 
+          backgroundSize: '30px 30px',
+          backgroundPosition: '0 0, 15px 15px',
+          opacity: 0.4
+        }}></div>
+        
         {!generatedFlyer && !isGenerating ? (
-          <div className="flex flex-col items-center justify-center py-6 px-4 text-center h-full">
-            <div className="glass-panel p-3 rounded-full mb-2">
+          <div className="flex flex-col items-center justify-center py-6 px-4 text-center h-full relative z-10">
+            <div className="glass-panel p-3 rounded-full mb-2 bg-black/30 backdrop-blur-md">
               <Image className="h-8 w-8 text-white/70" />
             </div>
             <h3 className="text-base font-medium text-white/90 mb-1">Your flyer will appear here</h3>
             <p className="text-xs text-white/60 max-w-xs">Fill out the form and click "Generate Design"</p>
           </div>
         ) : (
-          <div className="w-full h-full flex items-center justify-center overflow-hidden max-h-[calc(100vh-200px)]">
+          <div className="w-full h-full flex items-center justify-center overflow-hidden max-h-[calc(100vh-200px)] relative z-10">
             <div className="relative page-preview rounded-xl overflow-hidden border border-white/20" style={{ maxHeight: '100%', maxWidth: '100%' }}>
               {generatedFlyer && (
                 <img 
