@@ -284,54 +284,11 @@ export default function AiFlyerForm({
       </div>
       
       <p className="text-xs text-white/70 mb-3">
-        Enter a detailed prompt and optionally upload background image and logo for your flyer.
+        Upload your background image and logo, then enter a detailed prompt for your flyer design.
       </p>
       
       <form onSubmit={handleSubmit} className="space-y-3 flex-grow flex flex-col">
-        {/* Prompt Input */}
-        <div className="space-y-1">
-          <Label htmlFor="prompt" className="text-sm font-medium text-white/90">
-            Prompt
-          </Label>
-          <Textarea
-            id="prompt"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            rows={4}
-            placeholder="Be specific! Example: 'Create a bold tech event flyer with minimalist layout. Event: FUTURE TECH 2025, March 15-17 at Innovation Center. Include AI workshops and VR experiences.'"
-            className="block w-full resize-none bg-white/10 border-white/10 text-white placeholder:text-white/50 text-sm"
-          />
-          <div className="flex flex-wrap gap-1 mt-1">
-            <Badge 
-              className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0 cursor-pointer"
-              onClick={() => addSuggestionToPrompt('colors')}
-            >
-              colors
-            </Badge>
-            <Badge 
-              className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0 cursor-pointer"
-              onClick={() => addSuggestionToPrompt('layout')}
-            >
-              layout
-            </Badge>
-            <Badge 
-              className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0 cursor-pointer"
-              onClick={() => addSuggestionToPrompt('typography')}
-            >
-              typography
-            </Badge>
-            <Badge 
-              className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0 cursor-pointer"
-              onClick={() => addSuggestionToPrompt('effects')}
-            >
-              effects
-            </Badge>
-          </div>
-        </div>
-        
-        <Separator className="bg-white/10 my-2" />
-        
-        {/* Image Upload Cards Row */}
+        {/* Image Upload Cards Row - MOVED TO TOP */}
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <p className="text-xs text-white/80 mb-1 ml-1">Background</p>
@@ -428,10 +385,56 @@ export default function AiFlyerForm({
           </div>
         </div>
         
-        {/* Generate Button */}
+        <Separator className="bg-white/10 my-2" />
+        
+        {/* Prompt Input - MOVED BELOW UPLOADS */}
+        <div className="space-y-1">
+          <Label htmlFor="prompt" className="text-sm font-medium text-white/90">
+            Prompt
+          </Label>
+          <Textarea
+            id="prompt"
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            rows={4}
+            placeholder="Be specific! Example: 'Create a bold tech event flyer with minimalist layout. Event: FUTURE TECH 2025, March 15-17 at Innovation Center. Include AI workshops and VR experiences.'"
+            className="block w-full resize-none bg-white/10 border-white/10 text-white placeholder:text-white/50 text-sm"
+          />
+          <div className="flex flex-wrap gap-1 mt-1">
+            <Badge 
+              className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0 cursor-pointer"
+              onClick={() => addSuggestionToPrompt('colors')}
+            >
+              colors
+            </Badge>
+            <Badge 
+              className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0 cursor-pointer"
+              onClick={() => addSuggestionToPrompt('layout')}
+            >
+              layout
+            </Badge>
+            <Badge 
+              className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0 cursor-pointer"
+              onClick={() => addSuggestionToPrompt('typography')}
+            >
+              typography
+            </Badge>
+            <Badge 
+              className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0 cursor-pointer"
+              onClick={() => addSuggestionToPrompt('effects')}
+            >
+              effects
+            </Badge>
+          </div>
+        </div>
+        
+        {/* Add spacer to push the button to the bottom */}
+        <div className="flex-grow"></div>
+        
+        {/* Generate Button - STAYS AT BOTTOM */}
         <Button
           type="submit"
-          className="w-full font-medium rounded-md bg-indigo-500/40 backdrop-blur-sm text-white hover:bg-indigo-500/60 border-0 h-10 mt-auto"
+          className="w-full font-medium rounded-md bg-indigo-500/40 backdrop-blur-sm text-white hover:bg-indigo-500/60 border-0 h-10 mt-4"
           disabled={isGenerating}
         >
           {isGenerating ? (
