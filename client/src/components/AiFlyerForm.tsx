@@ -340,11 +340,11 @@ export default function AiFlyerForm({
         >
           {isGenerating ? (
             <>
-              <span>Creating Design...</span>
+              <span>Creating FLYER...</span>
               <div className="ml-2 h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
             </>
           ) : (
-            <span>Generate Design</span>
+            <span>Generate FLYER</span>
           )}
         </Button>
       </form>
