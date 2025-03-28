@@ -18,7 +18,7 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
 
     const link = document.createElement("a");
     link.href = generatedFlyer.imageUrl;
-    link.download = `flyer-${Date.now()}.png`;
+    link.download = `design-${Date.now()}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -30,8 +30,8 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "My Generated Flyer",
-          text: "Check out this flyer I created!",
+          title: "My Generated Design",
+          text: "Check out this design I created!",
           url: generatedFlyer.imageUrl,
         });
       } catch (error) {
@@ -77,7 +77,7 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
             <div className="glass-panel p-3 rounded-full mb-2">
               <Image className="h-12 w-12 text-white/70" />
             </div>
-            <h3 className="text-base font-medium text-white/90 mb-1">Your flyer will appear here</h3>
+            <h3 className="text-base font-medium text-white/90 mb-1">Your design will appear here</h3>
             <p className="text-xs text-white/60 max-w-xs">Fill out the form and click "Generate Design"</p>
           </div>
         ) : (
@@ -87,7 +87,7 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
                 <img 
                   ref={imageRef}
                   src={generatedFlyer.imageUrl} 
-                  alt="Generated flyer" 
+                  alt="Generated design" 
                   className="max-h-full max-w-full object-contain"
                   style={{ display: 'block' }}
                 />

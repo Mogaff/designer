@@ -188,11 +188,11 @@ export default function AiFlyerForm({
   return (
     <div className="h-full flex flex-col">
       <div className="mb-2">
-        <h2 className="text-base font-semibold text-white">Create Flyer</h2>
+        <h2 className="text-base font-semibold text-white">Create Design</h2>
       </div>
       
       <p className="text-xs text-white/70 mb-3">
-        Enter a detailed prompt and optionally upload background image and logo for your flyer.
+        Enter a detailed prompt and optionally upload background image and logo for your design.
       </p>
       
       <form onSubmit={handleSubmit} className="space-y-3 flex-grow flex flex-col">
@@ -327,7 +327,7 @@ export default function AiFlyerForm({
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             rows={4}
-            placeholder="Be specific! Example: 'Create a bold tech event flyer with minimalist layout. Event: FUTURE TECH 2025, March 15-17 at Innovation Center. Include AI workshops and VR experiences.'"
+            placeholder="Be specific! Example: 'Create a bold tech event design with minimalist layout. Event: FUTURE TECH 2025, March 15-17 at Innovation Center. Include AI workshops and VR experiences.'"
             className="block w-full resize-none bg-white/10 border-white/10 text-white placeholder:text-white/50 text-sm"
           />
         </div>
