@@ -118,7 +118,7 @@ export default function AiFlyerForm({
       // Get the error message
       let errorMessage = error instanceof Error ? error.message : "Failed to generate AI flyer";
       
-      // Check specific error types
+      // Check if it's a quota limit error
       if (errorMessage.includes("API quota limit reached")) {
         toast({
           title: "API Quota Limit Reached",
@@ -126,26 +126,11 @@ export default function AiFlyerForm({
           variant: "destructive",
           duration: 7000,
         });
-      } else if (errorMessage.includes("timed out") || errorMessage.includes("timeout")) {
-        toast({
-          title: "Generation Timed Out",
-          description: "The flyer generation took too long. Try again with a simpler prompt or fewer images.",
-          variant: "destructive",
-          duration: 7000,
-        });
-      } else if (error instanceof Response || (error as any).status === 504) {
-        toast({
-          title: "Request Timed Out",
-          description: "The server took too long to respond. Try a simpler prompt or try again later.",
-          variant: "destructive",
-          duration: 7000,
-        });
       } else {
         toast({
-          title: "Error Generating Flyer",
-          description: errorMessage.substring(0, 200), // Limit message length
+          title: "Error",
+          description: errorMessage,
           variant: "destructive",
-          duration: 7000,
         });
       }
     }
@@ -326,10 +311,7 @@ export default function AiFlyerForm({
                       type="button" 
                       variant="destructive" 
                       size="sm" 
-                      onClick={(e) => {
-                        e.preventDefault();
-                        clearBackgroundImage();
-                      }}
+                      onClick={clearBackgroundImage}
                       className="rounded-md h-7 text-xs px-3"
                     >
                       Remove
@@ -348,10 +330,7 @@ export default function AiFlyerForm({
                   <Button 
                     type="button" 
                     className="bg-[#1A1B29] text-white rounded-full w-32 h-8 text-sm hover:bg-[#2D2E3D] transition-all shadow-md hover:shadow-indigo-500/20"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      document.getElementById('background-image-upload')?.click();
-                    }}
+                    onClick={() => document.getElementById('background-image-upload')?.click()}
                   >
                     Select Image
                   </Button>
@@ -381,10 +360,7 @@ export default function AiFlyerForm({
                       type="button" 
                       variant="destructive" 
                       size="sm" 
-                      onClick={(e) => {
-                        e.preventDefault();
-                        clearLogo();
-                      }}
+                      onClick={clearLogo}
                       className="rounded-md h-7 text-xs px-3"
                     >
                       Remove
@@ -403,10 +379,7 @@ export default function AiFlyerForm({
                   <Button 
                     type="button" 
                     className="bg-[#1A1B29] text-white rounded-full w-32 h-8 text-sm hover:bg-[#2D2E3D] transition-all shadow-md hover:shadow-indigo-500/20"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      document.getElementById('logo-upload')?.click();
-                    }}
+                    onClick={() => document.getElementById('logo-upload')?.click()}
                   >
                     Select Logo
                   </Button>
@@ -434,37 +407,25 @@ export default function AiFlyerForm({
           <div className="flex flex-wrap gap-1 mt-1">
             <Badge 
               className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0 cursor-pointer"
-              onClick={(e) => {
-                e.preventDefault();
-                addSuggestionToPrompt('colors');
-              }}
+              onClick={() => addSuggestionToPrompt('colors')}
             >
               colors
             </Badge>
             <Badge 
               className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0 cursor-pointer"
-              onClick={(e) => {
-                e.preventDefault();
-                addSuggestionToPrompt('layout');
-              }}
+              onClick={() => addSuggestionToPrompt('layout')}
             >
               layout
             </Badge>
             <Badge 
               className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0 cursor-pointer"
-              onClick={(e) => {
-                e.preventDefault();
-                addSuggestionToPrompt('typography');
-              }}
+              onClick={() => addSuggestionToPrompt('typography')}
             >
               typography
             </Badge>
             <Badge 
               className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0 cursor-pointer"
-              onClick={(e) => {
-                e.preventDefault();
-                addSuggestionToPrompt('effects');
-              }}
+              onClick={() => addSuggestionToPrompt('effects')}
             >
               effects
             </Badge>

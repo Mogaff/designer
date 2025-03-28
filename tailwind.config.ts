@@ -91,30 +91,10 @@ export default {
             height: "0",
           },
         },
-        "glow-color-shift": {
-          "0%, 100%": {
-            "background-position": "0% 50%",
-          },
-          "50%": {
-            "background-position": "100% 50%",
-          },
-        },
-        "glow-pulse": {
-          "0%, 100%": {
-            opacity: "0.5",
-            transform: "scale(1)",
-          },
-          "50%": {
-            opacity: "0.8",
-            transform: "scale(1.1)",
-          },
-        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "glow-color-shift": "glow-color-shift 3s ease-in-out infinite",
-        "glow-pulse": "glow-pulse 3s ease-in-out infinite",
       },
     },
   },

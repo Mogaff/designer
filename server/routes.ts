@@ -7,8 +7,6 @@ import { generateFlyer } from "./flyerGenerator";
 import { renderFlyerFromGemini } from "./geminiFlyer";
 import multer from "multer";
 import { log } from "./vite";
-import { setupAuth } from "./auth";
-import { v4 as uuidv4 } from "uuid";
 
 // Using the built-in type definitions from @types/multer
 
@@ -27,32 +25,14 @@ const uploadFields = upload.fields([
 ]);
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup authentication routes
-  setupAuth(app);
   // API endpoint to generate a flyer using Gemini AI
   app.post("/api/generate-ai", uploadFields, async (req: Request, res: Response) => {
-    // Set timeout for the request (45 seconds)
-    req.setTimeout(45000);
-    
-    // Use a timeout to catch hung requests
-    let isResponseSent = false;
-    const requestTimeout = setTimeout(() => {
-      if (!isResponseSent) {
-        isResponseSent = true;
-        log("Request timed out for AI flyer generation", "generator");
-        res.status(504).json({ 
-          message: "Flyer generation timed out. Please try again with a simpler prompt or fewer images."
-        });
-      }
-    }, 40000); // 40 seconds timeout
-    
     try {
       log("AI Flyer generation started", "generator");
       
       const { prompt } = req.body;
       
       if (!prompt) {
-        clearTimeout(requestTimeout);
         return res.status(400).json({ message: "Prompt is required" });
       }
       
@@ -82,46 +62,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         generationOptions.logoBase64 = logoBase64;
       }
       
-      // Generate the flyer using Gemini AI with timeout handling
+      // Generate the flyer using Gemini AI
       const screenshot = await renderFlyerFromGemini(generationOptions);
       
       log("AI Flyer generation completed", "generator");
       
-      // Clear the timeout since we completed successfully
-      clearTimeout(requestTimeout);
-      
-      if (!isResponseSent) {
-        isResponseSent = true;
-        // Send the screenshot as response
-        res.contentType("image/png");
-        res.send(screenshot);
-      }
+      // Send the screenshot as response
+      res.contentType("image/png");
+      res.send(screenshot);
     } catch (error) {
       log(`Error generating AI flyer: ${error}`, "generator");
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       
-      // Clear the timeout
-      clearTimeout(requestTimeout);
-      
-      if (!isResponseSent) {
-        isResponseSent = true;
-        
-        // Handle API quota limit errors
-        if (errorMessage.includes("API quota limit reached")) {
-          // Send 429 Too Many Requests status code for quota limit errors
-          res.status(429).json({ 
-            message: errorMessage,
-            quotaExceeded: true
-          });
-        } else if (errorMessage.includes("timed out")) {
-          // Handle timeout errors
-          res.status(504).json({
-            message: "The request timed out. Please try again with a simpler prompt or fewer images."
-          });
-        } else {
-          // Send 500 Internal Server Error for other errors
-          res.status(500).json({ message: `Failed to generate AI flyer: ${errorMessage}` });
-        }
+      // Handle API quota limit errors
+      if (errorMessage.includes("API quota limit reached")) {
+        // Send 429 Too Many Requests status code for quota limit errors
+        res.status(429).json({ 
+          message: errorMessage,
+          quotaExceeded: true
+        });
+      } else {
+        // Send 500 Internal Server Error for other errors
+        res.status(500).json({ message: `Failed to generate AI flyer: ${errorMessage}` });
       }
     }
   });
@@ -184,58 +146,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     }
   );
-
-  // API endpoint to save a generated flyer
-  app.post("/api/save-flyer", async (req: Request, res: Response) => {
-    try {
-      // Check if user is authenticated
-      if (!req.isAuthenticated()) {
-        return res.status(401).json({ message: "You must be logged in to save flyers" });
-      }
-      
-      const { imageUrl, headline, content, stylePrompt, template } = req.body;
-      
-      if (!imageUrl) {
-        return res.status(400).json({ message: "Flyer image is required" });
-      }
-      
-      // Save the flyer to the database
-      const flyer = await storage.createFlyer({
-        id: uuidv4(),
-        userId: req.user.id,
-        imageUrl,
-        headline: headline || "",
-        content: content || "",
-        stylePrompt: stylePrompt || "",
-        template: template || "default",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-      
-      res.status(201).json(flyer);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      res.status(500).json({ message: `Failed to save flyer: ${errorMessage}` });
-    }
-  });
-  
-  // API endpoint to get user's saved flyers
-  app.get("/api/my-flyers", async (req: Request, res: Response) => {
-    try {
-      // Check if user is authenticated
-      if (!req.isAuthenticated()) {
-        return res.status(401).json({ message: "You must be logged in to view your flyers" });
-      }
-      
-      // Get the user's flyers from the database
-      const flyers = await storage.getUserFlyers(req.user.id);
-      
-      res.status(200).json(flyers);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      res.status(500).json({ message: `Failed to retrieve flyers: ${errorMessage}` });
-    }
-  });
 
   // Add a test route to verify server is working
   app.get("/api/test", (req: Request, res: Response) => {
