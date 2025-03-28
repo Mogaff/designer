@@ -71,18 +71,18 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
         </div>
       </div>
       
-      <div className="bg-black/40 backdrop-blur-md rounded-xl border border-white/10 p-3 flex flex-col items-center flex-grow" style={{ height: '420px' }}>
+      <div className="bg-black/40 backdrop-blur-md rounded-xl border border-white/10 flex-grow flex items-center justify-center">
         {!generatedFlyer && !isGenerating ? (
-          <div className="flex flex-col items-center justify-center py-6 px-4 text-center h-full">
+          <div className="flex flex-col items-center justify-center text-center h-full w-full">
             <div className="glass-panel p-3 rounded-full mb-2">
-              <Image className="h-8 w-8 text-white/70" />
+              <Image className="h-12 w-12 text-white/70" />
             </div>
             <h3 className="text-base font-medium text-white/90 mb-1">Your flyer will appear here</h3>
             <p className="text-xs text-white/60 max-w-xs">Fill out the form and click "Generate Design"</p>
           </div>
         ) : (
-          <div className="w-full h-full flex items-center justify-center overflow-hidden">
-            <div className="relative h-full max-h-[380px] max-w-full rounded-xl overflow-hidden border border-white/20 flex items-center justify-center">
+          <div className="w-full h-full flex items-center justify-center">
+            <div className="flex-1 h-full flex items-center justify-center relative">
               {generatedFlyer && (
                 <img 
                   ref={imageRef}

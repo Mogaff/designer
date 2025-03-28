@@ -25,8 +25,8 @@ export default function Home() {
           </div>
           
           <div className="glass-panel p-4 flex-grow overflow-hidden flex flex-col">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="h-full max-h-[580px]">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+              <div className="h-full">
                 <AiFlyerForm
                   setGeneratedFlyer={setGeneratedFlyer}
                   isGenerating={isGenerating}
@@ -34,7 +34,7 @@ export default function Home() {
                 />
               </div>
               
-              <div className="h-full max-h-[580px]">
+              <div className="h-full">
                 <FlyerPreview 
                   generatedFlyer={generatedFlyer} 
                   isGenerating={isGenerating}
