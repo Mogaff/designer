@@ -336,13 +336,13 @@ export default function AiFlyerForm({
         {/* Generate Button */}
         <Button
           type="submit"
-          className="w-full font-medium rounded-md bg-white text-black hover:bg-white/80 border-0 h-10 mt-auto"
+          className="w-full font-medium rounded-md bg-indigo-500/40 backdrop-blur-sm text-white hover:bg-indigo-500/60 border-0 h-10 mt-auto"
           disabled={isGenerating}
         >
           {isGenerating ? (
             <>
               <span>Creating Design...</span>
-              <div className="ml-2 h-3 w-3 animate-spin rounded-full border-2 border-black border-t-transparent"></div>
+              <div className="ml-2 h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
             </>
           ) : (
             <span>Generate Design</span>

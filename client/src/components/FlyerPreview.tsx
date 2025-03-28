@@ -51,7 +51,7 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
         <h2 className="text-base font-semibold text-white">Preview</h2>
         <div className="flex space-x-2">
           <Button
-            className="btn-primary h-8 px-3 py-1 text-xs"
+            className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-7 px-3 py-1 text-xs hover:bg-indigo-500/30"
             size="sm"
             onClick={handleDownload}
             disabled={!generatedFlyer}
@@ -60,7 +60,7 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
             Download
           </Button>
           <Button
-            className="btn-secondary h-8 px-3 py-1 text-xs"
+            className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-7 px-3 py-1 text-xs hover:bg-indigo-500/30"
             size="sm"
             onClick={handleShare}
             disabled={!generatedFlyer}
@@ -81,14 +81,15 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
             <p className="text-xs text-white/60 max-w-xs">Fill out the form and click "Generate Design"</p>
           </div>
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="relative page-preview rounded-xl overflow-hidden border border-white/20 h-full" style={{ aspectRatio: '1 / 1.414', maxHeight: '100%' }}>
+          <div className="w-full h-full flex items-center justify-center overflow-hidden max-h-[calc(100vh-200px)]">
+            <div className="relative page-preview rounded-xl overflow-hidden border border-white/20" style={{ maxHeight: '100%', maxWidth: '100%' }}>
               {generatedFlyer && (
                 <img 
                   ref={imageRef}
                   src={generatedFlyer.imageUrl} 
                   alt="Generated flyer" 
-                  className="w-full h-full object-contain"
+                  className="max-h-full max-w-full object-contain"
+                  style={{ display: 'block' }}
                 />
               )}
               {isGenerating && (
