@@ -329,7 +329,7 @@ export default function AiFlyerForm({
                   />
                   <Button 
                     type="button" 
-                    className="bg-[#383A62] text-white rounded-full w-32 h-8 text-sm hover:bg-[#4A4C7A] transition-colors"
+                    className="bg-[#1A1B29] text-white rounded-full w-32 h-8 text-sm hover:bg-[#2D2E3D] transition-all shadow-md hover:shadow-indigo-500/20"
                     onClick={() => document.getElementById('background-image-upload')?.click()}
                   >
                     Select Image
@@ -378,7 +378,7 @@ export default function AiFlyerForm({
                   />
                   <Button 
                     type="button" 
-                    className="bg-[#383A62] text-white rounded-full w-32 h-8 text-sm hover:bg-[#4A4C7A] transition-colors"
+                    className="bg-[#1A1B29] text-white rounded-full w-32 h-8 text-sm hover:bg-[#2D2E3D] transition-all shadow-md hover:shadow-indigo-500/20"
                     onClick={() => document.getElementById('logo-upload')?.click()}
                   >
                     Select Logo
@@ -435,7 +435,7 @@ export default function AiFlyerForm({
         {/* Generate Button - RIGHT UNDER PROMPT */}
         <Button
           type="submit"
-          className="w-full font-medium rounded-md bg-indigo-500/40 backdrop-blur-sm text-white hover:bg-indigo-500/60 border-0 h-10"
+          className="w-full font-medium rounded-md bg-black/50 backdrop-blur-sm text-white hover:bg-indigo-500/50 border border-indigo-500/30 h-10 shadow-lg shadow-black/30 transition-all duration-300 hover:shadow-indigo-500/30 hover:scale-[1.02] hover:border-indigo-500/50"
           disabled={isGenerating}
         >
           {isGenerating ? (
