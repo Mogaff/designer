@@ -245,7 +245,7 @@ export default function AiFlyerForm({
       description: (
         <div className="mt-2 space-y-2">
           <p className="text-sm text-white/70 mb-2">Select a suggestion to add:</p>
-          <div className="grid grid-cols-1 gap-1.5 max-h-[300px] overflow-y-auto pe-1">
+          <div className="grid grid-cols-1 gap-1.5 max-h-[300px] overflow-y-auto pr-2">
             {suggestionsList.map((suggestion, index) => (
               <button
                 key={index}
