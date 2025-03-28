@@ -13,8 +13,8 @@ export default function Home() {
     <div className="flex flex-col h-screen overflow-hidden">
       <Header />
       
-      <main className="max-w-full mx-auto pt-16 px-6 lg:px-12 flex-grow flex flex-col">
-        <section className="flex-grow flex flex-col h-full">
+      <main className="max-w-6xl mx-auto pt-12 px-6 lg:px-10 flex-grow flex flex-col">
+        <section className="flex-grow flex flex-col">
           <div className="text-center mb-2">
             <h1 className="text-3xl font-bold mb-1 text-white">
               ha'itu
@@ -25,8 +25,8 @@ export default function Home() {
           </div>
           
           <div className="glass-panel p-4 flex-grow overflow-hidden flex flex-col">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
-              <div className="overflow-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="h-full max-h-[580px]">
                 <AiFlyerForm
                   setGeneratedFlyer={setGeneratedFlyer}
                   isGenerating={isGenerating}
@@ -34,7 +34,7 @@ export default function Home() {
                 />
               </div>
               
-              <div className="overflow-auto">
+              <div className="h-full max-h-[580px]">
                 <FlyerPreview 
                   generatedFlyer={generatedFlyer} 
                   isGenerating={isGenerating}

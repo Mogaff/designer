@@ -220,18 +220,20 @@ export default function AiFlyerForm({
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <p className="text-xs text-white/80 mb-1 ml-1">Background</p>
-            {/* Background Image Upload */}
-            <div className="relative aspect-square overflow-hidden rounded-xl group transition-all duration-200 border border-gray-800/50 hover:border-indigo-500/50">
+            {/* Background Image Upload - Fixed size container */}
+            <div className="relative w-full h-28 overflow-hidden rounded-xl group transition-all duration-200 border border-gray-800/50 hover:border-indigo-500/50">
               {/* Ensuring all layers have the same rounded corners */}
               <div className="absolute inset-0 rounded-xl bg-[#1E1F2E] z-0"></div>
               
               {backgroundImagePreview ? (
                 <div className="relative w-full h-full flex items-center justify-center z-10 rounded-xl overflow-hidden">
-                  <img 
-                    src={backgroundImagePreview} 
-                    alt="Background Preview" 
-                    className="max-h-full max-w-full object-contain"
-                  />
+                  <div className="w-full h-full flex items-center justify-center">
+                    <img 
+                      src={backgroundImagePreview} 
+                      alt="Background Preview" 
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/70 rounded-xl">
                     <Button 
                       type="button" 
@@ -267,18 +269,20 @@ export default function AiFlyerForm({
           
           <div>
             <p className="text-xs text-white/80 mb-1 ml-1">Logo</p>
-            {/* Logo Upload */}
-            <div className="relative aspect-square overflow-hidden rounded-xl group transition-all duration-200 border border-gray-800/50 hover:border-indigo-500/50">
+            {/* Logo Upload - Fixed size container */}
+            <div className="relative w-full h-28 overflow-hidden rounded-xl group transition-all duration-200 border border-gray-800/50 hover:border-indigo-500/50">
               {/* Ensuring all layers have the same rounded corners */}
               <div className="absolute inset-0 rounded-xl bg-[#1E1F2E] z-0"></div>
               
               {logoPreview ? (
                 <div className="relative w-full h-full flex items-center justify-center z-10 rounded-xl overflow-hidden">
-                  <img 
-                    src={logoPreview} 
-                    alt="Logo Preview" 
-                    className="max-h-full max-w-full object-contain p-2" 
-                  />
+                  <div className="p-2 flex items-center justify-center h-full w-full bg-white/5">
+                    <img 
+                      src={logoPreview} 
+                      alt="Logo Preview" 
+                      className="max-h-full max-w-full object-contain" 
+                    />
+                  </div>
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/70 rounded-xl">
                     <Button 
                       type="button" 
