@@ -436,20 +436,20 @@ export default function AiFlyerForm({
         <div className="relative w-full overflow-hidden">
           <Button
             type="submit"
-            className="w-full font-medium rounded-md bg-black/50 backdrop-blur-sm text-white hover:bg-indigo-500/50 border border-indigo-500/30 h-10 shadow-lg shadow-black/30 transition-all duration-300 hover:shadow-indigo-500/30 hover:border-indigo-500/50 group"
+            className="w-full font-medium rounded-md bg-black/50 backdrop-blur-sm text-white hover:bg-indigo-500/50 border border-indigo-500/30 h-10 shadow-lg shadow-black/30 transition-colors duration-300 hover:shadow-indigo-500/30 hover:border-indigo-500/50 group"
             disabled={isGenerating}
           >
-            {isGenerating ? (
-              <>
-                <span>Creating Design...</span>
-                <div className="ml-2 h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-              </>
-            ) : (
-              <>
+            <div className="flex items-center justify-center min-h-[24px]">
+              {isGenerating ? (
+                <div className="flex items-center justify-center">
+                  <span>Creating Design...</span>
+                  <div className="ml-2 h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                </div>
+              ) : (
                 <span>Generate Design</span>
-                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-              </>
-            )}
+              )}
+            </div>
+            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
           </Button>
         </div>
       </form>
