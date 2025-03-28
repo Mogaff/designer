@@ -72,15 +72,16 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
       </div>
       
       <div className="relative bg-black/40 backdrop-blur-md rounded-xl border border-white/10 p-3 flex flex-col items-center flex-grow overflow-hidden">
-        {/* Crossed background pattern */}
+        {/* Crossed lines background pattern */}
         <div className="absolute inset-0 z-0" style={{ 
           backgroundImage: `
-            linear-gradient(45deg, #2D2E40 25%, transparent 25%, transparent 75%, #2D2E40 75%, #2D2E40),
-            linear-gradient(45deg, #2D2E40 25%, transparent 25%, transparent 75%, #2D2E40 75%, #2D2E40)
+            linear-gradient(0deg, transparent 98%, #3D3E50 98%, #3D3E50 100%, transparent 100%),
+            linear-gradient(90deg, transparent 98%, #3D3E50 98%, #3D3E50 100%, transparent 100%),
+            linear-gradient(45deg, transparent 96%, #333444 96%, #333444 100%, transparent 100%),
+            linear-gradient(-45deg, transparent 96%, #333444 96%, #333444 100%, transparent 100%)
           `, 
-          backgroundSize: '30px 30px',
-          backgroundPosition: '0 0, 15px 15px',
-          opacity: 0.4
+          backgroundSize: '30px 30px, 30px 30px, 60px 60px, 60px 60px',
+          opacity: 0.45
         }}></div>
         
         {!generatedFlyer && !isGenerating ? (
