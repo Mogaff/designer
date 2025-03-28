@@ -4,8 +4,8 @@ import { users, flyers, subscriptions,
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 import session from "express-session";
-import connectPgSimple from "connect-pg-simple";
-import { Pool } from "@neondatabase/serverless";
+import { log } from "./vite";
+import createMemoryStore from "memorystore";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -29,22 +29,21 @@ export interface IStorage {
   updateUserStripeInfo(userId: string, info: { stripeCustomerId: string, stripeSubscriptionId: string }): Promise<User>;
   
   // Session store for auth
-  sessionStore: any;
+  sessionStore: session.Store;
 }
 
 export class DatabaseStorage implements IStorage {
-  sessionStore: any;
+  sessionStore: session.Store;
   
   constructor() {
-    const PostgresSessionStore = connectPgSimple(session);
-    const pool = new Pool({
-      connectionString: process.env.DATABASE_URL || '',
+    // Use in-memory session store instead of PostgreSQL to avoid WebSocket issues
+    const MemoryStore = createMemoryStore(session);
+    
+    this.sessionStore = new MemoryStore({
+      checkPeriod: 86400000 // 24 hours
     });
     
-    this.sessionStore = new PostgresSessionStore({ 
-      pool, 
-      createTableIfMissing: true 
-    });
+    log("Using memory store for sessions", "storage");
   }
 
   async getUser(id: string): Promise<User | undefined> {
