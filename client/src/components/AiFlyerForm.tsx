@@ -216,127 +216,144 @@ export default function AiFlyerForm({
         
         <Separator className="bg-white/10 my-2" />
         
-        {/* Background Image Upload */}
-        <div className="mb-3">
-          <div className="flex items-center mb-1">
-            <ImageIcon className="h-3 w-3 mr-1 text-white/80" />
-            <Label htmlFor="background-image-upload" className="text-sm font-medium text-white/90">
-              Upload Background Image (Optional)
-            </Label>
+        {/* Image Upload Cards Row */}
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          {/* Background Image Upload */}
+          <div className="relative overflow-hidden rounded-xl">
+            {/* Glow Effect Background */}
+            <div className="absolute inset-0 rounded-xl overflow-hidden">
+              <div className="absolute inset-0 bg-indigo-500/10 backdrop-blur-md"></div>
+            </div>
+            
+            <div className="relative p-3 h-full flex flex-col">
+              <div className="flex items-center mb-2">
+                <ImageIcon className="h-3 w-3 mr-1 text-white/80" />
+                <Label htmlFor="background-image-upload" className="text-sm font-medium text-white/90">
+                  Background Image
+                </Label>
+              </div>
+              
+              <div className="flex-grow flex flex-col justify-center items-center">
+                {backgroundImagePreview ? (
+                  <div className="relative w-full h-20 rounded-lg overflow-hidden border border-white/10 bg-black/20 backdrop-blur-sm flex items-center justify-center">
+                    <img 
+                      src={backgroundImagePreview} 
+                      alt="Background Preview" 
+                      className="max-h-full max-w-full object-contain"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/50 backdrop-blur-sm">
+                      <Button 
+                        type="button" 
+                        variant="destructive" 
+                        size="sm" 
+                        onClick={clearBackgroundImage}
+                        className="rounded-md h-7 text-xs px-3"
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div 
+                    onClick={() => document.getElementById('background-image-upload')?.click()}
+                    className="w-full h-20 rounded-lg border border-dashed border-white/20 bg-black/20 backdrop-blur-sm hover:bg-black/30 transition-all cursor-pointer flex flex-col items-center justify-center"
+                  >
+                    <Upload className="h-5 w-5 text-white/40 mb-1.5" />
+                    <p className="text-xs text-white/70 mb-1 text-center">
+                      Select background image
+                    </p>
+                    <Input
+                      id="background-image-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleBackgroundImageChange}
+                      className="hidden"
+                    />
+                    <Button 
+                      type="button" 
+                      className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-6 text-xs px-3 py-0 hover:bg-indigo-500/30"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        document.getElementById('background-image-upload')?.click();
+                      }}
+                    >
+                      Select Image
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
           
-          <div className="mt-1">
-            {backgroundImagePreview ? (
-              <div className="relative rounded-lg overflow-hidden border border-white/10 bg-black/20 backdrop-blur-sm h-20 flex items-center justify-center">
-                <img 
-                  src={backgroundImagePreview} 
-                  alt="Background Preview" 
-                  className="max-h-full max-w-full"
-                />
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/50 backdrop-blur-sm">
-                  <Button 
-                    type="button" 
-                    variant="destructive" 
-                    size="sm" 
-                    onClick={clearBackgroundImage}
-                    className="rounded-md h-7 text-xs px-3"
+          {/* Logo Upload */}
+          <div className="relative overflow-hidden rounded-xl">
+            {/* Glow Effect Background */}
+            <div className="absolute inset-0 rounded-xl overflow-hidden">
+              <div className="absolute inset-0 bg-indigo-500/10 backdrop-blur-md"></div>
+            </div>
+            
+            <div className="relative p-3 h-full flex flex-col">
+              <div className="flex items-center mb-2">
+                <ImageIcon className="h-3 w-3 mr-1 text-white/80" />
+                <Label htmlFor="logo-upload" className="text-sm font-medium text-white/90">
+                  Logo Image
+                </Label>
+              </div>
+              
+              <div className="flex-grow flex flex-col justify-center items-center">
+                {logoPreview ? (
+                  <div className="relative w-full h-20 rounded-lg overflow-hidden border border-white/10 bg-black/20 backdrop-blur-sm flex items-center justify-center">
+                    <div className="p-2 flex items-center justify-center h-full w-full">
+                      <img 
+                        src={logoPreview} 
+                        alt="Logo Preview" 
+                        className="max-h-full max-w-full object-contain" 
+                      />
+                    </div>
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/50 backdrop-blur-sm">
+                      <Button 
+                        type="button" 
+                        variant="destructive" 
+                        size="sm" 
+                        onClick={clearLogo}
+                        className="rounded-md h-7 text-xs px-3"
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div 
+                    onClick={() => document.getElementById('logo-upload')?.click()}
+                    className="w-full h-20 rounded-lg border border-dashed border-white/20 bg-black/20 backdrop-blur-sm hover:bg-black/30 transition-all cursor-pointer flex flex-col items-center justify-center"
                   >
-                    Remove
-                  </Button>
-                </div>
+                    <Upload className="h-5 w-5 text-white/40 mb-1.5" />
+                    <p className="text-xs text-white/70 mb-1 text-center">
+                      Select logo
+                    </p>
+                    <Input
+                      id="logo-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoChange}
+                      className="hidden"
+                    />
+                    <Button 
+                      type="button" 
+                      className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-6 text-xs px-3 py-0 hover:bg-indigo-500/30"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        document.getElementById('logo-upload')?.click();
+                      }}
+                    >
+                      Select Logo
+                    </Button>
+                  </div>
+                )}
               </div>
-            ) : (
-              <div 
-                onClick={() => document.getElementById('background-image-upload')?.click()}
-                className="rounded-lg border border-dashed border-white/20 bg-black/20 backdrop-blur-sm hover:bg-black/30 transition-all cursor-pointer flex flex-col items-center justify-center h-20"
-              >
-                <Upload className="h-5 w-5 text-white/40 mb-1.5" />
-                <p className="text-xs text-white/70 mb-1">
-                  Select a background image
-                </p>
-                <Input
-                  id="background-image-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleBackgroundImageChange}
-                  className="hidden"
-                />
-                <Button 
-                  type="button" 
-                  className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-6 text-xs px-3 py-0 hover:bg-indigo-500/30"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    document.getElementById('background-image-upload')?.click();
-                  }}
-                >
-                  Select Image
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
-        
-        {/* Logo Upload */}
-        <div className="mb-4">
-          <div className="flex items-center mb-1">
-            <ImageIcon className="h-3 w-3 mr-1 text-white/80" />
-            <Label htmlFor="logo-upload" className="text-sm font-medium text-white/90">
-              Upload Logo (Optional)
-            </Label>
-          </div>
-          
-          <div className="mt-1">
-            {logoPreview ? (
-              <div className="relative rounded-lg overflow-hidden border border-white/10 bg-black/20 backdrop-blur-sm h-20 flex items-center justify-center">
-                <div className="p-2 flex items-center justify-center h-full w-full">
-                  <img 
-                    src={logoPreview} 
-                    alt="Logo Preview" 
-                    className="max-h-full max-w-full object-contain" 
-                  />
-                </div>
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/50 backdrop-blur-sm">
-                  <Button 
-                    type="button" 
-                    variant="destructive" 
-                    size="sm" 
-                    onClick={clearLogo}
-                    className="rounded-md h-7 text-xs px-3"
-                  >
-                    Remove
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div 
-                onClick={() => document.getElementById('logo-upload')?.click()}
-                className="rounded-lg border border-dashed border-white/20 bg-black/20 backdrop-blur-sm hover:bg-black/30 transition-all cursor-pointer flex flex-col items-center justify-center h-20"
-              >
-                <Upload className="h-5 w-5 text-white/40 mb-1.5" />
-                <p className="text-xs text-white/70 mb-1">
-                  Select your logo
-                </p>
-                <Input
-                  id="logo-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleLogoChange}
-                  className="hidden"
-                />
-                <Button 
-                  type="button" 
-                  className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-6 text-xs px-3 py-0 hover:bg-indigo-500/30"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    document.getElementById('logo-upload')?.click();
-                  }}
-                >
-                  Select Logo
-                </Button>
-              </div>
-            )}
+            </div>
           </div>
         </div>
         
