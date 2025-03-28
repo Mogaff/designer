@@ -287,7 +287,7 @@ export default function AiFlyerForm({
         Upload your background image and logo, then enter a detailed prompt for your flyer design.
       </p>
       
-      <form onSubmit={handleSubmit} className="space-y-3 flex-grow flex flex-col">
+      <form onSubmit={handleSubmit} className="space-y-4 flex-grow flex flex-col">
         {/* Image Upload Cards Row - MOVED TO TOP */}
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
@@ -385,10 +385,10 @@ export default function AiFlyerForm({
           </div>
         </div>
         
-        <Separator className="bg-white/10 my-2" />
+        <Separator className="bg-white/10 my-4" />
         
         {/* Prompt Input - MOVED BELOW UPLOADS */}
-        <div className="space-y-1">
+        <div className="space-y-1 mb-4">
           <Label htmlFor="prompt" className="text-sm font-medium text-white/90">
             Prompt
           </Label>
@@ -428,13 +428,10 @@ export default function AiFlyerForm({
           </div>
         </div>
         
-        {/* Add spacer to push the button to the bottom */}
-        <div className="flex-grow"></div>
-        
-        {/* Generate Button - STAYS AT BOTTOM */}
+        {/* Generate Button - RIGHT UNDER PROMPT */}
         <Button
           type="submit"
-          className="w-full font-medium rounded-md bg-indigo-500/40 backdrop-blur-sm text-white hover:bg-indigo-500/60 border-0 h-10 mt-4"
+          className="w-full font-medium rounded-md bg-indigo-500/40 backdrop-blur-sm text-white hover:bg-indigo-500/60 border-0 h-10"
           disabled={isGenerating}
         >
           {isGenerating ? (
