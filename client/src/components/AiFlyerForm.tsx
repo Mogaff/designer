@@ -243,13 +243,13 @@ export default function AiFlyerForm({
     toast({
       title: `${category.charAt(0).toUpperCase() + category.slice(1)} suggestions`,
       description: (
-        <div className="mt-2 space-y-2">
+        <div className="mt-2 space-y-2 w-full">
           <p className="text-sm text-white/70 mb-2">Select a suggestion to add:</p>
-          <div className="grid grid-cols-1 gap-1.5 max-h-[300px] overflow-y-auto custom-scrollbar">
+          <div className="grid grid-cols-1 gap-1.5 max-h-[300px] overflow-y-auto custom-scrollbar w-full mx-0">
             {suggestionsList.map((suggestion, index) => (
               <button
                 key={index}
-                className="px-3 py-2 text-xs text-left rounded-md bg-indigo-500/30 hover:bg-indigo-500/50 text-white transition-colors w-full border border-indigo-500/30"
+                className="px-3 py-2 text-xs text-left rounded-md bg-indigo-500/30 hover:bg-indigo-500/50 text-white transition-colors w-full border border-indigo-500/30 m-0"
                 onClick={() => {
                   // Add suggestion to prompt
                   setPrompt(current => {
