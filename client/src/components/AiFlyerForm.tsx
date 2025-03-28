@@ -221,18 +221,18 @@ export default function AiFlyerForm({
           <div>
             <p className="text-xs text-white/80 mb-1 ml-1">Background</p>
             {/* Background Image Upload */}
-            <div className="relative aspect-square overflow-hidden rounded-lg border border-gray-800/50">
-              {/* Glass blur effect */}
-              <div className="absolute inset-0 bg-[#1E1F2E]/80 backdrop-blur-md z-0"></div>
+            <div className="relative aspect-square overflow-hidden rounded-xl group transition-all duration-200 border border-gray-800/50 hover:border-indigo-500/50">
+              {/* Ensuring all layers have the same rounded corners */}
+              <div className="absolute inset-0 rounded-xl bg-[#1E1F2E] z-0"></div>
               
               {backgroundImagePreview ? (
-                <div className="relative w-full h-full flex items-center justify-center z-10">
+                <div className="relative w-full h-full flex items-center justify-center z-10 rounded-xl overflow-hidden">
                   <img 
                     src={backgroundImagePreview} 
                     alt="Background Preview" 
                     className="max-h-full max-w-full object-contain"
                   />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/70">
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/70 rounded-xl">
                     <Button 
                       type="button" 
                       variant="destructive" 
@@ -245,7 +245,7 @@ export default function AiFlyerForm({
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-center h-full w-full relative z-10">
+                <div className="flex items-center justify-center h-full w-full relative z-10 rounded-xl">
                   <Input
                     id="background-image-upload"
                     type="file"
@@ -268,18 +268,18 @@ export default function AiFlyerForm({
           <div>
             <p className="text-xs text-white/80 mb-1 ml-1">Logo</p>
             {/* Logo Upload */}
-            <div className="relative aspect-square overflow-hidden rounded-lg border border-gray-800/50">
-              {/* Glass blur effect */}
-              <div className="absolute inset-0 bg-[#1E1F2E]/80 backdrop-blur-md z-0"></div>
+            <div className="relative aspect-square overflow-hidden rounded-xl group transition-all duration-200 border border-gray-800/50 hover:border-indigo-500/50">
+              {/* Ensuring all layers have the same rounded corners */}
+              <div className="absolute inset-0 rounded-xl bg-[#1E1F2E] z-0"></div>
               
               {logoPreview ? (
-                <div className="relative w-full h-full flex items-center justify-center z-10">
+                <div className="relative w-full h-full flex items-center justify-center z-10 rounded-xl overflow-hidden">
                   <img 
                     src={logoPreview} 
                     alt="Logo Preview" 
                     className="max-h-full max-w-full object-contain p-2" 
                   />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/70">
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/70 rounded-xl">
                     <Button 
                       type="button" 
                       variant="destructive" 
@@ -292,7 +292,7 @@ export default function AiFlyerForm({
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-center h-full w-full relative z-10">
+                <div className="flex items-center justify-center h-full w-full relative z-10 rounded-xl">
                   <Input
                     id="logo-upload"
                     type="file"
