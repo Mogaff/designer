@@ -106,9 +106,13 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
               )}
               {isGenerating && (
                 <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center">
-                  <div className="flex flex-col items-center">
-                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                    <p className="mt-2 text-xs font-medium text-white/90">Generating...</p>
+                  <div className="flex flex-col items-center p-6 max-w-xs text-center">
+                    <div className="h-10 w-10 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                    <p className="mt-3 text-sm font-medium text-white/90">AI is designing your flyer...</p>
+                    <p className="mt-2 text-xs text-white/70">This can take up to 30 seconds as we're leveraging AI to create a completely custom design for you.</p>
+                    <div className="w-full h-1.5 bg-white/10 rounded-full mt-4 overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 animate-pulse-slow rounded-full"></div>
+                    </div>
                   </div>
                 </div>
               )}

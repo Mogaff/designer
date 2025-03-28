@@ -255,8 +255,9 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
     const { stdout: chromiumPath } = await execAsync("which chromium");
     log(`Found Chromium at: ${chromiumPath.trim()}`, "gemini");
     
-    // Launch puppeteer
-    const browser = await puppeteer.launch({
+    // Launch puppeteer with a timeout
+    log("Launching Puppeteer browser...", "gemini");
+    const browserPromise = puppeteer.launch({
       headless: true,
       args: [
         "--no-sandbox", 
@@ -267,6 +268,14 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
       executablePath: chromiumPath.trim(),
     });
     
+    // Add a timeout for the browser launch
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("Browser launch timed out after 15 seconds")), 15000);
+    });
+    
+    const browser = await Promise.race([browserPromise, timeoutPromise]) as any;
+    log("Puppeteer browser launched successfully", "gemini");
+    
     try {
       const page = await browser.newPage();
       
@@ -274,17 +283,28 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
       await page.setViewport({
         width: 800,
         height: 1200,
-        deviceScaleFactor: 2,
+        deviceScaleFactor: 1.5, // Reduced from 2 to improve performance
       });
       
-      // Load the HTML file
-      await page.goto(`file://${htmlPath}`, { waitUntil: 'networkidle0' });
+      // Set a page timeout
+      await page.setDefaultNavigationTimeout(20000);
+      
+      // Load the HTML file with a timeout
+      log(`Loading HTML file: ${htmlPath}`, "gemini");
+      await page.goto(`file://${htmlPath}`, { 
+        waitUntil: 'domcontentloaded', // Changed from networkidle0 to improve speed
+        timeout: 10000
+      });
+      
+      // Wait for content to render
+      await page.waitForTimeout(1000);
       
       // Take screenshot
       log("Taking screenshot of the Gemini-generated flyer", "gemini");
       const screenshot = await page.screenshot({
         type: "png",
         fullPage: true,
+        quality: 80 // Slightly reduced quality for better performance
       });
       
       // Convert Uint8Array to Buffer

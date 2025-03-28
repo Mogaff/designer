@@ -118,7 +118,7 @@ export default function AiFlyerForm({
       // Get the error message
       let errorMessage = error instanceof Error ? error.message : "Failed to generate AI flyer";
       
-      // Check if it's a quota limit error
+      // Check specific error types
       if (errorMessage.includes("API quota limit reached")) {
         toast({
           title: "API Quota Limit Reached",
@@ -126,11 +126,26 @@ export default function AiFlyerForm({
           variant: "destructive",
           duration: 7000,
         });
+      } else if (errorMessage.includes("timed out") || errorMessage.includes("timeout")) {
+        toast({
+          title: "Generation Timed Out",
+          description: "The flyer generation took too long. Try again with a simpler prompt or fewer images.",
+          variant: "destructive",
+          duration: 7000,
+        });
+      } else if (error instanceof Response || (error as any).status === 504) {
+        toast({
+          title: "Request Timed Out",
+          description: "The server took too long to respond. Try a simpler prompt or try again later.",
+          variant: "destructive",
+          duration: 7000,
+        });
       } else {
         toast({
-          title: "Error",
-          description: errorMessage,
+          title: "Error Generating Flyer",
+          description: errorMessage.substring(0, 200), // Limit message length
           variant: "destructive",
+          duration: 7000,
         });
       }
     }

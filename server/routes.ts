@@ -31,12 +31,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
   // API endpoint to generate a flyer using Gemini AI
   app.post("/api/generate-ai", uploadFields, async (req: Request, res: Response) => {
+    // Set timeout for the request (45 seconds)
+    req.setTimeout(45000);
+    
+    // Use a timeout to catch hung requests
+    let isResponseSent = false;
+    const requestTimeout = setTimeout(() => {
+      if (!isResponseSent) {
+        isResponseSent = true;
+        log("Request timed out for AI flyer generation", "generator");
+        res.status(504).json({ 
+          message: "Flyer generation timed out. Please try again with a simpler prompt or fewer images."
+        });
+      }
+    }, 40000); // 40 seconds timeout
+    
     try {
       log("AI Flyer generation started", "generator");
       
       const { prompt } = req.body;
       
       if (!prompt) {
+        clearTimeout(requestTimeout);
         return res.status(400).json({ message: "Prompt is required" });
       }
       
@@ -66,28 +82,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
         generationOptions.logoBase64 = logoBase64;
       }
       
-      // Generate the flyer using Gemini AI
+      // Generate the flyer using Gemini AI with timeout handling
       const screenshot = await renderFlyerFromGemini(generationOptions);
       
       log("AI Flyer generation completed", "generator");
       
-      // Send the screenshot as response
-      res.contentType("image/png");
-      res.send(screenshot);
+      // Clear the timeout since we completed successfully
+      clearTimeout(requestTimeout);
+      
+      if (!isResponseSent) {
+        isResponseSent = true;
+        // Send the screenshot as response
+        res.contentType("image/png");
+        res.send(screenshot);
+      }
     } catch (error) {
       log(`Error generating AI flyer: ${error}`, "generator");
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       
-      // Handle API quota limit errors
-      if (errorMessage.includes("API quota limit reached")) {
-        // Send 429 Too Many Requests status code for quota limit errors
-        res.status(429).json({ 
-          message: errorMessage,
-          quotaExceeded: true
-        });
-      } else {
-        // Send 500 Internal Server Error for other errors
-        res.status(500).json({ message: `Failed to generate AI flyer: ${errorMessage}` });
+      // Clear the timeout
+      clearTimeout(requestTimeout);
+      
+      if (!isResponseSent) {
+        isResponseSent = true;
+        
+        // Handle API quota limit errors
+        if (errorMessage.includes("API quota limit reached")) {
+          // Send 429 Too Many Requests status code for quota limit errors
+          res.status(429).json({ 
+            message: errorMessage,
+            quotaExceeded: true
+          });
+        } else if (errorMessage.includes("timed out")) {
+          // Handle timeout errors
+          res.status(504).json({
+            message: "The request timed out. Please try again with a simpler prompt or fewer images."
+          });
+        } else {
+          // Send 500 Internal Server Error for other errors
+          res.status(500).json({ message: `Failed to generate AI flyer: ${errorMessage}` });
+        }
       }
     }
   });
