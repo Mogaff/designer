@@ -28,6 +28,58 @@ export default function AiFlyerForm({
   const [logo, setLogo] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const { toast } = useToast();
+  
+  // Suggestion categories with options for each
+  const suggestions = {
+    colors: [
+      "vibrant neon colors",
+      "elegant black and gold",
+      "minimalist monochrome",
+      "pastel gradient background",
+      "bold primary colors",
+      "muted earth tones",
+      "retro color palette",
+      "high contrast dark theme",
+      "soft blue and white",
+      "warm sunset gradient"
+    ],
+    layout: [
+      "asymmetrical grid layout",
+      "centered with large logo",
+      "text columns with images",
+      "split screen design",
+      "minimalist white space",
+      "3D layered elements",
+      "diagonal text alignment",
+      "circular centered design",
+      "overlapping elements",
+      "multi-panel comic style"
+    ],
+    typography: [
+      "elegant serif typography",
+      "bold sans-serif headlines",
+      "handwritten script accents",
+      "mixed font hierarchy",
+      "large dramatic headlines",
+      "thin minimalist typeface",
+      "vintage typewriter font",
+      "geometric modern fonts",
+      "3D perspective text",
+      "variable weight typography"
+    ],
+    effects: [
+      "subtle drop shadows",
+      "glass morphism effect",
+      "paper texture overlay",
+      "film grain texture",
+      "neon glow highlights",
+      "retro halftone pattern",
+      "geometric shape backgrounds",
+      "cut-out collage style",
+      "double exposure effect",
+      "watercolor brush elements"
+    ]
+  };
 
   const generateAiFlyerMutation = useMutation({
     mutationFn: async (data: AiFlyerGenerationRequest) => {
@@ -181,6 +233,29 @@ export default function AiFlyerForm({
     setLogo(null);
     setLogoPreview(null);
   };
+  
+  // Function to add a suggestion to the prompt
+  const addSuggestionToPrompt = (category: string) => {
+    // Get a random suggestion from this category
+    const suggestionsList = suggestions[category as keyof typeof suggestions];
+    const randomIndex = Math.floor(Math.random() * suggestionsList.length);
+    const suggestion = suggestionsList[randomIndex];
+    
+    // Add the suggestion to the prompt
+    setPrompt(current => {
+      const trimmedCurrent = current.trim();
+      return trimmedCurrent 
+        ? `${trimmedCurrent}, with ${suggestion}` 
+        : `Create a flyer with ${suggestion}`;
+    });
+    
+    // Show a toast notification
+    toast({
+      title: "Added to prompt",
+      description: `Added "${suggestion}" to your prompt`,
+      duration: 2000,
+    });
+  };
 
   return (
     <div className="h-full flex flex-col">
@@ -188,7 +263,7 @@ export default function AiFlyerForm({
         <h2 className="text-base font-semibold text-white">Create Flyer</h2>
       </div>
       
-      <div className="flex items-center px-2 py-2 bg-orange-500/30 backdrop-blur-sm text-white rounded-md border border-orange-300/20 mb-2">
+      <div className="flex items-center px-2 py-2 bg-orange-500/10 backdrop-blur-md text-white rounded-md border border-orange-300/10 mb-2">
         <AlertTriangle className="h-3 w-3 flex-shrink-0 mr-1 text-white" />
         <p className="text-xs">Include details about colors, layout, style, and content in your prompt.</p>
       </div>
@@ -212,10 +287,30 @@ export default function AiFlyerForm({
             className="block w-full resize-none bg-white/10 border-white/10 text-white placeholder:text-white/50 text-sm"
           />
           <div className="flex flex-wrap gap-1 mt-1">
-            <Badge className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0">colors</Badge>
-            <Badge className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0">layout</Badge>
-            <Badge className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0">typography</Badge>
-            <Badge className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0">effects</Badge>
+            <Badge 
+              className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0 cursor-pointer"
+              onClick={() => addSuggestionToPrompt('colors')}
+            >
+              colors
+            </Badge>
+            <Badge 
+              className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0 cursor-pointer"
+              onClick={() => addSuggestionToPrompt('layout')}
+            >
+              layout
+            </Badge>
+            <Badge 
+              className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0 cursor-pointer"
+              onClick={() => addSuggestionToPrompt('typography')}
+            >
+              typography
+            </Badge>
+            <Badge 
+              className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0 cursor-pointer"
+              onClick={() => addSuggestionToPrompt('effects')}
+            >
+              effects
+            </Badge>
           </div>
         </div>
         
