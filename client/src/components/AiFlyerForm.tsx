@@ -221,9 +221,12 @@ export default function AiFlyerForm({
           <div>
             <p className="text-xs text-white/80 mb-1 ml-1">Background</p>
             {/* Background Image Upload */}
-            <div className="relative overflow-hidden h-16 bg-[#1E1F2E] rounded-lg flex items-center justify-center border border-gray-800/50">
+            <div className="relative aspect-square overflow-hidden rounded-lg border border-gray-800/50">
+              {/* Glass blur effect */}
+              <div className="absolute inset-0 bg-[#1E1F2E]/80 backdrop-blur-md z-0"></div>
+              
               {backgroundImagePreview ? (
-                <div className="relative w-full h-full flex items-center justify-center">
+                <div className="relative w-full h-full flex items-center justify-center z-10">
                   <img 
                     src={backgroundImagePreview} 
                     alt="Background Preview" 
@@ -242,7 +245,7 @@ export default function AiFlyerForm({
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-center h-full">
+                <div className="flex items-center justify-center h-full w-full relative z-10">
                   <Input
                     id="background-image-upload"
                     type="file"
@@ -265,9 +268,12 @@ export default function AiFlyerForm({
           <div>
             <p className="text-xs text-white/80 mb-1 ml-1">Logo</p>
             {/* Logo Upload */}
-            <div className="relative overflow-hidden h-16 bg-[#1E1F2E] rounded-lg flex items-center justify-center border border-gray-800/50">
+            <div className="relative aspect-square overflow-hidden rounded-lg border border-gray-800/50">
+              {/* Glass blur effect */}
+              <div className="absolute inset-0 bg-[#1E1F2E]/80 backdrop-blur-md z-0"></div>
+              
               {logoPreview ? (
-                <div className="relative w-full h-full flex items-center justify-center">
+                <div className="relative w-full h-full flex items-center justify-center z-10">
                   <img 
                     src={logoPreview} 
                     alt="Logo Preview" 
@@ -286,7 +292,7 @@ export default function AiFlyerForm({
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-center h-full">
+                <div className="flex items-center justify-center h-full w-full relative z-10">
                   <Input
                     id="logo-upload"
                     type="file"
