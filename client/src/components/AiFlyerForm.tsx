@@ -219,101 +219,85 @@ export default function AiFlyerForm({
         {/* Image Upload Cards Row */}
         <div className="grid grid-cols-2 gap-4 mb-4">
           {/* Background Image Upload */}
-          <div className="relative overflow-hidden rounded-xl">
-            {/* Glow Effect Background */}
-            <div className="absolute inset-0 rounded-xl overflow-hidden">
-              <div className="absolute inset-0 bg-indigo-500/10 backdrop-blur-md"></div>
-            </div>
-            
-            <div className="relative p-4 h-full flex items-center justify-center">
-              {backgroundImagePreview ? (
-                <div className="relative w-full h-24 rounded-lg overflow-hidden bg-black/20 backdrop-blur-sm flex items-center justify-center">
-                  <img 
-                    src={backgroundImagePreview} 
-                    alt="Background Preview" 
-                    className="max-h-full max-w-full object-contain"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/50 backdrop-blur-sm">
-                    <Button 
-                      type="button" 
-                      variant="destructive" 
-                      size="sm" 
-                      onClick={clearBackgroundImage}
-                      className="rounded-md h-7 text-xs px-3"
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  <Input
-                    id="background-image-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleBackgroundImageChange}
-                    className="hidden"
-                  />
+          <div className="relative overflow-hidden h-16 bg-[#1E1F2E] rounded-lg flex items-center justify-center border border-gray-800/50">
+            {backgroundImagePreview ? (
+              <div className="relative w-full h-full flex items-center justify-center">
+                <img 
+                  src={backgroundImagePreview} 
+                  alt="Background Preview" 
+                  className="max-h-full max-w-full object-contain"
+                />
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/70">
                   <Button 
                     type="button" 
-                    className="bg-indigo-500/30 backdrop-blur-sm border-none text-white h-9 px-4 hover:bg-indigo-500/50"
-                    onClick={() => document.getElementById('background-image-upload')?.click()}
+                    variant="destructive" 
+                    size="sm" 
+                    onClick={clearBackgroundImage}
+                    className="rounded-md h-7 text-xs px-3"
                   >
-                    Select Background Image
+                    Remove
                   </Button>
                 </div>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <Input
+                  id="background-image-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleBackgroundImageChange}
+                  className="hidden"
+                />
+                <Button 
+                  type="button" 
+                  className="bg-[#383A62] text-white rounded-full px-5 h-8 text-sm hover:bg-[#4A4C7A] transition-colors"
+                  onClick={() => document.getElementById('background-image-upload')?.click()}
+                >
+                  Select Background Image
+                </Button>
+              </div>
+            )}
           </div>
           
           {/* Logo Upload */}
-          <div className="relative overflow-hidden rounded-xl">
-            {/* Glow Effect Background */}
-            <div className="absolute inset-0 rounded-xl overflow-hidden">
-              <div className="absolute inset-0 bg-indigo-500/10 backdrop-blur-md"></div>
-            </div>
-            
-            <div className="relative p-4 h-full flex items-center justify-center">
-              {logoPreview ? (
-                <div className="relative w-full h-24 rounded-lg overflow-hidden bg-black/20 backdrop-blur-sm flex items-center justify-center">
-                  <div className="p-2 flex items-center justify-center h-full w-full">
-                    <img 
-                      src={logoPreview} 
-                      alt="Logo Preview" 
-                      className="max-h-full max-w-full object-contain" 
-                    />
-                  </div>
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/50 backdrop-blur-sm">
-                    <Button 
-                      type="button" 
-                      variant="destructive" 
-                      size="sm" 
-                      onClick={clearLogo}
-                      className="rounded-md h-7 text-xs px-3"
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  <Input
-                    id="logo-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleLogoChange}
-                    className="hidden"
-                  />
+          <div className="relative overflow-hidden h-16 bg-[#1E1F2E] rounded-lg flex items-center justify-center border border-gray-800/50">
+            {logoPreview ? (
+              <div className="relative w-full h-full flex items-center justify-center">
+                <img 
+                  src={logoPreview} 
+                  alt="Logo Preview" 
+                  className="max-h-full max-w-full object-contain p-2" 
+                />
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/70">
                   <Button 
                     type="button" 
-                    className="bg-indigo-500/30 backdrop-blur-sm border-none text-white h-9 px-4 hover:bg-indigo-500/50"
-                    onClick={() => document.getElementById('logo-upload')?.click()}
+                    variant="destructive" 
+                    size="sm" 
+                    onClick={clearLogo}
+                    className="rounded-md h-7 text-xs px-3"
                   >
-                    Select Logo
+                    Remove
                   </Button>
                 </div>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <Input
+                  id="logo-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoChange}
+                  className="hidden"
+                />
+                <Button 
+                  type="button" 
+                  className="bg-[#383A62] text-white rounded-full px-5 h-8 text-sm hover:bg-[#4A4C7A] transition-colors"
+                  onClick={() => document.getElementById('logo-upload')?.click()}
+                >
+                  Select Logo
+                </Button>
+              </div>
+            )}
           </div>
         </div>
         
