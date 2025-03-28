@@ -295,7 +295,9 @@ export default function AiFlyerForm({
             {/* Background Image Upload */}
             <div className="relative aspect-square overflow-hidden rounded-xl group transition-all duration-200 border border-gray-800/50 hover:border-indigo-500/50">
               {/* Ensuring all layers have the same rounded corners */}
-              <div className="absolute inset-0 rounded-xl bg-[#1E1F2E] z-0"></div>
+              <div className="absolute inset-0 rounded-xl bg-[#1E1F2E] z-0 overflow-hidden">
+                <img src="/src/assets/background-gradient.png" alt="" className="w-full h-full object-cover opacity-90" />
+              </div>
               
               {backgroundImagePreview ? (
                 <div className="relative w-full h-full flex items-center justify-center z-10 rounded-xl overflow-hidden">
@@ -342,7 +344,9 @@ export default function AiFlyerForm({
             {/* Logo Upload */}
             <div className="relative aspect-square overflow-hidden rounded-xl group transition-all duration-200 border border-gray-800/50 hover:border-indigo-500/50">
               {/* Ensuring all layers have the same rounded corners */}
-              <div className="absolute inset-0 rounded-xl bg-[#1E1F2E] z-0"></div>
+              <div className="absolute inset-0 rounded-xl bg-[#1E1F2E] z-0 overflow-hidden">
+                <img src="/src/assets/logo-gradient.png" alt="" className="w-full h-full object-cover opacity-90" />
+              </div>
               
               {logoPreview ? (
                 <div className="relative w-full h-full flex items-center justify-center z-10 rounded-xl overflow-hidden">
