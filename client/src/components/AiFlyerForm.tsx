@@ -227,12 +227,14 @@ export default function AiFlyerForm({
           
           <div className="mt-1">
             {backgroundImagePreview ? (
-              <div className="relative rounded-md overflow-hidden border border-white/20 glass-panel h-16">
-                <img 
-                  src={backgroundImagePreview} 
-                  alt="Background Preview" 
-                  className="w-full h-full object-cover" 
-                />
+              <div className="relative rounded-md overflow-hidden border border-white/20 glass-panel h-20">
+                <div className="flex items-center justify-center h-full w-full">
+                  <img 
+                    src={backgroundImagePreview} 
+                    alt="Background Preview" 
+                    className="object-contain max-h-full max-w-full"
+                  />
+                </div>
                 <Button 
                   type="button" 
                   variant="destructive" 
@@ -282,12 +284,12 @@ export default function AiFlyerForm({
           
           <div className="mt-1">
             {logoPreview ? (
-              <div className="relative rounded-md overflow-hidden border border-white/20 glass-panel h-16">
-                <div className="flex items-center justify-center bg-white/10 h-full p-2">
+              <div className="relative rounded-md overflow-hidden border border-white/20 glass-panel h-20">
+                <div className="flex items-center justify-center h-full w-full bg-white/10">
                   <img 
                     src={logoPreview} 
                     alt="Logo Preview" 
-                    className="max-h-full max-w-full object-contain" 
+                    className="object-contain max-h-full max-w-full" 
                   />
                 </div>
                 <Button 
