@@ -234,26 +234,46 @@ export default function AiFlyerForm({
     setLogoPreview(null);
   };
   
-  // Function to add a suggestion to the prompt
+  // Function to show suggestions in a toast and let user pick one
   const addSuggestionToPrompt = (category: string) => {
-    // Get a random suggestion from this category
+    // Get suggestion list for this category
     const suggestionsList = suggestions[category as keyof typeof suggestions];
-    const randomIndex = Math.floor(Math.random() * suggestionsList.length);
-    const suggestion = suggestionsList[randomIndex];
     
-    // Add the suggestion to the prompt
-    setPrompt(current => {
-      const trimmedCurrent = current.trim();
-      return trimmedCurrent 
-        ? `${trimmedCurrent}, with ${suggestion}` 
-        : `Create a flyer with ${suggestion}`;
-    });
-    
-    // Show a toast notification
+    // Create a custom toast with all suggestions as buttons
     toast({
-      title: "Added to prompt",
-      description: `Added "${suggestion}" to your prompt`,
-      duration: 2000,
+      title: `${category.charAt(0).toUpperCase() + category.slice(1)} suggestions`,
+      description: (
+        <div className="mt-2 space-y-2">
+          <p className="text-sm text-muted-foreground mb-1">Select a suggestion to add to your prompt:</p>
+          <div className="grid grid-cols-1 gap-2 max-h-[200px] overflow-y-auto pr-1">
+            {suggestionsList.map((suggestion, index) => (
+              <button
+                key={index}
+                className="px-3 py-1.5 text-xs text-left rounded-md bg-indigo-500/20 hover:bg-indigo-500/30 text-white transition-colors w-full"
+                onClick={() => {
+                  // Add suggestion to prompt
+                  setPrompt(current => {
+                    const trimmedCurrent = current.trim();
+                    return trimmedCurrent 
+                      ? `${trimmedCurrent}, with ${suggestion}` 
+                      : `Create a flyer with ${suggestion}`;
+                  });
+                  
+                  // Show confirmation and dismiss all toasts
+                  toast({
+                    title: "Added to prompt",
+                    description: `Added "${suggestion}" to your prompt`,
+                    duration: 2000,
+                  });
+                }}
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        </div>
+      ),
+      duration: 15000, // Longer duration to give time to choose
     });
   };
 
