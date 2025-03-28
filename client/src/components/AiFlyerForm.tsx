@@ -28,58 +28,6 @@ export default function AiFlyerForm({
   const [logo, setLogo] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const { toast } = useToast();
-  
-  // Suggestion categories with options for each
-  const suggestions = {
-    colors: [
-      "vibrant neon colors",
-      "elegant black and gold",
-      "minimalist monochrome",
-      "pastel gradient background",
-      "bold primary colors",
-      "muted earth tones",
-      "retro color palette",
-      "high contrast dark theme",
-      "soft blue and white",
-      "warm sunset gradient"
-    ],
-    layout: [
-      "asymmetrical grid layout",
-      "centered with large logo",
-      "text columns with images",
-      "split screen design",
-      "minimalist white space",
-      "3D layered elements",
-      "diagonal text alignment",
-      "circular centered design",
-      "overlapping elements",
-      "multi-panel comic style"
-    ],
-    typography: [
-      "elegant serif typography",
-      "bold sans-serif headlines",
-      "handwritten script accents",
-      "mixed font hierarchy",
-      "large dramatic headlines",
-      "thin minimalist typeface",
-      "vintage typewriter font",
-      "geometric modern fonts",
-      "3D perspective text",
-      "variable weight typography"
-    ],
-    effects: [
-      "subtle drop shadows",
-      "glass morphism effect",
-      "paper texture overlay",
-      "film grain texture",
-      "neon glow highlights",
-      "retro halftone pattern",
-      "geometric shape backgrounds",
-      "cut-out collage style",
-      "double exposure effect",
-      "watercolor brush elements"
-    ]
-  };
 
   const generateAiFlyerMutation = useMutation({
     mutationFn: async (data: AiFlyerGenerationRequest) => {
@@ -233,49 +181,6 @@ export default function AiFlyerForm({
     setLogo(null);
     setLogoPreview(null);
   };
-  
-  // Function to show suggestions in a toast and let user pick one
-  const addSuggestionToPrompt = (category: string) => {
-    // Get suggestion list for this category
-    const suggestionsList = suggestions[category as keyof typeof suggestions];
-    
-    // Create a custom toast with all suggestions as buttons
-    toast({
-      title: `${category.charAt(0).toUpperCase() + category.slice(1)} suggestions`,
-      description: (
-        <div className="mt-2 space-y-2 w-full">
-          <p className="text-sm text-white/70 mb-2">Select a suggestion to add:</p>
-          <div className="grid grid-cols-1 gap-1.5 max-h-[300px] overflow-y-auto custom-scrollbar w-full mx-0">
-            {suggestionsList.map((suggestion, index) => (
-              <button
-                key={index}
-                className="px-3 py-2 text-xs text-left rounded-md bg-indigo-500/30 hover:bg-indigo-500/50 text-white transition-colors w-full border border-indigo-500/30 m-0"
-                onClick={() => {
-                  // Add suggestion to prompt
-                  setPrompt(current => {
-                    const trimmedCurrent = current.trim();
-                    return trimmedCurrent 
-                      ? `${trimmedCurrent}, with ${suggestion}` 
-                      : `Create a flyer with ${suggestion}`;
-                  });
-                  
-                  // Show confirmation and dismiss all toasts
-                  toast({
-                    title: "Added to prompt",
-                    description: `Added "${suggestion}" to your prompt`,
-                    duration: 2000,
-                  });
-                }}
-              >
-                {suggestion}
-              </button>
-            ))}
-          </div>
-        </div>
-      ),
-      duration: 20000, // Longer duration to give time to choose
-    });
-  };
 
   return (
     <div className="h-full flex flex-col">
@@ -284,20 +189,41 @@ export default function AiFlyerForm({
       </div>
       
       <p className="text-xs text-white/70 mb-3">
-        Upload your background image and logo, then enter a detailed prompt for your flyer design.
+        Enter a detailed prompt and optionally upload background image and logo for your flyer.
       </p>
       
-      <form onSubmit={handleSubmit} className="space-y-4 flex-grow flex flex-col">
-        {/* Image Upload Cards Row - MOVED TO TOP */}
+      <form onSubmit={handleSubmit} className="space-y-3 flex-grow flex flex-col">
+        {/* Prompt Input */}
+        <div className="space-y-1">
+          <Label htmlFor="prompt" className="text-sm font-medium text-white/90">
+            Prompt
+          </Label>
+          <Textarea
+            id="prompt"
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            rows={4}
+            placeholder="Be specific! Example: 'Create a bold tech event flyer with minimalist layout. Event: FUTURE TECH 2025, March 15-17 at Innovation Center. Include AI workshops and VR experiences.'"
+            className="block w-full resize-none bg-white/10 border-white/10 text-white placeholder:text-white/50 text-sm"
+          />
+          <div className="flex flex-wrap gap-1 mt-1">
+            <Badge className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0">colors</Badge>
+            <Badge className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0">layout</Badge>
+            <Badge className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0">typography</Badge>
+            <Badge className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0">effects</Badge>
+          </div>
+        </div>
+        
+        <Separator className="bg-white/10 my-2" />
+        
+        {/* Image Upload Cards Row */}
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <p className="text-xs text-white/80 mb-1 ml-1">Background</p>
             {/* Background Image Upload */}
             <div className="relative aspect-square overflow-hidden rounded-xl group transition-all duration-200 border border-gray-800/50 hover:border-indigo-500/50">
               {/* Ensuring all layers have the same rounded corners */}
-              <div className="absolute inset-0 rounded-xl bg-[#1E1F2E] z-0 overflow-hidden">
-                <img src="/src/assets/background-gradient.png" alt="" className="w-full h-full object-cover opacity-90" />
-              </div>
+              <div className="absolute inset-0 rounded-xl bg-[#1E1F2E] z-0"></div>
               
               {backgroundImagePreview ? (
                 <div className="relative w-full h-full flex items-center justify-center z-10 rounded-xl overflow-hidden">
@@ -329,7 +255,7 @@ export default function AiFlyerForm({
                   />
                   <Button 
                     type="button" 
-                    className="bg-[#1A1B29] text-white rounded-full w-32 h-8 text-sm hover:bg-[#2D2E3D] transition-all shadow-md hover:shadow-indigo-500/20"
+                    className="bg-[#383A62] text-white rounded-full w-32 h-8 text-sm hover:bg-[#4A4C7A] transition-colors"
                     onClick={() => document.getElementById('background-image-upload')?.click()}
                   >
                     Select Image
@@ -344,9 +270,7 @@ export default function AiFlyerForm({
             {/* Logo Upload */}
             <div className="relative aspect-square overflow-hidden rounded-xl group transition-all duration-200 border border-gray-800/50 hover:border-indigo-500/50">
               {/* Ensuring all layers have the same rounded corners */}
-              <div className="absolute inset-0 rounded-xl bg-[#1E1F2E] z-0 overflow-hidden">
-                <img src="/src/assets/logo-gradient.png" alt="" className="w-full h-full object-cover opacity-90" />
-              </div>
+              <div className="absolute inset-0 rounded-xl bg-[#1E1F2E] z-0"></div>
               
               {logoPreview ? (
                 <div className="relative w-full h-full flex items-center justify-center z-10 rounded-xl overflow-hidden">
@@ -378,7 +302,7 @@ export default function AiFlyerForm({
                   />
                   <Button 
                     type="button" 
-                    className="bg-[#1A1B29] text-white rounded-full w-32 h-8 text-sm hover:bg-[#2D2E3D] transition-all shadow-md hover:shadow-indigo-500/20"
+                    className="bg-[#383A62] text-white rounded-full w-32 h-8 text-sm hover:bg-[#4A4C7A] transition-colors"
                     onClick={() => document.getElementById('logo-upload')?.click()}
                   >
                     Select Logo
@@ -389,69 +313,26 @@ export default function AiFlyerForm({
           </div>
         </div>
         
-        <Separator className="bg-white/10 my-4" />
-        
-        {/* Prompt Input - MOVED BELOW UPLOADS */}
-        <div className="space-y-1 mb-4">
-          <Label htmlFor="prompt" className="text-sm font-medium text-white/90">
-            Prompt
-          </Label>
-          <Textarea
-            id="prompt"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            rows={4}
-            placeholder="Be specific! Example: 'Create a bold tech event flyer with minimalist layout. Event: FUTURE TECH 2025, March 15-17 at Innovation Center. Include AI workshops and VR experiences.'"
-            className="block w-full resize-none bg-white/10 border-white/10 text-white placeholder:text-white/50 text-sm"
-          />
-          <div className="flex flex-wrap gap-1 mt-1">
-            <Badge 
-              className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0 cursor-pointer"
-              onClick={() => addSuggestionToPrompt('colors')}
-            >
-              colors
-            </Badge>
-            <Badge 
-              className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0 cursor-pointer"
-              onClick={() => addSuggestionToPrompt('layout')}
-            >
-              layout
-            </Badge>
-            <Badge 
-              className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0 cursor-pointer"
-              onClick={() => addSuggestionToPrompt('typography')}
-            >
-              typography
-            </Badge>
-            <Badge 
-              className="bg-white/10 text-white border-white/20 hover:bg-white/20 text-xs py-0 cursor-pointer"
-              onClick={() => addSuggestionToPrompt('effects')}
-            >
-              effects
-            </Badge>
-          </div>
+        <div className="flex items-center px-2 py-2 bg-gray-800/30 backdrop-blur-sm text-white rounded-md border border-white/10">
+          <AlertTriangle className="h-3 w-3 flex-shrink-0 mr-1 text-white" />
+          <p className="text-xs">Include details about colors, layout, style, and content in your prompt.</p>
         </div>
         
-        {/* Generate Button - RIGHT UNDER PROMPT */}
-        <div className="relative w-full overflow-hidden">
-          <Button
-            type="submit"
-            className="w-full font-medium rounded-md bg-black/50 backdrop-blur-sm text-white hover:bg-indigo-500/50 border border-indigo-500/30 h-10 shadow-lg shadow-black/30 transition-all duration-300 hover:shadow-indigo-500/30 hover:border-indigo-500/50 group"
-            disabled={isGenerating}
-          >
-            {isGenerating ? (
-              <>
-                <span>Creating Design...</span>
-                <div className="ml-2 h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-              </>
-            ) : (
-              <>
-                <span>Generate Design</span>
-                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-              </>
-            )}
-          </Button>
-        </div>
+        {/* Generate Button */}
+        <Button
+          type="submit"
+          className="w-full font-medium rounded-md bg-indigo-500/40 backdrop-blur-sm text-white hover:bg-indigo-500/60 border-0 h-10 mt-auto"
+          disabled={isGenerating}
+        >
+          {isGenerating ? (
+            <>
+              <span>Creating Design...</span>
+              <div className="ml-2 h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+            </>
+          ) : (
+            <span>Generate Design</span>
+          )}
+        </Button>
       </form>
     </div>
   );

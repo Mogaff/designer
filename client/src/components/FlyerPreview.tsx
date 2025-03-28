@@ -71,29 +71,17 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
         </div>
       </div>
       
-      <div className="relative bg-black/40 backdrop-blur-md rounded-xl border border-white/10 p-3 flex flex-col items-center flex-grow overflow-hidden">
-        {/* Crossed lines background pattern */}
-        <div className="absolute inset-0 z-0" style={{ 
-          backgroundImage: `
-            linear-gradient(0deg, transparent 98%, #3D3E50 98%, #3D3E50 100%, transparent 100%),
-            linear-gradient(90deg, transparent 98%, #3D3E50 98%, #3D3E50 100%, transparent 100%),
-            linear-gradient(45deg, transparent 96%, #333444 96%, #333444 100%, transparent 100%),
-            linear-gradient(-45deg, transparent 96%, #333444 96%, #333444 100%, transparent 100%)
-          `, 
-          backgroundSize: '30px 30px, 30px 30px, 60px 60px, 60px 60px',
-          opacity: 0.45
-        }}></div>
-        
+      <div className="bg-black/40 backdrop-blur-md rounded-xl border border-white/10 p-3 flex flex-col items-center flex-grow">
         {!generatedFlyer && !isGenerating ? (
-          <div className="flex flex-col items-center justify-center py-6 px-4 text-center h-full relative z-10">
-            <div className="glass-panel p-3 rounded-full mb-2 bg-black/30 backdrop-blur-md">
+          <div className="flex flex-col items-center justify-center py-6 px-4 text-center h-full">
+            <div className="glass-panel p-3 rounded-full mb-2">
               <Image className="h-8 w-8 text-white/70" />
             </div>
             <h3 className="text-base font-medium text-white/90 mb-1">Your flyer will appear here</h3>
             <p className="text-xs text-white/60 max-w-xs">Fill out the form and click "Generate Design"</p>
           </div>
         ) : (
-          <div className="w-full h-full flex items-center justify-center overflow-hidden max-h-[calc(100vh-200px)] relative z-10">
+          <div className="w-full h-full flex items-center justify-center overflow-hidden max-h-[calc(100vh-200px)]">
             <div className="relative page-preview rounded-xl overflow-hidden border border-white/20" style={{ maxHeight: '100%', maxWidth: '100%' }}>
               {generatedFlyer && (
                 <img 
