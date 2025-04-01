@@ -49,13 +49,13 @@ export default function Header() {
           {/* Pill navigation */}
           <div className="pill-nav">
             <Link href="/">
-              <button className={`pill-nav-item text-xs py-1 px-3 ${location === '/' ? 'active' : ''}`}>
+              <button type="button" className={`pill-nav-item text-xs py-1 px-3 ${location === '/' ? 'active' : ''}`}>
                 Home
               </button>
             </Link>
-            <Link href="/gallery">
-              <button className={`pill-nav-item text-xs py-1 px-3 ${location === '/gallery' ? 'active' : ''}`}>
-                Gallery
+            <Link href="/credits">
+              <button type="button" className={`pill-nav-item text-xs py-1 px-3 ${location === '/credits' ? 'active' : ''}`}>
+                Credits
               </button>
             </Link>
           </div>
