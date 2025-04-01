@@ -7,7 +7,7 @@ import { FcGoogle } from 'react-icons/fc';
 import { GridMotion } from '@/components/ui/grid-motion';
 import { designImages } from '@/assets/images';
 import { useIsMobile } from '@/hooks/use-mobile';
-import meshGradient from '@assets/image-mesh-gradient (20).png';
+import meshGradient from '@assets/Bildschirmfoto 2025-04-02 um 01.54.14.png';
 
 export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,11 +57,13 @@ export default function Login() {
       {/* Content - Minimalist version */}
       <div className="relative z-20 flex justify-center items-center min-h-screen">
         <div 
-          className="rounded-md p-4 shadow-md" 
+          className="rounded-xl p-3 shadow-xl" 
           style={{
             backgroundImage: `url(${meshGradient})`,
             backgroundSize: 'cover',
-            backgroundPosition: 'center'
+            backgroundPosition: 'center',
+            width: '230px',
+            border: '1px solid rgba(255,255,255,0.1)'
           }}
         >
           <button 
