@@ -1,5 +1,4 @@
 import React from 'react';
-import { PricingInteraction } from "../components/ui/pricing-interaction";
 import { useAuth } from "../contexts/AuthContext";
 import { useLocation } from 'wouter';
 import { Badge } from '@/components/ui/badge';
@@ -162,18 +161,7 @@ export default function Pricing() {
             </button>
           </div>
         </div>
-        
-        <div className="my-16 max-w-3xl mx-auto">
-          <h2 className="text-2xl font-bold text-white mb-8 text-center">Or Try Our Interactive Pricing Calculator</h2>
-          <div className="flex justify-center">
-            <PricingInteraction
-              starterMonth={9.99}
-              starterAnnual={7.49}
-              proMonth={19.99}
-              proAnnual={17.49}
-            />
-          </div>
-        </div>
+
         
         <div className="max-w-3xl mx-auto p-6 border border-indigo-500/30 rounded-xl bg-black/20 backdrop-blur-sm mt-8">
           <h2 className="text-xl font-bold text-white mb-4">Frequently Asked Questions</h2>
