@@ -2,6 +2,7 @@ import React from 'react';
 import { PricingInteraction } from "../components/ui/pricing-interaction";
 import { useAuth } from "../contexts/AuthContext";
 import { useLocation } from 'wouter';
+import { ArrowLeft } from 'lucide-react';
 import pricingBgGradient from '../assets/pricing-bg-gradient.png';
 
 export default function Pricing() {
@@ -21,6 +22,15 @@ export default function Pricing() {
       
       {/* Overlay for better text readability */}
       <div className="absolute inset-0 bg-black/30 -z-10" />
+      
+      {/* Back button */}
+      <button 
+        onClick={() => setLocation('/')}
+        className="absolute top-6 left-6 p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all duration-300 shadow-lg group z-10"
+        aria-label="Back to generator"
+      >
+        <ArrowLeft className="size-5 group-hover:scale-110 transition-transform duration-300" />
+      </button>
       
       <div className="container mx-auto px-4 py-16 flex-grow flex flex-col items-center justify-center">
         <div className="text-center max-w-3xl mx-auto mb-16">
