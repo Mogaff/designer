@@ -52,8 +52,18 @@ export default function Header() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="text-white hover:text-white hover:bg-white/10 bg-transparent border-white/20">
-                  <User className="h-4 w-4 mr-1" />
-                  {user?.email || 'Account'}
+                  {user?.photoURL ? (
+                    <img 
+                      src={user.photoURL} 
+                      alt={user.displayName || 'User'} 
+                      className="h-5 w-5 rounded-full mr-2" 
+                    />
+                  ) : (
+                    <User className="h-4 w-4 mr-1" />
+                  )}
+                  <span className="max-w-[100px] truncate">
+                    {user?.displayName || user?.email || 'Account'}
+                  </span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">

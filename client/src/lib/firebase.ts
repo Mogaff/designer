@@ -2,8 +2,8 @@
 import { initializeApp } from 'firebase/app';
 import { 
   getAuth, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
   signOut,
   onAuthStateChanged
 } from 'firebase/auth';
@@ -24,11 +24,14 @@ const app = initializeApp(firebaseConfig, 'haitu-app');
 // Initialize Firebase Authentication
 const auth = getAuth(app);
 
+// Create a Google Auth Provider
+const googleProvider = new GoogleAuthProvider();
+
 // Export auth services
 export { 
   auth, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword,
+  signInWithPopup,
+  googleProvider,
   signOut,
   onAuthStateChanged
 };

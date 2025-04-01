@@ -2,8 +2,8 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { useToast } from '@/hooks/use-toast';
 import { 
   auth, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
+  signInWithPopup,
+  googleProvider,
   signOut,
   onAuthStateChanged
 } from '@/lib/firebase';
@@ -21,8 +21,7 @@ type AuthContextType = {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -31,8 +30,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   isLoading: true,
   isAuthenticated: false,
-  login: async () => {},
-  register: async () => {},
+  signInWithGoogle: async () => {},
   logout: async () => {},
 });
 
@@ -67,63 +65,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
-  // Login function
-  const login = async (email: string, password: string) => {
+  // Google Sign-in function
+  const signInWithGoogle = async () => {
     try {
       setIsLoading(true);
-      await signInWithEmailAndPassword(auth, email, password);
+      await signInWithPopup(auth, googleProvider);
       toast({
         title: 'Login Successful',
-        description: 'Welcome back!',
+        description: 'Welcome! You are now signed in with Google.',
       });
     } catch (error: any) {
-      let errorMessage = 'Failed to login';
+      let errorMessage = 'Failed to sign in with Google';
       
       // Firebase auth error handling
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-        errorMessage = 'Invalid email or password';
-      } else if (error.code === 'auth/too-many-requests') {
-        errorMessage = 'Too many failed attempts. Please try again later.';
+      if (error.code === 'auth/popup-closed-by-user') {
+        errorMessage = 'Sign-in cancelled. Please try again.';
+      } else if (error.code === 'auth/popup-blocked') {
+        errorMessage = 'Sign-in popup was blocked. Please enable popups for this site.';
       } else if (error.code) {
         errorMessage = `Authentication error: ${error.code}`;
       }
       
       toast({
         title: 'Login Failed',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Register function
-  const register = async (email: string, password: string) => {
-    try {
-      setIsLoading(true);
-      await createUserWithEmailAndPassword(auth, email, password);
-      toast({
-        title: 'Registration Successful',
-        description: 'Your account has been created! You are now logged in.',
-      });
-    } catch (error: any) {
-      let errorMessage = 'Failed to create account';
-      
-      // Firebase auth error handling
-      if (error.code === 'auth/email-already-in-use') {
-        errorMessage = 'Email address is already in use';
-      } else if (error.code === 'auth/invalid-email') {
-        errorMessage = 'Invalid email address';
-      } else if (error.code === 'auth/weak-password') {
-        errorMessage = 'Password is too weak';
-      } else if (error.code) {
-        errorMessage = `Registration error: ${error.code}`;
-      }
-      
-      toast({
-        title: 'Registration Failed',
         description: errorMessage,
         variant: 'destructive',
       });
@@ -158,8 +122,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user,
     isLoading,
     isAuthenticated: !!user,
-    login,
-    register,
+    signInWithGoogle,
     logout,
   };
 
