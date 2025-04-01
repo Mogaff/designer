@@ -357,24 +357,31 @@ export default function AiFlyerForm({
         </div>
         
         {/* Design Count Selector */}
-        <div className="space-y-1">
+        <div className="space-y-2">
           <Label htmlFor="designCount" className="text-sm font-medium text-white/90">
             Number of Designs
           </Label>
-          <Select
-            value={designCount}
-            onValueChange={setDesignCount}
-          >
-            <SelectTrigger className="w-full bg-white/10 border-white/10 text-white">
-              <SelectValue placeholder="Select number of designs" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1">1 Design</SelectItem>
-              <SelectItem value="2">2 Designs</SelectItem>
-              <SelectItem value="3">3 Designs</SelectItem>
-              <SelectItem value="4">4 Designs</SelectItem>
-            </SelectContent>
-          </Select>
+          
+          <div className="grid grid-cols-4 gap-3">
+            {[1, 2, 3, 4].map((num) => (
+              <button
+                key={num}
+                type="button"
+                onClick={() => setDesignCount(num.toString())}
+                className={`
+                  h-16 rounded-xl flex items-center justify-center transition-all duration-300
+                  ${parseInt(designCount) === num 
+                    ? 'bg-indigo-500/50 border-indigo-400/80 text-white shadow-lg backdrop-blur-md scale-105 transform' 
+                    : 'bg-white/10 border-gray-800/50 text-white/80 hover:bg-indigo-500/30 backdrop-blur-sm hover:scale-[1.02]'}
+                  border hover:border-indigo-500/40 focus:outline-none focus:ring-1 focus:ring-indigo-500
+                  active:scale-95 hover:shadow-md
+                `}
+              >
+                <span className={`text-2xl font-semibold ${parseInt(designCount) === num ? 'text-white' : 'text-white/90'}`}>{num}</span>
+              </button>
+            ))}
+          </div>
+          
           <p className="text-xs text-white/60 mt-1">
             Choose how many design variations to generate.
           </p>
