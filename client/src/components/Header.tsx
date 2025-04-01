@@ -1,4 +1,4 @@
-import { Menu, Home, LucideImage, LogIn, LogOut, User, CreditCard, Star } from "lucide-react";
+import { Menu, Home, LucideImage, LogIn, LogOut, User, CreditCard, Star, DollarSign } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -51,6 +51,12 @@ export default function Header() {
             <Link href="/">
               <button type="button" className={`pill-nav-item text-xs py-1 px-3 ${location === '/' ? 'active' : ''}`}>
                 Home
+              </button>
+            </Link>
+            <Link href="/pricing">
+              <button type="button" className={`pill-nav-item text-xs py-1 px-3 ${location === '/pricing' ? 'active' : ''}`}>
+                <DollarSign className="h-3 w-3 inline mr-1" />
+                Pricing
               </button>
             </Link>
             <Link href="/credits">
@@ -123,6 +129,13 @@ export default function Header() {
                   <DropdownMenuItem>
                     <CreditCard className="h-4 w-4 mr-2" />
                     Get More Credits
+                  </DropdownMenuItem>
+                </Link>
+                
+                <Link href="/pricing">
+                  <DropdownMenuItem>
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    View Pricing Plans
                   </DropdownMenuItem>
                 </Link>
                 

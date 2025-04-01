@@ -63,13 +63,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         designConfig = configs.find(c => c.active) || configs[0];
       }
       
+      // Calculate credits required based on number of designs
+      const creditsPerDesign = designConfig.credits_per_design;
+      const totalRequiredCredits = creditsPerDesign * maxDesigns;
+      
       // Check if user has enough credits
-      const requiredCredits = designConfig.credits_per_design;
-      if (user.credits_balance < requiredCredits) {
+      if (user.credits_balance < totalRequiredCredits) {
         return res.status(403).json({ 
           message: "Insufficient credits",
-          creditsRequired: requiredCredits,
-          creditsAvailable: user.credits_balance
+          creditsRequired: totalRequiredCredits,
+          creditsAvailable: user.credits_balance,
+          designCount: maxDesigns
         });
       }
       
@@ -160,10 +164,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       log("AI Flyer generation completed", "generator");
       
-      // Subtract credits for the successful generation
+      // Subtract credits for the successful generation based on how many designs were generated
       await storage.addCreditsTransaction({
         user_id: userId,
-        amount: requiredCredits,
+        amount: totalRequiredCredits,
         transaction_type: 'subtract',
         description: `Generated ${successfulDesigns.length} flyer designs`
       });
@@ -176,7 +180,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         designs: designData,
         credits: {
           balance: updatedUser?.credits_balance,
-          used: requiredCredits
+          used: totalRequiredCredits
         }
       });
     } catch (error) {
