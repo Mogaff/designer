@@ -10,21 +10,16 @@ import {
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyA84jOtKbd_aFr07gt4EKH_md_XVhX-RZw",
-  authDomain: "dieseiner-7c81b.firebaseapp.com",
-  projectId: "dieseiner-7c81b",
-  storageBucket: "dieseiner-7c81b.appspot.com",
-  messagingSenderId: "1036981554541",
-  appId: "1:1036981554541:web:be9d2d84f7d7b83abc85b8"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-// Initialize Firebase
-let app;
-try {
-  app = initializeApp(firebaseConfig);
-} catch (error) {
-  console.error('Firebase initialization error:', error);
-}
+// Initialize Firebase with a unique name to avoid duplicate app initialization
+const app = initializeApp(firebaseConfig, 'haitu-app');
 
 // Initialize Firebase Authentication
 const auth = getAuth(app);
