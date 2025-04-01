@@ -86,20 +86,11 @@ export function GridMotion({
                 return (
                   <div key={itemIndex} className="relative">
                     <div className="relative h-full w-full overflow-hidden rounded-lg bg-muted flex items-center justify-center text-foreground text-xl">
-                      {typeof content === 'string' ? (
-                        <div
-                          className="absolute inset-0 bg-cover bg-center"
-                          style={{
-                            backgroundImage: `url(${content})`,
-                          }}
-                        />
-                      ) : (
-                        <img 
-                          src={content as string} 
-                          alt="Design example"
-                          className="h-full w-full object-cover"
-                        />
-                      )}
+                      <img 
+                        src={content as string} 
+                        alt="Design example"
+                        className="h-full w-full object-cover hover:scale-105 transition-transform duration-500 opacity-90 hover:opacity-100"
+                      />
                     </div>
                   </div>
                 )

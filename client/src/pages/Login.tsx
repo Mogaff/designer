@@ -46,12 +46,12 @@ export default function Login() {
       <div className="absolute inset-0 z-0">
         <GridMotion 
           items={imageItems} 
-          gradientColor="rgba(0,0,0,0.7)"
+          gradientColor="rgba(0,0,0,0.3)"
         />
       </div>
       
-      {/* Overlay with gradient */}
-      <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/80 via-black/50 to-black/80" />
+      {/* Overlay with gradient - lighter opacity */}
+      <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/40 via-black/20 to-black/40" />
       
       {/* Content */}
       <div className="relative z-20 container mx-auto flex flex-col justify-center items-center min-h-screen p-4">
@@ -62,7 +62,7 @@ export default function Login() {
           </p>
         </div>
         
-        <Card className="w-full max-w-md border-0 bg-black/50 backdrop-blur-lg text-white">
+        <Card className="w-full max-w-md border-0 bg-black/30 backdrop-blur-md text-white border border-white/10">
           <CardHeader className="text-center border-b border-white/10 pb-4">
             <CardTitle className="text-2xl text-white">Sign In</CardTitle>
           </CardHeader>
