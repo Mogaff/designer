@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { FcGoogle } from 'react-icons/fc';
 
-// Import a single gradient image for fallback
-import gradientBg from '../assets/image-mesh-gradient (13).png';
+// Import background image
+import loginBg from '../assets/login-background.png';
 
 export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,32 +47,18 @@ export default function Login() {
   };
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-indigo-950">
-      {/* Background Grid with Parallax Effect */}
+    <div className="relative min-h-screen w-full overflow-hidden">
+      {/* Background Image with Parallax Effect */}
       <div 
-        className="absolute inset-0 grid grid-cols-3 grid-rows-3 gap-4 p-6 -z-10"
+        className="absolute inset-0 bg-cover bg-center -z-10"
         style={{
-          transform: `translateX(${mousePosition.x * -30}px) translateY(${mousePosition.y * -30}px)`
+          backgroundImage: `url(${loginBg})`,
+          transform: `scale(1.1) translateX(${mousePosition.x * -20}px) translateY(${mousePosition.y * -20}px)`
         }}
-      >
-        {/* First row */}
-        <div className="bg-cover bg-center rounded-lg opacity-75" style={{ backgroundImage: `url('/temp/design1.png')` }}></div>
-        <div className="bg-cover bg-center rounded-lg opacity-75" style={{ backgroundImage: `url('/temp/design2.png')` }}></div>
-        <div className="bg-cover bg-center rounded-lg opacity-75" style={{ backgroundImage: `url('/temp/design3.png')` }}></div>
-        
-        {/* Second row */}
-        <div className="bg-cover bg-center rounded-lg opacity-75" style={{ backgroundImage: `url('/temp/design4.png')` }}></div>
-        <div className="bg-cover bg-center rounded-lg opacity-75" style={{ backgroundImage: `url('/temp/design5.png')` }}></div>
-        <div className="bg-cover bg-center rounded-lg opacity-75" style={{ backgroundImage: `url('/temp/design6.png')` }}></div>
-        
-        {/* Third row */}
-        <div className="bg-cover bg-center rounded-lg opacity-75" style={{ backgroundImage: `url('/temp/design7.png')` }}></div>
-        <div className="bg-cover bg-center rounded-lg opacity-75" style={{ backgroundImage: `url('/temp/design8.png')` }}></div>
-        <div className="bg-cover bg-center rounded-lg opacity-75" style={{ backgroundImage: `url('/temp/design9.png')` }}></div>
-      </div>
+      ></div>
       
       {/* Background gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-indigo-950/80 to-black/80 -z-5"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-indigo-950/60 to-black/70 -z-5"></div>
       
       {/* Login Card with Glass Effect */}
       <div className="container mx-auto flex justify-center items-center min-h-screen p-4 relative z-10">
