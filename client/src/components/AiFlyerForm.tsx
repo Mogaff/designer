@@ -341,19 +341,35 @@ export default function AiFlyerForm({
           </div>
         </div>
         
-        {/* Prompt Input */}
+        {/* Prompt Input with Generate Button */}
         <div className="space-y-1">
-          <Label htmlFor="prompt" className="text-sm font-medium text-white/90">
+          <Label htmlFor="prompt" className="text-xs font-medium text-white/70">
             Prompt
           </Label>
-          <Textarea
-            id="prompt"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            rows={4}
-            placeholder="Be specific! Example: 'Create a bold tech event design with minimalist layout. Event: FUTURE TECH 2025, March 15-17 at Innovation Center. Include AI workshops and VR experiences.'"
-            className="block w-full resize-none bg-white/10 border-white/10 text-white placeholder:text-white/50 text-sm"
-          />
+          <div className="relative">
+            <Textarea
+              id="prompt"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              rows={4}
+              placeholder="Be specific! Example: 'Create a bold tech event design with minimalist layout. Event: FUTURE TECH 2025, March 15-17 at Innovation Center. Include AI workshops and VR experiences.'"
+              className="block w-full resize-none bg-white/10 border-white/10 text-white placeholder:text-white/50 text-sm pr-24"
+            />
+            <Button
+              type="submit"
+              className="absolute bottom-3 right-3 px-3 py-1 h-8 text-xs font-medium rounded-md bg-indigo-500/40 backdrop-blur-md text-white hover:bg-indigo-500/60 border border-indigo-500/40 shadow-md transition-all"
+              disabled={isGenerating}
+            >
+              {isGenerating ? (
+                <>
+                  <span>Generating</span>
+                  <div className="ml-1.5 h-2.5 w-2.5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                </>
+              ) : (
+                <span>Generate</span>
+              )}
+            </Button>
+          </div>
         </div>
         
         {/* Design Count Selector */}
@@ -386,22 +402,6 @@ export default function AiFlyerForm({
             Number of variations to generate
           </p>
         </div>
-        
-        {/* Generate Button */}
-        <Button
-          type="submit"
-          className="w-full font-medium rounded-md bg-indigo-500/40 backdrop-blur-md text-white hover:bg-indigo-500/60 border border-indigo-500/40 shadow-lg transition-all h-10 mt-auto"
-          disabled={isGenerating}
-        >
-          {isGenerating ? (
-            <>
-              <span>Creating Design...</span>
-              <div className="ml-2 h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-            </>
-          ) : (
-            <span>Generate Design</span>
-          )}
-        </Button>
       </form>
     </div>
   );
