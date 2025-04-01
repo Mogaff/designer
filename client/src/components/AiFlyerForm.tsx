@@ -59,10 +59,19 @@ export default function AiFlyerForm({
       
       setIsGenerating(false);
       
-      toast({
-        title: "Success!",
-        description: `Generated ${data.designs.length} design variations for you to choose from.`,
-      });
+      // Show different messages based on how many designs were generated
+      if (data.designs.length >= 4) {
+        toast({
+          title: "Success!",
+          description: `Generated ${data.designs.length} design variations for you to choose from.`,
+        });
+      } else {
+        toast({
+          title: "Partial Success",
+          description: `Generated ${data.designs.length} design variations. Some designs could not be generated due to API quota limits.`,
+          duration: 5000,
+        });
+      }
     },
     onError: (error) => {
       setIsGenerating(false);

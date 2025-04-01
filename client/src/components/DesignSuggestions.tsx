@@ -75,7 +75,7 @@ export default function DesignSuggestions({
       </div>
       
       <div className="flex-grow flex flex-col">
-        <div className="grid grid-cols-2 gap-3 flex-grow">
+        <div className={`grid ${designs.length <= 2 ? 'grid-cols-1' : 'grid-cols-2'} gap-3 flex-grow`}>
           {designs.map((design) => (
             <div 
               key={design.id}

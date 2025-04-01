@@ -70,9 +70,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         "with a professional, corporate style"
       ];
       
-      // Generate 4 designs in parallel
-      log("Generating 4 design variations", "generator");
-      const designPromises = styleVariations.map(async (styleVariation, index) => {
+      // Generate designs sequentially to avoid quota limits
+      log("Generating design variations", "generator");
+      const successfulDesigns = [];
+      
+      // Try each style variation until we have up to 4 successful designs
+      for (let index = 0; index < styleVariations.length && successfulDesigns.length < 4; index++) {
+        const styleVariation = styleVariations[index];
         try {
           const variantOptions = {
             ...generationOptions,
@@ -81,21 +85,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           log(`Generating design variation ${index + 1}: ${styleVariation}`, "generator");
           const screenshot = await renderFlyerFromGemini(variantOptions);
-          return {
+          successfulDesigns.push({
             imageBuffer: screenshot,
             style: styleVariation
-          };
+          });
+          
+          // Add a slight delay between requests to avoid hitting rate limits
+          if (index < styleVariations.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 200));
+          }
         } catch (error) {
           log(`Error generating design variation ${index + 1}: ${error}`, "generator");
-          return null;
+          // If this is a quota error, stop trying more variations
+          const errorMessage = String(error);
+          if (errorMessage.includes("API quota limit reached") || errorMessage.includes("429 Too Many Requests")) {
+            log("Stopping design generation due to API quota limits", "generator");
+            break;
+          }
         }
-      });
-      
-      // Wait for all designs to complete
-      const designResults = await Promise.all(designPromises);
-      
-      // Filter out any failed generations
-      const successfulDesigns = designResults.filter(result => result !== null);
+      }
       
       if (successfulDesigns.length === 0) {
         throw new Error("All design generation attempts failed");
