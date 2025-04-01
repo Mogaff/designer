@@ -5,27 +5,29 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { FcGoogle } from 'react-icons/fc';
 import { GridMotion } from '@/components/ui/grid-motion';
-import gradientImage1 from '../assets/image-mesh-gradient (11).png';
-import gradientImage2 from '../assets/image-mesh-gradient (13).png';
-import gradientImage3 from '../assets/image-mesh-gradient (18).png';
+
+// Import flyer design images
+import design1 from '../assets/design-images/design1.png';
+import design2 from '../assets/design-images/design2.png';
+import design3 from '../assets/design-images/design3.png';
+import design4 from '../assets/design-images/design4.png';
+import design5 from '../assets/design-images/design5.png';
+import design6 from '../assets/design-images/design6.png';
+import design7 from '../assets/design-images/design7.png';
+import design8 from '../assets/design-images/design8.png';
+import design9 from '../assets/design-images/design9.png';
 
 export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { signInWithGoogle, isAuthenticated } = useAuth();
   const [_, setLocation] = useLocation();
 
-  // Create a grid of image items for the background motion effect
+  // Create a grid of design image items for the background motion effect
   const gridItems = [
-    gradientImage1, gradientImage2, gradientImage3,
-    gradientImage2, gradientImage3, gradientImage1,
-    gradientImage3, gradientImage1, gradientImage2,
-    gradientImage1, gradientImage3, gradientImage2,
-    gradientImage2, gradientImage1, gradientImage3,
-    gradientImage3, gradientImage2, gradientImage1,
-    gradientImage1, gradientImage2, gradientImage3,
-    gradientImage2, gradientImage3, gradientImage1,
-    gradientImage3, gradientImage1, gradientImage2,
-    gradientImage1
+    design1, design2, design3, design4, design5, design6, design7,
+    design8, design9, design1, design2, design3, design4, design5,
+    design6, design7, design8, design9, design1, design2, design3,
+    design4, design5, design6, design7, design8, design9, design1,
   ];
 
   // If already authenticated, redirect to home
