@@ -55,7 +55,7 @@ export default function Login() {
         <GridMotion 
           items={gridItems}
           gradientColor="#151133"
-          className="opacity-70"
+          className="opacity-90"
         />
       </div>
       

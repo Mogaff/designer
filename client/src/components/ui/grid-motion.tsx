@@ -86,17 +86,25 @@ export function GridMotion({
                 return (
                   <div key={itemIndex} className="relative">
                     <div className="relative h-full w-full overflow-hidden rounded-lg bg-muted flex items-center justify-center text-foreground text-xl">
-                      {typeof content === 'string' && content.startsWith('http') ? (
-                        <div
-                          className="absolute inset-0 bg-cover bg-center"
-                          style={{
-                            backgroundImage: `url(${content})`,
-                          }}
-                        />
+                      {typeof content === 'string' ? (
+                        content.startsWith('http') ? (
+                          <div
+                            className="absolute inset-0 bg-cover bg-center"
+                            style={{
+                              backgroundImage: `url(${content})`,
+                            }}
+                          />
+                        ) : (
+                          <div className="p-4 text-center z-1">
+                            {content}
+                          </div>
+                        )
                       ) : (
-                        <div className="p-4 text-center z-1">
-                          {content}
-                        </div>
+                        <img 
+                          src={content as string} 
+                          alt="Design example"
+                          className="w-full h-full object-cover rounded-lg"
+                        />
                       )}
                     </div>
                   </div>
