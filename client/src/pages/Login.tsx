@@ -56,8 +56,8 @@ export default function Login() {
       {/* Content */}
       <div className="relative z-20 container mx-auto flex flex-col justify-center items-center min-h-screen p-4">
         <div className="w-full max-w-md text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">HA'ITU</h1>
-          <p className="text-white/70 text-lg">
+          <h1 className="text-5xl font-extrabold mb-2 bg-gradient-to-r from-pink-500 to-orange-500 text-transparent bg-clip-text">HA'ITU</h1>
+          <p className="text-white/80 text-lg">
             Revolutionizing design with AI-powered image generation
           </p>
         </div>
@@ -68,15 +68,14 @@ export default function Login() {
           </CardHeader>
           <CardContent className="space-y-6 pt-6">
             <div className="flex flex-col space-y-2">
-              <Button 
-                variant="outline" 
-                className="w-full py-6 flex items-center justify-center gap-2 bg-white text-black hover:bg-white/90"
+              <button 
+                className="w-full py-6 flex items-center justify-center gap-3 bg-gradient-to-r from-pink-500 to-orange-500 text-white rounded-md font-medium hover:from-pink-600 hover:to-orange-600 transition-all shadow-lg"
                 onClick={handleGoogleSignIn}
                 disabled={isSubmitting}
               >
-                <FcGoogle className="h-5 w-5" />
-                <span>{isSubmitting ? 'Signing in...' : 'Continue with Google'}</span>
-              </Button>
+                <FcGoogle className="h-5 w-5 bg-white rounded-full p-0.5" />
+                <span className="text-lg">{isSubmitting ? 'Signing in...' : 'Sign in with Google'}</span>
+              </button>
             </div>
             
             <div className="text-center text-sm text-white/50">
