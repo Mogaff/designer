@@ -28,4 +28,5 @@ export type AiFlyerGenerationRequest = {
   prompt: string;
   backgroundImage?: File;
   logo?: File;
+  designCount?: number;
 };

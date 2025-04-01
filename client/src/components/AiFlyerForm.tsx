@@ -12,6 +12,13 @@ import { ImageIcon, Upload } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import backgroundGradient from "../assets/background-gradient.png";
 import backgroundGradient2 from "../assets/backgroundd-gradient.png";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type AiFlyerFormProps = {
   setGeneratedFlyer: (flyer: GeneratedFlyer | null) => void;
@@ -31,6 +38,7 @@ export default function AiFlyerForm({
   const [backgroundImagePreview, setBackgroundImagePreview] = useState<string | null>(null);
   const [logo, setLogo] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [designCount, setDesignCount] = useState<string>("4"); // Default to 4 designs
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -45,6 +53,10 @@ export default function AiFlyerForm({
       
       if (data.logo) {
         formData.append("logo", data.logo);
+      }
+      
+      if (data.designCount) {
+        formData.append("designCount", data.designCount.toString());
       }
       
       const response = await apiRequest("POST", "/api/generate-ai", formData);
@@ -182,7 +194,8 @@ export default function AiFlyerForm({
     generateAiFlyerMutation.mutate({ 
       prompt, 
       backgroundImage: backgroundImage || undefined,
-      logo: logo || undefined
+      logo: logo || undefined,
+      designCount: parseInt(designCount)
     });
   };
 
@@ -341,6 +354,30 @@ export default function AiFlyerForm({
             placeholder="Be specific! Example: 'Create a bold tech event design with minimalist layout. Event: FUTURE TECH 2025, March 15-17 at Innovation Center. Include AI workshops and VR experiences.'"
             className="block w-full resize-none bg-white/10 border-white/10 text-white placeholder:text-white/50 text-sm"
           />
+        </div>
+        
+        {/* Design Count Selector */}
+        <div className="space-y-1">
+          <Label htmlFor="designCount" className="text-sm font-medium text-white/90">
+            Number of Designs
+          </Label>
+          <Select
+            value={designCount}
+            onValueChange={setDesignCount}
+          >
+            <SelectTrigger className="w-full bg-white/10 border-white/10 text-white">
+              <SelectValue placeholder="Select number of designs" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1">1 Design</SelectItem>
+              <SelectItem value="2">2 Designs</SelectItem>
+              <SelectItem value="3">3 Designs</SelectItem>
+              <SelectItem value="4">4 Designs</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-white/60 mt-1">
+            Choose how many design variations to generate.
+          </p>
         </div>
         
         {/* Generate Button */}

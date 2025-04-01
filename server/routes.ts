@@ -33,8 +33,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       log("AI Flyer generation started", "generator");
       
-      const { prompt, configId } = req.body;
+      const { prompt, configId, designCount } = req.body;
       const userId = (req.user as any).id;
+      
+      // Parse designCount (default to 4 if not specified or invalid)
+      const numDesigns = parseInt(designCount) || 4;
+      const maxDesigns = Math.min(Math.max(1, numDesigns), 4); // Ensure between 1 and 4
       
       if (!prompt) {
         return res.status(400).json({ message: "Prompt is required" });
@@ -107,8 +111,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       log("Generating design variations", "generator");
       const successfulDesigns = [];
       
-      // Try each style variation until we have up to 4 successful designs
-      for (let index = 0; index < styleVariations.length && successfulDesigns.length < 4; index++) {
+      // Try each style variation until we have the requested number of successful designs
+      for (let index = 0; index < styleVariations.length && successfulDesigns.length < maxDesigns; index++) {
         const styleVariation = styleVariations[index];
         try {
           const variantOptions = {
