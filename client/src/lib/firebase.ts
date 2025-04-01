@@ -3,6 +3,8 @@ import { initializeApp } from 'firebase/app';
 import { 
   getAuth, 
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   signOut,
   onAuthStateChanged
@@ -24,13 +26,24 @@ const app = initializeApp(firebaseConfig, 'haitu-app');
 // Initialize Firebase Authentication
 const auth = getAuth(app);
 
-// Create a Google Auth Provider
+// Create a Google Auth Provider with custom parameters
 const googleProvider = new GoogleAuthProvider();
+// Add scopes if needed
+googleProvider.addScope('https://www.googleapis.com/auth/userinfo.email');
+googleProvider.addScope('https://www.googleapis.com/auth/userinfo.profile');
+// Set custom parameters - this helps with the domain authorization
+googleProvider.setCustomParameters({
+  prompt: 'select_account',
+  // Using Replit's domain in the redirect
+  login_hint: 'Use your Google account'
+});
 
 // Export auth services
 export { 
   auth, 
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   googleProvider,
   signOut,
   onAuthStateChanged

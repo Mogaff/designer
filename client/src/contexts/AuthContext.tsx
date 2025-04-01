@@ -3,6 +3,8 @@ import { useToast } from '@/hooks/use-toast';
 import { 
   auth, 
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   googleProvider,
   signOut,
   onAuthStateChanged
@@ -43,8 +45,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  // Watch for Firebase auth state changes
+  // Check for redirect result and watch auth state changes
   useEffect(() => {
+    const checkRedirectResult = async () => {
+      try {
+        // Check if returning from a redirect
+        const result = await getRedirectResult(auth);
+        if (result) {
+          console.log('Redirect result:', result.user);
+          // User successfully signed in via redirect
+          toast({
+            title: 'Login Successful',
+            description: 'Welcome! You are now signed in with Google.',
+          });
+        }
+      } catch (error: any) {
+        console.error('Redirect result error:', error);
+        
+        // Handle errors from redirect result
+        if (error.code === 'auth/unauthorized-domain') {
+          toast({
+            title: 'Login Failed',
+            description: 'This domain is not authorized for sign-in. Please contact support.',
+            variant: 'destructive',
+          });
+          console.error('Domain not authorized. Make sure to add this domain to Firebase console auth settings.');
+        }
+      }
+    };
+    
+    checkRedirectResult();
+    
+    // Watch for Firebase auth state changes
     const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
       setIsLoading(false);
       if (fbUser) {
@@ -63,25 +95,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Cleanup subscription
     return () => unsubscribe();
-  }, []);
+  }, [toast]);
 
   // Google Sign-in function
   const signInWithGoogle = async () => {
     try {
       setIsLoading(true);
-      await signInWithPopup(auth, googleProvider);
-      toast({
-        title: 'Login Successful',
-        description: 'Welcome! You are now signed in with Google.',
-      });
+      console.log('Starting Google sign-in process using redirect...');
+      
+      // Try first with popup for better user experience in development
+      try {
+        await signInWithPopup(auth, googleProvider);
+      } catch (popupError: any) {
+        // If popup fails (especially for unauthorized domain), fall back to redirect
+        console.log('Popup failed, trying redirect method:', popupError);
+        
+        if (popupError.code === 'auth/unauthorized-domain') {
+          console.log('Domain not authorized for popup. Switching to redirect.');
+          // Use redirect method as a fallback
+          await signInWithRedirect(auth, googleProvider);
+          // The rest will be handled by the useEffect with getRedirectResult
+        } else {
+          throw popupError; // Re-throw error if it's not just about unauthorized domain
+        }
+      }
     } catch (error: any) {
       let errorMessage = 'Failed to sign in with Google';
+      console.error('Google sign-in error:', error);
       
-      // Firebase auth error handling
+      // Firebase auth error handling with better error messages
       if (error.code === 'auth/popup-closed-by-user') {
         errorMessage = 'Sign-in cancelled. Please try again.';
       } else if (error.code === 'auth/popup-blocked') {
         errorMessage = 'Sign-in popup was blocked. Please enable popups for this site.';
+      } else if (error.code === 'auth/unauthorized-domain') {
+        errorMessage = 'This domain is not authorized for sign-in. Please check Firebase console settings.';
+        console.error('Domain not authorized. Add domain to Firebase console auth settings: ' + window.location.origin);
       } else if (error.code) {
         errorMessage = `Authentication error: ${error.code}`;
       }
@@ -91,7 +140,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         description: errorMessage,
         variant: 'destructive',
       });
-      throw error;
+      
+      // Don't throw error on unauthorized domain as we're handling it with redirect
+      if (error.code !== 'auth/unauthorized-domain') {
+        throw error;
+      }
     } finally {
       setIsLoading(false);
     }

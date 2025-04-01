@@ -64,6 +64,16 @@ export default function Login() {
           <p className="text-center text-sm text-muted-foreground mt-4">
             By signing in, you agree to our Terms of Service and Privacy Policy.
           </p>
+          
+          <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-900 rounded-md">
+            <p className="text-xs text-muted-foreground">
+              <strong>Current domain:</strong> {window.location.origin}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              If sign-in is not working, please ensure this domain is added to 
+              the authorized domains in your Firebase Authentication console.
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>
