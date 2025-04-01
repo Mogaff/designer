@@ -69,12 +69,12 @@ export default function Login() {
           <CardContent className="space-y-6 pt-6">
             <div className="flex flex-col space-y-2">
               <button 
-                className="w-full py-6 flex items-center justify-center gap-3 bg-gradient-to-r from-pink-500 to-orange-500 text-white rounded-md font-medium hover:from-pink-600 hover:to-orange-600 transition-all shadow-lg"
+                className="w-full btn-primary py-6 flex items-center justify-center gap-3"
                 onClick={handleGoogleSignIn}
                 disabled={isSubmitting}
               >
-                <FcGoogle className="h-5 w-5 bg-white rounded-full p-0.5" />
-                <span className="text-lg">{isSubmitting ? 'Signing in...' : 'Sign in with Google'}</span>
+                <FcGoogle className="h-5 w-5" />
+                <span>{isSubmitting ? 'Signing in...' : 'Continue with Google'}</span>
               </button>
             </div>
             
