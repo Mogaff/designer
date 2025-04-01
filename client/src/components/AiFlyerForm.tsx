@@ -225,7 +225,7 @@ export default function AiFlyerForm({
           <div>
             <p className="text-xs text-white/80 mb-1 ml-1">Background</p>
             {/* Background Image Upload - Fixed size container */}
-            <div className="relative w-full h-28 overflow-hidden rounded-xl group transition-all duration-200 border border-gray-800/50 hover:border-indigo-500/50">
+            <div className="relative w-full h-28 overflow-hidden rounded-xl group transition-all duration-300 border border-gray-800/50 hover:border-indigo-500/50 hover:shadow-md hover:shadow-indigo-500/20">
               {/* Background Gradient Image */}
               <div className="absolute inset-0 z-0">
                 <img 
@@ -257,7 +257,7 @@ export default function AiFlyerForm({
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-center h-full w-full relative z-10 rounded-xl backdrop-blur-sm">
+                <div className="flex items-center justify-center h-full w-full relative z-10 rounded-xl backdrop-blur-md">
                   <Input
                     id="background-image-upload"
                     type="file"
@@ -267,7 +267,7 @@ export default function AiFlyerForm({
                   />
                   <Button 
                     type="button" 
-                    className="bg-[#383A62] text-white rounded-full hover:bg-[#4A4C7A] transition-colors"
+                    className="bg-indigo-500/30 backdrop-blur-md text-white rounded-full hover:bg-indigo-500/50 transition-all border border-indigo-500/40 shadow-lg"
                     onClick={() => document.getElementById('background-image-upload')?.click()}
                   >
                     {isMobile ? (
@@ -284,7 +284,7 @@ export default function AiFlyerForm({
           <div>
             <p className="text-xs text-white/80 mb-1 ml-1">Logo</p>
             {/* Logo Upload - Fixed size container */}
-            <div className="relative w-full h-28 overflow-hidden rounded-xl group transition-all duration-200 border border-gray-800/50 hover:border-indigo-500/50">
+            <div className="relative w-full h-28 overflow-hidden rounded-xl group transition-all duration-300 border border-gray-800/50 hover:border-indigo-500/50 hover:shadow-md hover:shadow-indigo-500/20">
               {/* Background Gradient Image */}
               <div className="absolute inset-0 z-0">
                 <img 
@@ -316,7 +316,7 @@ export default function AiFlyerForm({
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-center h-full w-full relative z-10 rounded-xl backdrop-blur-sm">
+                <div className="flex items-center justify-center h-full w-full relative z-10 rounded-xl backdrop-blur-md">
                   <Input
                     id="logo-upload"
                     type="file"
@@ -326,7 +326,7 @@ export default function AiFlyerForm({
                   />
                   <Button 
                     type="button" 
-                    className="bg-[#383A62] text-white rounded-full hover:bg-[#4A4C7A] transition-colors"
+                    className="bg-indigo-500/30 backdrop-blur-md text-white rounded-full hover:bg-indigo-500/50 transition-all border border-indigo-500/40 shadow-lg"
                     onClick={() => document.getElementById('logo-upload')?.click()}
                   >
                     {isMobile ? (
@@ -383,7 +383,7 @@ export default function AiFlyerForm({
         {/* Generate Button */}
         <Button
           type="submit"
-          className="w-full font-medium rounded-md bg-indigo-500/40 backdrop-blur-sm text-white hover:bg-indigo-500/60 border-0 h-10 mt-auto"
+          className="w-full font-medium rounded-md bg-indigo-500/40 backdrop-blur-md text-white hover:bg-indigo-500/60 border border-indigo-500/40 shadow-lg transition-all h-10 mt-auto"
           disabled={isGenerating}
         >
           {isGenerating ? (
