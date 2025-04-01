@@ -64,12 +64,12 @@ export default function Login() {
           }}
         >
           <button 
-            className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-5 rounded-md flex items-center justify-center gap-2 transition-all shadow-md"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 px-5 rounded-md flex items-center justify-center gap-3 transition-all shadow-md w-full"
             onClick={handleGoogleSignIn}
             disabled={isSubmitting}
           >
-            <FcGoogle className="h-5 w-5 bg-white rounded-full p-0.5" />
-            <span>{isSubmitting ? 'Signing in...' : 'Continue with Google'}</span>
+            <FcGoogle className="h-7 w-7 bg-white rounded-full p-1" />
+            <span className="font-medium">{isSubmitting ? 'Signing in...' : 'Google Sign-in'}</span>
           </button>
         </div>
       </div>
