@@ -1,61 +1,28 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { QueryClient } from '@tanstack/react-query';
-
-// Custom API request function for auth-related endpoints
-async function apiRequest<T = any>({ 
-  url, 
-  method, 
-  body, 
-  on401 = "throw" as "returnNull" | "throw"
-}: { 
-  url: string; 
-  method: string; 
-  body?: any; 
-  on401?: "returnNull" | "throw" 
-}): Promise<T> {
-  const headers: Record<string, string> = {};
-  
-  if (body && !(body instanceof FormData)) {
-    headers["Content-Type"] = "application/json";
-  }
-  
-  const response = await fetch(url, {
-    method,
-    headers,
-    body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
-    credentials: "include"
-  });
-  
-  if (response.status === 401 && on401 === "returnNull") {
-    return null as any;
-  }
-  
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || response.statusText || `Request failed with status ${response.status}`);
-  }
-  
-  if (response.headers.get("content-type")?.includes("application/json")) {
-    return await response.json();
-  }
-  
-  return null as any;
-}
+import { 
+  auth, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut,
+  onAuthStateChanged
+} from '@/lib/firebase';
+import type { User as FirebaseUser } from 'firebase/auth';
 
 // Types for our auth context
 type User = {
-  id: number;
-  username: string;
+  uid: string;
+  email: string | null;
+  displayName?: string | null;
+  photoURL?: string | null;
 };
 
 type AuthContextType = {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (username: string, password: string) => Promise<void>;
-  register: (username: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -75,125 +42,116 @@ export const useAuth = () => useContext(AuthContext);
 // Provider component
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
-  // Query to fetch the current user
-  const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: async () => {
-      try {
-        const response = await apiRequest({
-          url: '/api/auth/user',
-          method: 'GET',
-          on401: 'returnNull'
-        });
-        return response as User | null;
-      } catch (error) {
-        return null;
-      }
-    }
-  });
-
-  // Set the user when data changes
+  // Watch for Firebase auth state changes
   useEffect(() => {
-    if (data) {
-      setUser(data);
-    } else if (!isLoading && (isError || data === null)) {
-      setUser(null);
-    }
-  }, [data, isLoading, isError]);
+    const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
+      setIsLoading(false);
+      if (fbUser) {
+        // User is signed in
+        setUser({
+          uid: fbUser.uid,
+          email: fbUser.email,
+          displayName: fbUser.displayName,
+          photoURL: fbUser.photoURL
+        });
+      } else {
+        // User is signed out
+        setUser(null);
+      }
+    });
 
-  // Login mutation
-  const loginMutation = useMutation({
-    mutationFn: async (credentials: { username: string; password: string }) => {
-      const response = await apiRequest({
-        url: '/api/auth/login',
-        method: 'POST',
-        body: credentials,
-        on401: 'throw'
-      });
-      return response as User;
-    },
-    onSuccess: (userData: User) => {
-      setUser(userData);
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+    // Cleanup subscription
+    return () => unsubscribe();
+  }, []);
+
+  // Login function
+  const login = async (email: string, password: string) => {
+    try {
+      setIsLoading(true);
+      await signInWithEmailAndPassword(auth, email, password);
       toast({
         title: 'Login Successful',
-        description: `Welcome back, ${userData.username}!`,
+        description: 'Welcome back!',
       });
-    },
-    onError: (error: any) => {
+    } catch (error: any) {
+      let errorMessage = 'Failed to login';
+      
+      // Firebase auth error handling
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        errorMessage = 'Invalid email or password';
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMessage = 'Too many failed attempts. Please try again later.';
+      } else if (error.code) {
+        errorMessage = `Authentication error: ${error.code}`;
+      }
+      
       toast({
         title: 'Login Failed',
-        description: error.message || 'Invalid username or password',
+        description: errorMessage,
         variant: 'destructive',
       });
-    },
-  });
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  // Register mutation
-  const registerMutation = useMutation({
-    mutationFn: async (userData: { username: string; password: string }) => {
-      const response = await apiRequest({
-        url: '/api/auth/register',
-        method: 'POST',
-        body: userData,
-        on401: 'throw'
-      });
-      return response as User;
-    },
-    onSuccess: (userData: User) => {
+  // Register function
+  const register = async (email: string, password: string) => {
+    try {
+      setIsLoading(true);
+      await createUserWithEmailAndPassword(auth, email, password);
       toast({
         title: 'Registration Successful',
-        description: 'Your account has been created! You can now log in.',
+        description: 'Your account has been created! You are now logged in.',
       });
-    },
-    onError: (error: any) => {
+    } catch (error: any) {
+      let errorMessage = 'Failed to create account';
+      
+      // Firebase auth error handling
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = 'Email address is already in use';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email address';
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = 'Password is too weak';
+      } else if (error.code) {
+        errorMessage = `Registration error: ${error.code}`;
+      }
+      
       toast({
         title: 'Registration Failed',
-        description: error.message || 'Could not create your account',
+        description: errorMessage,
         variant: 'destructive',
       });
-    },
-  });
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  // Logout mutation
-  const logoutMutation = useMutation({
-    mutationFn: async () => {
-      return await apiRequest({
-        url: '/api/auth/logout',
-        method: 'POST',
-        on401: 'returnNull'
-      });
-    },
-    onSuccess: () => {
-      setUser(null);
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+  // Logout function
+  const logout = async () => {
+    try {
+      setIsLoading(true);
+      await signOut(auth);
       toast({
         title: 'Logged Out',
         description: 'You have been successfully logged out',
       });
-    },
-    onError: () => {
+    } catch (error: any) {
       toast({
         title: 'Logout Failed',
-        description: 'There was an issue logging you out',
+        description: error.message || 'There was an issue logging you out',
         variant: 'destructive',
       });
-    },
-  });
-
-  const login = async (username: string, password: string) => {
-    await loginMutation.mutateAsync({ username, password });
-  };
-
-  const register = async (username: string, password: string) => {
-    await registerMutation.mutateAsync({ username, password });
-  };
-
-  const logout = async () => {
-    await logoutMutation.mutateAsync();
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const value = {

@@ -53,7 +53,7 @@ export default function Header() {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="text-white hover:text-white hover:bg-white/10 bg-transparent border-white/20">
                   <User className="h-4 w-4 mr-1" />
-                  {user?.username}
+                  {user?.email || 'Account'}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
