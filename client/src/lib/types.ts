@@ -6,6 +6,16 @@ export interface GeneratedFlyer {
   template: string;
 }
 
+export interface DesignVariation {
+  imageBase64: string;
+  style: string;
+  id: number;
+}
+
+export interface DesignSuggestions {
+  designs: DesignVariation[];
+}
+
 export type FlyerGenerationRequest = {
   prompt: string;
   headline: string;

@@ -2,12 +2,14 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AiFlyerForm from "@/components/AiFlyerForm";
 import FlyerPreview from "@/components/FlyerPreview";
+import DesignSuggestions from "@/components/DesignSuggestions";
 import { useState } from "react";
-import { GeneratedFlyer } from "@/lib/types";
+import { GeneratedFlyer, DesignVariation } from "@/lib/types";
 
 export default function Home() {
   const [generatedFlyer, setGeneratedFlyer] = useState<GeneratedFlyer | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [designSuggestions, setDesignSuggestions] = useState<DesignVariation[] | null>(null);
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
@@ -27,11 +29,21 @@ export default function Home() {
           <div className="glass-panel p-4 flex-grow overflow-hidden flex flex-col">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
               <div className="h-full">
-                <AiFlyerForm
-                  setGeneratedFlyer={setGeneratedFlyer}
-                  isGenerating={isGenerating}
-                  setIsGenerating={setIsGenerating}
-                />
+                {designSuggestions ? (
+                  <DesignSuggestions 
+                    designs={designSuggestions}
+                    isGenerating={isGenerating}
+                    setGeneratedFlyer={setGeneratedFlyer}
+                    setDesignSuggestions={setDesignSuggestions}
+                  />
+                ) : (
+                  <AiFlyerForm
+                    setGeneratedFlyer={setGeneratedFlyer}
+                    isGenerating={isGenerating}
+                    setIsGenerating={setIsGenerating}
+                    setDesignSuggestions={setDesignSuggestions}
+                  />
+                )}
               </div>
               
               <div className="h-full">

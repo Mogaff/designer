@@ -25,7 +25,7 @@ const uploadFields = upload.fields([
 ]);
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // API endpoint to generate a flyer using Gemini AI
+  // API endpoint to generate multiple flyer designs using Gemini AI
   app.post("/api/generate-ai", uploadFields, async (req: Request, res: Response) => {
     try {
       log("AI Flyer generation started", "generator");
@@ -62,14 +62,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
         generationOptions.logoBase64 = logoBase64;
       }
       
-      // Generate the flyer using Gemini AI
-      const screenshot = await renderFlyerFromGemini(generationOptions);
+      // Generate 4 design variations with slightly different style instructions
+      const styleVariations = [
+        "with a bold, high-contrast style",
+        "with a minimal, elegant style",
+        "with a creative, artistic style",
+        "with a professional, corporate style"
+      ];
+      
+      // Generate 4 designs in parallel
+      log("Generating 4 design variations", "generator");
+      const designPromises = styleVariations.map(async (styleVariation, index) => {
+        try {
+          const variantOptions = {
+            ...generationOptions,
+            prompt: `${generationOptions.prompt} ${styleVariation}`
+          };
+          
+          log(`Generating design variation ${index + 1}: ${styleVariation}`, "generator");
+          const screenshot = await renderFlyerFromGemini(variantOptions);
+          return {
+            imageBuffer: screenshot,
+            style: styleVariation
+          };
+        } catch (error) {
+          log(`Error generating design variation ${index + 1}: ${error}`, "generator");
+          return null;
+        }
+      });
+      
+      // Wait for all designs to complete
+      const designResults = await Promise.all(designPromises);
+      
+      // Filter out any failed generations
+      const successfulDesigns = designResults.filter(result => result !== null);
+      
+      if (successfulDesigns.length === 0) {
+        throw new Error("All design generation attempts failed");
+      }
+      
+      log(`Successfully generated ${successfulDesigns.length} design variations`, "generator");
+      
+      // Create a response with all design images
+      const designData = successfulDesigns.map((design, index) => {
+        // Convert buffer to base64 for JSON transport
+        return {
+          imageBase64: `data:image/png;base64,${design.imageBuffer.toString('base64')}`,
+          style: design.style,
+          id: index + 1
+        };
+      });
       
       log("AI Flyer generation completed", "generator");
       
-      // Send the screenshot as response
-      res.contentType("image/png");
-      res.send(screenshot);
+      // Send JSON response with all designs
+      res.json({ designs: designData });
     } catch (error) {
       log(`Error generating AI flyer: ${error}`, "generator");
       const errorMessage = error instanceof Error ? error.message : "Unknown error";

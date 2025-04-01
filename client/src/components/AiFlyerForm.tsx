@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { GeneratedFlyer, AiFlyerGenerationRequest } from "@/lib/types";
+import { GeneratedFlyer, AiFlyerGenerationRequest, DesignSuggestions, DesignVariation } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { ImageIcon, Upload } from "lucide-react";
@@ -17,12 +17,14 @@ type AiFlyerFormProps = {
   setGeneratedFlyer: (flyer: GeneratedFlyer | null) => void;
   isGenerating: boolean;
   setIsGenerating: (isGenerating: boolean) => void;
+  setDesignSuggestions: (suggestions: DesignVariation[] | null) => void;
 };
 
 export default function AiFlyerForm({ 
   setGeneratedFlyer,
   isGenerating,
-  setIsGenerating
+  setIsGenerating,
+  setDesignSuggestions
 }: AiFlyerFormProps) {
   const [prompt, setPrompt] = useState("");
   const [backgroundImage, setBackgroundImage] = useState<File | null>(null);
@@ -45,29 +47,29 @@ export default function AiFlyerForm({
         formData.append("logo", data.logo);
       }
       
-      const response = await apiRequest("POST", "/api/generate-ai", formData, {}, true);
-      return response.blob();
+      const response = await apiRequest("POST", "/api/generate-ai", formData);
+      return response.json();
     },
-    onSuccess: (blob) => {
-      const imageUrl = URL.createObjectURL(blob);
-      setGeneratedFlyer({
-        imageUrl,
-        headline: "AI Generated Flyer",
-        content: prompt,
-        stylePrompt: prompt,
-        template: "ai"
-      });
+    onSuccess: (data: DesignSuggestions) => {
+      // Clear any existing design
+      setGeneratedFlyer(null);
+      
+      // Store all designs in state for display
+      setDesignSuggestions(data.designs);
+      
       setIsGenerating(false);
+      
       toast({
         title: "Success!",
-        description: "Your AI flyer has been generated successfully.",
+        description: `Generated ${data.designs.length} design variations for you to choose from.`,
       });
     },
     onError: (error) => {
       setIsGenerating(false);
+      setDesignSuggestions(null);
       
       // Get the error message
-      let errorMessage = error instanceof Error ? error.message : "Failed to generate AI flyer";
+      let errorMessage = error instanceof Error ? error.message : "Failed to generate AI design";
       
       // Check if it's a quota limit error
       if (errorMessage.includes("API quota limit reached")) {
