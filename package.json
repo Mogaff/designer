@@ -60,6 +60,7 @@
     "express-session": "^1.18.1",
     "firebase": "^11.6.0",
     "framer-motion": "^11.13.1",
+    "gsap": "^3.12.7",
     "input-otp": "^1.2.4",
     "lucide-react": "^0.453.0",
     "memorystore": "^1.6.7",

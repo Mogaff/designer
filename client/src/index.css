@@ -78,4 +78,24 @@
     @apply glass-panel p-6 hover:shadow-lg transition-all;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   }
+  
+  /* Grid motion specific styles */
+  .grid-motion-container {
+    @apply relative h-screen w-full overflow-hidden;
+  }
+  
+  .grid-motion-item {
+    @apply relative h-full w-full overflow-hidden rounded-lg;
+    aspect-ratio: 1/1;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  }
+  
+  .grid-motion-image {
+    @apply absolute inset-0 bg-cover bg-center w-full h-full transition-all duration-300;
+    filter: brightness(0.9) saturate(1.2);
+  }
+  
+  .-rotate-15 {
+    transform: rotate(-15deg);
+  }
 }
