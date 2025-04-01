@@ -2,8 +2,9 @@ import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { GeneratedFlyer } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
-import { Download, Share2, Image } from "lucide-react";
+import { Download, Share2 } from "lucide-react";
 import { MultiColorLoading } from "@/components/ui/multi-color-loading";
+import iconUpload from "../assets/iconupload.png";
 
 type FlyerPreviewProps = {
   generatedFlyer: GeneratedFlyer | null;
@@ -76,7 +77,7 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
         {!generatedFlyer && !isGenerating ? (
           <div className="flex flex-col items-center justify-center text-center h-full w-full">
             <div className="glass-panel p-3 rounded-full mb-2">
-              <Image className="h-12 w-12 text-white/70" />
+              <img src={iconUpload} alt="Upload icon" className="h-12 w-12" />
             </div>
             <h3 className="text-base font-medium text-white/90 mb-1">Your design will appear here</h3>
             <p className="text-xs text-white/60 max-w-xs">Fill out the form and click "Generate Design"</p>

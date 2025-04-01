@@ -366,10 +366,7 @@ export default function AiFlyerForm({
               </button>
             ))}
           </div>
-          
-          <p className="text-xs text-white/50 mt-1">
-            Number of variations to generate
-          </p>
+
         </div>
         
         {/* Prompt Input with Generate Button */}
