@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { GeneratedFlyer } from "@/lib/types";
 import { CheckCircle } from "lucide-react";
+import { MultiColorLoading } from "@/components/ui/multi-color-loading";
 
 type DesignSuggestionsProps = {
   designs: DesignVariation[] | null;
@@ -51,11 +52,8 @@ export default function DesignSuggestions({
         <div className="mb-2">
           <h2 className="text-base font-semibold text-white">Generating Designs...</h2>
         </div>
-        <div className="flex-grow flex items-center justify-center">
-          <div className="flex flex-col items-center space-y-3">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-            <p className="text-white/70 text-sm">Creating 4 design variations</p>
-          </div>
+        <div className="flex-grow bg-black/20 backdrop-blur-sm rounded-xl overflow-hidden">
+          <MultiColorLoading className="w-full h-full" />
         </div>
       </div>
     );

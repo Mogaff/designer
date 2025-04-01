@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { GeneratedFlyer } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { Download, Share2, Image } from "lucide-react";
+import { MultiColorLoading } from "@/components/ui/multi-color-loading";
 
 type FlyerPreviewProps = {
   generatedFlyer: GeneratedFlyer | null;
@@ -93,11 +94,8 @@ export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPrev
                 />
               )}
               {isGenerating && (
-                <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center">
-                  <div className="flex flex-col items-center">
-                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                    <p className="mt-2 text-xs font-medium text-white/90">Generating...</p>
-                  </div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <MultiColorLoading className="w-full h-full rounded-xl" />
                 </div>
               )}
             </div>
