@@ -155,10 +155,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       await signOut(auth);
-      toast({
-        title: 'Logged Out',
-        description: 'You have been successfully logged out',
-      });
+      // Toast message removed to simplify the logout experience
     } catch (error: any) {
       toast({
         title: 'Logout Failed',
