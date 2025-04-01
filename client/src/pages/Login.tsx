@@ -57,13 +57,10 @@ export default function Login() {
       {/* Content - Minimalist version */}
       <div className="relative z-20 flex justify-center items-center min-h-screen">
         <div 
-          className="rounded-xl p-3 shadow-xl" 
+          className="rounded-xl p-3 shadow-xl bg-white/10 backdrop-blur-md" 
           style={{
-            backgroundImage: `url(${meshGradient})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
             width: '230px',
-            border: '1px solid rgba(255,255,255,0.1)'
+            border: '1px solid rgba(255,255,255,0.2)'
           }}
         >
           <button 
