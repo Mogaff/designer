@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from 'wouter';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { FcGoogle } from 'react-icons/fc';
+import { GridMotion } from '@/components/ui/grid-motion';
+import { designImages } from '@/assets/images';
 import { useIsMobile } from '@/hooks/use-mobile';
-import meshGradientBg from '@/assets/mesh-gradient-bg.png';
 
 export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,14 +42,16 @@ export default function Login() {
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* Background Mesh Gradient */}
-      <div 
-        className="absolute inset-0 z-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${meshGradientBg})` }}
-      />
+      {/* Background Grid Motion with images */}
+      <div className="absolute inset-0 z-0">
+        <GridMotion 
+          items={imageItems} 
+          gradientColor="rgba(0,0,0,0.3)"
+        />
+      </div>
       
-      {/* Subtle overlay */}
-      <div className="absolute inset-0 z-10 bg-black/10" />
+      {/* Overlay with gradient - lighter opacity */}
+      <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/40 via-black/20 to-black/40" />
       
       {/* Content - Minimalist version */}
       <div className="relative z-20 flex justify-center items-center min-h-screen">
