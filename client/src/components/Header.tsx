@@ -47,8 +47,8 @@ export default function Header() {
             </Link>
           </div>
           
-          {/* Authentication */}
-          {isAuthenticated ? (
+          {/* Authentication - always display with conditional content */}
+          {isAuthenticated && user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="text-white hover:text-white hover:bg-white/10 bg-transparent border-white/20">
@@ -79,7 +79,7 @@ export default function Header() {
             <Link href="/login">
               <Button variant="outline" size="sm" className="text-white hover:text-white hover:bg-white/10 bg-transparent border-white/20">
                 <LogIn className="h-4 w-4 mr-1" />
-                Login
+                Login with Google
               </Button>
             </Link>
           )}

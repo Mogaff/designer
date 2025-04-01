@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { FcGoogle } from 'react-icons/fc';
+import { Shield, AlertCircle } from 'lucide-react';
 
 export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,9 +33,9 @@ export default function Login() {
     <div className="container mx-auto flex justify-center items-center min-h-screen p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Welcome</CardTitle>
+          <CardTitle className="text-2xl">Welcome to Flyer Creator</CardTitle>
           <CardDescription>
-            Sign in to continue to Flyer Creator
+            Sign in with your Google account to continue
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -56,25 +57,37 @@ export default function Login() {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-background px-2 text-muted-foreground">
+                <Shield className="h-3 w-3 inline mr-1" />
                 Secure Authentication
               </span>
             </div>
           </div>
           
-          <p className="text-center text-sm text-muted-foreground mt-4">
-            By signing in, you agree to our Terms of Service and Privacy Policy.
-          </p>
-          
-          <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-900 rounded-md">
-            <p className="text-xs text-muted-foreground">
-              <strong>Current domain:</strong> {window.location.origin}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              If sign-in is not working, please ensure this domain is added to 
-              the authorized domains in your Firebase Authentication console.
+          <div className="flex items-center justify-center space-x-2 text-center mt-2">
+            <p className="text-center text-sm text-muted-foreground">
+              By signing in, you agree to our Terms of Service and Privacy Policy.
             </p>
           </div>
         </CardContent>
+        
+        <CardFooter className="flex flex-col">
+          <div className="p-3 bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-300 rounded-md w-full">
+            <div className="flex items-start">
+              <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs font-medium">
+                  For Firebase Authentication to work:
+                </p>
+                <ul className="text-xs list-disc pl-4 mt-1 space-y-1">
+                  <li>Current domain: <strong>{window.location.origin}</strong></li>
+                  <li>Production domain: <strong>https://ai-flyer-genius-haitucreations.replit.app</strong></li>
+                  <li>Make sure to add both domains to your Firebase Authentication console</li>
+                  <li>After adding domains, it may take a few minutes for changes to propagate</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </CardFooter>
       </Card>
     </div>
   );
