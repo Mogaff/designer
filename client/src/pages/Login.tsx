@@ -1,34 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { FcGoogle } from 'react-icons/fc';
-import { GridMotion } from '@/components/ui/grid-motion';
 
-// Import flyer design images
-import design1 from '../assets/design-images/design1.png';
-import design2 from '../assets/design-images/design2.png';
-import design3 from '../assets/design-images/design3.png';
-import design4 from '../assets/design-images/design4.png';
-import design5 from '../assets/design-images/design5.png';
-import design6 from '../assets/design-images/design6.png';
-import design7 from '../assets/design-images/design7.png';
-import design8 from '../assets/design-images/design8.png';
-import design9 from '../assets/design-images/design9.png';
+// Import a single gradient image for fallback
+import gradientBg from '../assets/image-mesh-gradient (13).png';
 
 export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { signInWithGoogle, isAuthenticated } = useAuth();
   const [_, setLocation] = useLocation();
 
-  // Create a grid of design image items for the background motion effect
-  const gridItems = [
-    design1, design2, design3, design4, design5, design6, design7,
-    design8, design9, design1, design2, design3, design4, design5,
-    design6, design7, design8, design9, design1, design2, design3,
-    design4, design5, design6, design7, design8, design9, design1,
-  ];
+  // Set up mouse move effect for background parallax
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: e.clientX / window.innerWidth - 0.5,
+        y: e.clientY / window.innerHeight - 0.5
+      });
+    };
+    
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   // If already authenticated, redirect to home
   if (isAuthenticated) {
@@ -49,15 +47,32 @@ export default function Login() {
   };
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden">
-      {/* Background Grid Motion */}
-      <div className="absolute inset-0 -z-10">
-        <GridMotion 
-          items={gridItems}
-          gradientColor="#151133"
-          className="opacity-90"
-        />
+    <div className="relative min-h-screen w-full overflow-hidden bg-indigo-950">
+      {/* Background Grid with Parallax Effect */}
+      <div 
+        className="absolute inset-0 grid grid-cols-3 grid-rows-3 gap-4 p-6 -z-10"
+        style={{
+          transform: `translateX(${mousePosition.x * -30}px) translateY(${mousePosition.y * -30}px)`
+        }}
+      >
+        {/* First row */}
+        <div className="bg-cover bg-center rounded-lg opacity-75" style={{ backgroundImage: `url('/temp/design1.png')` }}></div>
+        <div className="bg-cover bg-center rounded-lg opacity-75" style={{ backgroundImage: `url('/temp/design2.png')` }}></div>
+        <div className="bg-cover bg-center rounded-lg opacity-75" style={{ backgroundImage: `url('/temp/design3.png')` }}></div>
+        
+        {/* Second row */}
+        <div className="bg-cover bg-center rounded-lg opacity-75" style={{ backgroundImage: `url('/temp/design4.png')` }}></div>
+        <div className="bg-cover bg-center rounded-lg opacity-75" style={{ backgroundImage: `url('/temp/design5.png')` }}></div>
+        <div className="bg-cover bg-center rounded-lg opacity-75" style={{ backgroundImage: `url('/temp/design6.png')` }}></div>
+        
+        {/* Third row */}
+        <div className="bg-cover bg-center rounded-lg opacity-75" style={{ backgroundImage: `url('/temp/design7.png')` }}></div>
+        <div className="bg-cover bg-center rounded-lg opacity-75" style={{ backgroundImage: `url('/temp/design8.png')` }}></div>
+        <div className="bg-cover bg-center rounded-lg opacity-75" style={{ backgroundImage: `url('/temp/design9.png')` }}></div>
       </div>
+      
+      {/* Background gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-indigo-950/80 to-black/80 -z-5"></div>
       
       {/* Login Card with Glass Effect */}
       <div className="container mx-auto flex justify-center items-center min-h-screen p-4 relative z-10">
