@@ -1,10 +1,36 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import session from "express-session";
+import passport from "./auth";
+import MemoryStore from "memorystore";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Create memory store for sessions
+const MemoryStoreClass = MemoryStore(session);
+
+// Configure session middleware
+app.use(
+  session({
+    secret: "flyer-generator-secret",
+    resave: false,
+    saveUninitialized: false,
+    store: new MemoryStoreClass({
+      checkPeriod: 86400000 // Prune expired entries every 24h
+    }),
+    cookie: {
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+  })
+);
+
+// Initialize Passport and session
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use((req, res, next) => {
   const start = Date.now();

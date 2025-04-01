@@ -7,6 +7,9 @@ import { generateFlyer } from "./flyerGenerator";
 import { renderFlyerFromGemini } from "./geminiFlyer";
 import multer from "multer";
 import { log } from "./vite";
+import passport from "./auth";
+import { hashPassword, isAuthenticated } from "./auth";
+import { insertUserSchema } from "@shared/schema";
 
 // Using the built-in type definitions from @types/multer
 
@@ -205,6 +208,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add a test route to verify server is working
   app.get("/api/test", (req: Request, res: Response) => {
     res.json({ status: "ok", message: "Server is running correctly" });
+  });
+
+  // Authentication Routes
+  
+  // Register a new user
+  app.post("/api/auth/register", async (req: Request, res: Response) => {
+    try {
+      const validationResult = insertUserSchema.safeParse(req.body);
+      
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          message: "Invalid input", 
+          errors: validationResult.error.format() 
+        });
+      }
+      
+      const { username, password } = validationResult.data;
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByUsername(username);
+      if (existingUser) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
+      
+      // Hash the password before storing
+      const hashedPassword = await hashPassword(password);
+      
+      // Create new user with hashed password
+      const newUser = await storage.createUser({
+        username,
+        password: hashedPassword
+      });
+      
+      // Return user data (excluding password)
+      res.status(201).json({
+        id: newUser.id,
+        username: newUser.username
+      });
+    } catch (error) {
+      console.error("Registration error:", error);
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Registration failed: ${errorMessage}` });
+    }
+  });
+  
+  // Login
+  app.post("/api/auth/login", (req: Request, res: Response, next: NextFunction) => {
+    passport.authenticate("local", (err: Error | null, user: any, info: { message: string }) => {
+      if (err) {
+        return next(err);
+      }
+      if (!user) {
+        return res.status(401).json({ message: info.message || "Authentication failed" });
+      }
+      
+      req.login(user, (loginErr) => {
+        if (loginErr) {
+          return next(loginErr);
+        }
+        
+        // Return user data (excluding password)
+        return res.json({
+          id: user.id,
+          username: user.username
+        });
+      });
+    })(req, res, next);
+  });
+  
+  // Logout
+  app.post("/api/auth/logout", (req: Request, res: Response) => {
+    req.logout((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Logout failed" });
+      }
+      res.json({ message: "Logged out successfully" });
+    });
+  });
+  
+  // Check authenticated user
+  app.get("/api/auth/user", (req: Request, res: Response) => {
+    if (req.isAuthenticated() && req.user) {
+      const user = req.user as any;
+      return res.json({
+        id: user.id,
+        username: user.username
+      });
+    }
+    res.status(401).json({ message: "Not authenticated" });
   });
 
   const httpServer = createServer(app);
