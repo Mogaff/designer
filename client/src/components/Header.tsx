@@ -1,4 +1,4 @@
-import { Menu, Home, LucideImage, LogIn, LogOut, User } from "lucide-react";
+import { Menu, Home, LucideImage, LogIn, LogOut, User, CreditCard, Star } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -10,10 +10,23 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useQuery } from "@tanstack/react-query";
+import { getQueryFn } from "@/lib/queryClient";
+import { Badge } from "@/components/ui/badge";
+import { CreditsResponse } from "@/lib/creditTypes";
 
 export default function Header() {
   const { isAuthenticated, user, logout } = useAuth();
   const [location, navigate] = useLocation();
+
+  // Query user credits when authenticated
+  const { data: creditData, isLoading: isLoadingCredits } = useQuery<CreditsResponse>({
+    queryKey: ['/api/credits'],
+    queryFn: getQueryFn({ on401: 'returnNull' }),
+    enabled: isAuthenticated, // Only run when user is authenticated
+    refetchOnWindowFocus: true, // Refetch when window regains focus
+    refetchInterval: 60000, // Refetch every minute
+  });
 
   const handleLogout = async () => {
     await logout();
@@ -47,6 +60,20 @@ export default function Header() {
             </Link>
           </div>
           
+          {/* Credits display for authenticated users */}
+          {isAuthenticated && creditData && (
+            <div className="flex items-center mr-2">
+              <Badge variant="outline" className="text-white bg-transparent border-white/20 flex items-center gap-1 py-1.5">
+                <CreditCard className="h-3 w-3" />
+                <span>{isLoadingCredits ? '...' : creditData.balance}</span>
+                <span className="text-xs">credits</span>
+                {creditData.is_premium && (
+                  <Star className="h-3 w-3 text-yellow-400 ml-1" />
+                )}
+              </Badge>
+            </div>
+          )}
+          
           {/* Authentication - always display with conditional content */}
           {isAuthenticated && user ? (
             <DropdownMenu>
@@ -68,7 +95,39 @@ export default function Header() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                
+                {/* Credits information */}
+                {creditData && (
+                  <>
+                    <div className="px-2 py-1.5 text-sm">
+                      <div className="flex items-center gap-2 mb-1">
+                        <CreditCard className="h-4 w-4 text-primary" />
+                        <span className="font-medium">{creditData.balance} Credits</span>
+                        {creditData.is_premium && (
+                          <Badge variant="secondary" className="ml-auto text-xs">
+                            Premium
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      <div className="text-xs text-muted-foreground">
+                        Use credits to generate AI designs
+                      </div>
+                    </div>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
+                
+                {/* Navigation items */}
+                <Link href="/credits">
+                  <DropdownMenuItem>
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Get More Credits
+                  </DropdownMenuItem>
+                </Link>
+                
                 <DropdownMenuSeparator />
+                
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="h-4 w-4 mr-2" />
                   Logout

@@ -9,7 +9,7 @@ import multer from "multer";
 import { log } from "./vite";
 import passport from "./auth";
 import { hashPassword, isAuthenticated } from "./auth";
-import { insertUserSchema } from "@shared/schema";
+import { insertUserSchema, insertDesignConfigSchema, insertUserCreditsSchema } from "@shared/schema";
 
 // Using the built-in type definitions from @types/multer
 
@@ -29,14 +29,44 @@ const uploadFields = upload.fields([
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API endpoint to generate multiple flyer designs using Gemini AI
-  app.post("/api/generate-ai", uploadFields, async (req: Request, res: Response) => {
+  app.post("/api/generate-ai", isAuthenticated, uploadFields, async (req: Request, res: Response) => {
     try {
       log("AI Flyer generation started", "generator");
       
-      const { prompt } = req.body;
+      const { prompt, configId } = req.body;
+      const userId = (req.user as any).id;
       
       if (!prompt) {
         return res.status(400).json({ message: "Prompt is required" });
+      }
+      
+      // Get user's current credit balance
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Get design configuration (default or user-specified)
+      let designConfig;
+      if (configId) {
+        designConfig = await storage.getDesignConfig(parseInt(configId));
+        if (!designConfig) {
+          return res.status(404).json({ message: "Design configuration not found" });
+        }
+      } else {
+        // Get default configuration
+        const configs = await storage.getDesignConfigs(0); // System configs have user_id 0
+        designConfig = configs.find(c => c.active) || configs[0];
+      }
+      
+      // Check if user has enough credits
+      const requiredCredits = designConfig.credits_per_design;
+      if (user.credits_balance < requiredCredits) {
+        return res.status(403).json({ 
+          message: "Insufficient credits",
+          creditsRequired: requiredCredits,
+          creditsAvailable: user.credits_balance
+        });
       }
       
       log(`Generating AI flyer with prompt: ${prompt}`, "generator");
@@ -126,8 +156,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       log("AI Flyer generation completed", "generator");
       
-      // Send JSON response with all designs
-      res.json({ designs: designData });
+      // Subtract credits for the successful generation
+      await storage.addCreditsTransaction({
+        user_id: userId,
+        amount: requiredCredits,
+        transaction_type: 'subtract',
+        description: `Generated ${successfulDesigns.length} flyer designs`
+      });
+      
+      // Get updated user info
+      const updatedUser = await storage.getUser(userId);
+      
+      // Send JSON response with all designs and updated credit info
+      res.json({ 
+        designs: designData,
+        credits: {
+          balance: updatedUser?.credits_balance,
+          used: requiredCredits
+        }
+      });
     } catch (error) {
       log(`Error generating AI flyer: ${error}`, "generator");
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -208,6 +255,142 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add a test route to verify server is working
   app.get("/api/test", (req: Request, res: Response) => {
     res.json({ status: "ok", message: "Server is running correctly" });
+  });
+  
+  // Credits and design configurations API endpoints
+  
+  // Get user's credits balance and history
+  app.get("/api/credits", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Get credit transaction history
+      const creditHistory = await storage.getUserCreditsHistory(userId);
+      
+      res.json({
+        balance: user.credits_balance,
+        is_premium: user.is_premium,
+        history: creditHistory
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to get credits info: ${errorMessage}` });
+    }
+  });
+  
+  // Add credits to user's account (this would typically be connected to a payment system)
+  app.post("/api/credits/add", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const { amount, description } = req.body;
+      
+      if (!amount || typeof amount !== 'number' || amount <= 0) {
+        return res.status(400).json({ message: "Valid amount is required" });
+      }
+      
+      // Add credits transaction
+      const transaction = await storage.addCreditsTransaction({
+        user_id: userId,
+        amount: amount,
+        transaction_type: 'add',
+        description: description || 'Credits added'
+      });
+      
+      // Get updated user info
+      const updatedUser = await storage.getUser(userId);
+      
+      res.json({
+        transaction: transaction,
+        new_balance: updatedUser?.credits_balance
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to add credits: ${errorMessage}` });
+    }
+  });
+  
+  // Get available design configurations for the user
+  app.get("/api/design-configs", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const configs = await storage.getDesignConfigs(userId);
+      
+      res.json({
+        configs: configs
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to get design configurations: ${errorMessage}` });
+    }
+  });
+  
+  // Create a new design configuration
+  app.post("/api/design-configs", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const validationResult = insertDesignConfigSchema.safeParse({
+        ...req.body,
+        user_id: userId
+      });
+      
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          message: "Invalid input", 
+          errors: validationResult.error.format() 
+        });
+      }
+      
+      const config = await storage.createDesignConfig(validationResult.data);
+      
+      res.status(201).json(config);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to create design configuration: ${errorMessage}` });
+    }
+  });
+  
+  // Update a design configuration
+  app.put("/api/design-configs/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const configId = parseInt(req.params.id);
+      
+      if (isNaN(configId)) {
+        return res.status(400).json({ message: "Invalid configuration ID" });
+      }
+      
+      // Check if the config exists and belongs to the user
+      const existingConfig = await storage.getDesignConfig(configId);
+      
+      if (!existingConfig) {
+        return res.status(404).json({ message: "Design configuration not found" });
+      }
+      
+      if (existingConfig.user_id !== userId && existingConfig.user_id !== 0) {
+        return res.status(403).json({ message: "You don't have permission to update this configuration" });
+      }
+      
+      // System configs (user_id = 0) cannot be updated by normal users
+      if (existingConfig.user_id === 0) {
+        return res.status(403).json({ message: "System configurations cannot be modified" });
+      }
+      
+      // Update the config
+      const updatedConfig = await storage.updateDesignConfig(configId, {
+        ...req.body,
+        user_id: userId // Ensure user_id remains the same
+      });
+      
+      res.json(updatedConfig);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to update design configuration: ${errorMessage}` });
+    }
   });
 
   // Authentication Routes
