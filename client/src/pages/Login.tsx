@@ -53,36 +53,18 @@ export default function Login() {
       {/* Overlay with gradient - lighter opacity */}
       <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/40 via-black/20 to-black/40" />
       
-      {/* Content */}
-      <div className="relative z-20 container mx-auto flex flex-col justify-center items-center min-h-screen p-4">
-        <div className="w-full max-w-md text-center mb-8">
-          <h1 className="text-5xl font-extrabold mb-2 bg-gradient-to-r from-pink-500 to-orange-500 text-transparent bg-clip-text">HA'ITU</h1>
-          <p className="text-white/80 text-lg">
-            Revolutionizing design with AI-powered image generation
-          </p>
+      {/* Content - Minimalist version */}
+      <div className="relative z-20 flex justify-center items-center min-h-screen">
+        <div className="bg-black/10 backdrop-blur-sm rounded-md p-4 shadow-md">
+          <button 
+            className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-5 rounded-md flex items-center justify-center gap-2 transition-all shadow-md"
+            onClick={handleGoogleSignIn}
+            disabled={isSubmitting}
+          >
+            <FcGoogle className="h-5 w-5 bg-white rounded-full p-0.5" />
+            <span>{isSubmitting ? 'Signing in...' : 'Continue with Google'}</span>
+          </button>
         </div>
-        
-        <Card className="w-full max-w-md border-0 bg-black/30 backdrop-blur-md text-white border border-white/10">
-          <CardHeader className="text-center border-b border-white/10 pb-4">
-            <CardTitle className="text-2xl text-white">Sign In</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6 pt-6">
-            <div className="flex flex-col space-y-2">
-              <button 
-                className="max-w-xs mx-auto bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-6 rounded-md flex items-center justify-center gap-3 transition-all"
-                onClick={handleGoogleSignIn}
-                disabled={isSubmitting}
-              >
-                <FcGoogle className="h-5 w-5 bg-white rounded-full p-0.5" />
-                <span>{isSubmitting ? 'Signing in...' : 'Continue with Google'}</span>
-              </button>
-            </div>
-            
-            <div className="text-center text-sm text-white/50">
-              By continuing, you agree to our Terms of Service and Privacy Policy
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
