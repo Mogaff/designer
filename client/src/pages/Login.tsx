@@ -7,6 +7,7 @@ import { FcGoogle } from 'react-icons/fc';
 import { GridMotion } from '@/components/ui/grid-motion';
 import { designImages } from '@/assets/images';
 import { useIsMobile } from '@/hooks/use-mobile';
+import meshGradient from '@assets/image-mesh-gradient (20).png';
 
 export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -55,7 +56,14 @@ export default function Login() {
       
       {/* Content - Minimalist version */}
       <div className="relative z-20 flex justify-center items-center min-h-screen">
-        <div className="bg-black/10 backdrop-blur-sm rounded-md p-4 shadow-md">
+        <div 
+          className="rounded-md p-4 shadow-md" 
+          style={{
+            backgroundImage: `url(${meshGradient})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          }}
+        >
           <button 
             className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-5 rounded-md flex items-center justify-center gap-2 transition-all shadow-md"
             onClick={handleGoogleSignIn}
