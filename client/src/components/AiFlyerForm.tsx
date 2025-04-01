@@ -341,6 +341,37 @@ export default function AiFlyerForm({
           </div>
         </div>
         
+        {/* Design Count Selector */}
+        <div className="space-y-1 mb-3">
+          <Label htmlFor="designCount" className="text-xs font-medium text-white/70">
+            Number of Designs
+          </Label>
+          
+          <div className="flex gap-2">
+            {[1, 2, 3, 4].map((num) => (
+              <button
+                key={num}
+                type="button"
+                onClick={() => setDesignCount(num.toString())}
+                className={`
+                  h-8 w-8 rounded-md flex items-center justify-center transition-all duration-200
+                  ${parseInt(designCount) === num 
+                    ? 'bg-indigo-500/50 border-indigo-400/70 text-white backdrop-blur-md' 
+                    : 'bg-white/10 border-gray-800/50 text-white/80 hover:bg-indigo-500/30 backdrop-blur-sm'}
+                  border hover:border-indigo-500/40 focus:outline-none
+                  active:scale-95
+                `}
+              >
+                <span className={`text-sm font-medium ${parseInt(designCount) === num ? 'text-white' : 'text-white/90'}`}>{num}</span>
+              </button>
+            ))}
+          </div>
+          
+          <p className="text-xs text-white/50 mt-1">
+            Number of variations to generate
+          </p>
+        </div>
+        
         {/* Prompt Input with Generate Button */}
         <div className="space-y-1">
           <Label htmlFor="prompt" className="text-xs font-medium text-white/70">
@@ -370,37 +401,6 @@ export default function AiFlyerForm({
               )}
             </Button>
           </div>
-        </div>
-        
-        {/* Design Count Selector */}
-        <div className="space-y-1">
-          <Label htmlFor="designCount" className="text-xs font-medium text-white/70">
-            Number of Designs
-          </Label>
-          
-          <div className="flex gap-2">
-            {[1, 2, 3, 4].map((num) => (
-              <button
-                key={num}
-                type="button"
-                onClick={() => setDesignCount(num.toString())}
-                className={`
-                  h-8 w-8 rounded-md flex items-center justify-center transition-all duration-200
-                  ${parseInt(designCount) === num 
-                    ? 'bg-indigo-500/50 border-indigo-400/70 text-white backdrop-blur-md' 
-                    : 'bg-white/10 border-gray-800/50 text-white/80 hover:bg-indigo-500/30 backdrop-blur-sm'}
-                  border hover:border-indigo-500/40 focus:outline-none
-                  active:scale-95
-                `}
-              >
-                <span className={`text-sm font-medium ${parseInt(designCount) === num ? 'text-white' : 'text-white/90'}`}>{num}</span>
-              </button>
-            ))}
-          </div>
-          
-          <p className="text-xs text-white/50 mt-1">
-            Number of variations to generate
-          </p>
         </div>
       </form>
     </div>
