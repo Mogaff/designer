@@ -24,13 +24,17 @@ export default function Login() {
   const handleGoogleSignIn = async () => {
     setIsSubmitting(true);
     try {
-      await signInWithGoogle();
-      setLocation('/');
+      // With redirect auth we don't want to wait for the promise to resolve
+      // as the page will reload during the process
+      signInWithGoogle();
+      // We don't redirect here anymore as the redirect will happen automatically
+      // and we'll check for the redirect result in the AuthContext
     } catch (error) {
+      console.error('Google Sign-in error:', error);
       // Error is handled in the auth context
-    } finally {
       setIsSubmitting(false);
     }
+    // Don't set isSubmitting to false here as the page will reload
   };
 
   // Create an array of image URLs for GridMotion

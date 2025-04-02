@@ -50,26 +50,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const checkRedirectResult = async () => {
       try {
         // Check if returning from a redirect
+        console.log('Checking redirect result...');
         const result = await getRedirectResult(auth);
         if (result) {
-          console.log('Redirect result:', result.user);
+          console.log('Redirect result successful:', result.user.email);
           // User successfully signed in via redirect
           toast({
             title: 'Login Successful',
             description: 'Welcome! You are now signed in with Google.',
           });
+        } else {
+          console.log('No redirect result found');
         }
       } catch (error: any) {
         console.error('Redirect result error:', error);
         
         // Handle errors from redirect result
         if (error.code === 'auth/unauthorized-domain') {
+          console.error('Domain not authorized:', window.location.origin);
           toast({
-            title: 'Login Failed',
-            description: 'This domain is not authorized for sign-in. Please contact support.',
+            title: 'Authentication Error',
+            description: 'Please make sure this domain is added to your Firebase console.',
             variant: 'destructive',
           });
-          console.error('Domain not authorized. Make sure to add this domain to Firebase console auth settings.');
+        } else {
+          toast({
+            title: 'Login Error',
+            description: error.message || 'There was an issue with the login process',
+            variant: 'destructive',
+          });
         }
       }
     };
@@ -101,30 +110,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithGoogle = async () => {
     try {
       setIsLoading(true);
-      console.log('Starting Google sign-in process...');
       
-      // For deployment on Replit, we need to handle auth differently
-      const isDevelopment = window.location.hostname === 'localhost' || 
-                           window.location.hostname.includes('replit.dev');
+      // For Replit, we need to use redirect method as it's more reliable
+      // with domain authorization
+      console.log('Starting Google sign-in with redirect...');
+      await signInWithRedirect(auth, googleProvider);
       
-      if (isDevelopment) {
-        // In development, try popup first then fall back to redirect
-        try {
-          await signInWithPopup(auth, googleProvider);
-        } catch (popupError: any) {
-          console.log('Popup failed, trying redirect method:', popupError);
-          
-          if (popupError.code === 'auth/unauthorized-domain') {
-            console.log('Domain not authorized for popup. Switching to redirect.');
-            await signInWithRedirect(auth, googleProvider);
-          } else {
-            throw popupError;
-          }
-        }
-      } else {
-        // In production, just use redirect for more reliable experience
-        await signInWithRedirect(auth, googleProvider);
-      }
     } catch (error: any) {
       let errorMessage = 'Failed to sign in with Google';
       console.error('Google sign-in error:', error);
