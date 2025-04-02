@@ -101,28 +101,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithGoogle = async () => {
     try {
       setIsLoading(true);
-      console.log('Starting Google sign-in process...');
+      console.log('Starting Google sign-in process using popup...');
       
-      // For deployment on Replit, we need to handle auth differently
-      const isDevelopment = window.location.hostname === 'localhost' || 
-                           window.location.hostname.includes('replit.dev');
+      // Check if we're on the production domain
+      const isProductionDomain = window.location.hostname === 'ai-flyer-genius-haitucreations.replit.app';
       
-      if (isDevelopment) {
-        // In development, try popup first then fall back to redirect
+      // For the production domain, use popup for better UX
+      if (isProductionDomain) {
         try {
+          console.log('Using popup for production domain');
           await signInWithPopup(auth, googleProvider);
-        } catch (popupError: any) {
-          console.log('Popup failed, trying redirect method:', popupError);
-          
-          if (popupError.code === 'auth/unauthorized-domain') {
-            console.log('Domain not authorized for popup. Switching to redirect.');
-            await signInWithRedirect(auth, googleProvider);
+        } catch (error: any) {
+          console.error('Production popup failed:', error);
+          // If popup fails on production domain, use redirect
+          if (error.code === 'auth/popup-closed-by-user') {
+            throw error; // Don't auto-retry if user closed popup
           } else {
-            throw popupError;
+            console.log('Falling back to redirect method for production');
+            await signInWithRedirect(auth, googleProvider);
           }
         }
       } else {
-        // In production, just use redirect for more reliable experience
+        // For any other domain (dev/preview), use redirect
+        console.log('Using redirect for non-production domain');
         await signInWithRedirect(auth, googleProvider);
       }
     } catch (error: any) {
@@ -135,8 +136,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } else if (error.code === 'auth/popup-blocked') {
         errorMessage = 'Sign-in popup was blocked. Please enable popups for this site.';
       } else if (error.code === 'auth/unauthorized-domain') {
-        errorMessage = 'Authentication domain issue. Please try again or contact support.';
-        console.error('Domain not authorized. Current origin: ' + window.location.origin);
+        errorMessage = 'This domain is not authorized for sign-in. Please visit ai-flyer-genius-haitucreations.replit.app';
+        console.error('Domain not authorized. Add domain to Firebase console auth settings: ' + window.location.origin);
       } else if (error.code) {
         errorMessage = `Authentication error: ${error.code}`;
       }
@@ -147,10 +148,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         variant: 'destructive',
       });
       
-      // Don't throw error on unauthorized domain as we're handling it with redirect
-      if (error.code !== 'auth/unauthorized-domain') {
-        throw error;
-      }
+      throw error;
     } finally {
       setIsLoading(false);
     }
