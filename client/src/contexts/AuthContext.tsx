@@ -85,45 +85,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     checkRedirectResult();
     
-    // Check for temporary development user in localStorage
-    const checkForTempUser = () => {
-      try {
-        const tempUserStr = localStorage.getItem('tempDevUser');
-        if (tempUserStr) {
-          const tempUser = JSON.parse(tempUserStr);
-          console.log('Found temporary development user:', tempUser.email);
-          setUser(tempUser);
-          setIsLoading(false);
-          return true;
-        }
-      } catch (error) {
-        console.error('Error parsing temporary user:', error);
+    // Watch Firebase auth state
+    const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
+      setIsLoading(false);
+      if (fbUser) {
+        // User is signed in
+        setUser({
+          uid: fbUser.uid,
+          email: fbUser.email,
+          displayName: fbUser.displayName,
+          photoURL: fbUser.photoURL
+        });
+      } else {
+        // User is signed out
+        setUser(null);
       }
-      return false;
-    };
-    
-    // First check for temporary dev user
-    const hasTempUser = checkForTempUser();
-    
-    // If no temporary user, watch Firebase auth state
-    let unsubscribe = () => {};
-    if (!hasTempUser) {
-      unsubscribe = onAuthStateChanged(auth, (fbUser) => {
-        setIsLoading(false);
-        if (fbUser) {
-          // User is signed in
-          setUser({
-            uid: fbUser.uid,
-            email: fbUser.email,
-            displayName: fbUser.displayName,
-            photoURL: fbUser.photoURL
-          });
-        } else {
-          // User is signed out
-          setUser(null);
-        }
-      });
-    }
+    });
 
     // Cleanup subscription
     return () => unsubscribe();
@@ -174,17 +151,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       setIsLoading(true);
-      
-      // First check if we have a temporary user
-      if (localStorage.getItem('tempDevUser')) {
-        // Remove temp user from localStorage
-        localStorage.removeItem('tempDevUser');
-        setUser(null);
-        setIsLoading(false);
-        return;
-      }
-      
-      // If not using temp user, sign out from Firebase
       await signOut(auth);
       // Toast message removed to simplify the logout experience
     } catch (error: any) {
