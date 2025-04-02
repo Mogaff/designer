@@ -161,7 +161,7 @@ export default function RecentCreations({ vertical = false }: RecentCreationsPro
             <div key={creation.id} className={`flex-none ${vertical ? 'w-full' : 'min-w-[200px] max-w-[200px]'}`}>
               <Card className={`overflow-hidden bg-black/40 backdrop-blur-sm border-gray-800 ${vertical ? 'h-14' : 'h-full'}`}>
                 <div className="flex items-center">
-                  <div className={`relative ${vertical ? 'h-14 w-14' : 'h-32 w-full'} overflow-hidden`}>
+                  <div className={`relative ${vertical ? 'h-14 w-14' : 'aspect-square w-full'} overflow-hidden`}>
                     <img 
                       src={creation.imageUrl} 
                       alt={creation.name}
