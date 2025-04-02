@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getQueryFn, apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,10 +7,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
-import { CreditCard, Plus, Star, AlertTriangle, Gift, DollarSign } from 'lucide-react';
+import { CreditCard, Plus, Star, AlertTriangle, Gift, DollarSign, Check, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ExtendedBadge } from '@/components/ui/extended-badge';
-import { Redirect } from 'wouter';
+import { Redirect, useLocation } from 'wouter';
 import { CreditsResponse, CreditTransaction, ExtendedBadgeVariant } from '@/lib/creditTypes';
 import { toast } from '@/hooks/use-toast';
 
@@ -19,6 +19,99 @@ export default function Credits() {
   const [isAddingCredits, setIsAddingCredits] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const queryClient = useQueryClient();
+  const [location, setLocation] = useLocation();
+  const [paymentStatus, setPaymentStatus] = useState<'success' | 'error' | 'cancelled' | null>(null);
+  
+  // Type for Stripe verification response
+  type VerifyPaymentResponse = {
+    success: boolean;
+    transaction: {
+      amount: number;
+      id: number;
+      description: string;
+    };
+    credits: number;
+  };
+  
+  // Mutation for Stripe payment verification
+  const verifyPaymentMutation = useMutation<VerifyPaymentResponse, Error, string>({
+    mutationFn: async (sessionId: string) => {
+      try {
+        const response = await apiRequest('POST', '/api/stripe/verify-payment', { sessionId });
+        // Extract JSON data from response
+        const data = await response.json();
+        
+        // Validate response format
+        if (data && 
+            typeof data === 'object' && 
+            'success' in data && 
+            'transaction' in data && 
+            'credits' in data) {
+          return data as VerifyPaymentResponse;
+        }
+        throw new Error('Invalid response structure from server');
+      } catch (error) {
+        console.error('Payment verification error:', error);
+        throw error;
+      }
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/credits'] });
+      setPaymentStatus('success');
+      toast({
+        title: "Payment Successful",
+        description: `${data.transaction.amount} credits have been added to your account.`,
+        variant: "default",
+      });
+      
+      // Clean up the URL parameters after successful processing
+      const cleanUrl = new URL(window.location.href);
+      cleanUrl.searchParams.delete('session_id');
+      cleanUrl.searchParams.delete('payment_success');
+      window.history.replaceState({}, document.title, cleanUrl.pathname);
+    },
+    onError: (error) => {
+      console.error('Payment verification failed:', error);
+      setPaymentStatus('error');
+      toast({
+        title: "Payment Verification Failed",
+        description: "We couldn't verify your payment. Please contact support if funds were deducted.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Check for Stripe redirection with session_id
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('session_id');
+    const paymentSuccess = params.get('payment_success');
+    const paymentCancelled = params.get('payment_cancelled');
+    
+    if (sessionId) {
+      // Verify the Stripe session
+      verifyPaymentMutation.mutate(sessionId);
+    } else if (paymentSuccess === 'true') {
+      setPaymentStatus('success');
+      toast({
+        title: "Payment Successful",
+        description: "Your payment was successful and credits have been added to your account.",
+        variant: "default",
+      });
+    } else if (paymentCancelled === 'true') {
+      setPaymentStatus('cancelled');
+      toast({
+        title: "Payment Cancelled",
+        description: "Your payment was cancelled. No charges were made.",
+        variant: "default",
+      });
+      
+      // Clean up the URL parameter
+      const cleanUrl = new URL(window.location.href);
+      cleanUrl.searchParams.delete('payment_cancelled');
+      window.history.replaceState({}, document.title, cleanUrl.pathname);
+    }
+  }, []);
 
   // Query user credits
   const { 
@@ -34,9 +127,10 @@ export default function Credits() {
   // Mutation to add credits
   const addCreditsMutation = useMutation({
     mutationFn: async ({ amount, description }: { amount: number, description: string }) => {
-      return apiRequest('POST', '/api/credits/add', { amount, description });
+      const response = await apiRequest('POST', '/api/credits/add', { amount, description });
+      return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       // Invalidate the credits query to refresh the data
       queryClient.invalidateQueries({ queryKey: ['/api/credits'] });
       toast({
@@ -156,6 +250,47 @@ export default function Credits() {
 
   return (
     <div className="container max-w-4xl mx-auto py-32 px-4">
+      {/* Payment Status Alert */}
+      {paymentStatus === 'success' && (
+        <div className="mb-6 p-4 bg-green-100 border border-green-200 rounded-lg flex items-center shadow-sm">
+          <Check className="h-5 w-5 text-green-600 mr-3 flex-shrink-0" />
+          <div className="flex-grow">
+            <h4 className="font-medium text-green-800">Payment Successful</h4>
+            <p className="text-green-700 text-sm">Your payment has been processed and credits have been added to your account.</p>
+          </div>
+        </div>
+      )}
+      
+      {paymentStatus === 'error' && (
+        <div className="mb-6 p-4 bg-red-100 border border-red-200 rounded-lg flex items-center shadow-sm">
+          <X className="h-5 w-5 text-red-600 mr-3 flex-shrink-0" />
+          <div className="flex-grow">
+            <h4 className="font-medium text-red-800">Payment Verification Failed</h4>
+            <p className="text-red-700 text-sm">We couldn't verify your payment. If funds were deducted, please contact our support team.</p>
+          </div>
+        </div>
+      )}
+      
+      {paymentStatus === 'cancelled' && (
+        <div className="mb-6 p-4 bg-yellow-100 border border-yellow-200 rounded-lg flex items-center shadow-sm">
+          <AlertTriangle className="h-5 w-5 text-yellow-600 mr-3 flex-shrink-0" />
+          <div className="flex-grow">
+            <h4 className="font-medium text-yellow-800">Payment Cancelled</h4>
+            <p className="text-yellow-700 text-sm">Your payment was cancelled. No charges were made to your account.</p>
+          </div>
+        </div>
+      )}
+      
+      {verifyPaymentMutation.isPending && (
+        <div className="mb-6 p-4 bg-blue-100 border border-blue-200 rounded-lg flex items-center shadow-sm">
+          <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-blue-600 mr-3 flex-shrink-0"></div>
+          <div className="flex-grow">
+            <h4 className="font-medium text-blue-800">Verifying Payment</h4>
+            <p className="text-blue-700 text-sm">Please wait while we verify your payment...</p>
+          </div>
+        </div>
+      )}
+      
       <h1 className="text-3xl font-bold mb-8">Your Credits</h1>
 
       {/* Credit Summary Card */}

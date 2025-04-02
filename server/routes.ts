@@ -10,6 +10,7 @@ import { log } from "./vite";
 import passport from "./auth";
 import { hashPassword, isAuthenticated } from "./auth";
 import { insertUserSchema, insertDesignConfigSchema, insertUserCreditsSchema, insertUserCreationSchema } from "@shared/schema";
+import { createCheckoutSession, verifyCheckoutSession, handleStripeWebhook, CREDIT_PACKAGES } from "./stripe";
 
 // Using the built-in type definitions from @types/multer
 
@@ -681,6 +682,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       res.status(500).json({ message: `Failed to delete creation: ${errorMessage}` });
+    }
+  });
+  
+  // Stripe payment integration endpoints
+  
+  // Create a checkout session for Stripe payment
+  app.post("/api/stripe/create-checkout", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const { packageType, successUrl, cancelUrl } = req.body;
+      
+      // Validate required fields
+      if (!packageType || !successUrl || !cancelUrl) {
+        return res.status(400).json({ 
+          message: "Missing required fields: packageType, successUrl, or cancelUrl" 
+        });
+      }
+      
+      // Get user to retrieve firebase UID
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Create checkout session
+      const checkoutUrl = await createCheckoutSession(
+        userId.toString(),
+        user.firebase_uid || '',
+        packageType,
+        successUrl,
+        cancelUrl
+      );
+      
+      res.json({ url: checkoutUrl });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to create checkout session: ${errorMessage}` });
+    }
+  });
+  
+  // Verify successful payment and add credits to user account
+  app.post("/api/stripe/verify-payment", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { sessionId } = req.body;
+      
+      if (!sessionId) {
+        return res.status(400).json({ message: "Session ID is required" });
+      }
+      
+      // Verify the session
+      const verification = await verifyCheckoutSession(sessionId);
+      
+      if (!verification.success) {
+        return res.status(400).json({ message: "Payment verification failed" });
+      }
+      
+      // Convert string user ID to number
+      const userId = parseInt(verification.userId, 10);
+      
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID in session" });
+      }
+      
+      // Add credits transaction
+      const transaction = await storage.addCreditsTransaction({
+        user_id: userId,
+        amount: verification.credits,
+        transaction_type: 'add',
+        description: `${verification.packageType} Package purchase`
+      });
+      
+      // Get updated user info
+      const updatedUser = await storage.getUser(userId);
+      
+      res.json({
+        success: true,
+        transaction: transaction,
+        credits: updatedUser?.credits_balance
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Payment verification failed: ${errorMessage}` });
     }
   });
 
