@@ -1,11 +1,12 @@
 import { 
-  users, userCredits, designConfigs,
+  users, userCredits, designConfigs, userCreations,
   type User, type InsertUser, 
   type UserCredits, type InsertUserCredits,
-  type DesignConfig, type InsertDesignConfig
+  type DesignConfig, type InsertDesignConfig,
+  type UserCreation, type InsertUserCreation
 } from "@shared/schema";
 
-// Storage interface with CRUD methods for users, credits, and design configurations
+// Storage interface with CRUD methods for users, credits, design configurations, and user creations
 export interface IStorage {
   // User management
   getUser(id: number): Promise<User | undefined>;
@@ -23,23 +24,34 @@ export interface IStorage {
   getDesignConfig(id: number): Promise<DesignConfig | undefined>;
   createDesignConfig(config: InsertDesignConfig): Promise<DesignConfig>;
   updateDesignConfig(id: number, updates: Partial<InsertDesignConfig>): Promise<DesignConfig | undefined>;
+  
+  // User Creations
+  getUserCreations(userId: number): Promise<UserCreation[]>;
+  getUserCreation(id: number): Promise<UserCreation | undefined>;
+  createUserCreation(creation: InsertUserCreation): Promise<UserCreation>;
+  updateUserCreation(id: number, updates: Partial<InsertUserCreation>): Promise<UserCreation | undefined>;
+  deleteUserCreation(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
   private usersMap: Map<number, User>;
   private userCreditsMap: Map<number, UserCredits>;
   private designConfigsMap: Map<number, DesignConfig>;
+  private userCreationsMap: Map<number, UserCreation>;
   private userIdCounter: number;
   private creditsTxIdCounter: number;
   private configIdCounter: number;
+  private creationIdCounter: number;
 
   constructor() {
     this.usersMap = new Map();
     this.userCreditsMap = new Map();
     this.designConfigsMap = new Map();
+    this.userCreationsMap = new Map();
     this.userIdCounter = 1;
     this.creditsTxIdCounter = 1;
     this.configIdCounter = 1;
+    this.creationIdCounter = 1;
     
     // Create default design config
     this.createDesignConfig({
@@ -205,6 +217,72 @@ export class MemStorage implements IStorage {
     
     this.designConfigsMap.set(id, updatedConfig);
     return updatedConfig;
+  }
+
+  // User Creations methods
+  async getUserCreations(userId: number): Promise<UserCreation[]> {
+    // Get all creations for a user
+    const creations = Array.from(this.userCreationsMap.values()).filter(
+      creation => creation.user_id === userId
+    );
+    
+    // Sort by creation date, newest first
+    return creations.sort((a, b) => {
+      const dateA = a.created_at instanceof Date ? a.created_at : new Date();
+      const dateB = b.created_at instanceof Date ? b.created_at : new Date();
+      return dateB.getTime() - dateA.getTime();
+    });
+  }
+  
+  async getUserCreation(id: number): Promise<UserCreation | undefined> {
+    return this.userCreationsMap.get(id);
+  }
+  
+  async createUserCreation(creation: InsertUserCreation): Promise<UserCreation> {
+    const id = this.creationIdCounter++;
+    const now = new Date();
+    
+    const userCreation: UserCreation = {
+      id,
+      user_id: creation.user_id,
+      name: creation.name,
+      imageUrl: creation.imageUrl,
+      headline: creation.headline || null,
+      content: creation.content || null,
+      stylePrompt: creation.stylePrompt || null,
+      template: creation.template || null,
+      metadata: creation.metadata || null,
+      favorite: creation.favorite ?? false,
+      created_at: now
+    };
+    
+    this.userCreationsMap.set(id, userCreation);
+    return userCreation;
+  }
+  
+  async updateUserCreation(
+    id: number, 
+    updates: Partial<InsertUserCreation>
+  ): Promise<UserCreation | undefined> {
+    const creation = await this.getUserCreation(id);
+    if (!creation) return undefined;
+    
+    const updatedCreation = {
+      ...creation,
+      ...updates
+    };
+    
+    this.userCreationsMap.set(id, updatedCreation);
+    return updatedCreation;
+  }
+  
+  async deleteUserCreation(id: number): Promise<boolean> {
+    const exists = this.userCreationsMap.has(id);
+    if (exists) {
+      this.userCreationsMap.delete(id);
+      return true;
+    }
+    return false;
   }
 }
 

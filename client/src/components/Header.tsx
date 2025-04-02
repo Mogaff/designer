@@ -1,4 +1,4 @@
-import { Menu, Home, LucideImage, LogIn, LogOut, User, CreditCard, Star, DollarSign } from "lucide-react";
+import { Menu, Home, LucideImage, LogIn, LogOut, User, CreditCard, Star, DollarSign, Images } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -64,6 +64,14 @@ export default function Header() {
                 Credits
               </button>
             </Link>
+            {isAuthenticated && (
+              <Link href="/gallery">
+                <button type="button" className={`pill-nav-item text-xs py-1 px-3 ${location === '/gallery' ? 'active' : ''}`}>
+                  <Images className="h-3 w-3 inline mr-1" />
+                  Gallery
+                </button>
+              </Link>
+            )}
           </div>
           
           {/* Credits display for authenticated users */}
@@ -136,6 +144,13 @@ export default function Header() {
                   <DropdownMenuItem>
                     <DollarSign className="h-4 w-4 mr-2" />
                     View Pricing Plans
+                  </DropdownMenuItem>
+                </Link>
+
+                <Link href="/gallery">
+                  <DropdownMenuItem>
+                    <Images className="h-4 w-4 mr-2" />
+                    My Gallery
                   </DropdownMenuItem>
                 </Link>
                 

@@ -9,7 +9,7 @@ import multer from "multer";
 import { log } from "./vite";
 import passport from "./auth";
 import { hashPassword, isAuthenticated } from "./auth";
-import { insertUserSchema, insertDesignConfigSchema, insertUserCreditsSchema } from "@shared/schema";
+import { insertUserSchema, insertDesignConfigSchema, insertUserCreditsSchema, insertUserCreationSchema } from "@shared/schema";
 
 // Using the built-in type definitions from @types/multer
 
@@ -488,6 +488,151 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
     res.status(401).json({ message: "Not authenticated" });
+  });
+
+  // User Creations API endpoints
+  
+  // Get all creations for the logged-in user
+  app.get("/api/creations", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const creations = await storage.getUserCreations(userId);
+      
+      res.json({
+        creations: creations
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to get user creations: ${errorMessage}` });
+    }
+  });
+  
+  // Get a specific creation by ID
+  app.get("/api/creations/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const creationId = parseInt(req.params.id);
+      
+      if (isNaN(creationId)) {
+        return res.status(400).json({ message: "Invalid creation ID" });
+      }
+      
+      const creation = await storage.getUserCreation(creationId);
+      
+      if (!creation) {
+        return res.status(404).json({ message: "Creation not found" });
+      }
+      
+      // Verify ownership
+      if (creation.user_id !== userId) {
+        return res.status(403).json({ message: "You don't have permission to access this creation" });
+      }
+      
+      res.json(creation);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to get creation: ${errorMessage}` });
+    }
+  });
+  
+  // Save a new creation
+  app.post("/api/creations", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      
+      // Validate request data
+      const validationResult = insertUserCreationSchema.safeParse({
+        ...req.body,
+        user_id: userId
+      });
+      
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          message: "Invalid input", 
+          errors: validationResult.error.format() 
+        });
+      }
+      
+      // Create the user creation
+      const creation = await storage.createUserCreation(validationResult.data);
+      
+      res.status(201).json(creation);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to save creation: ${errorMessage}` });
+    }
+  });
+  
+  // Update a creation
+  app.put("/api/creations/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const creationId = parseInt(req.params.id);
+      
+      if (isNaN(creationId)) {
+        return res.status(400).json({ message: "Invalid creation ID" });
+      }
+      
+      // Check if the creation exists and belongs to the user
+      const existingCreation = await storage.getUserCreation(creationId);
+      
+      if (!existingCreation) {
+        return res.status(404).json({ message: "Creation not found" });
+      }
+      
+      if (existingCreation.user_id !== userId) {
+        return res.status(403).json({ message: "You don't have permission to update this creation" });
+      }
+      
+      // Ensure user_id cannot be changed
+      const updateData = {
+        ...req.body,
+        user_id: userId
+      };
+      
+      // Update the creation
+      const updatedCreation = await storage.updateUserCreation(creationId, updateData);
+      
+      res.json(updatedCreation);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to update creation: ${errorMessage}` });
+    }
+  });
+  
+  // Delete a creation
+  app.delete("/api/creations/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const creationId = parseInt(req.params.id);
+      
+      if (isNaN(creationId)) {
+        return res.status(400).json({ message: "Invalid creation ID" });
+      }
+      
+      // Check if the creation exists and belongs to the user
+      const existingCreation = await storage.getUserCreation(creationId);
+      
+      if (!existingCreation) {
+        return res.status(404).json({ message: "Creation not found" });
+      }
+      
+      if (existingCreation.user_id !== userId) {
+        return res.status(403).json({ message: "You don't have permission to delete this creation" });
+      }
+      
+      // Delete the creation
+      const deleted = await storage.deleteUserCreation(creationId);
+      
+      if (deleted) {
+        res.status(204).end();
+      } else {
+        res.status(500).json({ message: "Failed to delete creation" });
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to delete creation: ${errorMessage}` });
+    }
   });
 
   const httpServer = createServer(app);

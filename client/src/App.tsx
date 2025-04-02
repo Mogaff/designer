@@ -7,6 +7,7 @@ import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import Credits from "@/pages/Credits";
 import Pricing from "@/pages/Pricing";
+import Gallery from "@/pages/Gallery";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
@@ -19,6 +20,11 @@ function Router() {
       <Route path="/credits">
         <ProtectedRoute>
           <Credits />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/gallery">
+        <ProtectedRoute>
+          <Gallery />
         </ProtectedRoute>
       </Route>
       {/* Add more routes here as needed */}
