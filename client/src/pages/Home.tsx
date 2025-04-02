@@ -17,15 +17,6 @@ export default function Home() {
       
       <main className="max-w-6xl mx-auto pt-12 px-6 lg:px-10 flex-grow flex flex-col">
         <section className="flex-grow flex flex-col">
-          <div className="text-center mb-2">
-            <h1 className="text-3xl font-bold mb-1 text-white">
-              ha'itu
-            </h1>
-            <p className="text-white/70 text-sm max-w-3xl mx-auto">
-              Generate stunning professional-quality designs with AI
-            </p>
-          </div>
-          
           <div className="glass-panel p-4 flex-grow overflow-hidden flex flex-col">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
               <div className="h-full">
