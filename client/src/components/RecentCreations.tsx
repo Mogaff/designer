@@ -142,7 +142,7 @@ export default function RecentCreations() {
                     {creation.name}
                   </p>
                   <p className="text-white/50 text-xs">
-                    {new Date(creation.created_at).toLocaleDateString()}
+                    {creation.created_at ? new Date(creation.created_at).toLocaleDateString() : 'Recently created'}
                   </p>
                 </div>
               </Card>

@@ -16,10 +16,10 @@ export default function Home() {
     <div className="flex flex-col h-screen overflow-auto">
       <Header />
       
-      <main className="max-w-6xl mx-auto pt-12 px-6 lg:px-10 flex-grow flex flex-col">
+      <main className="max-w-6xl mx-auto pt-12 px-6 lg:px-10 flex-grow flex flex-col pb-6">
         <section className="flex-grow flex flex-col">
           <div className="glass-panel p-4 flex-grow overflow-hidden flex flex-col">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
               <div>
                 {designSuggestions ? (
                   <DesignSuggestions 
@@ -45,10 +45,10 @@ export default function Home() {
                 />
               </div>
             </div>
-            
-            {/* Recent Designs Gallery Slider */}
-            <RecentCreations />
           </div>
+          
+          {/* Recent Designs Gallery Slider */}
+          <RecentCreations />
         </section>
       </main>
       
