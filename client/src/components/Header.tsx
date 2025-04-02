@@ -47,19 +47,6 @@ export default function Header() {
         
         <div className="flex items-center space-x-4">
           
-          {/* Credits display for authenticated users */}
-          {isAuthenticated && creditData && (
-            <div className="flex items-center mr-2">
-              <Badge variant="outline" className="text-white bg-transparent border-white/20 flex items-center gap-1 py-1.5">
-                <CreditCard className="h-3 w-3" />
-                <span>{isLoadingCredits ? '...' : creditData.balance}</span>
-                {creditData.is_premium && (
-                  <Star className="h-3 w-3 text-yellow-400 ml-1" />
-                )}
-              </Badge>
-            </div>
-          )}
-          
           {/* Authentication - always display with conditional content */}
           {isAuthenticated && user ? (
             <DropdownMenu>
