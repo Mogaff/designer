@@ -179,8 +179,8 @@ export default function RecentCreations({ vertical = false }: RecentCreationsPro
 
       {vertical ? (
         // Verbesserte vertikale Scrollansicht ohne Carousel für die breitere Seitenleiste
-        <div ref={verticalScrollRef} className="overflow-y-auto h-[calc(100vh-170px)] pr-1 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
-          <div className="grid grid-cols-2 gap-2 pb-2">
+        <div ref={verticalScrollRef} className="overflow-y-auto h-[calc(100vh-120px)] pr-1 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
+          <div className="grid grid-cols-2 gap-3 pb-2">
             {creations.map((creation) => (
               <div key={creation.id} className="w-full">
                 <Card className="overflow-hidden bg-black/40 backdrop-blur-sm border-gray-800/50 shadow-sm shadow-black/20 hover:bg-black/60 transition-colors">

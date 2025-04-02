@@ -24,9 +24,16 @@ export default function Home() {
             <RecentCreations vertical={false} />
           </div>
 
-          <div className="flex flex-col lg:flex-row gap-2 h-full">
-            {/* Main Generator + Preview */}
-            <div className="glass-panel p-4 flex-grow overflow-hidden flex flex-col lg:flex-[0.7]">
+          <div className="flex flex-col h-full">
+            <div className="fixed top-[60px] right-0 bottom-0 h-screen w-[25%] z-10 hidden lg:block pr-2 pl-2 py-2 overflow-hidden">
+              {/* Erweiterte und breitere Galerie-Seitenleiste - ganz rechts positioniert */}
+              <div className="glass-panel p-3 overflow-hidden h-full flex flex-col backdrop-blur-md">
+                <RecentCreations vertical={true} />
+              </div>
+            </div>
+            
+            {/* Main Generator + Preview - nimmt den restlichen Platz ein */}
+            <div className="glass-panel p-4 flex-grow overflow-hidden flex flex-col lg:mr-[25%]">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-full">
                 <div>
                   {designSuggestions ? (
@@ -56,11 +63,6 @@ export default function Home() {
                   />
                 </div>
               </div>
-            </div>
-            
-            {/* Erweiterte und breitere Galerie-Seitenleiste - rechts positioniert */}
-            <div className="glass-panel p-3 overflow-hidden lg:flex-[0.3] hidden lg:flex flex-col">
-              <RecentCreations vertical={true} />
             </div>
           </div>
         </section>
