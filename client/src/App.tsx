@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import Login from "@/pages/Login";
-import Credits from "@/pages/Credits";
 import Pricing from "@/pages/Pricing";
 import Gallery from "@/pages/Gallery";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -17,11 +16,6 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/login" component={Login} />
       <Route path="/pricing" component={Pricing} />
-      <Route path="/credits">
-        <ProtectedRoute>
-          <Credits />
-        </ProtectedRoute>
-      </Route>
       <Route path="/gallery">
         <ProtectedRoute>
           <Gallery />

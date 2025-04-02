@@ -76,7 +76,7 @@ export default function RecentCreations({ vertical = false }: RecentCreationsPro
     return (
       <div className="w-full bg-black/30 backdrop-blur-md rounded-xl border border-white/10 p-4 mt-6">
         <div className="flex justify-between items-center mb-3">
-          <h3 className="text-md font-semibold text-white">Your Recent Designs</h3>
+          <h3 className="text-md font-semibold text-white">My Designs</h3>
           <div className="flex gap-2">
             <Skeleton className="h-8 w-8 rounded-full" />
             <Skeleton className="h-8 w-8 rounded-full" />
@@ -183,9 +183,9 @@ export default function RecentCreations({ vertical = false }: RecentCreationsPro
           <div className="flex flex-col gap-2 pb-2">
             {creations.map((creation) => (
               <div key={creation.id} className="w-full">
-                <Card className="overflow-hidden bg-black/40 backdrop-blur-sm border-gray-800/50 shadow-sm shadow-black/20 h-16 hover:bg-black/60 transition-colors">
+                <Card className="overflow-hidden bg-black/40 backdrop-blur-sm border-gray-800/50 shadow-sm shadow-black/20 h-20 hover:bg-black/60 transition-colors">
                   <div className="flex items-center h-full">
-                    <div className="relative h-16 w-16 overflow-hidden">
+                    <div className="relative h-20 w-20 overflow-hidden">
                       <img 
                         src={creation.imageUrl} 
                         alt={creation.name}
@@ -193,10 +193,10 @@ export default function RecentCreations({ vertical = false }: RecentCreationsPro
                       />
                     </div>
                     <div className="p-2 flex-1">
-                      <p className="text-white/90 text-[10px] font-medium truncate">
+                      <p className="text-white/90 text-xs font-medium truncate">
                         {creation.name}
                       </p>
-                      <p className="text-white/50 text-[8px]">
+                      <p className="text-white/50 text-[10px]">
                         {creation.created_at ? new Date(creation.created_at).toLocaleDateString() : 'Recently created'}
                       </p>
                     </div>

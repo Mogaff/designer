@@ -59,11 +59,6 @@ export default function Header() {
                 Pricing
               </button>
             </Link>
-            <Link href="/credits">
-              <button type="button" className={`pill-nav-item text-xs py-1 px-3 ${location === '/credits' ? 'active' : ''}`}>
-                Credits
-              </button>
-            </Link>
             <Link href="/gallery">
               <button type="button" className={`pill-nav-item text-xs py-1 px-3 ${location === '/gallery' ? 'active' : ''}`}>
                 <Images className="h-3 w-3 inline mr-1" />
@@ -131,13 +126,6 @@ export default function Header() {
                 )}
                 
                 {/* Navigation items */}
-                <Link href="/credits">
-                  <DropdownMenuItem>
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    Get More Credits
-                  </DropdownMenuItem>
-                </Link>
-                
                 <Link href="/pricing">
                   <DropdownMenuItem>
                     <DollarSign className="h-4 w-4 mr-2" />

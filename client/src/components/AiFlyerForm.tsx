@@ -51,12 +51,25 @@ export default function AiFlyerForm({
   };
   
   const aspectRatioOptions: AspectRatioOption[] = [
-    { id: "profile", label: "Profile (800×800)", value: "1/1" },
-    { id: "banner", label: "Banner (2048×1152)", value: "16/9" },
-    { id: "thumbnail", label: "Thumbnail (1280×720)", value: "16/9" },
-    { id: "instream", label: "In-stream Ad (1920×1080)", value: "16/9" },
-    { id: "stories", label: "Stories (1080×1920)", value: "9/16" }, 
-    { id: "bumper", label: "Bumper Ad (300×60)", value: "5/1" },
+    // Square formats
+    { id: "profile", label: "Instagram Profile (1080×1080)", value: "1/1" },
+    { id: "post", label: "Social Media Post (1200×1200)", value: "1/1" },
+    
+    // Landscape formats
+    { id: "fb_cover", label: "Facebook Cover (820×312)", value: "820/312" },
+    { id: "twitter_header", label: "Twitter Header (1500×500)", value: "3/1" },
+    { id: "yt_thumbnail", label: "YouTube Thumbnail (1280×720)", value: "16/9" },
+    { id: "linkedin_banner", label: "LinkedIn Banner (1584×396)", value: "4/1" },
+    
+    // Video/Ad formats
+    { id: "instream", label: "Video Ad (1920×1080)", value: "16/9" },
+    { id: "stories", label: "Instagram Stories (1080×1920)", value: "9/16" },
+    { id: "pinterest", label: "Pinterest Pin (1000×1500)", value: "2/3" },
+    
+    // Display Ad formats
+    { id: "leaderboard", label: "Leaderboard Ad (728×90)", value: "728/90" },
+    { id: "square_ad", label: "Square Ad (250×250)", value: "1/1" },
+    { id: "skyscraper", label: "Skyscraper Ad (160×600)", value: "160/600" },
   ];
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -415,26 +428,31 @@ export default function AiFlyerForm({
               Aspect Ratio
             </Label>
             
-            <div className="flex flex-wrap gap-2">
-              {aspectRatioOptions.map((option) => (
-                <button
-                  key={option.id}
-                  type="button"
-                  onClick={() => setAspectRatio(option.id)}
-                  className={`
-                    h-8 px-2 rounded-md flex items-center justify-center transition-all duration-200
-                    ${aspectRatio === option.id
-                      ? 'bg-indigo-500/50 border-indigo-400/70 text-white backdrop-blur-md' 
-                      : 'bg-white/10 border-gray-800/50 text-white/80 hover:bg-indigo-500/30 backdrop-blur-sm'}
-                    border hover:border-indigo-500/40 focus:outline-none
-                    active:scale-95
-                  `}
-                >
-                  <span className={`text-xs font-medium ${aspectRatio === option.id ? 'text-white' : 'text-white/90'}`}>
-                    {option.label.split(' ')[0]}
-                  </span>
-                </button>
-              ))}
+            <div className="overflow-y-auto max-h-56 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent pr-1">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+                {aspectRatioOptions.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => setAspectRatio(option.id)}
+                    className={`
+                      h-9 px-2 rounded-md flex flex-col items-center justify-center transition-all duration-200
+                      ${aspectRatio === option.id
+                        ? 'bg-indigo-500/50 border-indigo-400/70 text-white backdrop-blur-md' 
+                        : 'bg-white/10 border-gray-800/50 text-white/80 hover:bg-indigo-500/30 backdrop-blur-sm'}
+                      border hover:border-indigo-500/40 focus:outline-none
+                      active:scale-95 w-full
+                    `}
+                  >
+                    <span className={`text-[10px] font-medium ${aspectRatio === option.id ? 'text-white' : 'text-white/90'}`}>
+                      {option.label.split(' ')[0]}
+                    </span>
+                    <span className={`text-[8px] ${aspectRatio === option.id ? 'text-white/90' : 'text-white/60'}`}>
+                      {option.label.split('(')[1]?.split(')')[0] || ''}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>

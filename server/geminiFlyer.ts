@@ -300,30 +300,62 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
         log(`Using aspect ratio: ${options.aspectRatio}`, "gemini");
         
         switch(options.aspectRatio) {
-          case 'profile': // Profile (800×800)
-            viewportWidth = 800;
-            viewportHeight = 800;
+          // Square formats
+          case 'profile': // Instagram Profile (1080×1080)
+            viewportWidth = 1080;
+            viewportHeight = 1080;
             break;
-          case 'banner': // Banner (2048×1152)
-            viewportWidth = 2048;
-            viewportHeight = 1152;
+          case 'post': // Social Media Post (1200×1200)
+            viewportWidth = 1200;
+            viewportHeight = 1200;
             break;
-          case 'thumbnail': // Thumbnail (1280×720)
+          case 'square_ad': // Square Ad (250×250)
+            viewportWidth = 250;
+            viewportHeight = 250;
+            break;
+            
+          // Landscape formats
+          case 'fb_cover': // Facebook Cover (820×312)
+            viewportWidth = 820;
+            viewportHeight = 312;
+            break;
+          case 'twitter_header': // Twitter Header (1500×500)
+            viewportWidth = 1500;
+            viewportHeight = 500;
+            break;
+          case 'yt_thumbnail': // YouTube Thumbnail (1280×720)
             viewportWidth = 1280;
             viewportHeight = 720;
             break;
-          case 'instream': // In-stream Ad (1920×1080)
+          case 'linkedin_banner': // LinkedIn Banner (1584×396)
+            viewportWidth = 1584;
+            viewportHeight = 396;
+            break;
+          case 'instream': // Video Ad (1920×1080)
             viewportWidth = 1920;
             viewportHeight = 1080;
             break;
-          case 'stories': // Stories (1080×1920)
+            
+          // Portrait formats
+          case 'stories': // Instagram Stories (1080×1920)
             viewportWidth = 1080;
             viewportHeight = 1920;
             break;
-          case 'bumper': // Bumper Ad (300×60)
-            viewportWidth = 300;
-            viewportHeight = 60;
+          case 'pinterest': // Pinterest Pin (1000×1500)
+            viewportWidth = 1000;
+            viewportHeight = 1500;
             break;
+            
+          // Display Ad formats
+          case 'leaderboard': // Leaderboard Ad (728×90)
+            viewportWidth = 728;
+            viewportHeight = 90;
+            break;
+          case 'skyscraper': // Skyscraper Ad (160×600)
+            viewportWidth = 160;
+            viewportHeight = 600;
+            break;
+            
           default:
             // Default dimensions for other or unknown aspect ratios
             break;

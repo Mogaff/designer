@@ -43,12 +43,25 @@ export default function FlyerPreview({
   };
   
   const aspectRatioOptions: AspectRatioOption[] = [
-    { id: "profile", label: "Profile (800×800)", value: "1/1" },
-    { id: "banner", label: "Banner (2048×1152)", value: "16/9" },
-    { id: "thumbnail", label: "Thumbnail (1280×720)", value: "16/9" },
-    { id: "instream", label: "In-stream Ad (1920×1080)", value: "16/9" },
-    { id: "stories", label: "Stories (1080×1920)", value: "9/16" }, 
-    { id: "bumper", label: "Bumper Ad (300×60)", value: "5/1" },
+    // Square formats
+    { id: "profile", label: "Instagram Profile (1080×1080)", value: "1/1" },
+    { id: "post", label: "Social Media Post (1200×1200)", value: "1/1" },
+    
+    // Landscape formats
+    { id: "fb_cover", label: "Facebook Cover (820×312)", value: "820/312" },
+    { id: "twitter_header", label: "Twitter Header (1500×500)", value: "3/1" },
+    { id: "yt_thumbnail", label: "YouTube Thumbnail (1280×720)", value: "16/9" },
+    { id: "linkedin_banner", label: "LinkedIn Banner (1584×396)", value: "4/1" },
+    
+    // Video/Ad formats
+    { id: "instream", label: "Video Ad (1920×1080)", value: "16/9" },
+    { id: "stories", label: "Instagram Stories (1080×1920)", value: "9/16" },
+    { id: "pinterest", label: "Pinterest Pin (1000×1500)", value: "2/3" },
+    
+    // Display Ad formats
+    { id: "leaderboard", label: "Leaderboard Ad (728×90)", value: "728/90" },
+    { id: "square_ad", label: "Square Ad (250×250)", value: "1/1" },
+    { id: "skyscraper", label: "Skyscraper Ad (160×600)", value: "160/600" },
   ];
   
   // Update aspectRatio when prop changes
