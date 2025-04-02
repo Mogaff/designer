@@ -231,11 +231,9 @@ export default function FlyerPreview({
             <div 
               className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-900/20 to-purple-900/30 border border-indigo-500/20 rounded-md mx-auto"
               style={{
-                aspectRatio: aspectRatioOptions.find(o => o.id === aspectRatio)?.value || aspectRatioOptions[0].value,
-                maxWidth: '100%',
-                maxHeight: '100%',
-                width: 'auto',
-                height: '100%',
+                maxWidth: '90%',
+                maxHeight: '90%',
+                padding: '2rem',
               }}
             >
               <div className="flex flex-col items-center justify-center text-center">
@@ -255,20 +253,27 @@ export default function FlyerPreview({
               <div 
                 className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-900/20 to-purple-900/30 border border-indigo-500/20 rounded-md mx-auto"
                 style={{
-                  aspectRatio: aspectRatioOptions.find(o => o.id === aspectRatio)?.value || aspectRatioOptions[0].value,
-                  maxWidth: '100%',
-                  maxHeight: '100%',
-                  width: 'auto',
-                  height: '100%',
+                  maxWidth: '90%',
+                  maxHeight: '90%',
+                  padding: '2rem',
                 }}
               >
                 {generatedFlyer && (
-                  <img 
-                    ref={imageRef}
-                    src={generatedFlyer.imageUrl} 
-                    alt="Generated design" 
-                    className="w-full h-full object-contain"
-                  />
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'center', 
+                    alignItems: 'center', 
+                    width: '100%', 
+                    height: '100%' 
+                  }}>
+                    <img 
+                      ref={imageRef}
+                      src={generatedFlyer.imageUrl} 
+                      alt="Generated design" 
+                      className="max-w-full max-h-full object-contain"
+                      style={{ maxHeight: '65vh' }}
+                    />
+                  </div>
                 )}
                 {isGenerating && (
                   <div className="absolute inset-0 flex items-center justify-center">
