@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { GeneratedFlyer } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
@@ -53,6 +53,13 @@ export default function FlyerPreview({
     { id: "3:2", label: "Photo (3:2)", value: "3/2" },
     { id: "2:3", label: "Tall (2:3)", value: "2/3" },
   ];
+  
+  // Update aspectRatio when prop changes
+  useEffect(() => {
+    if (initialAspectRatio) {
+      setAspectRatio(initialAspectRatio);
+    }
+  }, [initialAspectRatio]);
 
   const handleDownload = () => {
     if (!generatedFlyer) return;
@@ -205,12 +212,33 @@ export default function FlyerPreview({
       
       <div className="bg-black/40 backdrop-blur-md rounded-xl border border-white/10 flex-grow flex items-center justify-center">
         {!generatedFlyer && !isGenerating ? (
-          <div className="flex flex-col items-center justify-center text-center h-full w-full">
-            <div className="glass-panel p-3 rounded-full mb-2">
-              <img src={iconUpload} alt="Upload icon" className="h-12 w-12" />
+          <div className="w-full h-full flex items-center justify-center p-4">
+            <div 
+              className={`relative flex items-center justify-center ${aspectRatio !== 'original' ? 'overflow-hidden' : ''} 
+                ${aspectRatio !== 'original' ? 'bg-gradient-to-br from-indigo-900/20 to-purple-900/30 border border-indigo-500/20 rounded-md' : ''}`}
+              style={{
+                aspectRatio: aspectRatio === 'original' ? 'auto' : aspectRatioOptions.find(o => o.id === aspectRatio)?.value || 'auto',
+                maxWidth: '100%',
+                maxHeight: '100%',
+                width: aspectRatio === 'original' ? 'auto' : '100%',
+                height: aspectRatio === 'original' ? 'auto' : '100%',
+              }}
+            >
+              <div className="flex flex-col items-center justify-center text-center">
+                <div className="glass-panel p-3 rounded-full mb-2">
+                  <img src={iconUpload} alt="Upload icon" className="h-12 w-12" />
+                </div>
+                <h3 className="text-base font-medium text-white/90 mb-1">Your design will appear here</h3>
+                <p className="text-xs text-white/60 max-w-xs">Fill out the form and click "Generate Design"</p>
+              </div>
+              
+              {/* Aspect ratio label for empty state */}
+              {aspectRatio !== 'original' && (
+                <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] px-2 py-1 rounded-md">
+                  {aspectRatio}
+                </div>
+              )}
             </div>
-            <h3 className="text-base font-medium text-white/90 mb-1">Your design will appear here</h3>
-            <p className="text-xs text-white/60 max-w-xs">Fill out the form and click "Generate Design"</p>
           </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center p-4">
