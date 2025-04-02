@@ -16,7 +16,7 @@ export default function Home() {
     <div className="flex flex-col h-screen overflow-auto">
       <Header />
       
-      <main className="max-w-6xl mx-auto pt-12 px-6 lg:px-10 flex-grow flex flex-col">
+      <main className="max-w-7xl mx-auto pt-12 px-4 lg:px-6 flex-grow flex flex-col">
         <section className="flex-grow flex flex-col">
           <div className="flex flex-col lg:flex-row gap-2 h-full">
             {/* Main Generator + Preview */}
