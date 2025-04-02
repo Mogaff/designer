@@ -3,8 +3,6 @@ import { useToast } from '@/hooks/use-toast';
 import { 
   auth, 
   signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
   googleProvider,
   signOut,
   onAuthStateChanged
@@ -45,45 +43,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  // Check for redirect result and watch auth state changes
+  // Watch auth state changes
   useEffect(() => {
-    const checkRedirectResult = async () => {
-      try {
-        // Check if returning from a redirect
-        console.log('Checking redirect result...');
-        const result = await getRedirectResult(auth);
-        if (result) {
-          console.log('Redirect result successful:', result.user.email);
-          // User successfully signed in via redirect
-          toast({
-            title: 'Login Successful',
-            description: 'Welcome! You are now signed in with Google.',
-          });
-        } else {
-          console.log('No redirect result found');
-        }
-      } catch (error: any) {
-        console.error('Redirect result error:', error);
-        
-        // Handle errors from redirect result
-        if (error.code === 'auth/unauthorized-domain') {
-          console.error('Domain not authorized:', window.location.origin);
-          toast({
-            title: 'Authentication Error',
-            description: 'Please make sure this domain is added to your Firebase console.',
-            variant: 'destructive',
-          });
-        } else {
-          toast({
-            title: 'Login Error',
-            description: error.message || 'There was an issue with the login process',
-            variant: 'destructive',
-          });
-        }
-      }
-    };
-    
-    checkRedirectResult();
     
     // Watch Firebase auth state
     const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
@@ -106,60 +67,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, [toast]);
 
-  // Google Sign-in function
+  // Einfache Google Sign-in Funktion mit Popup
   const signInWithGoogle = async () => {
     try {
       setIsLoading(true);
+      console.log('Starting Google sign-in with popup...');
       
-      console.log('Starting Google sign-in...');
-      console.log('Current origin:', window.location.origin);
+      const result = await signInWithPopup(auth, googleProvider);
+      console.log('Popup login successful:', result.user.email);
       
-      // Überprüfen, auf welcher Domain wir sind
-      const currentDomain = window.location.hostname;
-      const isProduction = currentDomain === 'designer.haitucreations.ai';
-      
-      console.log('Current domain:', currentDomain);
-      console.log('Is production environment:', isProduction);
-      
-      // In Produktion verwenden wir Popup zuerst (weniger Probleme mit Redirects)
-      if (isProduction) {
-        try {
-          console.log('Production environment - trying popup sign-in first');
-          const result = await signInWithPopup(auth, googleProvider);
-          console.log('Popup login successful:', result.user.email);
-          toast({
-            title: 'Login erfolgreich',
-            description: 'Sie sind jetzt mit Google angemeldet.',
-          });
-          return;
-        } catch (popupError: any) {
-          console.error('Popup sign-in error in production:', popupError);
-          
-          if (popupError.code === 'auth/popup-blocked' || 
-              popupError.code === 'auth/popup-closed-by-user') {
-            console.log('Popup blocked - falling back to redirect...');
-            
-            // Bei blockierten Popups verwenden wir Redirect als Fallback
-            await signInWithRedirect(auth, googleProvider);
-            return;
-          }
-          
-          // Bei anderen Fehlern werfen wir den Fehler weiter
-          throw popupError;
-        }
-      } else {
-        // In Entwicklungsumgebung oder anderen Domains
-        console.log('Development environment - using redirect sign-in');
-        // Wir verwenden direkt Redirect auf Nicht-Produktionsumgebungen
-        await signInWithRedirect(auth, googleProvider);
-        return;
-      }
-      
+      toast({
+        title: 'Login erfolgreich',
+        description: 'Sie sind jetzt mit Google angemeldet.',
+      });
     } catch (error: any) {
       let errorMessage = 'Anmeldung mit Google fehlgeschlagen';
       console.error('Google sign-in error:', error);
       
-      // Bessere Fehlermeldungen
+      // Bessere Fehlermeldungen für häufige Fehler
       if (error.code === 'auth/popup-closed-by-user') {
         errorMessage = 'Anmeldung abgebrochen. Bitte versuchen Sie es erneut.';
       } else if (error.code === 'auth/popup-blocked') {
