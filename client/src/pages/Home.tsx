@@ -34,8 +34,8 @@ export default function Home() {
             
             {/* Main Generator + Preview - nimmt den restlichen Platz ein */}
             <div className="glass-panel p-4 flex-grow overflow-hidden flex flex-col lg:mr-[15%]">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-full">
-                <div>
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 h-full">
+                <div className="lg:col-span-2">
                   {designSuggestions ? (
                     <DesignSuggestions 
                       designs={designSuggestions}
@@ -55,7 +55,7 @@ export default function Home() {
                   )}
                 </div>
                 
-                <div className="h-full flex flex-col">
+                <div className="h-full flex flex-col lg:col-span-3">
                   <FlyerPreview 
                     generatedFlyer={generatedFlyer} 
                     isGenerating={isGenerating}

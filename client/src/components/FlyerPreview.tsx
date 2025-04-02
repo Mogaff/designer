@@ -199,36 +199,6 @@ export default function FlyerPreview({
       <div className="mb-2 flex justify-between items-center">
         <div className="flex items-center gap-2">
           <h2 className="text-base font-semibold text-white">Preview</h2>
-          
-          {/* Aspect Ratio Selector */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="h-7 px-2 py-1 text-xs bg-black/30 border-gray-700 hover:bg-black/50 text-white"
-              >
-                <Ratio className="h-3 w-3 mr-1" />
-                <span className="hidden sm:inline">{aspectRatioOptions.find(o => o.id === aspectRatio)?.label || aspectRatioOptions[0].label}</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-48 bg-black/90 backdrop-blur-lg border border-gray-800 shadow-lg text-white">
-              <DropdownMenuLabel className="text-xs text-gray-400">Aspect Ratio</DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-gray-800" />
-              {aspectRatioOptions.map((option) => (
-                <DropdownMenuItem 
-                  key={option.id}
-                  className="text-sm py-2 cursor-pointer focus:bg-gray-800 focus:text-white"
-                  onClick={() => setAspectRatio(option.id)}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <span>{option.label}</span>
-                    {aspectRatio === option.id && <Check className="h-4 w-4 text-indigo-400" />}
-                  </div>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
         
         <div className="flex space-x-2">
@@ -253,7 +223,7 @@ export default function FlyerPreview({
         </div>
       </div>
       
-      <div className="bg-black/40 backdrop-blur-md rounded-xl border border-white/10 flex-grow flex flex-col items-center justify-center relative">
+      <div className="bg-black/40 backdrop-blur-md rounded-xl border border-white/10 flex-grow flex flex-col items-center justify-center relative w-full">
         {/* Dezentes Rastermuster als Hintergrund */}
         <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none"></div>
         {!generatedFlyer && !isGenerating ? (
@@ -264,7 +234,7 @@ export default function FlyerPreview({
                 aspectRatio: aspectRatioOptions.find(o => o.id === aspectRatio)?.value || aspectRatioOptions[0].value,
                 maxWidth: '100%',
                 maxHeight: '100%',
-                width: '100%',
+                width: 'auto',
                 height: '100%',
               }}
             >
@@ -288,7 +258,7 @@ export default function FlyerPreview({
                   aspectRatio: aspectRatioOptions.find(o => o.id === aspectRatio)?.value || aspectRatioOptions[0].value,
                   maxWidth: '100%',
                   maxHeight: '100%',
-                  width: '100%',
+                  width: 'auto',
                   height: '100%',
                 }}
               >
