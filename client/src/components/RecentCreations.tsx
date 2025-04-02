@@ -24,8 +24,7 @@ interface RecentCreationsProps {
 export default function RecentCreations({ vertical = false }: RecentCreationsProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ 
     loop: true, 
-    align: 'start',
-    direction: vertical ? 'y' : 'x'
+    align: 'start'
   }, [Autoplay({ delay: 4000 })]);
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
@@ -133,12 +132,12 @@ export default function RecentCreations({ vertical = false }: RecentCreationsPro
         </div>
       </div>
 
-      <div className="overflow-hidden" ref={emblaRef}>
-        <div className="flex gap-4">
+      <div className="overflow-hidden h-full" ref={emblaRef}>
+        <div className={`${vertical ? 'flex flex-col' : 'flex'} gap-4`}>
           {creations.map((creation) => (
-            <div key={creation.id} className="flex-none min-w-[200px] max-w-[200px]">
+            <div key={creation.id} className={`flex-none ${vertical ? 'w-full mb-4' : 'min-w-[200px] max-w-[200px]'}`}>
               <Card className="overflow-hidden bg-black/40 backdrop-blur-sm border-gray-800 h-full">
-                <div className="relative h-32 overflow-hidden">
+                <div className={`relative ${vertical ? 'h-24' : 'h-32'} overflow-hidden`}>
                   <img 
                     src={creation.imageUrl} 
                     alt={creation.name}

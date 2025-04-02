@@ -20,7 +20,7 @@ export default function Home() {
         <section className="flex-grow flex flex-col">
           <div className="flex flex-col lg:flex-row gap-6 h-full">
             {/* Main Generator + Preview */}
-            <div className="glass-panel p-4 flex-grow overflow-hidden flex flex-col lg:w-3/4">
+            <div className="glass-panel p-4 flex-grow overflow-hidden flex flex-col lg:w-4/5">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
                 <div>
                   {designSuggestions ? (
@@ -50,7 +50,7 @@ export default function Home() {
             </div>
             
             {/* Recent Designs Gallery - Vertical */}
-            <div className="glass-panel p-4 overflow-hidden lg:w-1/4 flex flex-col">
+            <div className="glass-panel p-4 overflow-hidden lg:w-1/5 flex flex-col">
               <RecentCreations vertical={true} />
             </div>
           </div>
