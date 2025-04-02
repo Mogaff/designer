@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { BookMarked, ChevronLeft, ChevronRight } from 'lucide-react';
+import { BookMarked, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
@@ -17,8 +17,16 @@ interface CreationsResponse {
   creations: UserCreation[];
 }
 
-export default function RecentCreations() {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'start' }, [Autoplay({ delay: 4000 })]);
+interface RecentCreationsProps {
+  vertical?: boolean;
+}
+
+export default function RecentCreations({ vertical = false }: RecentCreationsProps) {
+  const [emblaRef, emblaApi] = useEmblaCarousel({ 
+    loop: true, 
+    align: 'start',
+    direction: vertical ? 'y' : 'x'
+  }, [Autoplay({ delay: 4000 })]);
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [_, setLocation] = useLocation();

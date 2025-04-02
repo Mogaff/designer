@@ -18,36 +18,41 @@ export default function Home() {
       
       <main className="max-w-6xl mx-auto pt-12 px-6 lg:px-10 flex-grow flex flex-col">
         <section className="flex-grow flex flex-col">
-          <div className="glass-panel p-4 flex-grow overflow-hidden flex flex-col">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-              <div>
-                {designSuggestions ? (
-                  <DesignSuggestions 
-                    designs={designSuggestions}
+          <div className="flex flex-col lg:flex-row gap-6 h-full">
+            {/* Main Generator + Preview */}
+            <div className="glass-panel p-4 flex-grow overflow-hidden flex flex-col lg:w-3/4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+                <div>
+                  {designSuggestions ? (
+                    <DesignSuggestions 
+                      designs={designSuggestions}
+                      isGenerating={isGenerating}
+                      setGeneratedFlyer={setGeneratedFlyer}
+                      setDesignSuggestions={setDesignSuggestions}
+                    />
+                  ) : (
+                    <AiFlyerForm
+                      setGeneratedFlyer={setGeneratedFlyer}
+                      isGenerating={isGenerating}
+                      setIsGenerating={setIsGenerating}
+                      setDesignSuggestions={setDesignSuggestions}
+                    />
+                  )}
+                </div>
+                
+                <div className="h-full flex flex-col">
+                  <FlyerPreview 
+                    generatedFlyer={generatedFlyer} 
                     isGenerating={isGenerating}
-                    setGeneratedFlyer={setGeneratedFlyer}
-                    setDesignSuggestions={setDesignSuggestions}
                   />
-                ) : (
-                  <AiFlyerForm
-                    setGeneratedFlyer={setGeneratedFlyer}
-                    isGenerating={isGenerating}
-                    setIsGenerating={setIsGenerating}
-                    setDesignSuggestions={setDesignSuggestions}
-                  />
-                )}
-              </div>
-              
-              <div>
-                <FlyerPreview 
-                  generatedFlyer={generatedFlyer} 
-                  isGenerating={isGenerating}
-                />
+                </div>
               </div>
             </div>
             
-            {/* Recent Designs Gallery Slider */}
-            <RecentCreations />
+            {/* Recent Designs Gallery - Vertical */}
+            <div className="glass-panel p-4 overflow-hidden lg:w-1/4 flex flex-col">
+              <RecentCreations vertical={true} />
+            </div>
           </div>
         </section>
       </main>
