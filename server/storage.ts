@@ -62,28 +62,7 @@ export class MemStorage implements IStorage {
       active: true,
     });
     
-    // TEMPORARY: Add a mock user for testing
-    const mockUser: User = {
-      id: 1,
-      username: 'test_user',
-      password: 'password', // Not a real password, just for testing
-      credits_balance: 100, // Plenty of credits for testing
-      is_premium: true,
-      created_at: new Date(),
-      firebase_uid: 'mock-user-id',
-      email: 'test@example.com',
-      display_name: 'Test User',
-      photo_url: null
-    };
-    this.usersMap.set(1, mockUser);
-    
-    // Add an initial credits transaction
-    this.addCreditsTransaction({
-      user_id: 1,
-      amount: 100,
-      transaction_type: 'initial',
-      description: 'Initial credits for testing'
-    });
+
   }
 
   // User methods

@@ -9,10 +9,6 @@ interface ProtectedRouteProps {
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading } = useAuth();
 
-  // TEMPORARY: For testing - always display content
-  return <>{children}</>;
-  
-  /* Original authentication logic (commented out for testing)
   // Show loading state while checking authentication
   if (isLoading) {
     return (
@@ -29,5 +25,4 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   // If authenticated, render the children
   return <>{children}</>;
-  */
 }
