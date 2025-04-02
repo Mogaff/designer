@@ -101,23 +101,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithGoogle = async () => {
     try {
       setIsLoading(true);
-      console.log('Starting Google sign-in process using redirect...');
+      console.log('Starting Google sign-in process...');
       
-      // Try first with popup for better user experience in development
-      try {
-        await signInWithPopup(auth, googleProvider);
-      } catch (popupError: any) {
-        // If popup fails (especially for unauthorized domain), fall back to redirect
-        console.log('Popup failed, trying redirect method:', popupError);
-        
-        if (popupError.code === 'auth/unauthorized-domain') {
-          console.log('Domain not authorized for popup. Switching to redirect.');
-          // Use redirect method as a fallback
-          await signInWithRedirect(auth, googleProvider);
-          // The rest will be handled by the useEffect with getRedirectResult
-        } else {
-          throw popupError; // Re-throw error if it's not just about unauthorized domain
+      // For deployment on Replit, we need to handle auth differently
+      const isDevelopment = window.location.hostname === 'localhost' || 
+                           window.location.hostname.includes('replit.dev');
+      
+      if (isDevelopment) {
+        // In development, try popup first then fall back to redirect
+        try {
+          await signInWithPopup(auth, googleProvider);
+        } catch (popupError: any) {
+          console.log('Popup failed, trying redirect method:', popupError);
+          
+          if (popupError.code === 'auth/unauthorized-domain') {
+            console.log('Domain not authorized for popup. Switching to redirect.');
+            await signInWithRedirect(auth, googleProvider);
+          } else {
+            throw popupError;
+          }
         }
+      } else {
+        // In production, just use redirect for more reliable experience
+        await signInWithRedirect(auth, googleProvider);
       }
     } catch (error: any) {
       let errorMessage = 'Failed to sign in with Google';
@@ -129,8 +135,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } else if (error.code === 'auth/popup-blocked') {
         errorMessage = 'Sign-in popup was blocked. Please enable popups for this site.';
       } else if (error.code === 'auth/unauthorized-domain') {
-        errorMessage = 'This domain is not authorized for sign-in. Please check Firebase console settings.';
-        console.error('Domain not authorized. Add domain to Firebase console auth settings: ' + window.location.origin);
+        errorMessage = 'Authentication domain issue. Please try again or contact support.';
+        console.error('Domain not authorized. Current origin: ' + window.location.origin);
       } else if (error.code) {
         errorMessage = `Authentication error: ${error.code}`;
       }

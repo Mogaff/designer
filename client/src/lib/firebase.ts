@@ -32,15 +32,23 @@ const app = initializeApp(firebaseConfig, 'haitu-app');
 // Initialize Firebase Authentication
 const auth = getAuth(app);
 
+// For deployment compatibility with Replit custom domains
+const isRunningOnReplit = window.location.hostname.includes('replit');
+if (isRunningOnReplit && window.location.hostname !== 'ai-flyer-genius-haitucreations.replit.app') {
+  // If on a Replit development domain, configure auth to use the main authorized domain
+  auth.useDeviceLanguage();
+  // @ts-ignore - accessing internal config for compatibility
+  auth.config.authDomain = 'ai-flyer-genius-haitucreations.replit.app';
+}
+
 // Create a Google Auth Provider with custom parameters
 const googleProvider = new GoogleAuthProvider();
 // Add scopes if needed
 googleProvider.addScope('https://www.googleapis.com/auth/userinfo.email');
 googleProvider.addScope('https://www.googleapis.com/auth/userinfo.profile');
-// Set custom parameters - this helps with the domain authorization
+// Set custom parameters - this helps with domain authorization
 googleProvider.setCustomParameters({
   prompt: 'select_account',
-  // Using Replit's domain in the redirect
   login_hint: 'Use your Google account'
 });
 
