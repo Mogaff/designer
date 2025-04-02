@@ -31,10 +31,12 @@ export default function RecentCreations({ vertical = false }: RecentCreationsPro
   const [_, setLocation] = useLocation();
   
   // Fetch user creations
-  const { data, isLoading } = useQuery<CreationsResponse>({
+  const { data, isLoading, refetch } = useQuery<CreationsResponse>({
     queryKey: ['/api/creations'],
     queryFn: getQueryFn({ on401: 'returnNull' }),
     enabled: isAuthenticated,
+    // Refresh every 5 seconds when component is visible
+    refetchInterval: 5000,
   });
   
   const creations = data?.creations || [];

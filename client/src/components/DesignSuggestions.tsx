@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { GeneratedFlyer } from "@/lib/types";
 import { CheckCircle } from "lucide-react";
 import { MultiColorLoading } from "@/components/ui/multi-color-loading";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -41,11 +41,7 @@ export default function DesignSuggestions({
         stylePrompt: design.style,
         template: "ai"
       });
-      
-      toast({
-        title: "Design saved",
-        description: "Your design has been automatically saved to your gallery",
-      });
+      // Silently save - no notification displayed
     } catch (error) {
       console.error("Failed to auto-save design:", error);
       // Don't show error to user for auto-save - it happens silently
@@ -71,6 +67,9 @@ export default function DesignSuggestions({
     
     // Auto-save the design when selected
     saveDesignToGallery(design);
+    
+    // Refresh the gallery to show newly saved designs
+    queryClient.invalidateQueries({ queryKey: ['/api/creations'] });
   };
 
   // Handle finalizing the design choice
@@ -80,6 +79,9 @@ export default function DesignSuggestions({
     // Find the selected design
     const selected = designs.find(d => d.id === selectedDesign);
     if (!selected) return;
+    
+    // Refresh the gallery to show newly saved designs
+    queryClient.invalidateQueries({ queryKey: ['/api/creations'] });
     
     // Clear the suggestions to show only the selected design
     setDesignSuggestions(null);

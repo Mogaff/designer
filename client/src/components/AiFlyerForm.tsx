@@ -1,6 +1,6 @@
 import { useState, FormEvent, ChangeEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -105,6 +105,9 @@ export default function AiFlyerForm({
       }
       
       setIsGenerating(false);
+      
+      // Refresh the gallery to show newly saved designs
+      queryClient.invalidateQueries({ queryKey: ['/api/creations'] });
       
       // Show different messages based on how many designs were generated
       if (data.designs.length >= 4) {
