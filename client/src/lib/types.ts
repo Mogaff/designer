@@ -29,4 +29,5 @@ export type AiFlyerGenerationRequest = {
   backgroundImage?: File;
   logo?: File;
   designCount?: number;
+  aspectRatio?: string;
 };

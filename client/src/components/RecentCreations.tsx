@@ -98,11 +98,11 @@ export default function RecentCreations({ vertical = false }: RecentCreationsPro
   }
 
   return (
-    <div className={`w-full bg-black/30 backdrop-blur-md rounded-xl border border-white/10 p-2 ${vertical ? '' : 'mt-4'}`}>
-      <div className="flex justify-between items-center mb-2">
+    <div className={`w-full bg-black/30 backdrop-blur-md rounded-xl border border-white/10 ${vertical ? 'p-1' : 'p-2 mt-4'}`}>
+      <div className="flex justify-between items-center mb-1">
         <div className="flex items-center gap-1">
-          <h3 className={`${vertical ? 'text-xs' : 'text-md'} font-semibold text-white`}>{vertical ? 'Recent' : 'Your Recent Designs'}</h3>
-          <Badge variant="secondary" className="text-xs">{creations.length}</Badge>
+          <h3 className={`${vertical ? 'text-[10px]' : 'text-md'} font-semibold text-white`}>{vertical ? 'Gallery' : 'Your Recent Designs'}</h3>
+          <Badge variant="secondary" className={`${vertical ? 'text-[8px] px-1 py-0' : 'text-xs'}`}>{creations.length}</Badge>
         </div>
         <div className="flex items-center gap-1">
           {vertical ? (
@@ -110,7 +110,7 @@ export default function RecentCreations({ vertical = false }: RecentCreationsPro
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-6 w-6 rounded-full bg-black/40 text-white hover:bg-black/60"
+                className="h-5 w-5 rounded-full bg-black/40 text-white hover:bg-black/60 p-0"
                 onClick={scrollPrev}
               >
                 <ChevronUp className="h-3 w-3" />
@@ -118,7 +118,7 @@ export default function RecentCreations({ vertical = false }: RecentCreationsPro
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-6 w-6 rounded-full bg-black/40 text-white hover:bg-black/60"
+                className="h-5 w-5 rounded-full bg-black/40 text-white hover:bg-black/60 p-0"
                 onClick={scrollNext}
               >
                 <ChevronDown className="h-3 w-3" />
@@ -147,7 +147,7 @@ export default function RecentCreations({ vertical = false }: RecentCreationsPro
           <Button 
             variant="outline" 
             size="sm" 
-            className={`${vertical ? 'ml-1 h-6 text-[10px]' : 'ml-2 h-8 text-xs'} border-gray-700 bg-black/40 text-white hover:bg-black/60`}
+            className={`${vertical ? 'ml-0 h-5 text-[8px] py-0 px-1' : 'ml-2 h-8 text-xs'} border-gray-700 bg-black/40 text-white hover:bg-black/60`}
             onClick={handleViewInGallery}
           >
             {vertical ? 'All' : 'View All'}
@@ -156,27 +156,36 @@ export default function RecentCreations({ vertical = false }: RecentCreationsPro
       </div>
 
       <div className="overflow-hidden h-full" ref={emblaRef}>
-        <div className={`${vertical ? 'flex flex-col gap-2' : 'flex gap-4'}`}>
+        <div className={`${vertical ? 'flex flex-col gap-1' : 'flex gap-4'}`}>
           {creations.map((creation) => (
             <div key={creation.id} className={`flex-none ${vertical ? 'w-full' : 'min-w-[200px] max-w-[200px]'}`}>
-              <Card className="overflow-hidden bg-black/40 backdrop-blur-sm border-gray-800 h-full">
-                <div className={`relative ${vertical ? 'h-16' : 'h-32'} overflow-hidden`}>
-                  <img 
-                    src={creation.imageUrl} 
-                    alt={creation.name}
-                    className="w-full h-full object-cover"
-                  />
+              <Card className={`overflow-hidden bg-black/40 backdrop-blur-sm border-gray-800 ${vertical ? 'h-14' : 'h-full'}`}>
+                <div className="flex items-center">
+                  <div className={`relative ${vertical ? 'h-14 w-14' : 'h-32 w-full'} overflow-hidden`}>
+                    <img 
+                      src={creation.imageUrl} 
+                      alt={creation.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  {vertical && (
+                    <div className="p-1 flex-1">
+                      <p className="text-white/90 text-[8px] font-medium truncate">
+                        {creation.name}
+                      </p>
+                    </div>
+                  )}
                 </div>
-                <div className="p-1">
-                  <p className={`text-white/90 ${vertical ? 'text-[10px]' : 'text-xs'} font-medium truncate`}>
-                    {creation.name}
-                  </p>
-                  {!vertical && (
+                {!vertical && (
+                  <div className="p-1">
+                    <p className="text-white/90 text-xs font-medium truncate">
+                      {creation.name}
+                    </p>
                     <p className="text-white/50 text-xs">
                       {creation.created_at ? new Date(creation.created_at).toLocaleDateString() : 'Recently created'}
                     </p>
-                  )}
-                </div>
+                  </div>
+                )}
               </Card>
             </div>
           ))}

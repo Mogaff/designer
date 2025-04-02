@@ -79,6 +79,10 @@ export default function AiFlyerForm({
         formData.append("designCount", data.designCount.toString());
       }
       
+      if (data.aspectRatio) {
+        formData.append("aspectRatio", data.aspectRatio);
+      }
+      
       const response = await apiRequest("POST", "/api/generate-ai", formData);
       return response.json();
     },
@@ -215,7 +219,8 @@ export default function AiFlyerForm({
       prompt, 
       backgroundImage: backgroundImage || undefined,
       logo: logo || undefined,
-      designCount: parseInt(designCount)
+      designCount: parseInt(designCount),
+      aspectRatio
     });
   };
 

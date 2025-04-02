@@ -19,10 +19,15 @@ export default function Home() {
       
       <main className="max-w-7xl mx-auto pt-12 px-4 lg:px-6 flex-grow flex flex-col">
         <section className="flex-grow flex flex-col">
+          {/* Mobile Gallery View */}
+          <div className="lg:hidden w-full mb-4">
+            <RecentCreations vertical={false} />
+          </div>
+
           <div className="flex flex-col lg:flex-row gap-2 h-full">
             {/* Main Generator + Preview */}
-            <div className="glass-panel p-4 flex-grow overflow-hidden flex flex-col lg:w-9/10">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+            <div className="glass-panel p-4 flex-grow overflow-hidden flex flex-col lg:flex-[0.9]">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-full">
                 <div>
                   {designSuggestions ? (
                     <DesignSuggestions 
@@ -53,8 +58,8 @@ export default function Home() {
               </div>
             </div>
             
-            {/* Recent Designs Gallery - Vertical */}
-            <div className="glass-panel p-4 overflow-hidden lg:w-1/10 flex flex-col">
+            {/* Recent Designs Gallery - Vertical for desktop */}
+            <div className="glass-panel p-2 overflow-hidden lg:flex-[0.1] hidden lg:flex flex-col">
               <RecentCreations vertical={true} />
             </div>
           </div>

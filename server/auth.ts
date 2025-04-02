@@ -62,12 +62,34 @@ export function isAuthenticated(req: Request, res: Response, next: NextFunction)
   
   // Set a mock user for testing if not authenticated
   if (!req.isAuthenticated()) {
+    const mockUserId = 1;
+    // Make sure we have this mock user in our storage
+    storage.getUser(mockUserId).then(async (user) => {
+      if (!user) {
+        // Create the mock user in storage if it doesn't exist
+        try {
+          await storage.createUser({
+            username: 'test_user',
+            email: 'test@example.com',
+            password: 'not_real_password',
+            firebase_uid: 'mock_firebase_uid'
+          });
+          console.log("Created mock user for testing");
+        } catch (err) {
+          console.error("Error creating mock user:", err);
+        }
+      }
+    }).catch(err => {
+      console.error("Error checking for mock user:", err);
+    });
+    
+    // Set the mock user on the request
     req.user = {
-      id: 1,
+      id: mockUserId,
       username: 'test_user',
       email: 'test@example.com',
       password: 'not_real_password',
-      firebase_uid: 'mock_firebase_uid',
+      firebase_uid: 'mock_firebase_uid'
     };
   }
   

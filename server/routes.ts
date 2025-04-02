@@ -33,7 +33,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       log("AI Flyer generation started", "generator");
       
-      const { prompt, configId, designCount } = req.body;
+      const { prompt, configId, designCount, aspectRatio } = req.body;
       const userId = (req.user as any).id;
       
       // Parse designCount (default to 4 if not specified or invalid)
