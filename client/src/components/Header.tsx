@@ -64,14 +64,12 @@ export default function Header() {
                 Credits
               </button>
             </Link>
-            {isAuthenticated && (
-              <Link href="/gallery">
-                <button type="button" className={`pill-nav-item text-xs py-1 px-3 ${location === '/gallery' ? 'active' : ''}`}>
-                  <Images className="h-3 w-3 inline mr-1" />
-                  Gallery
-                </button>
-              </Link>
-            )}
+            <Link href="/gallery">
+              <button type="button" className={`pill-nav-item text-xs py-1 px-3 ${location === '/gallery' ? 'active' : ''}`}>
+                <Images className="h-3 w-3 inline mr-1" />
+                Gallery
+              </button>
+            </Link>
           </div>
           
           {/* Credits display for authenticated users */}
