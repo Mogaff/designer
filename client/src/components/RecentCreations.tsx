@@ -77,9 +77,10 @@ export default function RecentCreations({ vertical = false }: RecentCreationsPro
     return (
       <div className="w-full bg-black/30 backdrop-blur-md rounded-xl border border-white/10 p-4 mt-6">
         <div className="flex flex-col items-center justify-center py-6 text-center">
-          <BookMarked className="h-12 w-12 text-gray-400 mb-3" />
-          <h3 className="text-lg font-medium text-white mb-1">No designs saved yet</h3>
-          <p className="text-white/60 text-sm mb-4">Your saved designs will appear here</p>
+          <div className="bg-gray-800/50 rounded-full p-4 mb-3">
+            <BookMarked className="h-8 w-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-medium text-white">No designs saved yet</h3>
         </div>
       </div>
     );
@@ -89,9 +90,10 @@ export default function RecentCreations({ vertical = false }: RecentCreationsPro
     return (
       <div className="w-full bg-black/30 backdrop-blur-md rounded-xl border border-white/10 p-4 mt-6">
         <div className="flex flex-col items-center justify-center py-6 text-center">
-          <BookMarked className="h-12 w-12 text-gray-400 mb-3" />
-          <h3 className="text-lg font-medium text-white mb-1">Log in to see your designs</h3>
-          <p className="text-white/60 text-sm mb-4">Sign in to save and view your creations</p>
+          <div className="bg-gray-800/50 rounded-full p-4 mb-3">
+            <BookMarked className="h-8 w-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-medium text-white">Log in to see your designs</h3>
         </div>
       </div>
     );
@@ -101,7 +103,7 @@ export default function RecentCreations({ vertical = false }: RecentCreationsPro
     <div className={`w-full bg-black/30 backdrop-blur-md rounded-xl border border-white/10 ${vertical ? 'p-1' : 'p-2 mt-4'}`}>
       <div className="flex justify-between items-center mb-1">
         <div className="flex items-center gap-1">
-          <h3 className={`${vertical ? 'text-[10px]' : 'text-md'} font-semibold text-white`}>{vertical ? 'Gallery' : 'Your Recent Designs'}</h3>
+          <h3 className={`${vertical ? 'text-[10px]' : 'text-md'} font-semibold text-white`}>{vertical ? 'My Designs' : 'My Designs'}</h3>
           <Badge variant="secondary" className={`${vertical ? 'text-[8px] px-1 py-0' : 'text-xs'}`}>{creations.length}</Badge>
         </div>
         <div className="flex items-center gap-1">
