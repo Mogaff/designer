@@ -223,13 +223,13 @@ export default function FlyerPreview({
         </div>
       </div>
       
-      <div className="bg-black/40 backdrop-blur-md rounded-xl border border-white/10 flex-grow flex flex-col items-center justify-center relative w-full">
+      <div className="bg-black/40 backdrop-blur-md border border-white/10 flex-grow flex flex-col items-center justify-center relative w-full">
         {/* Dezentes Rastermuster als Hintergrund */}
         <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none"></div>
         {!generatedFlyer && !isGenerating ? (
           <div className="w-full h-full flex items-center justify-center p-4">
             <div 
-              className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-900/20 to-purple-900/30 border border-indigo-500/20 rounded-md mx-auto"
+              className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-900/20 to-purple-900/30 border border-indigo-500/20 mx-auto"
               style={{
                 maxWidth: '90%',
                 maxHeight: '90%',
@@ -242,7 +242,7 @@ export default function FlyerPreview({
               </div>
               
               {/* Aspect ratio label for empty state */}
-              <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] px-2 py-1 rounded-md">
+              <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] px-2 py-1">
                 {aspectRatioOptions.find(o => o.id === aspectRatio)?.label || aspectRatio}
               </div>
             </div>
@@ -251,7 +251,7 @@ export default function FlyerPreview({
           <div className="w-full h-full flex flex-col">
             <div className="flex-grow p-4 flex items-center justify-center">
               <div 
-                className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-900/20 to-purple-900/30 border border-indigo-500/20 rounded-md mx-auto"
+                className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-900/20 to-purple-900/30 border border-indigo-500/20 mx-auto"
                 style={{
                   maxWidth: '90%',
                   maxHeight: '90%',
@@ -277,13 +277,13 @@ export default function FlyerPreview({
                 )}
                 {isGenerating && (
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <MultiColorLoading className="w-full h-full rounded-xl" />
+                    <MultiColorLoading className="w-full h-full" />
                   </div>
                 )}
                 
                 {/* Aspect ratio label */}
                 {!isGenerating && (
-                  <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] px-2 py-1 rounded-md">
+                  <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] px-2 py-1">
                     {aspectRatioOptions.find(o => o.id === aspectRatio)?.label || aspectRatio}
                   </div>
                 )}
