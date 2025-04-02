@@ -71,10 +71,13 @@ export default function FlyerPreview({
     }
   }, [initialAspectRatio]);
   
-  // Reset autoSaveAttempted when a new flyer is set
+  // Speichern wir die letzte Bild-URL, um doppelte Speicherungen zu vermeiden
+  const lastSavedImageUrlRef = useRef<string | null>(null);
+  
+  // Reset autoSaveAttempted when a new flyer is set with a different image URL
   useEffect(() => {
-    // Wenn ein neuer Flyer gesetzt wird, setzen wir autoSaveAttempted zurück
-    if (generatedFlyer) {
+    // Wenn ein neuer Flyer gesetzt wird mit einer anderen URL als der zuletzt gespeicherten
+    if (generatedFlyer && generatedFlyer.imageUrl !== lastSavedImageUrlRef.current) {
       setAutoSaveAttempted(false);
     }
   }, [generatedFlyer?.imageUrl]); // Nur zurücksetzen, wenn sich die Bild-URL ändert
@@ -87,11 +90,23 @@ export default function FlyerPreview({
       // 2. We're not currently generating
       // 3. We haven't attempted to auto-save this flyer yet
       // 4. The user is authenticated
-      if (generatedFlyer && !isGenerating && !autoSaveAttempted && isAuthenticated) {
+      // 5. This image URL hasn't been saved before
+      const imageUrl = generatedFlyer?.imageUrl || null;
+      if (
+        generatedFlyer && 
+        !isGenerating && 
+        !autoSaveAttempted && 
+        isAuthenticated && 
+        imageUrl && 
+        imageUrl !== lastSavedImageUrlRef.current
+      ) {
         setAutoSaveAttempted(true);
         setIsSaving(true);
         
         try {
+          // Speichern wir die URL für spätere Vergleiche
+          lastSavedImageUrlRef.current = imageUrl;
+          
           // Ein besserer, eindeutigerer Name für das Design
           const timestamp = new Date().toLocaleTimeString();
           const designName = generatedFlyer.headline || 
@@ -109,7 +124,7 @@ export default function FlyerPreview({
           });
           
           // Keine Toast-Benachrichtigung mehr, um die Benutzeroberfläche sauberer zu halten
-          console.log("Design automatically saved to gallery");
+          console.log("Design successfully saved to gallery:", imageUrl.substring(0, 50) + "...");
         } catch (error) {
           console.error("Error auto-saving design:", error);
           // Don't show error notification for auto-save failures
@@ -120,7 +135,7 @@ export default function FlyerPreview({
     };
     
     autoSaveFlyer();
-  }, [generatedFlyer, isGenerating, autoSaveAttempted, isAuthenticated, toast]);
+  }, [generatedFlyer, isGenerating, autoSaveAttempted, isAuthenticated]);
 
   const handleDownload = () => {
     if (!generatedFlyer) return;

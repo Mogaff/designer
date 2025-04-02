@@ -28,7 +28,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
 
 export default function Gallery() {
@@ -80,11 +80,17 @@ export default function Gallery() {
     }
   };
   
+  // State für Lösch-Bestätigungsdialog
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deletingCreationId, setDeletingCreationId] = useState<number | null>(null);
+  
+  const confirmDeleteCreation = (id: number) => {
+    setDeletingCreationId(id);
+    setDeleteConfirmOpen(true);
+  };
+  
   const deleteCreation = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this creation?")) {
-      return;
-    }
-    
+    // Der Dialog sollte bereits geschlossen sein, wenn diese Funktion aufgerufen wird
     try {
       await apiRequest('DELETE', `/api/creations/${id}`);
       
@@ -92,15 +98,18 @@ export default function Gallery() {
       refetch();
       
       toast({
-        title: "Success",
-        description: "Creation deleted successfully",
+        title: "Erfolg",
+        description: "Design wurde erfolgreich gelöscht",
       });
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to delete creation",
+        title: "Fehler",
+        description: "Das Design konnte nicht gelöscht werden",
         variant: "destructive",
       });
+    } finally {
+      // Zurücksetzen des zu löschenden Designs
+      setDeletingCreationId(null);
     }
   };
   
@@ -350,7 +359,7 @@ export default function Gallery() {
                                 className="h-8 w-8 text-white/70 hover:text-red-500 hover:bg-transparent"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  deleteCreation(creation.id);
+                                  confirmDeleteCreation(creation.id);
                                 }}
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -444,49 +453,107 @@ export default function Gallery() {
                 </div>
                 
                 {/* Aktions-Buttons in einer abgesetzten Zeile */}
-                <div className="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-800/30">
+                <div className="flex justify-between gap-2 mt-3 pt-3 border-t border-gray-800/30">
+                  {/* Löschbutton links */}
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-gray-700/50 bg-black/20 text-white hover:bg-black/40"
-                    onClick={handleDownload}
+                    className="border-red-900/30 bg-red-500/10 text-white hover:bg-red-500/20"
+                    onClick={() => {
+                      if (selectedCreation) {
+                        setPreviewOpen(false); // Schließe den Dialog
+                        setTimeout(() => {
+                          // Verzögerung, damit der Dialog zuerst schließt
+                          confirmDeleteCreation(selectedCreation.id);
+                        }, 100);
+                      }
+                    }}
                   >
-                    <Download className="h-4 w-4 mr-1" />
-                    Download
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Löschen
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-gray-700/50 bg-black/20 text-white hover:bg-black/40"
-                    onClick={handleShare}
-                  >
-                    <Share2 className="h-4 w-4 mr-1" />
-                    Share
-                  </Button>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant={selectedCreation.favorite ? "default" : "outline"}
-                          size="sm"
-                          className={selectedCreation.favorite 
-                            ? "bg-red-500/20 border-red-900/30 text-white hover:bg-red-500/30" 
-                            : "border-gray-700/50 bg-black/20 text-white hover:bg-black/40"}
-                          onClick={() => toggleFavorite(selectedCreation.id, selectedCreation.favorite)}
-                        >
-                          <Heart className={`h-4 w-4 mr-1 ${selectedCreation.favorite ? 'fill-red-500 text-red-500' : ''}`} />
-                          {selectedCreation.favorite ? 'Favorited' : 'Add to favorites'}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {selectedCreation.favorite ? 'Remove from favorites' : 'Add to favorites'}
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  
+                  {/* Rechts ausgerichtete Aktionsbuttons */}
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-gray-700/50 bg-black/20 text-white hover:bg-black/40"
+                      onClick={handleDownload}
+                    >
+                      <Download className="h-4 w-4 mr-1" />
+                      Download
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-gray-700/50 bg-black/20 text-white hover:bg-black/40"
+                      onClick={handleShare}
+                    >
+                      <Share2 className="h-4 w-4 mr-1" />
+                      Share
+                    </Button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant={selectedCreation.favorite ? "default" : "outline"}
+                            size="sm"
+                            className={selectedCreation.favorite 
+                              ? "bg-red-500/20 border-red-900/30 text-white hover:bg-red-500/30" 
+                              : "border-gray-700/50 bg-black/20 text-white hover:bg-black/40"}
+                            onClick={() => toggleFavorite(selectedCreation.id, selectedCreation.favorite)}
+                          >
+                            <Heart className={`h-4 w-4 mr-1 ${selectedCreation.favorite ? 'fill-red-500 text-red-500' : ''}`} />
+                            {selectedCreation.favorite ? 'Favorited' : 'Add to favorites'}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {selectedCreation.favorite ? 'Remove from favorites' : 'Add to favorites'}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                 </div>
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+      
+      {/* Löschbestätigungsdialog */}
+      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <DialogContent className="bg-black/95 backdrop-blur-xl border-gray-800/50 text-white p-6 max-w-md rounded-xl">
+          <DialogTitle className="text-xl font-semibold text-white mb-2">
+            Design löschen
+          </DialogTitle>
+          <div className="py-3">
+            <p className="text-white/80 text-sm mb-4">
+              Bist du sicher, dass du dieses Design löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.
+            </p>
+            
+            <div className="flex justify-end gap-3 mt-6">
+              <Button
+                variant="outline"
+                className="border-gray-700 text-white hover:bg-gray-800"
+                onClick={() => setDeleteConfirmOpen(false)}
+              >
+                Abbrechen
+              </Button>
+              <Button
+                variant="destructive"
+                className="bg-red-600 hover:bg-red-700 text-white border-0"
+                onClick={() => {
+                  setDeleteConfirmOpen(false);
+                  if (deletingCreationId !== null) {
+                    deleteCreation(deletingCreationId);
+                  }
+                }}
+              >
+                Löschen
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
