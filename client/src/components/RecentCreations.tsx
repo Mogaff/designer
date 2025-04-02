@@ -135,16 +135,16 @@ export default function RecentCreations({ vertical = false }: RecentCreationsPro
       <div className="overflow-hidden h-full" ref={emblaRef}>
         <div className={`${vertical ? 'flex flex-col' : 'flex'} gap-4`}>
           {creations.map((creation) => (
-            <div key={creation.id} className={`flex-none ${vertical ? 'w-full mb-4' : 'min-w-[200px] max-w-[200px]'}`}>
+            <div key={creation.id} className={`flex-none ${vertical ? 'w-full mb-3' : 'min-w-[200px] max-w-[200px]'}`}>
               <Card className="overflow-hidden bg-black/40 backdrop-blur-sm border-gray-800 h-full">
-                <div className={`relative ${vertical ? 'h-24' : 'h-32'} overflow-hidden`}>
+                <div className={`relative ${vertical ? 'h-16' : 'h-32'} overflow-hidden`}>
                   <img 
                     src={creation.imageUrl} 
                     alt={creation.name}
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="p-2">
+                <div className="p-1">
                   <p className="text-white/90 text-xs font-medium truncate">
                     {creation.name}
                   </p>
