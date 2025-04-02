@@ -643,6 +643,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: `Failed to delete creation: ${errorMessage}` });
     }
   });
+  
+  // ==================== Admin Routes ====================
+  
+  // Get all users (admin)
+  app.get("/api/admin/users", /*isAuthenticated,*/ async (req: Request, res: Response) => {
+    try {
+      // In a real app, we would check if the user is an admin here
+      
+      // Get all users from storage
+      const users = Array.from(storage.usersMap.values()).map(user => ({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        credits_balance: user.credits_balance,
+        is_premium: user.is_premium,
+        firebase_uid: user.firebase_uid
+      }));
+      
+      res.json(users);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to get users: ${errorMessage}` });
+    }
+  });
+  
+  // Update user credits (admin)
+  app.post("/api/admin/users/:id/credits", /*isAuthenticated,*/ async (req: Request, res: Response) => {
+    try {
+      // In a real app, we would check if the user is an admin here
+      
+      const userId = parseInt(req.params.id);
+      const { amount } = req.body;
+      
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      if (typeof amount !== 'number' || amount < 0) {
+        return res.status(400).json({ message: "Valid amount is required" });
+      }
+      
+      // Get user
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Update credits
+      await storage.updateUserCredits(userId, amount);
+      
+      // Add a transaction record
+      const transaction = await storage.addCreditsTransaction({
+        user_id: userId,
+        amount: Math.abs(amount - user.credits_balance),
+        transaction_type: amount > user.credits_balance ? 'add' : 'subtract',
+        description: 'Admin credits adjustment'
+      });
+      
+      // Get updated user
+      const updatedUser = await storage.getUser(userId);
+      
+      res.json({
+        user: {
+          id: updatedUser?.id,
+          username: updatedUser?.username,
+          credits_balance: updatedUser?.credits_balance,
+          is_premium: updatedUser?.is_premium
+        },
+        transaction
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to update credits: ${errorMessage}` });
+    }
+  });
 
   const httpServer = createServer(app);
 
