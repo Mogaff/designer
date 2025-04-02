@@ -178,28 +178,28 @@ export default function RecentCreations({ vertical = false }: RecentCreationsPro
       </div>
 
       {vertical ? (
-        // Vertical scrolling container without carousel
+        // Verbesserte vertikale Scrollansicht ohne Carousel
         <div ref={verticalScrollRef} className="overflow-y-auto h-[calc(100vh-170px)] pr-1 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
-          <div className="flex flex-col gap-2 pb-2">
+          <div className="grid grid-cols-1 gap-2 pb-2">
             {creations.map((creation) => (
               <div key={creation.id} className="w-full">
-                <Card className="overflow-hidden bg-black/40 backdrop-blur-sm border-gray-800/50 shadow-sm shadow-black/20 h-20 hover:bg-black/60 transition-colors">
-                  <div className="flex items-center h-full">
-                    <div className="relative h-20 w-20 overflow-hidden">
-                      <img 
-                        src={creation.imageUrl} 
-                        alt={creation.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="p-2 flex-1">
-                      <p className="text-white/90 text-xs font-medium truncate">
-                        {creation.name}
-                      </p>
-                      <p className="text-white/50 text-[10px]">
-                        {creation.created_at ? new Date(creation.created_at).toLocaleDateString() : 'Recently created'}
-                      </p>
-                    </div>
+                <Card className="overflow-hidden bg-black/40 backdrop-blur-sm border-gray-800/50 shadow-sm shadow-black/20 hover:bg-black/60 transition-colors">
+                  {/* Konsistentes Seitenverhältnis für alle Bilder in der vertikalen Galerie */}
+                  <div className="relative w-full aspect-square overflow-hidden">
+                    <img 
+                      src={creation.imageUrl} 
+                      alt={creation.name}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="p-2">
+                    <p className="text-white/90 text-xs font-medium truncate">
+                      {creation.name}
+                    </p>
+                    <p className="text-white/50 text-[10px]">
+                      {creation.created_at ? new Date(creation.created_at).toLocaleDateString() : 'Recently created'}
+                    </p>
                   </div>
                 </Card>
               </div>
@@ -207,24 +207,25 @@ export default function RecentCreations({ vertical = false }: RecentCreationsPro
           </div>
         </div>
       ) : (
-        // Horizontal carousel
-        <div className="overflow-hidden h-full" ref={emblaRef}>
-          <div className="flex gap-4">
+        // Verbesserte horizontale Carousel-Ansicht
+        <div className="overflow-hidden h-full rounded-lg" ref={emblaRef}>
+          <div className="flex gap-3 pl-1 pr-2 py-1">
             {creations.map((creation) => (
-              <div key={creation.id} className="flex-none min-w-[200px] max-w-[200px]">
-                <Card className="overflow-hidden bg-black/40 backdrop-blur-sm border-gray-800/50 h-full">
+              <div key={creation.id} className="flex-none min-w-[180px] max-w-[180px]">
+                <Card className="overflow-hidden bg-black/40 backdrop-blur-sm border-gray-800/50 h-full shadow-lg shadow-black/10 hover:shadow-black/20 transition-all">
                   <div className="relative aspect-square w-full overflow-hidden">
                     <img 
                       src={creation.imageUrl} 
                       alt={creation.name}
                       className="w-full h-full object-cover"
+                      loading="lazy"
                     />
                   </div>
-                  <div className="p-1">
+                  <div className="p-2">
                     <p className="text-white/90 text-xs font-medium truncate">
                       {creation.name}
                     </p>
-                    <p className="text-white/50 text-xs">
+                    <p className="text-white/50 text-[10px]">
                       {creation.created_at ? new Date(creation.created_at).toLocaleDateString() : 'Recently created'}
                     </p>
                   </div>

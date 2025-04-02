@@ -71,6 +71,14 @@ export default function FlyerPreview({
     }
   }, [initialAspectRatio]);
   
+  // Reset autoSaveAttempted when a new flyer is set
+  useEffect(() => {
+    // Wenn ein neuer Flyer gesetzt wird, setzen wir autoSaveAttempted zurück
+    if (generatedFlyer) {
+      setAutoSaveAttempted(false);
+    }
+  }, [generatedFlyer?.imageUrl]); // Nur zurücksetzen, wenn sich die Bild-URL ändert
+
   // Auto-save generated flyers to gallery when they appear
   useEffect(() => {
     const autoSaveFlyer = async () => {
@@ -84,7 +92,13 @@ export default function FlyerPreview({
         setIsSaving(true);
         
         try {
-          const designName = generatedFlyer.headline || `Design ${new Date().toLocaleDateString()}`;
+          // Ein besserer, eindeutigerer Name für das Design
+          const timestamp = new Date().toLocaleTimeString();
+          const designName = generatedFlyer.headline || 
+            `${generatedFlyer.stylePrompt ? 
+              `Design: ${generatedFlyer.stylePrompt.slice(0, 20)}...` : 
+              `Design ${timestamp}`}`;
+              
           await apiRequest('POST', '/api/creations', {
             name: designName,
             imageUrl: generatedFlyer.imageUrl,
@@ -94,11 +108,8 @@ export default function FlyerPreview({
             template: generatedFlyer.template || null,
           });
           
-          // Show a subtle toast notification
-          toast({
-            title: "Auto-saved",
-            description: "Your design has been automatically saved to your gallery",
-          });
+          // Keine Toast-Benachrichtigung mehr, um die Benutzeroberfläche sauberer zu halten
+          console.log("Design automatically saved to gallery");
         } catch (error) {
           console.error("Error auto-saving design:", error);
           // Don't show error notification for auto-save failures

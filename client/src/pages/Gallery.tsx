@@ -192,30 +192,40 @@ export default function Gallery() {
         </div>
         
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
             {[...Array(8)].map((_, index) => (
-              <Card key={index} className="overflow-hidden bg-black/40 backdrop-blur-sm border-gray-800">
-                <Skeleton className="h-48 w-full" />
+              <Card key={index} className="overflow-hidden bg-black/40 backdrop-blur-sm border-gray-800/50 shadow-lg">
+                <Skeleton className="aspect-square w-full" />
                 <div className="p-4">
-                  <Skeleton className="h-4 w-3/4 mb-2" />
-                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-5 w-3/4 mb-2" />
+                  <Skeleton className="h-4 w-1/2 mb-3" />
+                  <div className="flex justify-between">
+                    <Skeleton className="h-8 w-16" />
+                    <div className="flex gap-1">
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                    </div>
+                  </div>
                 </div>
               </Card>
             ))}
           </div>
         ) : creations.length === 0 ? (
-          <div className="text-center py-16 glass-panel">
-            <div className="inline-flex justify-center items-center w-16 h-16 rounded-full bg-gray-800 mb-4">
-              <Bookmark className="h-8 w-8 text-gray-400" />
+          <div className="text-center py-16 glass-panel rounded-xl shadow-lg border border-white/5">
+            <div className="inline-flex justify-center items-center w-20 h-20 rounded-full bg-gradient-to-br from-indigo-900/30 to-purple-900/30 backdrop-blur-md mb-4 shadow-lg border border-white/10">
+              <Bookmark className="h-10 w-10 text-indigo-300" />
             </div>
-            <h2 className="text-xl font-semibold text-white mb-2">No saved creations yet</h2>
-            <p className="text-white/70 mb-6">Your saved designs will appear here</p>
-            <Button onClick={() => window.location.href = "/"}>
-              <Plus className="mr-2 h-4 w-4" /> Create new design
+            <h2 className="text-2xl font-semibold text-white mb-2">No saved creations yet</h2>
+            <p className="text-white/70 mb-6 max-w-md mx-auto">Create your first design to see it in your gallery</p>
+            <Button 
+              onClick={() => window.location.href = "/"} 
+              className="bg-indigo-500/60 backdrop-blur-md text-white hover:bg-indigo-500/80 border-0 shadow-lg px-6 py-2"
+            >
+              <Plus className="mr-2 h-4 w-4" /> Create your first design
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
             {creations.map((creation: UserCreation) => (
               <motion.div
                 key={creation.id}
@@ -226,8 +236,8 @@ export default function Gallery() {
                 className="h-full"
               >
                 <Card 
-                  className={`h-full overflow-hidden bg-black/40 backdrop-blur-sm border-gray-800 transition-all duration-300 ${
-                    selectedCard === creation.id ? 'ring-2 ring-primary' : ''
+                  className={`h-full overflow-hidden bg-black/40 backdrop-blur-sm border-gray-800/50 shadow-lg transition-all duration-300 ${
+                    selectedCard === creation.id ? 'ring-2 ring-indigo-500' : ''
                   }`}
                   onClick={() => {
                     // Set selected card for visual highlight
@@ -236,11 +246,12 @@ export default function Gallery() {
                     handleOpenPreview(creation);
                   }}
                 >
-                  <div className="relative h-48 overflow-hidden">
+                  <div className="relative aspect-square overflow-hidden group">
                     <img 
                       src={creation.imageUrl} 
                       alt={creation.name}
-                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
                     />
                     <div className="absolute top-2 right-2 flex space-x-2">
                       <TooltipProvider>
@@ -360,68 +371,84 @@ export default function Gallery() {
       
       <Footer />
       
-      {/* Design Preview Dialog */}
+      {/* Verbesserte Design-Vorschau im Dialog */}
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="sm:max-w-4xl bg-black/80 backdrop-blur-xl border-gray-800 text-white p-0 overflow-hidden">
+        <DialogContent className="sm:max-w-4xl bg-black/90 backdrop-blur-xl border-gray-800/50 shadow-xl text-white p-0 overflow-hidden rounded-xl">
           {selectedCreation && (
             <div className="flex flex-col h-full">
-              {/* Header with actions */}
-              <div className="flex justify-between items-center p-4 border-b border-gray-800">
+              {/* Header mit Aktionen */}
+              <div className="flex justify-between items-center p-4 border-b border-gray-800/50 bg-gradient-to-r from-indigo-900/20 to-purple-900/20">
                 <h2 className="text-xl font-semibold text-white">{selectedCreation.name}</h2>
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="rounded-full h-8 w-8 hover:bg-gray-800"
+                  className="rounded-full h-8 w-8 hover:bg-black/20"
                   onClick={() => setPreviewOpen(false)}
                 >
                   <X className="h-4 w-4" />
                 </Button>
               </div>
               
-              {/* Image Preview */}
-              <div className="relative flex-grow flex items-center justify-center p-6">
+              {/* Verbesserte Bild-Vorschau mit Hintergrund */}
+              <div className="relative flex-grow flex items-center justify-center p-6 bg-gradient-to-b from-gray-900/50 to-black/50">
                 <img 
                   src={selectedCreation.imageUrl} 
                   alt={selectedCreation.name} 
-                  className="max-h-[60vh] max-w-full object-contain rounded-md"
+                  className="max-h-[65vh] max-w-full object-contain rounded-md shadow-2xl border border-white/5"
+                  loading="lazy"
                 />
               </div>
               
-              {/* Footer with details and actions */}
-              <div className="p-4 border-t border-gray-800 flex flex-col gap-3">
-                {/* Design metadata */}
-                <div className="flex flex-col gap-1">
+              {/* Verbesserter Footer mit Details und Aktionen */}
+              <div className="p-5 border-t border-gray-800/50 bg-gradient-to-r from-gray-900/50 to-black/50 flex flex-col gap-3">
+                {/* Design Metadaten */}
+                <div className="flex flex-col gap-2">
                   {selectedCreation.headline && (
-                    <p className="text-sm text-white/90"><span className="font-semibold">Headline:</span> {selectedCreation.headline}</p>
+                    <div className="flex flex-col gap-1">
+                      <h3 className="text-sm font-semibold text-white/80">Headline</h3>
+                      <p className="text-sm bg-black/20 p-2 rounded-md border border-gray-800/30 text-white/90">
+                        {selectedCreation.headline}
+                      </p>
+                    </div>
                   )}
+                  
                   {selectedCreation.content && (
-                    <p className="text-sm text-white/90"><span className="font-semibold">Content:</span> {selectedCreation.content}</p>
+                    <div className="flex flex-col gap-1">
+                      <h3 className="text-sm font-semibold text-white/80">Content</h3>
+                      <p className="text-sm bg-black/20 p-2 rounded-md border border-gray-800/30 text-white/90">
+                        {selectedCreation.content}
+                      </p>
+                    </div>
                   )}
-                  {/* Display the prompt with a copy button */}
+                  
+                  {/* Zeige den Prompt mit einem Kopier-Button an */}
                   {selectedCreation.stylePrompt && (
-                    <div className="mt-2">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-sm font-medium text-white/80">Style Prompt</h3>
+                    <div className="flex flex-col gap-1 mt-1">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-semibold text-white/80">Style Prompt</h3>
                         <Button
-                          size="icon"
+                          size="sm"
                           variant="ghost"
                           onClick={copyPromptToClipboard}
-                          className="h-6 w-6 rounded-full hover:bg-white/10"
+                          className="h-7 px-2 rounded-full hover:bg-white/10 text-xs"
                         >
-                          <Copy className={`h-3.5 w-3.5 ${promptCopied ? 'text-green-500' : 'text-white/70'}`} />
+                          <Copy className={`h-3.5 w-3.5 mr-1 ${promptCopied ? 'text-green-500' : 'text-white/70'}`} />
+                          {promptCopied ? 'Copied!' : 'Copy prompt'}
                         </Button>
                       </div>
-                      <p className="text-xs text-white/60 p-2 rounded bg-black/50 border border-gray-800">{selectedCreation.stylePrompt}</p>
+                      <div className="text-xs bg-black/30 p-3 rounded-md border border-indigo-900/30 text-white/80 font-mono">
+                        {selectedCreation.stylePrompt}
+                      </div>
                     </div>
                   )}
                 </div>
                 
-                {/* Action buttons */}
-                <div className="flex justify-end gap-2 mt-2">
+                {/* Aktions-Buttons in einer abgesetzten Zeile */}
+                <div className="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-800/30">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-gray-700 text-white hover:bg-gray-800"
+                    className="border-gray-700/50 bg-black/20 text-white hover:bg-black/40"
                     onClick={handleDownload}
                   >
                     <Download className="h-4 w-4 mr-1" />
@@ -430,7 +457,7 @@ export default function Gallery() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-gray-700 text-white hover:bg-gray-800"
+                    className="border-gray-700/50 bg-black/20 text-white hover:bg-black/40"
                     onClick={handleShare}
                   >
                     <Share2 className="h-4 w-4 mr-1" />
@@ -440,13 +467,15 @@ export default function Gallery() {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
-                          variant="outline"
+                          variant={selectedCreation.favorite ? "default" : "outline"}
                           size="sm"
-                          className="border-gray-700 text-white hover:bg-gray-800"
+                          className={selectedCreation.favorite 
+                            ? "bg-red-500/20 border-red-900/30 text-white hover:bg-red-500/30" 
+                            : "border-gray-700/50 bg-black/20 text-white hover:bg-black/40"}
                           onClick={() => toggleFavorite(selectedCreation.id, selectedCreation.favorite)}
                         >
                           <Heart className={`h-4 w-4 mr-1 ${selectedCreation.favorite ? 'fill-red-500 text-red-500' : ''}`} />
-                          {selectedCreation.favorite ? 'Favorited' : 'Favorite'}
+                          {selectedCreation.favorite ? 'Favorited' : 'Add to favorites'}
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>

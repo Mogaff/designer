@@ -65,11 +65,10 @@ export default function DesignSuggestions({
     
     setGeneratedFlyer(newFlyer);
     
-    // Auto-save the design when selected
-    saveDesignToGallery(design);
+    // Nur das erste Design beim Generieren wird in der Galerie gespeichert
+    // Der FlyerPreview.tsx autoSave-Mechanismus übernimmt das Speichern
     
-    // Refresh the gallery to show newly saved designs
-    queryClient.invalidateQueries({ queryKey: ['/api/creations'] });
+    // Ein Design wurde ausgewählt - keine Aktion erforderlich, da FlyerPreview.tsx es automatisch speichern wird
   };
 
   // Handle finalizing the design choice
