@@ -45,10 +45,8 @@ export default function Home() {
                 />
               </div>
             </div>
-          </div>
-          
-          {/* Recent Designs Gallery Slider */}
-          <div className="mt-4 mb-6">
+            
+            {/* Recent Designs Gallery Slider */}
             <RecentCreations />
           </div>
         </section>

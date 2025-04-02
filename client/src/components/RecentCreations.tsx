@@ -91,7 +91,7 @@ export default function RecentCreations() {
   }
 
   return (
-    <div className="w-full bg-black/30 backdrop-blur-md rounded-xl border border-white/10 p-4 mt-6">
+    <div className="w-full bg-black/30 backdrop-blur-md rounded-xl border border-white/10 p-4 mt-4">
       <div className="flex justify-between items-center mb-3">
         <div className="flex items-center gap-2">
           <h3 className="text-md font-semibold text-white">Your Recent Designs</h3>
