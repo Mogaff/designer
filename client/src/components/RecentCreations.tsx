@@ -98,60 +98,89 @@ export default function RecentCreations({ vertical = false }: RecentCreationsPro
   }
 
   return (
-    <div className="w-full bg-black/30 backdrop-blur-md rounded-xl border border-white/10 p-4 mt-4">
-      <div className="flex justify-between items-center mb-3">
-        <div className="flex items-center gap-2">
-          <h3 className="text-md font-semibold text-white">Your Recent Designs</h3>
-          <Badge variant="secondary" className="text-xs">{creations.length}</Badge>
+    <div className={`w-full bg-black/30 backdrop-blur-md rounded-xl border border-white/10 ${vertical ? 'p-2' : 'p-4'} ${vertical ? 'mt-0' : 'mt-4'}`}>
+      {vertical ? (
+        <div className="flex flex-col items-center mb-3 space-y-2">
+          <div className="flex items-center gap-1 justify-center">
+            <h3 className="text-xs font-semibold text-white">Designs</h3>
+            <Badge variant="secondary" className="text-[10px]">{creations.length}</Badge>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-6 w-6 rounded-full bg-black/40 text-white hover:bg-black/60"
+              onClick={scrollPrev}
+            >
+              <ChevronUp className="h-3 w-3" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-6 w-6 rounded-full bg-black/40 text-white hover:bg-black/60"
+              onClick={scrollNext}
+            >
+              <ChevronDown className="h-3 w-3" />
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-8 w-8 rounded-full bg-black/40 text-white hover:bg-black/60"
-            onClick={scrollPrev}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-8 w-8 rounded-full bg-black/40 text-white hover:bg-black/60"
-            onClick={scrollNext}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="ml-2 h-8 text-xs border-gray-700 bg-black/40 text-white hover:bg-black/60"
-            onClick={handleViewInGallery}
-          >
-            View All
-          </Button>
+      ) : (
+        <div className="flex justify-between items-center mb-3">
+          <div className="flex items-center gap-2">
+            <h3 className="text-md font-semibold text-white">Your Recent Designs</h3>
+            <Badge variant="secondary" className="text-xs">{creations.length}</Badge>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 rounded-full bg-black/40 text-white hover:bg-black/60"
+              onClick={scrollPrev}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 rounded-full bg-black/40 text-white hover:bg-black/60"
+              onClick={scrollNext}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="ml-2 h-8 text-xs border-gray-700 bg-black/40 text-white hover:bg-black/60"
+              onClick={handleViewInGallery}
+            >
+              View All
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="overflow-hidden h-full" ref={emblaRef}>
         <div className={`${vertical ? 'flex flex-col' : 'flex'} gap-4`}>
           {creations.map((creation) => (
             <div key={creation.id} className={`flex-none ${vertical ? 'w-full mb-4' : 'min-w-[200px] max-w-[200px]'}`}>
               <Card className="overflow-hidden bg-black/40 backdrop-blur-sm border-gray-800 h-full">
-                <div className={`relative ${vertical ? 'h-24' : 'h-32'} overflow-hidden`}>
+                <div className={`relative ${vertical ? 'h-16' : 'h-32'} overflow-hidden`}>
                   <img 
                     src={creation.imageUrl} 
                     alt={creation.name}
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="p-2">
-                  <p className="text-white/90 text-xs font-medium truncate">
-                    {creation.name}
-                  </p>
-                  <p className="text-white/50 text-xs">
-                    {creation.created_at ? new Date(creation.created_at).toLocaleDateString() : 'Recently created'}
-                  </p>
-                </div>
+                {!vertical ? (
+                  <div className="p-2">
+                    <p className="text-white/90 text-xs font-medium truncate">
+                      {creation.name}
+                    </p>
+                    <p className="text-white/50 text-xs">
+                      {creation.created_at ? new Date(creation.created_at).toLocaleDateString() : 'Recently created'}
+                    </p>
+                  </div>
+                ) : null}
               </Card>
             </div>
           ))}
