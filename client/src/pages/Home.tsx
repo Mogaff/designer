@@ -26,7 +26,7 @@ export default function Home() {
 
           <div className="flex flex-col lg:flex-row gap-2 h-full">
             {/* Main Generator + Preview */}
-            <div className="glass-panel p-4 flex-grow overflow-hidden flex flex-col lg:flex-[0.9]">
+            <div className="glass-panel p-4 flex-grow overflow-hidden flex flex-col lg:flex-[0.7]">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-full">
                 <div>
                   {designSuggestions ? (
@@ -58,8 +58,8 @@ export default function Home() {
               </div>
             </div>
             
-            {/* Recent Designs Gallery - Vertical for desktop */}
-            <div className="glass-panel p-2 overflow-hidden lg:flex-[0.1] hidden lg:flex flex-col">
+            {/* Erweiterte und breitere Galerie-Seitenleiste - rechts positioniert */}
+            <div className="glass-panel p-3 overflow-hidden lg:flex-[0.3] hidden lg:flex flex-col">
               <RecentCreations vertical={true} />
             </div>
           </div>

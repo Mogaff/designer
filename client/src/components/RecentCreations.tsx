@@ -123,8 +123,8 @@ export default function RecentCreations({ vertical = false }: RecentCreationsPro
     <div className={`w-full bg-black/30 backdrop-blur-md rounded-xl border border-white/10 ${vertical ? 'p-1' : 'p-2 mt-4'}`}>
       <div className="flex justify-between items-center mb-1">
         <div className="flex items-center gap-1">
-          <h3 className={`${vertical ? 'text-[10px]' : 'text-md'} font-semibold text-white`}>{vertical ? 'My Designs' : 'My Designs'}</h3>
-          <Badge variant="secondary" className={`${vertical ? 'text-[8px] px-1 py-0' : 'text-xs'}`}>{creations.length}</Badge>
+          <h3 className={`${vertical ? 'text-sm' : 'text-md'} font-semibold text-white`}>{vertical ? 'Deine Designgalerie' : 'Meine Designs'}</h3>
+          <Badge variant="secondary" className={`${vertical ? 'text-xs px-1 py-0' : 'text-xs'}`}>{creations.length}</Badge>
         </div>
         <div className="flex items-center gap-1">
           {vertical ? (
@@ -169,18 +169,18 @@ export default function RecentCreations({ vertical = false }: RecentCreationsPro
           <Button 
             variant="outline" 
             size="sm" 
-            className={`${vertical ? 'ml-0 h-5 text-[8px] py-0 px-1' : 'ml-2 h-8 text-xs'} border-gray-700 bg-black/40 text-white hover:bg-black/60`}
+            className={`${vertical ? 'ml-1 h-6 text-xs py-0 px-2' : 'ml-2 h-8 text-xs'} border-gray-700 bg-black/40 text-white hover:bg-black/60`}
             onClick={handleViewInGallery}
           >
-            {vertical ? 'All' : 'View All'}
+            {vertical ? 'Zeige alle' : 'View All'}
           </Button>
         </div>
       </div>
 
       {vertical ? (
-        // Verbesserte vertikale Scrollansicht ohne Carousel
+        // Verbesserte vertikale Scrollansicht ohne Carousel für die breitere Seitenleiste
         <div ref={verticalScrollRef} className="overflow-y-auto h-[calc(100vh-170px)] pr-1 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
-          <div className="grid grid-cols-1 gap-2 pb-2">
+          <div className="grid grid-cols-2 gap-2 pb-2">
             {creations.map((creation) => (
               <div key={creation.id} className="w-full">
                 <Card className="overflow-hidden bg-black/40 backdrop-blur-sm border-gray-800/50 shadow-sm shadow-black/20 hover:bg-black/60 transition-colors">
