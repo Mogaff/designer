@@ -41,8 +41,14 @@ export const useAuth = () => useContext(AuthContext);
 
 // Provider component
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // TEMPORARY: Initialize with a mock user for testing
+  const [user, setUser] = useState<User | null>({
+    uid: 'mock-user-id',
+    email: 'test@example.com',
+    displayName: 'Test User',
+    photoURL: null,
+  });
+  const [isLoading, setIsLoading] = useState(false); // Set to false for immediate auth
   const { toast } = useToast();
 
   // Check for redirect result and watch auth state changes
@@ -154,8 +160,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       setIsLoading(true);
-      await signOut(auth);
-      // Toast message removed to simplify the logout experience
+      
+      // TEMPORARY: For testing with mock user
+      // Set mock user back after logout for testing purposes
+      setTimeout(() => {
+        setUser({
+          uid: 'mock-user-id',
+          email: 'test@example.com',
+          displayName: 'Test User',
+          photoURL: null,
+        });
+        setIsLoading(false);
+        
+        toast({
+          title: 'Mock logout',
+          description: 'In test mode, you remain logged in as a mock user',
+        });
+      }, 500);
+      
+      // Real authentication logic (commented for testing)
+      // await signOut(auth);
     } catch (error: any) {
       toast({
         title: 'Logout Failed',
@@ -163,8 +187,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         variant: 'destructive',
       });
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
