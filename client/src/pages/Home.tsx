@@ -22,7 +22,7 @@ export default function Home() {
               ha'itu
             </h1>
             <p className="text-white/70 text-sm max-w-3xl mx-auto">
-              Generate stunning, professional-quality designs with AI
+              Generate stunning professional-quality designs with AI
             </p>
           </div>
           
