@@ -546,6 +546,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/creations", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const userId = (req.user as any).id;
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+      
+      // Strict filtering by user ID to ensure privacy
       const creations = await storage.getUserCreations(userId);
       
       res.json({
@@ -561,21 +566,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/creations/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const userId = (req.user as any).id;
-      const creationId = parseInt(req.params.id);
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
       
+      const creationId = parseInt(req.params.id);
       if (isNaN(creationId)) {
         return res.status(400).json({ message: "Invalid creation ID" });
       }
       
+      // First get the creation
       const creation = await storage.getUserCreation(creationId);
       
+      // Check if it exists
       if (!creation) {
         return res.status(404).json({ message: "Creation not found" });
       }
       
-      // Verify ownership
+      // Strict ownership verification for privacy
       if (creation.user_id !== userId) {
-        return res.status(403).json({ message: "You don't have permission to access this creation" });
+        // We use 404 instead of 403 to not leak information about existence
+        return res.status(404).json({ message: "Creation not found" });
       }
       
       res.json(creation);
@@ -617,8 +628,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/creations/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const userId = (req.user as any).id;
-      const creationId = parseInt(req.params.id);
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
       
+      const creationId = parseInt(req.params.id);
       if (isNaN(creationId)) {
         return res.status(400).json({ message: "Invalid creation ID" });
       }
@@ -630,14 +644,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Creation not found" });
       }
       
+      // Strict privacy check - return 404 instead of 403 for security
       if (existingCreation.user_id !== userId) {
-        return res.status(403).json({ message: "You don't have permission to update this creation" });
+        return res.status(404).json({ message: "Creation not found" });
       }
       
-      // Ensure user_id cannot be changed
+      // Ensure user_id cannot be changed and is always set to current user
       const updateData = {
         ...req.body,
-        user_id: userId
+        user_id: userId // Force the user_id to the authenticated user
       };
       
       // Update the creation
@@ -654,8 +669,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/creations/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const userId = (req.user as any).id;
-      const creationId = parseInt(req.params.id);
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
       
+      const creationId = parseInt(req.params.id);
       if (isNaN(creationId)) {
         return res.status(400).json({ message: "Invalid creation ID" });
       }
@@ -667,8 +685,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Creation not found" });
       }
       
+      // Strict privacy check - return 404 instead of 403 for security
       if (existingCreation.user_id !== userId) {
-        return res.status(403).json({ message: "You don't have permission to delete this creation" });
+        return res.status(404).json({ message: "Creation not found" });
       }
       
       // Delete the creation

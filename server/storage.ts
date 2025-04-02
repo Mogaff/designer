@@ -245,6 +245,8 @@ export class MemStorage implements IStorage {
   }
   
   async getUserCreation(id: number): Promise<UserCreation | undefined> {
+    // Simply return the creation by ID without any user filtering
+    // The user filtering/permission check should be done in the API layer
     return this.userCreationsMap.get(id);
   }
   
