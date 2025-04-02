@@ -32,7 +32,7 @@ export default function FlyerPreview({
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
-  const [aspectRatio, setAspectRatio] = useState<string>(initialAspectRatio || "original");
+  const [aspectRatio, setAspectRatio] = useState<string>(initialAspectRatio || "profile");
   const [promptCopied, setPromptCopied] = useState(false);
   const [autoSaveAttempted, setAutoSaveAttempted] = useState(false);
   
@@ -45,11 +45,10 @@ export default function FlyerPreview({
   const aspectRatioOptions: AspectRatioOption[] = [
     { id: "profile", label: "Profile (800×800)", value: "1/1" },
     { id: "banner", label: "Banner (2048×1152)", value: "16/9" },
-    { id: "thumbnail", label: "Thumbnail (1280×720)", value: "16/10" },
+    { id: "thumbnail", label: "Thumbnail (1280×720)", value: "16/9" },
     { id: "instream", label: "In-stream Ad (1920×1080)", value: "16/9" },
     { id: "stories", label: "Stories (1080×1920)", value: "9/16" }, 
     { id: "bumper", label: "Bumper Ad (300×60)", value: "5/1" },
-    { id: "original", label: "Original", value: "auto" },
   ];
   
   // Update aspectRatio when prop changes
@@ -171,7 +170,7 @@ export default function FlyerPreview({
                 className="h-7 px-2 py-1 text-xs bg-black/30 border-gray-700 hover:bg-black/50 text-white"
               >
                 <Ratio className="h-3 w-3 mr-1" />
-                <span className="hidden sm:inline">{aspectRatioOptions.find(o => o.id === aspectRatio)?.label || "Original"}</span>
+                <span className="hidden sm:inline">{aspectRatioOptions.find(o => o.id === aspectRatio)?.label || aspectRatioOptions[0].label}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-48 bg-black/90 backdrop-blur-lg border border-gray-800 shadow-lg text-white">
@@ -219,14 +218,13 @@ export default function FlyerPreview({
         {!generatedFlyer && !isGenerating ? (
           <div className="w-full h-full flex items-center justify-center p-4">
             <div 
-              className={`relative flex items-center justify-center ${aspectRatio !== 'original' ? 'overflow-hidden' : ''} 
-                ${aspectRatio !== 'original' ? 'bg-gradient-to-br from-indigo-900/20 to-purple-900/30 border border-indigo-500/20 rounded-md' : ''}`}
+              className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-900/20 to-purple-900/30 border border-indigo-500/20 rounded-md"
               style={{
-                aspectRatio: aspectRatio === 'original' ? 'auto' : aspectRatioOptions.find(o => o.id === aspectRatio)?.value || 'auto',
+                aspectRatio: aspectRatioOptions.find(o => o.id === aspectRatio)?.value || aspectRatioOptions[0].value,
                 maxWidth: '100%',
                 maxHeight: '100%',
-                width: aspectRatio === 'original' ? 'auto' : '100%',
-                height: aspectRatio === 'original' ? 'auto' : '100%',
+                width: '100%',
+                height: '100%',
               }}
             >
               <div className="flex flex-col items-center justify-center text-center">
@@ -238,25 +236,22 @@ export default function FlyerPreview({
               </div>
               
               {/* Aspect ratio label for empty state */}
-              {aspectRatio !== 'original' && (
-                <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] px-2 py-1 rounded-md">
-                  {aspectRatioOptions.find(o => o.id === aspectRatio)?.label || aspectRatio}
-                </div>
-              )}
+              <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] px-2 py-1 rounded-md">
+                {aspectRatioOptions.find(o => o.id === aspectRatio)?.label || aspectRatio}
+              </div>
             </div>
           </div>
         ) : (
           <div className="w-full h-full flex flex-col">
             <div className="flex-grow p-4 flex items-center justify-center">
               <div 
-                className={`relative flex items-center justify-center ${aspectRatio !== 'original' ? 'overflow-hidden' : ''} 
-                  ${aspectRatio !== 'original' ? 'bg-gradient-to-br from-indigo-900/20 to-purple-900/30 border border-indigo-500/20 rounded-md' : ''}`}
+                className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-900/20 to-purple-900/30 border border-indigo-500/20 rounded-md"
                 style={{
-                  aspectRatio: aspectRatio === 'original' ? 'auto' : aspectRatioOptions.find(o => o.id === aspectRatio)?.value || 'auto',
+                  aspectRatio: aspectRatioOptions.find(o => o.id === aspectRatio)?.value || aspectRatioOptions[0].value,
                   maxWidth: '100%',
                   maxHeight: '100%',
-                  width: aspectRatio === 'original' ? 'auto' : '100%',
-                  height: aspectRatio === 'original' ? 'auto' : '100%',
+                  width: '100%',
+                  height: '100%',
                 }}
               >
                 {generatedFlyer && (
@@ -264,7 +259,7 @@ export default function FlyerPreview({
                     ref={imageRef}
                     src={generatedFlyer.imageUrl} 
                     alt="Generated design" 
-                    className={`${aspectRatio === 'original' ? 'max-h-full max-w-full' : 'w-full h-full'} object-contain`}
+                    className="w-full h-full object-contain"
                   />
                 )}
                 {isGenerating && (
@@ -274,7 +269,7 @@ export default function FlyerPreview({
                 )}
                 
                 {/* Aspect ratio label */}
-                {aspectRatio !== 'original' && !isGenerating && (
+                {!isGenerating && (
                   <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] px-2 py-1 rounded-md">
                     {aspectRatioOptions.find(o => o.id === aspectRatio)?.label || aspectRatio}
                   </div>

@@ -125,7 +125,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           const variantOptions = {
             ...generationOptions,
-            prompt: `${generationOptions.prompt} ${styleVariation}`
+            prompt: `${generationOptions.prompt} ${styleVariation}`,
+            aspectRatio: aspectRatio
           };
           
           log(`Generating design variation ${index + 1}: ${styleVariation}`, "generator");

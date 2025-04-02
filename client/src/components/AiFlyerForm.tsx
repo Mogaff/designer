@@ -53,11 +53,10 @@ export default function AiFlyerForm({
   const aspectRatioOptions: AspectRatioOption[] = [
     { id: "profile", label: "Profile (800×800)", value: "1/1" },
     { id: "banner", label: "Banner (2048×1152)", value: "16/9" },
-    { id: "thumbnail", label: "Thumbnail (1280×720)", value: "16/10" },
+    { id: "thumbnail", label: "Thumbnail (1280×720)", value: "16/9" },
     { id: "instream", label: "In-stream Ad (1920×1080)", value: "16/9" },
     { id: "stories", label: "Stories (1080×1920)", value: "9/16" }, 
     { id: "bumper", label: "Bumper Ad (300×60)", value: "5/1" },
-    { id: "original", label: "Original", value: "auto" },
   ];
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -414,7 +413,7 @@ export default function AiFlyerForm({
             </Label>
             
             <div className="flex flex-wrap gap-2">
-              {aspectRatioOptions.slice(0, 4).map((option) => (
+              {aspectRatioOptions.map((option) => (
                 <button
                   key={option.id}
                   type="button"

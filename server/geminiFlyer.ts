@@ -21,6 +21,7 @@ interface GenerationOptions {
   prompt: string;
   backgroundImageBase64?: string;
   logoBase64?: string;
+  aspectRatio?: string;
 }
 
 /**
@@ -35,6 +36,11 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     
     Create an exceptionally creative and professional flyer using Tailwind CSS and modern design techniques based on the following prompt:
     "${options.prompt}"
+    
+    ${options.aspectRatio ? 
+      `IMPORTANT: This design is for the "${options.aspectRatio}" format with specific dimensions. 
+       Your design MUST work perfectly in this aspect ratio without cropping or distortion.` 
+      : ''}
     
     Your design should:
     1. Use Tailwind CSS with creative, non-conventional layouts - avoid boring grid layouts and basic designs
@@ -285,10 +291,48 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
     try {
       const page = await browser.newPage();
       
-      // Set a good viewport size for a flyer
+      // Set viewport based on aspect ratio if provided
+      let viewportWidth = 800;
+      let viewportHeight = 1200;
+      
+      // Apply different size based on aspect ratio
+      if (options.aspectRatio) {
+        log(`Using aspect ratio: ${options.aspectRatio}`, "gemini");
+        
+        switch(options.aspectRatio) {
+          case 'profile': // Profile (800×800)
+            viewportWidth = 800;
+            viewportHeight = 800;
+            break;
+          case 'banner': // Banner (2048×1152)
+            viewportWidth = 2048;
+            viewportHeight = 1152;
+            break;
+          case 'thumbnail': // Thumbnail (1280×720)
+            viewportWidth = 1280;
+            viewportHeight = 720;
+            break;
+          case 'instream': // In-stream Ad (1920×1080)
+            viewportWidth = 1920;
+            viewportHeight = 1080;
+            break;
+          case 'stories': // Stories (1080×1920)
+            viewportWidth = 1080;
+            viewportHeight = 1920;
+            break;
+          case 'bumper': // Bumper Ad (300×60)
+            viewportWidth = 300;
+            viewportHeight = 60;
+            break;
+          default:
+            // Default dimensions for other or unknown aspect ratios
+            break;
+        }
+      }
+      
       await page.setViewport({
-        width: 800,
-        height: 1200,
+        width: viewportWidth,
+        height: viewportHeight,
         deviceScaleFactor: 2,
       });
       
