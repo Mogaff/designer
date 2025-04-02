@@ -111,37 +111,71 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       
-      // For Replit, we need to use redirect method as it's more reliable
-      // with domain authorization
-      console.log('Starting Google sign-in with redirect...');
-      await signInWithRedirect(auth, googleProvider);
+      console.log('Starting Google sign-in...');
+      console.log('Current origin:', window.location.origin);
+      
+      // Überprüfen, auf welcher Domain wir sind
+      const currentDomain = window.location.hostname;
+      const isProduction = currentDomain === 'designer.haitucreations.ai';
+      
+      console.log('Current domain:', currentDomain);
+      console.log('Is production environment:', isProduction);
+      
+      // In Produktion verwenden wir Popup zuerst (weniger Probleme mit Redirects)
+      if (isProduction) {
+        try {
+          console.log('Production environment - trying popup sign-in first');
+          const result = await signInWithPopup(auth, googleProvider);
+          console.log('Popup login successful:', result.user.email);
+          toast({
+            title: 'Login erfolgreich',
+            description: 'Sie sind jetzt mit Google angemeldet.',
+          });
+          return;
+        } catch (popupError: any) {
+          console.error('Popup sign-in error in production:', popupError);
+          
+          if (popupError.code === 'auth/popup-blocked' || 
+              popupError.code === 'auth/popup-closed-by-user') {
+            console.log('Popup blocked - falling back to redirect...');
+            
+            // Bei blockierten Popups verwenden wir Redirect als Fallback
+            await signInWithRedirect(auth, googleProvider);
+            return;
+          }
+          
+          // Bei anderen Fehlern werfen wir den Fehler weiter
+          throw popupError;
+        }
+      } else {
+        // In Entwicklungsumgebung oder anderen Domains
+        console.log('Development environment - using redirect sign-in');
+        // Wir verwenden direkt Redirect auf Nicht-Produktionsumgebungen
+        await signInWithRedirect(auth, googleProvider);
+        return;
+      }
       
     } catch (error: any) {
-      let errorMessage = 'Failed to sign in with Google';
+      let errorMessage = 'Anmeldung mit Google fehlgeschlagen';
       console.error('Google sign-in error:', error);
       
-      // Firebase auth error handling with better error messages
+      // Bessere Fehlermeldungen
       if (error.code === 'auth/popup-closed-by-user') {
-        errorMessage = 'Sign-in cancelled. Please try again.';
+        errorMessage = 'Anmeldung abgebrochen. Bitte versuchen Sie es erneut.';
       } else if (error.code === 'auth/popup-blocked') {
-        errorMessage = 'Sign-in popup was blocked. Please enable popups for this site.';
+        errorMessage = 'Anmelde-Popup wurde blockiert. Bitte aktivieren Sie Popups für diese Seite.';
       } else if (error.code === 'auth/unauthorized-domain') {
-        errorMessage = 'Authentication domain issue. Please try again or contact support.';
-        console.error('Domain not authorized. Current origin: ' + window.location.origin);
+        errorMessage = 'Authentifizierungsproblem: Diese Domain muss in der Firebase-Konsole autorisiert werden.';
+        console.error('Domain nicht autorisiert:', window.location.origin, 'Bitte in Firebase-Konsole hinzufügen');
       } else if (error.code) {
-        errorMessage = `Authentication error: ${error.code}`;
+        errorMessage = `Authentifizierungsfehler: ${error.code}`;
       }
       
       toast({
-        title: 'Login Failed',
+        title: 'Anmeldung fehlgeschlagen',
         description: errorMessage,
         variant: 'destructive',
       });
-      
-      // Don't throw error on unauthorized domain as we're handling it with redirect
-      if (error.code !== 'auth/unauthorized-domain') {
-        throw error;
-      }
     } finally {
       setIsLoading(false);
     }
