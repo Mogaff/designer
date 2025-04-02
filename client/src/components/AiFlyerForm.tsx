@@ -51,13 +51,13 @@ export default function AiFlyerForm({
   };
   
   const aspectRatioOptions: AspectRatioOption[] = [
+    { id: "profile", label: "Profile (800×800)", value: "1/1" },
+    { id: "banner", label: "Banner (2048×1152)", value: "16/9" },
+    { id: "thumbnail", label: "Thumbnail (1280×720)", value: "16/10" },
+    { id: "instream", label: "In-stream Ad (1920×1080)", value: "16/9" },
+    { id: "stories", label: "Stories (1080×1920)", value: "9/16" }, 
+    { id: "bumper", label: "Bumper Ad (300×60)", value: "5/1" },
     { id: "original", label: "Original", value: "auto" },
-    { id: "1:1", label: "Square (1:1)", value: "1/1" },
-    { id: "4:3", label: "Standard (4:3)", value: "4/3" },
-    { id: "16:9", label: "Widescreen (16:9)", value: "16/9" },
-    { id: "9:16", label: "Portrait (9:16)", value: "9/16" },
-    { id: "3:2", label: "Photo (3:2)", value: "3/2" },
-    { id: "2:3", label: "Tall (2:3)", value: "2/3" },
   ];
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -429,7 +429,7 @@ export default function AiFlyerForm({
                   `}
                 >
                   <span className={`text-xs font-medium ${aspectRatio === option.id ? 'text-white' : 'text-white/90'}`}>
-                    {option.id === "original" ? option.label : option.id}
+                    {option.label.split(' ')[0]}
                   </span>
                 </button>
               ))}

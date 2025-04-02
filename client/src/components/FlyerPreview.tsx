@@ -43,13 +43,13 @@ export default function FlyerPreview({
   };
   
   const aspectRatioOptions: AspectRatioOption[] = [
+    { id: "profile", label: "Profile (800×800)", value: "1/1" },
+    { id: "banner", label: "Banner (2048×1152)", value: "16/9" },
+    { id: "thumbnail", label: "Thumbnail (1280×720)", value: "16/10" },
+    { id: "instream", label: "In-stream Ad (1920×1080)", value: "16/9" },
+    { id: "stories", label: "Stories (1080×1920)", value: "9/16" }, 
+    { id: "bumper", label: "Bumper Ad (300×60)", value: "5/1" },
     { id: "original", label: "Original", value: "auto" },
-    { id: "1:1", label: "Square (1:1)", value: "1/1" },
-    { id: "4:3", label: "Standard (4:3)", value: "4/3" },
-    { id: "16:9", label: "Widescreen (16:9)", value: "16/9" },
-    { id: "9:16", label: "Portrait (9:16)", value: "9/16" },
-    { id: "3:2", label: "Photo (3:2)", value: "3/2" },
-    { id: "2:3", label: "Tall (2:3)", value: "2/3" },
   ];
   
   // Update aspectRatio when prop changes
@@ -240,7 +240,7 @@ export default function FlyerPreview({
               {/* Aspect ratio label for empty state */}
               {aspectRatio !== 'original' && (
                 <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] px-2 py-1 rounded-md">
-                  {aspectRatio}
+                  {aspectRatioOptions.find(o => o.id === aspectRatio)?.label || aspectRatio}
                 </div>
               )}
             </div>
@@ -276,7 +276,7 @@ export default function FlyerPreview({
                 {/* Aspect ratio label */}
                 {aspectRatio !== 'original' && !isGenerating && (
                   <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] px-2 py-1 rounded-md">
-                    {aspectRatio}
+                    {aspectRatioOptions.find(o => o.id === aspectRatio)?.label || aspectRatio}
                   </div>
                 )}
               </div>
