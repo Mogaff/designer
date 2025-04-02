@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import { getQueryFn } from '@/lib/queryClient';
@@ -22,10 +22,13 @@ interface RecentCreationsProps {
 }
 
 export default function RecentCreations({ vertical = false }: RecentCreationsProps) {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ 
-    loop: true, 
-    align: 'start'
-  }, [Autoplay({ delay: 4000 })]);
+  // Only use carousel for horizontal layout, for vertical we'll use a simple scrollable div
+  const [emblaRef, emblaApi] = vertical 
+    ? [null, null] as [React.RefObject<HTMLDivElement> | null, any]
+    : useEmblaCarousel(
+        { loop: true, align: 'start' }, 
+        [Autoplay({ delay: 4000 })]
+      );
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [_, setLocation] = useLocation();
@@ -42,13 +45,28 @@ export default function RecentCreations({ vertical = false }: RecentCreationsPro
   const creations = data?.creations || [];
   const hasCreations = creations.length > 0;
 
+  // Reference to the scrollable container for vertical mode
+  const verticalScrollRef = useRef<HTMLDivElement>(null);
+
   const scrollPrev = useCallback(() => {
-    if (emblaApi) emblaApi.scrollPrev();
-  }, [emblaApi]);
+    if (vertical && verticalScrollRef.current) {
+      // Scroll up in vertical mode
+      verticalScrollRef.current.scrollBy({ top: -100, behavior: 'smooth' });
+    } else if (emblaApi) {
+      // Use carousel for horizontal mode
+      emblaApi.scrollPrev();
+    }
+  }, [emblaApi, vertical]);
 
   const scrollNext = useCallback(() => {
-    if (emblaApi) emblaApi.scrollNext();
-  }, [emblaApi]);
+    if (vertical && verticalScrollRef.current) {
+      // Scroll down in vertical mode
+      verticalScrollRef.current.scrollBy({ top: 100, behavior: 'smooth' });
+    } else if (emblaApi) {
+      // Use carousel for horizontal mode
+      emblaApi.scrollNext();
+    }
+  }, [emblaApi, vertical]);
 
   const handleViewInGallery = useCallback(() => {
     setLocation('/gallery');
@@ -159,28 +177,49 @@ export default function RecentCreations({ vertical = false }: RecentCreationsPro
         </div>
       </div>
 
-      <div className="overflow-hidden h-full" ref={emblaRef}>
-        <div className={`${vertical ? 'flex flex-col gap-1' : 'flex gap-4'}`}>
-          {creations.map((creation) => (
-            <div key={creation.id} className={`flex-none ${vertical ? 'w-full' : 'min-w-[200px] max-w-[200px]'}`}>
-              <Card className={`overflow-hidden bg-black/40 backdrop-blur-sm border-gray-800 ${vertical ? 'h-14' : 'h-full'}`}>
-                <div className="flex items-center">
-                  <div className={`relative ${vertical ? 'h-14 w-14' : 'aspect-square w-full'} overflow-hidden`}>
+      {vertical ? (
+        // Vertical scrolling container without carousel
+        <div ref={verticalScrollRef} className="overflow-y-auto h-[calc(100vh-170px)] pr-1 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
+          <div className="flex flex-col gap-2 pb-2">
+            {creations.map((creation) => (
+              <div key={creation.id} className="w-full">
+                <Card className="overflow-hidden bg-black/40 backdrop-blur-sm border-gray-800/50 shadow-sm shadow-black/20 h-16 hover:bg-black/60 transition-colors">
+                  <div className="flex items-center h-full">
+                    <div className="relative h-16 w-16 overflow-hidden">
+                      <img 
+                        src={creation.imageUrl} 
+                        alt={creation.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="p-2 flex-1">
+                      <p className="text-white/90 text-[10px] font-medium truncate">
+                        {creation.name}
+                      </p>
+                      <p className="text-white/50 text-[8px]">
+                        {creation.created_at ? new Date(creation.created_at).toLocaleDateString() : 'Recently created'}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        // Horizontal carousel
+        <div className="overflow-hidden h-full" ref={emblaRef}>
+          <div className="flex gap-4">
+            {creations.map((creation) => (
+              <div key={creation.id} className="flex-none min-w-[200px] max-w-[200px]">
+                <Card className="overflow-hidden bg-black/40 backdrop-blur-sm border-gray-800/50 h-full">
+                  <div className="relative aspect-square w-full overflow-hidden">
                     <img 
                       src={creation.imageUrl} 
                       alt={creation.name}
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  {vertical && (
-                    <div className="p-1 flex-1">
-                      <p className="text-white/90 text-[8px] font-medium truncate">
-                        {creation.name}
-                      </p>
-                    </div>
-                  )}
-                </div>
-                {!vertical && (
                   <div className="p-1">
                     <p className="text-white/90 text-xs font-medium truncate">
                       {creation.name}
@@ -189,12 +228,12 @@ export default function RecentCreations({ vertical = false }: RecentCreationsPro
                       {creation.created_at ? new Date(creation.created_at).toLocaleDateString() : 'Recently created'}
                     </p>
                   </div>
-                )}
-              </Card>
-            </div>
-          ))}
+                </Card>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
