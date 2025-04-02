@@ -62,7 +62,15 @@ export class MemStorage implements IStorage {
       active: true,
     });
     
-
+    // Create a test user
+    this.createUser({
+      username: 'test_user',
+      password: 'password',
+      firebase_uid: 'test-user-123',
+      email: 'test@example.com',
+      display_name: 'Test User',
+      photo_url: null,
+    });
   }
 
   // User methods
