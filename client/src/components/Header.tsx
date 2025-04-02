@@ -1,4 +1,4 @@
-import { Menu, Home, LucideImage, LogIn, LogOut, User, CreditCard, Star, DollarSign, Images } from "lucide-react";
+import { LogIn, LogOut, User, CreditCard, Star, DollarSign, Images } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -14,12 +14,10 @@ import { useQuery } from "@tanstack/react-query";
 import { getQueryFn } from "@/lib/queryClient";
 import { Badge } from "@/components/ui/badge";
 import { CreditsResponse } from "@/lib/creditTypes";
-import { useState } from "react";
 
 export default function Header() {
   const { isAuthenticated, user, logout } = useAuth();
   const [location, navigate] = useLocation();
-  const [menuOpen, setMenuOpen] = useState(false);
 
   // Query user credits when authenticated
   const { data: creditData, isLoading: isLoadingCredits } = useQuery<CreditsResponse>({
@@ -45,38 +43,6 @@ export default function Header() {
               <p className="text-[10px] text-white/50">AI-Powered Design</p>
             </div>
           </Link>
-          
-          {/* Hamburger menu dropdown */}
-          <div className="ml-3">
-            <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-white hover:text-white hover:bg-white/10 bg-transparent px-2"
-                >
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-40">
-                <Link href="/" onClick={() => setMenuOpen(false)}>
-                  <DropdownMenuItem className={`${location === '/' ? 'bg-primary/20 text-primary' : ''}`}>
-                    Home
-                  </DropdownMenuItem>
-                </Link>
-                <Link href="/pricing" onClick={() => setMenuOpen(false)}>
-                  <DropdownMenuItem className={`${location === '/pricing' ? 'bg-primary/20 text-primary' : ''}`}>
-                    Pricing
-                  </DropdownMenuItem>
-                </Link>
-                <Link href="/gallery" onClick={() => setMenuOpen(false)}>
-                  <DropdownMenuItem className={`${location === '/gallery' ? 'bg-primary/20 text-primary' : ''}`}>
-                    Gallery
-                  </DropdownMenuItem>
-                </Link>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
         </div>
         
         <div className="flex items-center space-x-4">
@@ -87,7 +53,6 @@ export default function Header() {
               <Badge variant="outline" className="text-white bg-transparent border-white/20 flex items-center gap-1 py-1.5">
                 <CreditCard className="h-3 w-3" />
                 <span>{isLoadingCredits ? '...' : creditData.balance}</span>
-                <span className="text-xs">credits</span>
                 {creditData.is_premium && (
                   <Star className="h-3 w-3 text-yellow-400 ml-1" />
                 )}
