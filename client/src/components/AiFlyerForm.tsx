@@ -25,13 +25,17 @@ type AiFlyerFormProps = {
   isGenerating: boolean;
   setIsGenerating: (isGenerating: boolean) => void;
   setDesignSuggestions: (suggestions: DesignVariation[] | null) => void;
+  aspectRatio: string;
+  setAspectRatio: (aspectRatio: string) => void;
 };
 
 export default function AiFlyerForm({ 
   setGeneratedFlyer,
   isGenerating,
   setIsGenerating,
-  setDesignSuggestions
+  setDesignSuggestions,
+  aspectRatio,
+  setAspectRatio
 }: AiFlyerFormProps) {
   const [prompt, setPrompt] = useState("");
   const [backgroundImage, setBackgroundImage] = useState<File | null>(null);
@@ -39,6 +43,22 @@ export default function AiFlyerForm({
   const [logo, setLogo] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [designCount, setDesignCount] = useState<string>("4"); // Default to 4 designs
+  
+  type AspectRatioOption = {
+    id: string;
+    label: string;
+    value: string;
+  };
+  
+  const aspectRatioOptions: AspectRatioOption[] = [
+    { id: "original", label: "Original", value: "auto" },
+    { id: "1:1", label: "Square (1:1)", value: "1/1" },
+    { id: "4:3", label: "Standard (4:3)", value: "4/3" },
+    { id: "16:9", label: "Widescreen (16:9)", value: "16/9" },
+    { id: "9:16", label: "Portrait (9:16)", value: "9/16" },
+    { id: "3:2", label: "Photo (3:2)", value: "3/2" },
+    { id: "2:3", label: "Tall (2:3)", value: "2/3" },
+  ];
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -341,32 +361,63 @@ export default function AiFlyerForm({
           </div>
         </div>
         
-        {/* Design Count Selector */}
-        <div className="space-y-1 mb-3">
-          <Label htmlFor="designCount" className="text-xs font-medium text-white/70">
-            Number of Designs
-          </Label>
-          
-          <div className="flex gap-2">
-            {[1, 2, 3, 4].map((num) => (
-              <button
-                key={num}
-                type="button"
-                onClick={() => setDesignCount(num.toString())}
-                className={`
-                  h-8 w-8 rounded-md flex items-center justify-center transition-all duration-200
-                  ${parseInt(designCount) === num 
-                    ? 'bg-indigo-500/50 border-indigo-400/70 text-white backdrop-blur-md' 
-                    : 'bg-white/10 border-gray-800/50 text-white/80 hover:bg-indigo-500/30 backdrop-blur-sm'}
-                  border hover:border-indigo-500/40 focus:outline-none
-                  active:scale-95
-                `}
-              >
-                <span className={`text-sm font-medium ${parseInt(designCount) === num ? 'text-white' : 'text-white/90'}`}>{num}</span>
-              </button>
-            ))}
+        {/* Design Settings - Count and Aspect Ratio */}
+        <div className="grid grid-cols-2 gap-4 mb-3">
+          {/* Design Count Selector */}
+          <div className="space-y-1">
+            <Label htmlFor="designCount" className="text-xs font-medium text-white/70">
+              Number of Designs
+            </Label>
+            
+            <div className="flex gap-2">
+              {[1, 2, 3, 4].map((num) => (
+                <button
+                  key={num}
+                  type="button"
+                  onClick={() => setDesignCount(num.toString())}
+                  className={`
+                    h-8 w-8 rounded-md flex items-center justify-center transition-all duration-200
+                    ${parseInt(designCount) === num 
+                      ? 'bg-indigo-500/50 border-indigo-400/70 text-white backdrop-blur-md' 
+                      : 'bg-white/10 border-gray-800/50 text-white/80 hover:bg-indigo-500/30 backdrop-blur-sm'}
+                    border hover:border-indigo-500/40 focus:outline-none
+                    active:scale-95
+                  `}
+                >
+                  <span className={`text-sm font-medium ${parseInt(designCount) === num ? 'text-white' : 'text-white/90'}`}>{num}</span>
+                </button>
+              ))}
+            </div>
           </div>
-
+          
+          {/* Aspect Ratio Selector */}
+          <div className="space-y-1">
+            <Label htmlFor="aspectRatio" className="text-xs font-medium text-white/70">
+              Aspect Ratio
+            </Label>
+            
+            <div className="flex flex-wrap gap-2">
+              {aspectRatioOptions.slice(0, 4).map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setAspectRatio(option.id)}
+                  className={`
+                    h-8 px-2 rounded-md flex items-center justify-center transition-all duration-200
+                    ${aspectRatio === option.id
+                      ? 'bg-indigo-500/50 border-indigo-400/70 text-white backdrop-blur-md' 
+                      : 'bg-white/10 border-gray-800/50 text-white/80 hover:bg-indigo-500/30 backdrop-blur-sm'}
+                    border hover:border-indigo-500/40 focus:outline-none
+                    active:scale-95
+                  `}
+                >
+                  <span className={`text-xs font-medium ${aspectRatio === option.id ? 'text-white' : 'text-white/90'}`}>
+                    {option.id === "original" ? option.label : option.id}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
         
         {/* Prompt Input with Generate Button */}

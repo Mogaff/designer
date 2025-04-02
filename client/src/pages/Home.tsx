@@ -11,6 +11,7 @@ export default function Home() {
   const [generatedFlyer, setGeneratedFlyer] = useState<GeneratedFlyer | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [designSuggestions, setDesignSuggestions] = useState<DesignVariation[] | null>(null);
+  const [aspectRatio, setAspectRatio] = useState<string>("original");
 
   return (
     <div className="flex flex-col h-screen overflow-auto">
@@ -36,6 +37,8 @@ export default function Home() {
                       isGenerating={isGenerating}
                       setIsGenerating={setIsGenerating}
                       setDesignSuggestions={setDesignSuggestions}
+                      aspectRatio={aspectRatio}
+                      setAspectRatio={setAspectRatio}
                     />
                   )}
                 </div>
@@ -44,6 +47,7 @@ export default function Home() {
                   <FlyerPreview 
                     generatedFlyer={generatedFlyer} 
                     isGenerating={isGenerating}
+                    aspectRatio={aspectRatio}
                   />
                 </div>
               </div>

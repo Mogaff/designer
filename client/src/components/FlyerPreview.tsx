@@ -22,16 +22,21 @@ import {
 type FlyerPreviewProps = {
   generatedFlyer: GeneratedFlyer | null;
   isGenerating: boolean;
+  aspectRatio?: string;
 };
 
-export default function FlyerPreview({ generatedFlyer, isGenerating }: FlyerPreviewProps) {
+export default function FlyerPreview({ 
+  generatedFlyer, 
+  isGenerating,
+  aspectRatio: initialAspectRatio
+}: FlyerPreviewProps) {
   const imageRef = useRef<HTMLImageElement>(null);
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
   const [isSaveDialogOpen, setSaveDialogOpen] = useState(false);
   const [saveDialogName, setSaveDialogName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const [aspectRatio, setAspectRatio] = useState<string>("original");
+  const [aspectRatio, setAspectRatio] = useState<string>(initialAspectRatio || "original");
   
   type AspectRatioOption = {
     id: string;
