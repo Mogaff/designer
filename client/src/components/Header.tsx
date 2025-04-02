@@ -14,10 +14,12 @@ import { useQuery } from "@tanstack/react-query";
 import { getQueryFn } from "@/lib/queryClient";
 import { Badge } from "@/components/ui/badge";
 import { CreditsResponse } from "@/lib/creditTypes";
+import { useState } from "react";
 
 export default function Header() {
   const { isAuthenticated, user, logout } = useAuth();
   const [location, navigate] = useLocation();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // Query user credits when authenticated
   const { data: creditData, isLoading: isLoadingCredits } = useQuery<CreditsResponse>({
@@ -36,7 +38,7 @@ export default function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 pt-2 pb-2 px-4 sm:px-6 lg:px-8">
       <div className="max-w-full mx-auto flex justify-between items-center">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center">
           <Link href="/">
             <div className="cursor-pointer">
               <h1 className="text-xl font-semibold text-white">ha'itu</h1>
@@ -44,25 +46,36 @@ export default function Header() {
             </div>
           </Link>
           
-          {/* Pill navigation - moved next to logo */}
-          <div className="pill-nav">
-            <Link href="/">
-              <button type="button" className={`pill-nav-item text-xs py-1 px-3 ${location === '/' ? 'active' : ''}`}>
-                Home
-              </button>
-            </Link>
-            <Link href="/pricing">
-              <button type="button" className={`pill-nav-item text-xs py-1 px-3 ${location === '/pricing' ? 'active' : ''}`}>
-                <DollarSign className="h-3 w-3 inline mr-1" />
-                Pricing
-              </button>
-            </Link>
-            <Link href="/gallery">
-              <button type="button" className={`pill-nav-item text-xs py-1 px-3 ${location === '/gallery' ? 'active' : ''}`}>
-                <Images className="h-3 w-3 inline mr-1" />
-                Gallery
-              </button>
-            </Link>
+          {/* Hamburger menu dropdown */}
+          <div className="ml-3">
+            <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-white hover:text-white hover:bg-white/10 bg-transparent px-2"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-40">
+                <Link href="/" onClick={() => setMenuOpen(false)}>
+                  <DropdownMenuItem className={`${location === '/' ? 'bg-primary/20 text-primary' : ''}`}>
+                    Home
+                  </DropdownMenuItem>
+                </Link>
+                <Link href="/pricing" onClick={() => setMenuOpen(false)}>
+                  <DropdownMenuItem className={`${location === '/pricing' ? 'bg-primary/20 text-primary' : ''}`}>
+                    Pricing
+                  </DropdownMenuItem>
+                </Link>
+                <Link href="/gallery" onClick={() => setMenuOpen(false)}>
+                  <DropdownMenuItem className={`${location === '/gallery' ? 'bg-primary/20 text-primary' : ''}`}>
+                    Gallery
+                  </DropdownMenuItem>
+                </Link>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
         
