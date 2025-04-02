@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Bonus Credits</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    h1 {
+      color: #333;
+    }
+    .form-container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #4c6ef5;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #364fc7;
+    }
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 4px;
+      background-color: #e9ecef;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>Add Bonus Credits</h1>
+  <div class="form-container">
+    <label for="userId">Firebase User ID:</label>
+    <input type="text" id="userId" placeholder="Enter Firebase user ID">
+    
+    <label for="bonusCode">Bonus Code:</label>
+    <input type="text" id="bonusCode" value="e0938fd1-3c50-4dc5-b165-17acd928253e" readonly>
+    
+    <button id="addCredits">Add 500 Credits</button>
+    
+    <div id="result" style="display: none;"></div>
+  </div>
+
+  <script>
+    document.getElementById('addCredits').addEventListener('click', async () => {
+      const userId = document.getElementById('userId').value.trim();
+      const bonusCode = document.getElementById('bonusCode').value.trim();
+      const resultDiv = document.getElementById('result');
+      
+      if (!userId) {
+        resultDiv.textContent = 'Please enter a Firebase user ID';
+        resultDiv.style.display = 'block';
+        resultDiv.style.backgroundColor = '#f8d7da';
+        return;
+      }
+      
+      try {
+        resultDiv.textContent = 'Processing...';
+        resultDiv.style.display = 'block';
+        resultDiv.style.backgroundColor = '#e9ecef';
+        
+        const response = await fetch('/api/credits/bonus', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ userId, bonusCode })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          resultDiv.textContent = JSON.stringify(data, null, 2);
+          resultDiv.style.backgroundColor = '#d4edda';
+        } else {
+          resultDiv.textContent = `Error: ${data.message || 'Unknown error'}`;
+          resultDiv.style.backgroundColor = '#f8d7da';
+        }
+      } catch (error) {
+        resultDiv.textContent = `Error: ${error.message}`;
+        resultDiv.style.backgroundColor = '#f8d7da';
+      }
+    });
+  </script>
+</body>
+</html>

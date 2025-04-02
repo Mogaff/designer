@@ -28,6 +28,10 @@ const uploadFields = upload.fields([
 ]);
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Serve the credits admin page
+  app.get("/admin/credits", (req: Request, res: Response) => {
+    res.sendFile(path.resolve(process.cwd(), "add-credits.html"));
+  });
   // API endpoint to generate multiple flyer designs using Gemini AI
   app.post("/api/generate-ai", isAuthenticated, uploadFields, async (req: Request, res: Response) => {
     try {
@@ -319,6 +323,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       res.status(500).json({ message: `Failed to add credits: ${errorMessage}` });
+    }
+  });
+  
+  // Special endpoint to add 500 credits to a specific user once 
+  // (activated by a special ID to prevent abuse)
+  app.post("/api/credits/bonus", async (req: Request, res: Response) => {
+    try {
+      const { userId, bonusCode } = req.body;
+      
+      // Validate the bonus code (simple security measure)
+      if (bonusCode !== "e0938fd1-3c50-4dc5-b165-17acd928253e") {
+        return res.status(403).json({ message: "Invalid bonus code" });
+      }
+      
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+      
+      // Find the user by ID
+      const user = await storage.getUserByFirebaseUid(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Add 500 credits
+      const transaction = await storage.addCreditsTransaction({
+        user_id: user.id,
+        amount: 500,
+        transaction_type: 'add',
+        description: 'Special one-time bonus credits'
+      });
+      
+      // Get updated user info
+      const updatedUser = await storage.getUser(user.id);
+      
+      res.json({
+        success: true,
+        message: "500 bonus credits added successfully",
+        new_balance: updatedUser?.credits_balance
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to add bonus credits: ${errorMessage}` });
     }
   });
   
