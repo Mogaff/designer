@@ -47,7 +47,7 @@ export async function createCheckoutSession(
           quantity: 1,
         },
       ],
-      mode: 'subscription', // Changed from 'payment' to 'subscription' for recurring prices
+      mode: 'payment',
       success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: cancelUrl,
       client_reference_id: userId,
@@ -56,14 +56,6 @@ export async function createCheckoutSession(
         firebaseUid,
         packageType,
         credits: packageDetails.credits.toString()
-      },
-      subscription_data: {
-        metadata: {
-          userId,
-          firebaseUid,
-          packageType,
-          credits: packageDetails.credits.toString()
-        }
       }
     });
     
@@ -90,18 +82,11 @@ export async function verifyCheckoutSession(sessionId: string): Promise<{
   try {
     log(`Verifying Stripe checkout session: ${sessionId}`, 'stripe');
     
-    // For subscription checkout sessions, we need to expand the subscription
-    const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ['subscription']
-    });
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
     
-    // For subscriptions, payment_status may not be 'paid' right away,
-    // but we can check if the subscription is active
-    const subscription = session.subscription as Stripe.Subscription;
-    
-    if (!subscription || subscription.status !== 'active') {
-      log(`Session ${sessionId} subscription status is not active`, 'stripe');
-      throw new Error('Subscription not active');
+    if (session.payment_status !== 'paid') {
+      log(`Session ${sessionId} payment status is ${session.payment_status}, not paid`, 'stripe');
+      throw new Error('Payment not completed');
     }
     
     const userId = session.metadata?.userId || '';
@@ -154,62 +139,24 @@ export async function handleStripeWebhook(
     
     log(`Received Stripe webhook event: ${event.type}`, 'stripe');
     
-    // Handle checkout session completed - initial subscription creation
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
       
-      const userId = session.metadata?.userId || '';
-      const firebaseUid = session.metadata?.firebaseUid || '';
-      const packageType = session.metadata?.packageType || '';
-      const credits = parseInt(session.metadata?.credits || '0', 10);
-      
-      if (userId && packageType && credits > 0) {
-        log(`Processing successful checkout for user ${userId}, credits: ${credits}`, 'stripe');
+      if (session.payment_status === 'paid') {
+        const userId = session.metadata?.userId || '';
+        const firebaseUid = session.metadata?.firebaseUid || '';
+        const packageType = session.metadata?.packageType || '';
+        const credits = parseInt(session.metadata?.credits || '0', 10);
         
-        // If using subscriptions, payment may be processed separately
-        if (session.mode === 'subscription') {
-          // We'll add credits when the invoice is paid
-          log(`Subscription created, waiting for invoice.paid event for ${session.subscription}`, 'stripe');
-        } else if (session.payment_status === 'paid') {
-          // For one-time payments, add credits immediately
+        if (userId && packageType && credits > 0) {
+          log(`Processing successful payment for user ${userId}, credits: ${credits}`, 'stripe');
+          
           await onSuccess({
             userId,
             firebaseUid,
             credits,
             packageType
           });
-        }
-      }
-    }
-    
-    // Handle successful subscription payment
-    else if (event.type === 'invoice.paid') {
-      const invoice = event.data.object as Stripe.Invoice;
-      
-      if (invoice.subscription) {
-        try {
-          // Get the subscription to fetch the client_reference_id and metadata
-          const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
-          
-          if (subscription.metadata) {
-            const userId = subscription.metadata.userId || '';
-            const firebaseUid = subscription.metadata.firebaseUid || '';
-            const packageType = subscription.metadata.packageType || '';
-            const credits = parseInt(subscription.metadata.credits || '0', 10);
-            
-            if (userId && packageType && credits > 0) {
-              log(`Processing subscription payment for user ${userId}, credits: ${credits}`, 'stripe');
-              
-              await onSuccess({
-                userId,
-                firebaseUid,
-                credits,
-                packageType
-              });
-            }
-          }
-        } catch (error) {
-          log(`Error retrieving subscription for invoice ${invoice.id}: ${error}`, 'stripe');
         }
       }
     }

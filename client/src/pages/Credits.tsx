@@ -88,26 +88,16 @@ export default function Credits() {
     const paymentSuccess = params.get('payment_success');
     const paymentCancelled = params.get('payment_cancelled');
     
-    console.log('URL Params:', { sessionId, paymentSuccess, paymentCancelled });
-    
     if (sessionId) {
-      console.log('Found Stripe session ID:', sessionId);
       // Verify the Stripe session
       verifyPaymentMutation.mutate(sessionId);
     } else if (paymentSuccess === 'true') {
-      // This is a fallback in case the session_id is not correctly passed
-      // We won't automatically credit the account here, just show a message
       setPaymentStatus('success');
       toast({
-        title: "Payment Received",
-        description: "We're processing your payment. Your credits will be added shortly.",
+        title: "Payment Successful",
+        description: "Your payment was successful and credits have been added to your account.",
         variant: "default",
       });
-      
-      // Clean up the URL parameter
-      const cleanUrl = new URL(window.location.href);
-      cleanUrl.searchParams.delete('payment_success');
-      window.history.replaceState({}, document.title, cleanUrl.pathname);
     } else if (paymentCancelled === 'true') {
       setPaymentStatus('cancelled');
       toast({
