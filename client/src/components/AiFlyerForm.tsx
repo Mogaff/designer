@@ -87,11 +87,23 @@ export default function AiFlyerForm({
       return response.json();
     },
     onSuccess: (data: DesignSuggestions) => {
-      // Clear any existing design
-      setGeneratedFlyer(null);
-      
       // Store all designs in state for display
       setDesignSuggestions(data.designs);
+      
+      // Automatically select and display the first design
+      if (data.designs && data.designs.length > 0) {
+        const firstDesign = data.designs[0];
+        setGeneratedFlyer({
+          imageUrl: firstDesign.imageBase64,
+          headline: "AI Generated Design",
+          content: `Design style: ${firstDesign.style}`,
+          stylePrompt: prompt, // Save the original prompt
+          template: "ai"
+        });
+      } else {
+        // Clear any existing design if no designs were generated
+        setGeneratedFlyer(null);
+      }
       
       setIsGenerating(false);
       

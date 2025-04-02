@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { GeneratedFlyer } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
-import { Download, Share2, Save, BookMarked, Ratio, Check } from "lucide-react";
+import { Download, Share2, Save, BookMarked, Ratio, Check, Copy } from "lucide-react";
 import { MultiColorLoading } from "@/components/ui/multi-color-loading";
 import iconUpload from "../assets/iconupload.png";
 import { apiRequest } from "@/lib/queryClient";
@@ -18,6 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type FlyerPreviewProps = {
   generatedFlyer: GeneratedFlyer | null;
@@ -37,6 +38,7 @@ export default function FlyerPreview({
   const [saveDialogName, setSaveDialogName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [aspectRatio, setAspectRatio] = useState<string>(initialAspectRatio || "original");
+  const [promptCopied, setPromptCopied] = useState(false);
   
   type AspectRatioOption = {
     id: string;
@@ -141,6 +143,31 @@ export default function FlyerPreview({
       setIsSaving(false);
     }
   };
+  
+  const copyPromptToClipboard = () => {
+    if (!generatedFlyer?.stylePrompt) return;
+    
+    navigator.clipboard.writeText(generatedFlyer.stylePrompt)
+      .then(() => {
+        setPromptCopied(true);
+        toast({
+          title: "Prompt copied!",
+          description: "The prompt has been copied to your clipboard",
+        });
+        
+        // Reset the copied state after 2 seconds
+        setTimeout(() => {
+          setPromptCopied(false);
+        }, 2000);
+      })
+      .catch(() => {
+        toast({
+          title: "Copy failed",
+          description: "Failed to copy the prompt to clipboard",
+          variant: "destructive",
+        });
+      });
+  };
 
   return (
     <div className="h-full flex flex-col">
@@ -210,7 +237,7 @@ export default function FlyerPreview({
         </div>
       </div>
       
-      <div className="bg-black/40 backdrop-blur-md rounded-xl border border-white/10 flex-grow flex items-center justify-center">
+      <div className="bg-black/40 backdrop-blur-md rounded-xl border border-white/10 flex-grow flex flex-col items-center justify-center">
         {!generatedFlyer && !isGenerating ? (
           <div className="w-full h-full flex items-center justify-center p-4">
             <div 
@@ -241,39 +268,68 @@ export default function FlyerPreview({
             </div>
           </div>
         ) : (
-          <div className="w-full h-full flex items-center justify-center p-4">
-            <div 
-              className={`relative flex items-center justify-center ${aspectRatio !== 'original' ? 'overflow-hidden' : ''} 
-                ${aspectRatio !== 'original' ? 'bg-gradient-to-br from-indigo-900/20 to-purple-900/30 border border-indigo-500/20 rounded-md' : ''}`}
-              style={{
-                aspectRatio: aspectRatio === 'original' ? 'auto' : aspectRatioOptions.find(o => o.id === aspectRatio)?.value || 'auto',
-                maxWidth: '100%',
-                maxHeight: '100%',
-                width: aspectRatio === 'original' ? 'auto' : '100%',
-                height: aspectRatio === 'original' ? 'auto' : '100%',
-              }}
-            >
-              {generatedFlyer && (
-                <img 
-                  ref={imageRef}
-                  src={generatedFlyer.imageUrl} 
-                  alt="Generated design" 
-                  className={`${aspectRatio === 'original' ? 'max-h-full max-w-full' : 'w-full h-full'} object-contain`}
-                />
-              )}
-              {isGenerating && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <MultiColorLoading className="w-full h-full rounded-xl" />
-                </div>
-              )}
-              
-              {/* Aspect ratio label */}
-              {aspectRatio !== 'original' && !isGenerating && (
-                <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] px-2 py-1 rounded-md">
-                  {aspectRatio}
-                </div>
-              )}
+          <div className="w-full h-full flex flex-col">
+            <div className="flex-grow p-4 flex items-center justify-center">
+              <div 
+                className={`relative flex items-center justify-center ${aspectRatio !== 'original' ? 'overflow-hidden' : ''} 
+                  ${aspectRatio !== 'original' ? 'bg-gradient-to-br from-indigo-900/20 to-purple-900/30 border border-indigo-500/20 rounded-md' : ''}`}
+                style={{
+                  aspectRatio: aspectRatio === 'original' ? 'auto' : aspectRatioOptions.find(o => o.id === aspectRatio)?.value || 'auto',
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  width: aspectRatio === 'original' ? 'auto' : '100%',
+                  height: aspectRatio === 'original' ? 'auto' : '100%',
+                }}
+              >
+                {generatedFlyer && (
+                  <img 
+                    ref={imageRef}
+                    src={generatedFlyer.imageUrl} 
+                    alt="Generated design" 
+                    className={`${aspectRatio === 'original' ? 'max-h-full max-w-full' : 'w-full h-full'} object-contain`}
+                  />
+                )}
+                {isGenerating && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <MultiColorLoading className="w-full h-full rounded-xl" />
+                  </div>
+                )}
+                
+                {/* Aspect ratio label */}
+                {aspectRatio !== 'original' && !isGenerating && (
+                  <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] px-2 py-1 rounded-md">
+                    {aspectRatio}
+                  </div>
+                )}
+              </div>
             </div>
+            
+            {/* Prompt display with copy button */}
+            {generatedFlyer && generatedFlyer.stylePrompt && (
+              <div className="p-3 border-t border-white/10 bg-black/30 backdrop-blur-sm rounded-b-xl">
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className="text-xs font-medium text-white/80">Prompt</h3>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={copyPromptToClipboard}
+                          className="h-6 w-6 rounded-full hover:bg-white/10"
+                        >
+                          <Copy className="h-3.5 w-3.5 text-white/70" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                        <p className="text-xs">Copy prompt</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <p className="text-xs text-white/60 line-clamp-2">{generatedFlyer.stylePrompt}</p>
+              </div>
+            )}
           </div>
         )}
       </div>

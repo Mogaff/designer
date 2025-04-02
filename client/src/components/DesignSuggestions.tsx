@@ -20,18 +20,20 @@ export default function DesignSuggestions({
 }: DesignSuggestionsProps) {
   const [selectedDesign, setSelectedDesign] = useState<number | null>(null);
 
-  // Handle selecting a design
+  // Handle selecting a design - get the current stylePrompt from the existing flyer
   const handleSelectDesign = (design: DesignVariation) => {
     setSelectedDesign(design.id);
     
-    // Create a generated flyer from the selected design
-    setGeneratedFlyer({
+    // Create a new generated flyer from the selected design
+    const newFlyer: GeneratedFlyer = {
       imageUrl: design.imageBase64,
       headline: "AI Generated Design",
       content: `Design style: ${design.style}`,
-      stylePrompt: design.style,
+      stylePrompt: design.style, // Default to design style
       template: "ai"
-    });
+    };
+    
+    setGeneratedFlyer(newFlyer);
   };
 
   // Handle finalizing the design choice
