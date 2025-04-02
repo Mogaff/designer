@@ -259,7 +259,7 @@ export default function FlyerPreview({
                     ref={imageRef}
                     src={generatedFlyer.imageUrl} 
                     alt="Generated design" 
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
                 )}
                 {isGenerating && (
