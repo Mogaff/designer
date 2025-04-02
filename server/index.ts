@@ -6,8 +6,9 @@ import passport from "./auth";
 import MemoryStore from "memorystore";
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+// Increase JSON payload limit to 50MB to accommodate large image data
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
 // Create memory store for sessions
 const MemoryStoreClass = MemoryStore(session);

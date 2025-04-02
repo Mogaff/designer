@@ -39,6 +39,7 @@ export default function FlyerPreview({
   const [isSaving, setIsSaving] = useState(false);
   const [aspectRatio, setAspectRatio] = useState<string>(initialAspectRatio || "original");
   const [promptCopied, setPromptCopied] = useState(false);
+  const [autoSaveAttempted, setAutoSaveAttempted] = useState(false);
   
   type AspectRatioOption = {
     id: string;
@@ -62,6 +63,46 @@ export default function FlyerPreview({
       setAspectRatio(initialAspectRatio);
     }
   }, [initialAspectRatio]);
+  
+  // Auto-save generated flyers to gallery when they appear
+  useEffect(() => {
+    const autoSaveFlyer = async () => {
+      // Only try to auto-save if:
+      // 1. We have a generated flyer
+      // 2. We're not currently generating
+      // 3. We haven't attempted to auto-save this flyer yet
+      // 4. The user is authenticated
+      if (generatedFlyer && !isGenerating && !autoSaveAttempted && isAuthenticated) {
+        setAutoSaveAttempted(true);
+        setIsSaving(true);
+        
+        try {
+          const designName = generatedFlyer.headline || `Design ${new Date().toLocaleDateString()}`;
+          await apiRequest('POST', '/api/creations', {
+            name: designName,
+            imageUrl: generatedFlyer.imageUrl,
+            headline: generatedFlyer.headline || null,
+            content: generatedFlyer.content || null,
+            stylePrompt: generatedFlyer.stylePrompt || null,
+            template: generatedFlyer.template || null,
+          });
+          
+          // Show a subtle toast notification
+          toast({
+            title: "Auto-saved",
+            description: "Your design has been automatically saved to your gallery",
+          });
+        } catch (error) {
+          console.error("Error auto-saving design:", error);
+          // Don't show error notification for auto-save failures
+        } finally {
+          setIsSaving(false);
+        }
+      }
+    };
+    
+    autoSaveFlyer();
+  }, [generatedFlyer, isGenerating, autoSaveAttempted, isAuthenticated, toast]);
 
   const handleDownload = () => {
     if (!generatedFlyer) return;

@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { GeneratedFlyer } from "@/lib/types";
 import { CheckCircle } from "lucide-react";
 import { MultiColorLoading } from "@/components/ui/multi-color-loading";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 type DesignSuggestionsProps = {
   designs: DesignVariation[] | null;
@@ -19,6 +22,37 @@ export default function DesignSuggestions({
   setDesignSuggestions
 }: DesignSuggestionsProps) {
   const [selectedDesign, setSelectedDesign] = useState<number | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const { toast } = useToast();
+  const { isAuthenticated } = useAuth();
+
+  // Function to save design to gallery
+  const saveDesignToGallery = async (design: DesignVariation) => {
+    if (!isAuthenticated) return;
+    setIsSaving(true);
+    
+    try {
+      const designName = `AI Design - ${design.style}`;
+      await apiRequest('POST', '/api/creations', {
+        name: designName,
+        imageUrl: design.imageBase64,
+        headline: "AI Generated Design",
+        content: `Design style: ${design.style}`,
+        stylePrompt: design.style,
+        template: "ai"
+      });
+      
+      toast({
+        title: "Design saved",
+        description: "Your design has been automatically saved to your gallery",
+      });
+    } catch (error) {
+      console.error("Failed to auto-save design:", error);
+      // Don't show error to user for auto-save - it happens silently
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   // Handle selecting a design - get the current stylePrompt from the existing flyer
   const handleSelectDesign = (design: DesignVariation) => {
@@ -34,6 +68,9 @@ export default function DesignSuggestions({
     };
     
     setGeneratedFlyer(newFlyer);
+    
+    // Auto-save the design when selected
+    saveDesignToGallery(design);
   };
 
   // Handle finalizing the design choice
