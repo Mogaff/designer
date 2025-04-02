@@ -64,6 +64,57 @@ export default function FlyerPreview({
     { id: "skyscraper", label: "Skyscraper Ad (160×600)", value: "160/600" },
   ];
   
+  // Funktionen zur Berechnung der Container-Dimensionen basierend auf dem Seitenverhältnis
+  const getContainerWidth = (ratio: string): string => {
+    // Verschiedene Breiten je nach Seitenverhältnis
+    switch(ratio) {
+      case 'profile':
+      case 'post':
+      case 'square_ad':
+        return '400px'; // Quadratisch
+      case 'fb_cover':
+      case 'twitter_header':
+      case 'linkedin_banner':
+      case 'yt_thumbnail':
+      case 'instream':
+        return '600px'; // Landscape/Querformat
+      case 'stories':
+      case 'pinterest':
+      case 'skyscraper':
+        return '300px'; // Hochformat
+      case 'leaderboard':
+        return '500px'; // Spezielle Werbebanner
+      default:
+        return '400px'; // Standard
+    }
+  };
+
+  const getContainerHeight = (ratio: string): string => {
+    // Höhe basierend auf Seitenverhältnis
+    switch(ratio) {
+      case 'profile':
+      case 'post':
+      case 'square_ad':
+        return '400px'; // Quadratisch 1:1
+      case 'yt_thumbnail':
+      case 'instream': 
+        return '337px'; // 16:9 Verhältnis (600 × 9/16)
+      case 'fb_cover':
+      case 'twitter_header':
+      case 'linkedin_banner':
+        return '200px'; // Querformat Banner
+      case 'stories':
+      case 'pinterest':
+        return '533px'; // Hochformat 9:16 oder 2:3
+      case 'leaderboard':
+        return '80px'; // Leaderboard 728×90
+      case 'skyscraper':
+        return '600px'; // Skyscraper 160×600
+      default:
+        return '400px'; // Standard
+    }
+  };
+  
   // Update aspectRatio when prop changes
   useEffect(() => {
     if (initialAspectRatio) {
@@ -234,7 +285,8 @@ export default function FlyerPreview({
                 maxWidth: '90%',
                 maxHeight: '90%',
                 padding: '2rem',
-                aspectRatio: aspectRatio,
+                width: getContainerWidth(aspectRatio),
+                height: getContainerHeight(aspectRatio),
               }}
             >
               <div className="flex flex-col items-center justify-center text-center">
@@ -257,7 +309,8 @@ export default function FlyerPreview({
                   maxWidth: '90%',
                   maxHeight: '90%',
                   padding: '2rem',
-                  aspectRatio: aspectRatio,
+                  width: getContainerWidth(aspectRatio), 
+                  height: getContainerHeight(aspectRatio)
                 }}
               >
                 {generatedFlyer && (
@@ -267,14 +320,14 @@ export default function FlyerPreview({
                     alignItems: 'center', 
                     width: '100%', 
                     height: '100%',
-                    aspectRatio: aspectRatio
+                    // Das Seitenverhältnis wird direkt über das Container-Element gesteuert
                   }}>
                     <img 
                       ref={imageRef}
                       src={generatedFlyer.imageUrl} 
                       alt="Generated design" 
                       className="max-w-full max-h-full object-contain"
-                      style={{ aspectRatio: aspectRatio }}
+                      style={{ maxHeight: '65vh' }}
                     />
                   </div>
                 )}
