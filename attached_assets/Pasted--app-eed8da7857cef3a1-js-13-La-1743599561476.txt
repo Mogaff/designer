@@ -1,0 +1,208 @@
+//
+   ///////////////////////////
+      /////////////////////
+      
+_app-eed8da7857cef3a1.js:13 [LaunchDarkly] LaunchDarkly client initialized
+_app-eed8da7857cef3a1.js:13 [TikTok Pixel] - Invalid pixel ID
+Issue: The pixel ID is invalid. This could prevent your pixel from receiving data.
+Suggestion: Please go to Events Manager and find the correct pixel ID.
+(anonym) @ _app-eed8da7857cef3a1.js:13Diese Warnung nachvollziehenAI
+AIFlyerGenius:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+_app-eed8da7857cef3a1.js:13 Adding extension: CSS Gradient Generator Object
+_app-eed8da7857cef3a1.js:13 Adding extension: CSS Gradient Generator Object
+9Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.Fehler nachvollziehenAI
+framework-b50051fd1fefc2b2.js:1 Unrecognized feature: 'ambient-light-sensor'.
+_ @ framework-b50051fd1fefc2b2.js:1Diese Warnung nachvollziehenAI
+framework-b50051fd1fefc2b2.js:1 Unrecognized feature: 'battery'.
+_ @ framework-b50051fd1fefc2b2.js:1Diese Warnung nachvollziehenAI
+framework-b50051fd1fefc2b2.js:1 Unrecognized feature: 'execution-while-not-rendered'.
+_ @ framework-b50051fd1fefc2b2.js:1Diese Warnung nachvollziehenAI
+framework-b50051fd1fefc2b2.js:1 Unrecognized feature: 'execution-while-out-of-viewport'.
+_ @ framework-b50051fd1fefc2b2.js:1Diese Warnung nachvollziehenAI
+framework-b50051fd1fefc2b2.js:1 Unrecognized feature: 'layout-animations'.
+_ @ framework-b50051fd1fefc2b2.js:1Diese Warnung nachvollziehenAI
+framework-b50051fd1fefc2b2.js:1 Unrecognized feature: 'legacy-image-formats'.
+_ @ framework-b50051fd1fefc2b2.js:1Diese Warnung nachvollziehenAI
+framework-b50051fd1fefc2b2.js:1 Unrecognized feature: 'navigation-override'.
+_ @ framework-b50051fd1fefc2b2.js:1Diese Warnung nachvollziehenAI
+framework-b50051fd1fefc2b2.js:1 Unrecognized feature: 'oversized-images'.
+_ @ framework-b50051fd1fefc2b2.js:1Diese Warnung nachvollziehenAI
+framework-b50051fd1fefc2b2.js:1 Unrecognized feature: 'publickey-credentials'.
+_ @ framework-b50051fd1fefc2b2.js:1Diese Warnung nachvollziehenAI
+framework-b50051fd1fefc2b2.js:1 Unrecognized feature: 'speaker-selection'.
+_ @ framework-b50051fd1fefc2b2.js:1Diese Warnung nachvollziehenAI
+framework-b50051fd1fefc2b2.js:1 Unrecognized feature: 'unoptimized-images'.
+_ @ framework-b50051fd1fefc2b2.js:1Diese Warnung nachvollziehenAI
+framework-b50051fd1fefc2b2.js:1 Unrecognized feature: 'unsized-media'.
+_ @ framework-b50051fd1fefc2b2.js:1Diese Warnung nachvollziehenAI
+framework-b50051fd1fefc2b2.js:1 Unrecognized feature: 'pointer-lock'.
+_ @ framework-b50051fd1fefc2b2.js:1Diese Warnung nachvollziehenAI
+framework-b50051fd1fefc2b2.js:1 Allow attribute will take precedence over 'allowfullscreen'.
+_ @ framework-b50051fd1fefc2b2.js:1Diese Warnung nachvollziehenAI
+framework-b50051fd1fefc2b2.js:1 Allow attribute will take precedence over 'allowpaymentrequest'.
+_ @ framework-b50051fd1fefc2b2.js:1Diese Warnung nachvollziehenAI
+_app-eed8da7857cef3a1.js:13 Invalid href 'https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonym) @ _app-eed8da7857cef3a1.js:13Fehler nachvollziehenAI
+5AIFlyerGenius:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was receivedFehler nachvollziehenAI
+2_app-eed8da7857cef3a1.js:13 WARN: A component changed from uncontrolled to controlled.
+(anonym) @ _app-eed8da7857cef3a1.js:13Diese Warnung nachvollziehenAI
+_app-eed8da7857cef3a1.js:13 Invalid href 'https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev//login' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonym) @ _app-eed8da7857cef3a1.js:13Fehler nachvollziehenAI
+2_app-eed8da7857cef3a1.js:13 Invalid href 'https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonym) @ _app-eed8da7857cef3a1.js:13Fehler nachvollziehenAI
+_app-eed8da7857cef3a1.js:13 Invalid href 'https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev//login' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonym) @ _app-eed8da7857cef3a1.js:13Fehler nachvollziehenAI
+_app-eed8da7857cef3a1.js:13 WARN: A component changed from uncontrolled to controlled.
+(anonym) @ _app-eed8da7857cef3a1.js:13Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Unrecognized feature: 'ambient-light-sensor'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Unrecognized feature: 'ambient-light-sensor'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Unrecognized feature: 'battery'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Unrecognized feature: 'battery'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-not-rendered'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-not-rendered'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-out-of-viewport'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Unrecognized feature: 'execution-while-out-of-viewport'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Unrecognized feature: 'layout-animations'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Unrecognized feature: 'layout-animations'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Unrecognized feature: 'legacy-image-formats'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Unrecognized feature: 'legacy-image-formats'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Unrecognized feature: 'navigation-override'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Unrecognized feature: 'navigation-override'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Unrecognized feature: 'oversized-images'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Unrecognized feature: 'oversized-images'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Unrecognized feature: 'publickey-credentials'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Unrecognized feature: 'publickey-credentials'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Unrecognized feature: 'speaker-selection'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Unrecognized feature: 'speaker-selection'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Unrecognized feature: 'unoptimized-images'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Unrecognized feature: 'unoptimized-images'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Unrecognized feature: 'unsized-media'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Unrecognized feature: 'unsized-media'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowfullscreen'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowfullscreen'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowpaymentrequest'.Diese Warnung nachvollziehenAI
+workspace_iframe.html:32 Allow attribute will take precedence over 'allowpaymentrequest'.Diese Warnung nachvollziehenAI
+_app-eed8da7857cef3a1.js:13 Invalid href 'https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev//' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonym) @ _app-eed8da7857cef3a1.js:13Fehler nachvollziehenAI
+ Firebase config (API key redacted): Object
+_app-eed8da7857cef3a1.js:13 Invalid href 'https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev//login' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonym) @ _app-eed8da7857cef3a1.js:13Fehler nachvollziehenAI
+Console.js:61 Firebase config (API key redacted): Object
+AIFlyerGenius:1 Access to fetch at 'https://sp.replit.com/v1/m' from origin 'https://replit.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. If an opaque response serves your needs, set the request's mode to 'no-cors' to fetch the resource with CORS disabled.Fehler nachvollziehenAI
+sp.replit.com/v1/m:1 
+            
+            
+           Failed to load resource: net::ERR_FAILEDFehler nachvollziehenAI
+_app-eed8da7857cef3a1.js:13 Error sending segment performance metrics TypeError: Failed to fetch
+    at _app-eed8da7857cef3a1.js:13:9034
+    at _app-eed8da7857cef3a1.js:15:83114
+    at o (_app-eed8da7857cef3a1.js:15:342225)
+    at o (sdk.min.js:1:23752)
+    at t.<anonymous> (remote-metrics.ts:138:12)
+    at tslib.es6.js:103:23
+    at Object.next (tslib.es6.js:108:37)
+    at tslib.es6.js:80:8
+    at new Promise (<anonymous>)
+    at u (tslib.es6.js:72:27)
+    at i.449.t.send (sdk.min.js:1:22010)
+    at t.<anonymous> (remote-metrics.ts:125:16)
+    at tslib.es6.js:103:23
+    at Object.next (tslib.es6.js:108:37)
+    at tslib.es6.js:80:8
+    at new Promise (<anonymous>)
+    at u (tslib.es6.js:72:27)
+    at t.flush (sdk.min.js:1:21743)
+    at l (remote-metrics.ts:83:14)
+    at n (_app-eed8da7857cef3a1.js:13:2959)
+(anonym) @ _app-eed8da7857cef3a1.js:13Fehler nachvollziehenAI
+_app-eed8da7857cef3a1.js:13 WARN: A component changed from uncontrolled to controlled.
+(anonym) @ _app-eed8da7857cef3a1.js:13Diese Warnung nachvollziehenAI
+_app-eed8da7857cef3a1.js:13 WARN: A component changed from controlled to uncontrolled.
+(anonym) @ _app-eed8da7857cef3a1.js:13Diese Warnung nachvollziehenAI
+_app-eed8da7857cef3a1.js:13 WARN: A component changed from uncontrolled to controlled.
+(anonym) @ _app-eed8da7857cef3a1.js:13Diese Warnung nachvollziehenAI
+_app-eed8da7857cef3a1.js:13 Invalid href 'https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev//login' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href.
+(anonym) @ _app-eed8da7857cef3a1.js:13Fehler nachvollziehenAI
+design-1743202896452.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 503 (Service Unavailable)Fehler nachvollziehenAI
+design-1743202896452.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 503 (Service Unavailable)Fehler nachvollziehenAI
+design-1743547913865.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 503 (Service Unavailable)Fehler nachvollziehenAI
+design-1743547913865.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 503 (Service Unavailable)Fehler nachvollziehenAI
+flyer-1743182235649.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 503 (Service Unavailable)Fehler nachvollziehenAI
+flyer-1743182235649.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 503 (Service Unavailable)Fehler nachvollziehenAI
+design-1743548063238.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 503 (Service Unavailable)Fehler nachvollziehenAI
+design-1743548063238.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 503 (Service Unavailable)Fehler nachvollziehenAI
+design-1743548067986.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 503 (Service Unavailable)Fehler nachvollziehenAI
+design-1743548067986.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 503 (Service Unavailable)Fehler nachvollziehenAI
+flyer-1743156161462.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 503 (Service Unavailable)Fehler nachvollziehenAI
+flyer-1743156161462.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 503 (Service Unavailable)Fehler nachvollziehenAI
+design-1743457728927.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 503 (Service Unavailable)Fehler nachvollziehenAI
+design-1743457728927.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 503 (Service Unavailable)Fehler nachvollziehenAI
+design-1743546134613.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 503 (Service Unavailable)Fehler nachvollziehenAI
+design-1743546134613.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 503 (Service Unavailable)Fehler nachvollziehenAI
+design-1743547737777.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 503 (Service Unavailable)Fehler nachvollziehenAI
+design-1743547737777.png:1 
+            
+            
+           Failed to load resource: the server responded with a status of 503 (Service Unavailable)Fehler nachvollziehenAI
+ Starting Google sign-in process using popup...
+ Using redirect for non-production domain
+ Google sign-in error: FirebaseError: Firebase: Error (auth/unauthorized-domain).
+    at createErrorInternal (firebase_auth.js?v=d0457987:694:37)
+    at _fail (firebase_auth.js?v=d0457987:659:9)
+    at _validateOrigin (firebase_auth.js?v=d0457987:7336:3)
+    at async BrowserPopupRedirectResolver._openRedirect (firebase_auth.js?v=d0457987:7655:5)
+    at async signInWithGoogle (AuthContext.tsx:107:9)
+    at async handleGoogleSignIn (Login.tsx:38:7)
+Mt.forEach.n.<computed> @ eruda.js:2Fehler nachvollziehenAI
+ Domain not authorized. Add domain to Firebase console auth settings: https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.d

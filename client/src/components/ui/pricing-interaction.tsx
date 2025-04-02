@@ -44,7 +44,6 @@ export function PricingInteraction ({
   // Define checkout response type
   type CheckoutSessionResponse = {
     url: string;
-    sessionId: string;
   };
   
   // Create checkout session mutation
@@ -53,9 +52,14 @@ export function PricingInteraction ({
       try {
         const response = await apiRequest('POST', '/api/stripe/create-checkout', {
           packageType,
-          successUrl: `${window.location.origin}/credits?payment_success=true`,
+          successUrl: `${window.location.origin}/credits?payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
           cancelUrl: `${window.location.origin}/pricing?payment_cancelled=true`,
         });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to create checkout session');
+        }
         
         const data = await response.json();
         return data as CheckoutSessionResponse;
@@ -67,7 +71,15 @@ export function PricingInteraction ({
     onSuccess: (data) => {
       // Redirect to Stripe Checkout
       if (data.url) {
+        console.log('Redirecting to Stripe checkout:', data.url);
         window.location.href = data.url;
+      } else {
+        toast({
+          title: "Checkout Error",
+          description: "Could not create checkout session. Please try again.",
+          variant: "destructive",
+        });
+        setIsProcessing(false);
       }
     },
     onError: (error) => {
