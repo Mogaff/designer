@@ -36,17 +36,15 @@ export default function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 pt-2 pb-2 px-4 sm:px-6 lg:px-8">
       <div className="max-w-full mx-auto flex justify-between items-center">
-        <div className="flex items-center">
+        <div className="flex items-center space-x-4">
           <Link href="/">
             <div className="cursor-pointer">
               <h1 className="text-xl font-semibold text-white">ha'itu</h1>
               <p className="text-[10px] text-white/50">AI-Powered Design</p>
             </div>
           </Link>
-        </div>
-        
-        <div className="flex items-center space-x-4">
-          {/* Pill navigation */}
+          
+          {/* Pill navigation - moved next to logo */}
           <div className="pill-nav">
             <Link href="/">
               <button type="button" className={`pill-nav-item text-xs py-1 px-3 ${location === '/' ? 'active' : ''}`}>
@@ -66,6 +64,9 @@ export default function Header() {
               </button>
             </Link>
           </div>
+        </div>
+        
+        <div className="flex items-center space-x-4">
           
           {/* Credits display for authenticated users */}
           {isAuthenticated && creditData && (

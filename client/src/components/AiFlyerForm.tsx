@@ -52,7 +52,6 @@ export default function AiFlyerForm({
   
   const aspectRatioOptions: AspectRatioOption[] = [
     // Square formats
-    { id: "profile", label: "Instagram Profile (1080×1080)", value: "1/1" },
     { id: "post", label: "Social Media Post (1200×1200)", value: "1/1" },
     
     // Landscape formats
