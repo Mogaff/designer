@@ -21,8 +21,8 @@ export default function Home() {
           <div className="flex flex-col lg:flex-row gap-6 h-full">
             {/* Main Generator + Preview */}
             <div className="glass-panel p-4 flex-grow overflow-hidden flex flex-col lg:w-4/5">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 h-full">
-                <div className="w-[130%]">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+                <div>
                   {designSuggestions ? (
                     <DesignSuggestions 
                       designs={designSuggestions}
