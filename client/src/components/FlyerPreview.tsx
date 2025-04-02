@@ -253,17 +253,19 @@ export default function FlyerPreview({
         </div>
       </div>
       
-      <div className="bg-black/40 backdrop-blur-md rounded-xl border border-white/10 flex-grow flex flex-col items-center justify-center">
+      <div className="bg-black/40 backdrop-blur-md rounded-xl border border-white/10 flex-grow flex flex-col items-center justify-center relative">
+        {/* Dezentes Rastermuster als Hintergrund */}
+        <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none"></div>
         {!generatedFlyer && !isGenerating ? (
           <div className="w-full h-full flex items-center justify-center p-4">
             <div 
               className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-900/20 to-purple-900/30 border border-indigo-500/20 rounded-md mx-auto"
               style={{
                 aspectRatio: aspectRatioOptions.find(o => o.id === aspectRatio)?.value || aspectRatioOptions[0].value,
-                maxWidth: '90%',
-                maxHeight: '90%',
-                width: 'auto',
-                height: 'auto',
+                maxWidth: '100%',
+                maxHeight: '100%',
+                width: '100%',
+                height: '100%',
               }}
             >
               <div className="flex flex-col items-center justify-center text-center">
@@ -287,10 +289,10 @@ export default function FlyerPreview({
                 className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-900/20 to-purple-900/30 border border-indigo-500/20 rounded-md mx-auto"
                 style={{
                   aspectRatio: aspectRatioOptions.find(o => o.id === aspectRatio)?.value || aspectRatioOptions[0].value,
-                  maxWidth: '90%',
-                  maxHeight: '90%',
-                  width: 'auto',
-                  height: 'auto',
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  width: '100%',
+                  height: '100%',
                 }}
               >
                 {generatedFlyer && (
