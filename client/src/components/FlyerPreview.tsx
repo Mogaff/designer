@@ -2,14 +2,11 @@ import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { GeneratedFlyer } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
-import { Download, Share2, Save, BookMarked, Ratio, Check, Copy } from "lucide-react";
+import { Download, Share2, Ratio, Check, Copy } from "lucide-react";
 import { MultiColorLoading } from "@/components/ui/multi-color-loading";
 import iconUpload from "../assets/iconupload.png";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/contexts/AuthContext";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,8 +31,6 @@ export default function FlyerPreview({
   const imageRef = useRef<HTMLImageElement>(null);
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
-  const [isSaveDialogOpen, setSaveDialogOpen] = useState(false);
-  const [saveDialogName, setSaveDialogName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [aspectRatio, setAspectRatio] = useState<string>(initialAspectRatio || "original");
   const [promptCopied, setPromptCopied] = useState(false);
@@ -136,55 +131,6 @@ export default function FlyerPreview({
     }
   };
   
-  const handleSaveToGallery = () => {
-    if (!isAuthenticated) {
-      toast({
-        title: "Login required",
-        description: "Please login to save designs to your gallery",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (!generatedFlyer) return;
-    
-    // Open save dialog with default name
-    setSaveDialogName(`Design ${new Date().toLocaleDateString()}`);
-    setSaveDialogOpen(true);
-  };
-  
-  const saveDesignToGallery = async () => {
-    if (!generatedFlyer || !saveDialogName.trim()) return;
-    
-    setIsSaving(true);
-    
-    try {
-      await apiRequest('POST', '/api/creations', {
-        name: saveDialogName.trim(),
-        imageUrl: generatedFlyer.imageUrl,
-        headline: generatedFlyer.headline || null,
-        content: generatedFlyer.content || null,
-        stylePrompt: generatedFlyer.stylePrompt || null,
-        template: generatedFlyer.template || null,
-      });
-      
-      toast({
-        title: "Success",
-        description: "Design saved to your gallery",
-      });
-      
-      setSaveDialogOpen(false);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save design to gallery",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  };
-  
   const copyPromptToClipboard = () => {
     if (!generatedFlyer?.stylePrompt) return;
     
@@ -265,15 +211,6 @@ export default function FlyerPreview({
           >
             <Share2 className="h-3 w-3 mr-1" />
             Share
-          </Button>
-          <Button
-            className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-7 px-3 py-1 text-xs hover:bg-indigo-500/30"
-            size="sm"
-            onClick={handleSaveToGallery}
-            disabled={!generatedFlyer}
-          >
-            <BookMarked className="h-3 w-3 mr-1" />
-            Save to Gallery
           </Button>
         </div>
       </div>
@@ -374,50 +311,7 @@ export default function FlyerPreview({
           </div>
         )}
       </div>
-      
-      {/* Save to Gallery Dialog */}
-      <Dialog open={isSaveDialogOpen} onOpenChange={setSaveDialogOpen}>
-        <DialogContent className="sm:max-w-md bg-black/80 backdrop-blur-xl border-gray-800 text-white">
-          <DialogHeader>
-            <DialogTitle>Save to Gallery</DialogTitle>
-            <DialogDescription className="text-white/70">
-              Give your design a name to save it to your gallery
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="design-name">Design Name</Label>
-              <Input
-                id="design-name"
-                value={saveDialogName}
-                onChange={(e) => setSaveDialogName(e.target.value)}
-                className="bg-black/50 border-gray-700 text-white focus-visible:ring-indigo-500"
-                placeholder="Enter a name for your design"
-              />
-            </div>
-          </div>
-          
-          <DialogFooter className="flex justify-between sm:justify-between">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setSaveDialogOpen(false)}
-              className="border-gray-700 text-white hover:bg-gray-900"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              onClick={saveDesignToGallery}
-              disabled={isSaving || !saveDialogName.trim()}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white"
-            >
-              {isSaving ? "Saving..." : "Save to Gallery"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
     </div>
   );
 }

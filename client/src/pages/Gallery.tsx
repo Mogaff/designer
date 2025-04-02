@@ -10,17 +10,32 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Heart, Trash2, Edit, Plus, Bookmark, ExternalLink } from "lucide-react";
+import { 
+  Heart, 
+  Trash2, 
+  Edit, 
+  Plus, 
+  Bookmark, 
+  ExternalLink, 
+  X, 
+  Download, 
+  Copy, 
+  Share2 
+} from "lucide-react";
 import { 
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
 
 export default function Gallery() {
   const [selectedCard, setSelectedCard] = useState<number | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [selectedCreation, setSelectedCreation] = useState<UserCreation | null>(null);
+  const [promptCopied, setPromptCopied] = useState(false);
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
   const isMobile = useIsMobile();
@@ -99,6 +114,72 @@ export default function Gallery() {
       });
     }
   }, [error, toast]);
+  
+  // Handler for opening the detailed preview
+  const handleOpenPreview = (creation: UserCreation) => {
+    setSelectedCreation(creation);
+    setPreviewOpen(true);
+  };
+  
+  // Handler for downloading the design
+  const handleDownload = () => {
+    if (!selectedCreation) return;
+
+    const link = document.createElement("a");
+    link.href = selectedCreation.imageUrl;
+    link.download = `${selectedCreation.name.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Handler for sharing the design
+  const handleShare = async () => {
+    if (!selectedCreation) return;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: selectedCreation.name,
+          text: "Check out this design I created!",
+          url: selectedCreation.imageUrl,
+        });
+      } catch (error) {
+        console.error("Error sharing:", error);
+      }
+    } else {
+      toast({
+        title: "Share not supported",
+        description: "Sharing is not supported on this browser",
+      });
+    }
+  };
+  
+  // Copy prompt to clipboard
+  const copyPromptToClipboard = () => {
+    if (!selectedCreation?.stylePrompt) return;
+    
+    navigator.clipboard.writeText(selectedCreation.stylePrompt)
+      .then(() => {
+        setPromptCopied(true);
+        toast({
+          title: "Prompt copied!",
+          description: "The prompt has been copied to your clipboard",
+        });
+        
+        // Reset the copied state after 2 seconds
+        setTimeout(() => {
+          setPromptCopied(false);
+        }, 2000);
+      })
+      .catch(() => {
+        toast({
+          title: "Copy failed",
+          description: "Failed to copy the prompt to clipboard",
+          variant: "destructive",
+        });
+      });
+  };
 
   return (
     <div className="flex flex-col min-h-screen overflow-hidden">
@@ -148,9 +229,12 @@ export default function Gallery() {
                   className={`h-full overflow-hidden bg-black/40 backdrop-blur-sm border-gray-800 transition-all duration-300 ${
                     selectedCard === creation.id ? 'ring-2 ring-primary' : ''
                   }`}
-                  onClick={() => setSelectedCard(
-                    selectedCard === creation.id ? null : creation.id
-                  )}
+                  onClick={() => {
+                    // Set selected card for visual highlight
+                    setSelectedCard(selectedCard === creation.id ? null : creation.id);
+                    // Open preview dialog
+                    handleOpenPreview(creation);
+                  }}
                 >
                   <div className="relative h-48 overflow-hidden">
                     <img 
@@ -210,8 +294,8 @@ export default function Gallery() {
                               className="text-white/70 hover:text-white p-0 h-8"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                // Open in a new tab or modal
-                                window.open(creation.imageUrl, '_blank');
+                                // Open our preview dialog
+                                handleOpenPreview(creation);
                               }}
                             >
                               <ExternalLink className="h-4 w-4 mr-1" />
@@ -275,6 +359,107 @@ export default function Gallery() {
       </main>
       
       <Footer />
+      
+      {/* Design Preview Dialog */}
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="sm:max-w-4xl bg-black/80 backdrop-blur-xl border-gray-800 text-white p-0 overflow-hidden">
+          {selectedCreation && (
+            <div className="flex flex-col h-full">
+              {/* Header with actions */}
+              <div className="flex justify-between items-center p-4 border-b border-gray-800">
+                <h2 className="text-xl font-semibold text-white">{selectedCreation.name}</h2>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="rounded-full h-8 w-8 hover:bg-gray-800"
+                  onClick={() => setPreviewOpen(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              {/* Image Preview */}
+              <div className="relative flex-grow flex items-center justify-center p-6">
+                <img 
+                  src={selectedCreation.imageUrl} 
+                  alt={selectedCreation.name} 
+                  className="max-h-[60vh] max-w-full object-contain rounded-md"
+                />
+              </div>
+              
+              {/* Footer with details and actions */}
+              <div className="p-4 border-t border-gray-800 flex flex-col gap-3">
+                {/* Design metadata */}
+                <div className="flex flex-col gap-1">
+                  {selectedCreation.headline && (
+                    <p className="text-sm text-white/90"><span className="font-semibold">Headline:</span> {selectedCreation.headline}</p>
+                  )}
+                  {selectedCreation.content && (
+                    <p className="text-sm text-white/90"><span className="font-semibold">Content:</span> {selectedCreation.content}</p>
+                  )}
+                  {/* Display the prompt with a copy button */}
+                  {selectedCreation.stylePrompt && (
+                    <div className="mt-2">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-sm font-medium text-white/80">Style Prompt</h3>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={copyPromptToClipboard}
+                          className="h-6 w-6 rounded-full hover:bg-white/10"
+                        >
+                          <Copy className={`h-3.5 w-3.5 ${promptCopied ? 'text-green-500' : 'text-white/70'}`} />
+                        </Button>
+                      </div>
+                      <p className="text-xs text-white/60 p-2 rounded bg-black/50 border border-gray-800">{selectedCreation.stylePrompt}</p>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Action buttons */}
+                <div className="flex justify-end gap-2 mt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-gray-700 text-white hover:bg-gray-800"
+                    onClick={handleDownload}
+                  >
+                    <Download className="h-4 w-4 mr-1" />
+                    Download
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-gray-700 text-white hover:bg-gray-800"
+                    onClick={handleShare}
+                  >
+                    <Share2 className="h-4 w-4 mr-1" />
+                    Share
+                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-gray-700 text-white hover:bg-gray-800"
+                          onClick={() => toggleFavorite(selectedCreation.id, selectedCreation.favorite)}
+                        >
+                          <Heart className={`h-4 w-4 mr-1 ${selectedCreation.favorite ? 'fill-red-500 text-red-500' : ''}`} />
+                          {selectedCreation.favorite ? 'Favorited' : 'Favorite'}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {selectedCreation.favorite ? 'Remove from favorites' : 'Add to favorites'}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
