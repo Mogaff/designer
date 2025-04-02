@@ -401,13 +401,7 @@ export default function AiFlyerForm({
                 <button
                   key={option.id}
                   type="button"
-                  onClick={() => {
-                    // Update both local state and parent state
-                    setAspectRatio(option.id);
-                    
-                    // Also update the parent component's state
-                    props.setAspectRatio(option.id);
-                  }}
+                  onClick={() => setAspectRatio(option.id)}
                   className={`
                     h-8 px-2 rounded-md flex items-center justify-center transition-all duration-200
                     ${aspectRatio === option.id
