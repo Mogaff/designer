@@ -13,16 +13,32 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Home} />
+      {/* Login is the only route that doesn't require authentication */}
       <Route path="/login" component={Login} />
-      <Route path="/pricing" component={Pricing} />
+      
+      {/* All other routes require authentication */}
+      <Route path="/">
+        <ProtectedRoute>
+          <Home />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/pricing">
+        <ProtectedRoute>
+          <Pricing />
+        </ProtectedRoute>
+      </Route>
       <Route path="/gallery">
         <ProtectedRoute>
           <Gallery />
         </ProtectedRoute>
       </Route>
-      {/* Add more routes here as needed */}
-      <Route component={NotFound} />
+      
+      {/* 404 page also requires authentication */}
+      <Route>
+        <ProtectedRoute>
+          <NotFound />
+        </ProtectedRoute>
+      </Route>
     </Switch>
   );
 }
