@@ -269,11 +269,8 @@ export default function FlyerPreview({
               }}
             >
               <div className="flex flex-col items-center justify-center text-center">
-                <div className="glass-panel p-3 rounded-full mb-2">
-                  <img src={iconUpload} alt="Upload icon" className="h-12 w-12" />
-                </div>
-                <h3 className="text-base font-medium text-white/90 mb-1">Your design will appear here</h3>
-                <p className="text-xs text-white/60 max-w-xs">Fill out the form and click "Generate Design"</p>
+                <img src={iconUpload} alt="Upload icon" className="h-20 w-20 mb-3" />
+                <h3 className="text-base font-medium text-white/90">Your design will appear here</h3>
               </div>
               
               {/* Aspect ratio label for empty state */}
