@@ -112,7 +112,7 @@ export default function DesignSuggestions({
       </div>
       
       <div className="flex-grow flex flex-col">
-        <div className={`grid ${designs.length <= 2 ? 'grid-cols-1' : 'grid-cols-2'} gap-3 flex-grow`}>
+        <div className={`grid ${designs.length <= 2 ? 'grid-cols-1' : 'grid-cols-2'} gap-3 flex-grow grid-rows-2 min-h-[400px]`}>
           {designs.map((design) => (
             <div 
               key={design.id}
@@ -124,17 +124,17 @@ export default function DesignSuggestions({
               `}
               onClick={() => handleSelectDesign(design)}
             >
-              <div className="relative aspect-[2/3] w-full">
+              <div className="relative w-full h-full flex items-center justify-center">
                 <img 
                   src={design.imageBase64} 
                   alt={`Design option ${design.id}`}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover"
                 />
                 
                 {/* Style indicator */}
                 <div className="absolute bottom-0 left-0 right-0 bg-black/70 backdrop-blur-sm p-1.5">
                   <p className="text-[10px] text-white/80 text-center">
-                    {design.style}
+                    {design.style.split(' ').slice(0, 4).join(' ')}
                   </p>
                 </div>
                 

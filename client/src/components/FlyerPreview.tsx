@@ -259,7 +259,7 @@ export default function FlyerPreview({
                     ref={imageRef}
                     src={generatedFlyer.imageUrl} 
                     alt="Generated design" 
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-cover"
                   />
                 )}
                 {isGenerating && (
@@ -277,32 +277,7 @@ export default function FlyerPreview({
               </div>
             </div>
             
-            {/* Prompt display with copy button */}
-            {generatedFlyer && generatedFlyer.stylePrompt && (
-              <div className="p-3 border-t border-white/10 bg-black/30 backdrop-blur-sm rounded-b-xl">
-                <div className="flex items-center justify-between mb-1">
-                  <h3 className="text-xs font-medium text-white/80">Prompt</h3>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={copyPromptToClipboard}
-                          className="h-6 w-6 rounded-full hover:bg-white/10"
-                        >
-                          <Copy className="h-3.5 w-3.5 text-white/70" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top">
-                        <p className="text-xs">Copy prompt</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-                <p className="text-xs text-white/60 line-clamp-2">{generatedFlyer.stylePrompt}</p>
-              </div>
-            )}
+
           </div>
         )}
       </div>
