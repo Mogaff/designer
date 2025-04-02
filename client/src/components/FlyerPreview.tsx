@@ -234,6 +234,7 @@ export default function FlyerPreview({
                 maxWidth: '90%',
                 maxHeight: '90%',
                 padding: '2rem',
+                aspectRatio: aspectRatio,
               }}
             >
               <div className="flex flex-col items-center justify-center text-center">
@@ -256,6 +257,7 @@ export default function FlyerPreview({
                   maxWidth: '90%',
                   maxHeight: '90%',
                   padding: '2rem',
+                  aspectRatio: aspectRatio,
                 }}
               >
                 {generatedFlyer && (
@@ -264,14 +266,15 @@ export default function FlyerPreview({
                     justifyContent: 'center', 
                     alignItems: 'center', 
                     width: '100%', 
-                    height: '100%' 
+                    height: '100%',
+                    aspectRatio: aspectRatio
                   }}>
                     <img 
                       ref={imageRef}
                       src={generatedFlyer.imageUrl} 
                       alt="Generated design" 
                       className="max-w-full max-h-full object-contain"
-                      style={{ maxHeight: '65vh' }}
+                      style={{ aspectRatio: aspectRatio }}
                     />
                   </div>
                 )}
