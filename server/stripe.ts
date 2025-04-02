@@ -47,7 +47,7 @@ export async function createCheckoutSession(
           quantity: 1,
         },
       ],
-      mode: 'payment',
+      mode: 'subscription', // Geändert von 'payment' zu 'subscription' für monatliche Abonnements
       success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: cancelUrl,
       client_reference_id: userId,
@@ -82,11 +82,16 @@ export async function verifyCheckoutSession(sessionId: string): Promise<{
   try {
     log(`Verifying Stripe checkout session: ${sessionId}`, 'stripe');
     
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    // Bei Abonnements müssen wir die vollständige Sitzung mit dem Abonnement abrufen
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ['subscription']
+    });
     
-    if (session.payment_status !== 'paid') {
-      log(`Session ${sessionId} payment status is ${session.payment_status}, not paid`, 'stripe');
-      throw new Error('Payment not completed');
+    // Bei Abonnements ist der payment_status möglicherweise nicht sofort 'paid', 
+    // aber die Sitzung kann trotzdem erfolgreich sein
+    if (session.status !== 'complete') {
+      log(`Session ${sessionId} status is ${session.status}, not complete`, 'stripe');
+      throw new Error('Checkout session not completed');
     }
     
     const userId = session.metadata?.userId || '';
@@ -139,25 +144,67 @@ export async function handleStripeWebhook(
     
     log(`Received Stripe webhook event: ${event.type}`, 'stripe');
     
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object as Stripe.Checkout.Session;
+    // Beide Event-Typen behandeln: session.completed und invoice.paid
+    if (event.type === 'checkout.session.completed' || 
+        event.type === 'invoice.paid') {
       
-      if (session.payment_status === 'paid') {
-        const userId = session.metadata?.userId || '';
-        const firebaseUid = session.metadata?.firebaseUid || '';
-        const packageType = session.metadata?.packageType || '';
-        const credits = parseInt(session.metadata?.credits || '0', 10);
+      let userId = '';
+      let firebaseUid = '';
+      let packageType = '';
+      let credits = 0;
+      
+      // Unterschiedliche Verarbeitung je nach Event-Typ
+      if (event.type === 'checkout.session.completed') {
+        // Für Checkout-Sessions
+        const session = event.data.object as Stripe.Checkout.Session;
         
-        if (userId && packageType && credits > 0) {
-          log(`Processing successful payment for user ${userId}, credits: ${credits}`, 'stripe');
-          
-          await onSuccess({
-            userId,
-            firebaseUid,
-            credits,
-            packageType
-          });
+        // Bei Abonnements überprüfen wir den session.status statt payment_status
+        if (session.status === 'complete') {
+          userId = session.metadata?.userId || '';
+          firebaseUid = session.metadata?.firebaseUid || '';
+          packageType = session.metadata?.packageType || '';
+          credits = parseInt(session.metadata?.credits || '0', 10);
         }
+      } else if (event.type === 'invoice.paid') {
+        // Für Abonnements - Rechnung bezahlt (wiederkehrend)
+        const invoice = event.data.object as Stripe.Invoice;
+        
+        // Die Metadata ist an der Subscription, nicht an der Rechnung
+        if (invoice.subscription) {
+          try {
+            const subscription = await stripe.subscriptions.retrieve(
+              invoice.subscription as string
+            );
+            
+            // Metadaten aus der ursprünglichen Checkout-Session abrufen
+            const sessions = await stripe.checkout.sessions.list({
+              subscription: subscription.id,
+              limit: 1,
+            });
+            
+            if (sessions.data.length > 0) {
+              const session = sessions.data[0];
+              userId = session.metadata?.userId || '';
+              firebaseUid = session.metadata?.firebaseUid || '';
+              packageType = session.metadata?.packageType || '';
+              credits = parseInt(session.metadata?.credits || '0', 10);
+            }
+          } catch (error) {
+            log(`Error retrieving subscription data: ${error}`, 'stripe');
+          }
+        }
+      }
+      
+      // Wenn alle Metadaten vorhanden sind, die Zahlung verarbeiten
+      if (userId && packageType && credits > 0) {
+        log(`Processing successful payment for user ${userId}, credits: ${credits}`, 'stripe');
+        
+        await onSuccess({
+          userId,
+          firebaseUid,
+          credits,
+          packageType
+        });
       }
     }
   } catch (error) {
