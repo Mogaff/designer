@@ -562,7 +562,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Get a specific creation by ID
+  // Get a specific creation by ID - mit verbesserter Datenschutzfilterung
   app.get("/api/creations/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const userId = (req.user as any).id;
@@ -575,17 +575,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid creation ID" });
       }
       
-      // First get the creation
-      const creation = await storage.getUserCreation(creationId);
+      // Direkt die Benutzer-ID an die Storage-Methode übergeben für strikte Filterung
+      // Dies gibt nur Kreationen zurück, die wirklich zum angegebenen Benutzer gehören
+      const creation = await storage.getUserCreation(creationId, userId);
       
-      // Check if it exists
+      // Wenn nicht gefunden oder nicht zum Benutzer gehörend, 404 zurückgeben
       if (!creation) {
-        return res.status(404).json({ message: "Creation not found" });
-      }
-      
-      // Strict ownership verification for privacy
-      if (creation.user_id !== userId) {
-        // We use 404 instead of 403 to not leak information about existence
         return res.status(404).json({ message: "Creation not found" });
       }
       
@@ -624,7 +619,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Update a creation
+  // Update a creation - mit verbesserter Datenschutzfilterung
   app.put("/api/creations/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const userId = (req.user as any).id;
@@ -637,26 +632,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid creation ID" });
       }
       
-      // Check if the creation exists and belongs to the user
-      const existingCreation = await storage.getUserCreation(creationId);
-      
-      if (!existingCreation) {
-        return res.status(404).json({ message: "Creation not found" });
-      }
-      
-      // Strict privacy check - return 404 instead of 403 for security
-      if (existingCreation.user_id !== userId) {
-        return res.status(404).json({ message: "Creation not found" });
-      }
-      
       // Ensure user_id cannot be changed and is always set to current user
       const updateData = {
         ...req.body,
         user_id: userId // Force the user_id to the authenticated user
       };
       
-      // Update the creation
-      const updatedCreation = await storage.updateUserCreation(creationId, updateData);
+      // Direkt die userId an die updateUserCreation-Methode übergeben
+      // Diese prüft, ob die Kreation zum Benutzer gehört und verhindert, dass andere Benutzer
+      // die Daten ändern können
+      const updatedCreation = await storage.updateUserCreation(creationId, updateData, userId);
+      
+      // Wenn keine Kreation gefunden wurde oder sie nicht zum Benutzer gehört
+      if (!updatedCreation) {
+        return res.status(404).json({ message: "Creation not found" });
+      }
       
       res.json(updatedCreation);
     } catch (error) {
@@ -665,7 +655,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Delete a creation
+  // Delete a creation - mit verbesserter Datenschutzfilterung
   app.delete("/api/creations/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const userId = (req.user as any).id;
@@ -678,25 +668,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid creation ID" });
       }
       
-      // Check if the creation exists and belongs to the user
-      const existingCreation = await storage.getUserCreation(creationId);
-      
-      if (!existingCreation) {
-        return res.status(404).json({ message: "Creation not found" });
-      }
-      
-      // Strict privacy check - return 404 instead of 403 for security
-      if (existingCreation.user_id !== userId) {
-        return res.status(404).json({ message: "Creation not found" });
-      }
-      
-      // Delete the creation
-      const deleted = await storage.deleteUserCreation(creationId);
+      // Direkt die userId an die deleteUserCreation-Methode übergeben
+      // Diese prüft, ob die Kreation existiert und zum Benutzer gehört, bevor sie gelöscht wird
+      const deleted = await storage.deleteUserCreation(creationId, userId);
       
       if (deleted) {
         res.status(204).end();
       } else {
-        res.status(500).json({ message: "Failed to delete creation" });
+        // 404 statt 403 für bessere Sicherheit - nicht preisgeben, dass die Ressource existiert
+        res.status(404).json({ message: "Creation not found" });
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";

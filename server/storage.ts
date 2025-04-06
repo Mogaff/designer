@@ -25,12 +25,12 @@ export interface IStorage {
   createDesignConfig(config: InsertDesignConfig): Promise<DesignConfig>;
   updateDesignConfig(id: number, updates: Partial<InsertDesignConfig>): Promise<DesignConfig | undefined>;
   
-  // User Creations
+  // User Creations - Erweiterte Methoden mit Benutzerfilterung
   getUserCreations(userId: number): Promise<UserCreation[]>;
-  getUserCreation(id: number): Promise<UserCreation | undefined>;
+  getUserCreation(id: number, userId?: number): Promise<UserCreation | undefined>;
   createUserCreation(creation: InsertUserCreation): Promise<UserCreation>;
-  updateUserCreation(id: number, updates: Partial<InsertUserCreation>): Promise<UserCreation | undefined>;
-  deleteUserCreation(id: number): Promise<boolean>;
+  updateUserCreation(id: number, updates: Partial<InsertUserCreation>, userId?: number): Promise<UserCreation | undefined>;
+  deleteUserCreation(id: number, userId?: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -244,10 +244,18 @@ export class MemStorage implements IStorage {
     });
   }
   
-  async getUserCreation(id: number): Promise<UserCreation | undefined> {
-    // Simply return the creation by ID without any user filtering
-    // The user filtering/permission check should be done in the API layer
-    return this.userCreationsMap.get(id);
+  async getUserCreation(id: number, userId?: number): Promise<UserCreation | undefined> {
+    // Get the creation by ID
+    const creation = this.userCreationsMap.get(id);
+    
+    // If userId is provided, strictly enforce user-based privacy
+    if (creation && userId !== undefined) {
+      // Only return if it belongs to the specified user
+      return creation.user_id === userId ? creation : undefined;
+    }
+    
+    // Otherwise just return the creation (API layer will do permission check)
+    return creation;
   }
   
   async createUserCreation(creation: InsertUserCreation): Promise<UserCreation> {
@@ -274,27 +282,37 @@ export class MemStorage implements IStorage {
   
   async updateUserCreation(
     id: number, 
-    updates: Partial<InsertUserCreation>
+    updates: Partial<InsertUserCreation>,
+    userId?: number
   ): Promise<UserCreation | undefined> {
-    const creation = await this.getUserCreation(id);
+    // Get the creation with optional user filtering
+    const creation = await this.getUserCreation(id, userId);
+    
+    // If no creation found or userId provided and doesn't match, return undefined
     if (!creation) return undefined;
     
+    // Create updated creation (ensuring we don't change the user_id to a different user)
     const updatedCreation = {
       ...creation,
-      ...updates
+      ...updates,
+      // Ensure user_id can't be changed to a different user's ID
+      user_id: creation.user_id
     };
     
     this.userCreationsMap.set(id, updatedCreation);
     return updatedCreation;
   }
   
-  async deleteUserCreation(id: number): Promise<boolean> {
-    const exists = this.userCreationsMap.has(id);
-    if (exists) {
-      this.userCreationsMap.delete(id);
-      return true;
-    }
-    return false;
+  async deleteUserCreation(id: number, userId?: number): Promise<boolean> {
+    // Get the creation first, with optional user filtering
+    const creation = await this.getUserCreation(id, userId);
+    
+    // If no creation or userId is provided and doesn't match, return false
+    if (!creation) return false;
+    
+    // Otherwise delete the creation
+    this.userCreationsMap.delete(id);
+    return true;
   }
 }
 
