@@ -34,50 +34,48 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     // Create a comprehensive prompt for the AI with enhanced design instructions
     const systemPrompt = `You are an award-winning graphic designer who creates stunning, visually exciting flyers using modern web technologies. You specialize in creating visually striking designs with bold typography, creative layouts, and innovative use of color.
     
-    Create an exceptionally creative and professional flyer using Tailwind CSS and modern design techniques based on the following prompt:
+    Create an exceptionally creative and professional flyer matching EXACTLY the following prompt from the user:
     "${options.prompt}"
     
     ${options.aspectRatio ? 
-      `CRITICAL: This design is for the "${options.aspectRatio}" format. 
-       Your design MUST use the ENTIRE CANVAS space from edge to edge, with content distributed throughout the entire area, not just in a small section. 
-       Content must spread from top to bottom, left to right, using the full width and height available.` 
+      `ABSOLUTE REQUIREMENT: This design MUST be formatted SPECIFICALLY for the "${options.aspectRatio}" aspect ratio.
+       Your design must PERFECTLY adhere to this aspect ratio and use the entire available canvas.
+       NEVER compress the content into just a portion of the available space.` 
       : ''}
     
-    Your design should:
-    1. Use Tailwind CSS with creative, non-conventional layouts - avoid boring grid layouts and basic designs
-    2. Implement bold, eye-catching typography with font combinations that create visual hierarchy
-    3. Use gradients, overlays, and creative backgrounds that feel modern and professional
-    4. Incorporate creative use of shapes and asymmetrical layouts
-    5. Make the design feel like it was created by a professional graphic designer
-    6. Incorporate striking visual elements like creative dividers and shapes
-    7. Use a bold, modern color palette with thoughtful color theory
-    8. Draw inspiration from award-winning poster designs and current design trends
-    9. UTILIZE THE ENTIRE AVAILABLE SPACE from edge to edge - your design should fill the entire canvas
-    10. Position elements throughout the entire canvas - don't cluster elements only at the top or center
-    11. If a URL or website is mentioned in the prompt, ALWAYS place it under the logo or main headline
+    PRECISE LAYOUT INSTRUCTIONS:
+    1. You MUST place design elements EXACTLY where specified in the user's prompt
+    2. If the prompt says "put X at the top/bottom/corner/side" you MUST follow these instructions precisely
+    3. If the prompt says text should appear under a logo, it must be positioned directly underneath it
+    4. Text elements should use the FULL WIDTH of their container unless otherwise specified
+    5. Content should be distributed according to the user's wishes, not according to conventional design rules
+    6. Design elements MUST be positioned according to the prompt instructions, regardless of traditional design principles
+    7. If the prompt gives specific positioning instructions (like corners, sides, top, bottom), PRECISELY follow them
     
-    CRITICAL DESIGN REQUIREMENTS:
-    1. DO NOT create any buttons or interactive elements - this is a print flyer, not a website
+    ESSENTIAL CREATIVE REQUIREMENTS:
+    1. Use Tailwind CSS with creative, non-conventional layouts that fulfill the user's exact specifications
+    2. Implement bold, eye-catching typography throughout the ENTIRE design area
+    3. Use gradients, overlays, and creative backgrounds that utilize the FULL canvas
+    4. Position elements throughout the entire canvas - use ALL areas including corners, edges, and sides
+    5. If the prompt mentions specific regions of the canvas (top, bottom, corners), place content EXACTLY there
+    6. FILL THE ENTIRE CANVAS from edge to edge - no unused space unless specifically requested
+    7. Elements should span the FULL WIDTH of their containers unless specified otherwise
+    
+    CRITICAL DESIGN RULES:
+    1. DO NOT create any buttons or interactive elements - this is a print flyer
     2. DO NOT use rotated, diagonal, or slanted text - ALL text must be perfectly horizontal
-    3. Keep all headings and text content perfectly straight (0 degree rotation)
-    4. Use only straight text alignment (no diagonal text)
-    5. Text can be left-aligned, right-aligned or centered, but never at an angle
-    6. FILL THE ENTIRE CANVAS from top to bottom with your design - distribute elements across the entire available area
-    7. DO NOT leave large empty spaces - ensure design elements extend to all edges of the canvas
-    8. DO NOT cluster all content in just the top section - spread content throughout the entire height
-    9. ALWAYS place URLs, website addresses or contact information BELOW the logo or relevant main element
-    10. FOLLOW EXACT LAYOUT INSTRUCTIONS when they are provided in the prompt (such as "place X below Y")
+    3. You MUST follow ANY placement instructions in the prompt EXACTLY
+    4. NEVER constrain text or elements to narrow columns - use the full available width
+    5. ALWAYS follow the user's directions about element positioning, regardless of design conventions
+    6. FOLLOW the exact aspect ratio provided and design specifically for those dimensions
+    7. ALL elements, especially URLs and text under logos, must span the FULL available width
     
-    Absolutely avoid:
-    - Buttons, clickable elements, or any web-only interactive components
-    - Rotated, angled, or diagonal text of any kind
-    - Boring, templated layouts with basic grids
-    - Outdated or generic design elements
-    - Flat, uninteresting color schemes
-    - Basic rectangular layouts and standard columns
-    - Designs that only use the top portion of the canvas
-    - Layouts with excessive whitespace or empty areas
-    - Ignoring specific layout instructions provided in the prompt
+    Your final design MUST:
+    - Follow the exact layout specifications from the prompt
+    - Use the complete canvas from edge to edge
+    - Position elements precisely where requested
+    - Allow full-width elements to span the entire available space
+    - NOT condense elements into narrow columns or limited areas
     
     Return your response in the following JSON format:
     {
@@ -99,7 +97,7 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
       
       // Add explicit instructions to use the image as background
       parts.push({
-        text: "CRITICAL INSTRUCTIONS FOR LAYOUT: Use the above image as the BACKGROUND of your flyer design. Do not try to reference it with an img tag - I will handle embedding it for you. Instead, directly create HTML that assumes the image is already the background. Use appropriate text colors that contrast well with the image's colors. Add overlays or semi-transparent elements as needed to maintain text readability over the background image.\n\nMANDATORY STRUCTURE REQUIREMENT: Your HTML must create a layout that uses 100% of the available space from top to bottom AND side to side. You MUST use the full width (100%) of the container. DO NOT create a narrow column or thin container that doesn't use the full width available. Your design must fill the entire canvas both vertically and horizontally.\n\nCRITICAL: Your main container must be full-width (w-full) and any logo, headers, text, and other elements should NOT be constrained to a narrow area in the middle. Spread elements to use the full available width, especially when including URLs, website addresses or text under logos."
+        text: "CRITICAL DESIGN INSTRUCTIONS: The provided image will serve as the BACKGROUND for your flyer design. I will handle embedding it for you - do not reference it with an img tag. Create HTML that assumes the image is already the background. Choose text colors that contrast properly with the image, and add overlays/semi-transparent elements as needed for readability.\n\nABSOLUTE POSITIONING REQUIREMENT: You MUST create a layout that uses ABSOLUTE POSITIONING to place elements EXACTLY where the user wants them. Place elements in ALL areas - corners, edges, top, bottom, center - according to the user's prompt. Your design must place text PRECISELY where specified - if text should be at the top left, bottom right, etc., it MUST appear exactly there.\n\nFULL WIDTH MANDATE: ALL text elements (particularly URLs and descriptions) must span the FULL WIDTH of their container. DO NOT create narrow columns or restrict text to a thin area. When placing logos and text, they MUST use the entire width available to them.\n\nPOSITIONING FREEDOM: Use absolute positioning (position: absolute) with specific top/bottom/left/right values to place elements EXACTLY where the user wants them. You have COMPLETE FREEDOM to place elements anywhere on the canvas, not just in conventional sections."
       });
     }
     
@@ -114,7 +112,7 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
       
       // Add explicit instructions for logo placement
       parts.push({
-        text: "CRITICAL: Use the above image as a LOGO in your flyer design. This is a company or event logo that should be prominently displayed in the design, typically at the top or in a strategic position that complements the overall layout. I will provide you with CSS to properly size and position it.\n\nVERY IMPORTANT: When using a logo, make sure any text associated with it (especially URLs, website addresses, etc.) appears DIRECTLY UNDERNEATH the logo and uses FULL WIDTH of the container. DO NOT constrain text or URLs to a narrow column - they must span across the width of the container and be clearly visible below the logo/header."
+        text: "CRITICAL: Use the above image as a LOGO in your flyer design. This is a company or event logo that should be positioned EXACTLY where the user's prompt specifies. If no specific location is given, place it in a strategic position that complements the overall layout.\n\nABSOLUTE POSITIONING: You MUST use absolute positioning to place the logo precisely where specified in the prompt. If the prompt mentions 'place logo at top left' or 'logo in bottom right', you MUST follow these instructions exactly using absolute positioning.\n\nASSOCIATED TEXT: Any text associated with the logo (URLs, website addresses, taglines) should be positioned exactly where specified in the prompt. If no specific position is mentioned, place it directly below the logo and make it use the full available width."
       });
     }
 
@@ -187,8 +185,7 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
             background-position: center;
             background-repeat: no-repeat;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            position: relative; /* Support for absolute positioning */
           }
           /* Ensure content uses full viewport height */
           main, div, section {
@@ -214,8 +211,7 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
           }
           body {
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            position: relative; /* Support for absolute positioning */
           }
           /* Ensure content uses full viewport height */
           main, div, section {
@@ -235,20 +231,27 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
     // Add logo styling if a logo was provided
     const logoStyle = options.logoBase64
       ? `
-          /* Logo styling */
+          /* Logo styling - positioned absolutely as directed by prompt */
           .logo-container {
-            display: inline-block;
-            position: relative;
+            display: block;
+            position: absolute; /* Allow placing anywhere on canvas */
           }
           .logo-image {
             max-width: 100%;
             height: auto;
+            position: absolute; /* Can be placed anywhere */
           }
           #company-logo {
             content: url('data:image/jpeg;base64,${options.logoBase64}');
             max-width: 200px;
             max-height: 100px;
             object-fit: contain;
+            position: absolute; /* Allow creative freedom in placement */
+          }
+          
+          /* Support all Tailwind positioning classes for logos and elements */
+          [class*="logo"], img, .logo-container, #company-logo, .logo-image {
+            position: absolute !important;
           }
         `
       : '';
@@ -310,7 +313,7 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
         </style>
       </head>
       <body>
-        <div class="main-content w-full h-full" style="width: 100%; height: 100%; max-width: 100vw;">
+        <div class="main-content w-full h-full relative" style="width: 100%; height: 100%; max-width: 100vw; position: relative;">
           ${htmlContent}
         </div>
       </body>
@@ -429,13 +432,14 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
         deviceScaleFactor: 2,
       });
       
-      // Inject CSS to ensure no scrolling or overflow issues
+      // Inject CSS to ensure no scrolling or overflow issues and support absolute positioning
       await page.addStyleTag({
         content: `
           html, body {
             overflow: hidden !important;
             max-height: 100vh !important;
             max-width: 100vw !important;
+            position: relative !important;
           }
           
           * {
@@ -450,27 +454,51 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
             position: relative !important;
           }
           
+          /* Support for absolute positioning */
+          [class*="absolute"], [style*="position: absolute"] {
+            position: absolute !important;
+          }
+          
+          /* Support for positioning in different areas of the canvas */
+          .top-left, [class*="top-0"][class*="left-0"] {
+            top: 0 !important;
+            left: 0 !important;
+          }
+          
+          .top-right, [class*="top-0"][class*="right-0"] {
+            top: 0 !important;
+            right: 0 !important;
+          }
+          
+          .bottom-left, [class*="bottom-0"][class*="left-0"] {
+            bottom: 0 !important;
+            left: 0 !important;
+          }
+          
+          .bottom-right, [class*="bottom-0"][class*="right-0"] {
+            bottom: 0 !important;
+            right: 0 !important;
+          }
+          
+          /* Don't restrict positioning - allow elements to be placed anywhere */
+          [style*="top:"], [style*="bottom:"], [style*="left:"], [style*="right:"],
+          [class*="top-"], [class*="bottom-"], [class*="left-"], [class*="right-"] {
+            position: absolute !important;
+          }
+          
           /* Remove any width constraints on containers */
           .container, section, div, header, footer, main {
-            width: 100% !important;
-            max-width: 100% !important;
-            min-width: 100% !important;
-            margin-left: 0 !important;
-            margin-right: 0 !important;
-            padding-left: 0 !important;
-            padding-right: 0 !important;
             box-sizing: border-box !important;
           }
           
-          /* Make sure text elements can span full width */
-          p, h1, h2, h3, h4, h5, h6, span, a {
-            width: 100% !important;
+          /* Allow elements with absolute positioning to have any width */
+          [style*="position: absolute"], .absolute {
+            width: auto !important;
             max-width: 100% !important;
           }
           
-          /* Ensure any flex containers are full-width */
-          .flex, div[class*="flex-"], div[class*="flex:"] {
-            width: 100% !important;
+          /* Make sure text elements can span full width when needed */
+          p, h1, h2, h3, h4, h5, h6, span, a {
             max-width: 100% !important;
           }
           
