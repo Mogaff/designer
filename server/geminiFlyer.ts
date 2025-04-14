@@ -45,9 +45,10 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     4. Incorporate creative visual elements and styling (gradients, overlays, shapes)
     5. Ensure the design is balanced, harmonious, and delivers high visual impact
     6. Design for a ${options.aspectRatio || "standard"} format
-    7. Ensure ALL TEXT is perfectly centered and readable
-    8. Use striking typography and dramatic contrast
-    9. Ensure all content is visible within the viewport without scrolling
+    7. CRITICAL: Position ALL TEXT with absolute position at center of canvas, use percentages (50%) for positioning
+    8. CRITICAL: Make sure text is fully contained within the viewport and not cut off or oversized
+    9. Use striking typography and dramatic contrast
+    10. Ensure all content is visible without scrolling, fits perfectly in the specified dimensions
     
     IMPORTANT OUTPUT FORMAT:
     Respond with ONLY an executable HTML and CSS like a professional graphic designer. Structure your response in JSON format with:
@@ -55,7 +56,15 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     2. A 'cssStyles' field with any additional CSS styles needed
     
     The design should look like it was created by a professional designer, not generic or template-like.
-    If a background image is provided, incorporate it elegantly into the design.`;
+    If a background image is provided, incorporate it elegantly into the design.
+    
+    IMPORTANT TEXT GUIDELINES:
+    - For any main headline text, ensure it is centered using 'transform: translate(-50%, -50%)' with 'top: 50%' and 'left: 50%'
+    - Set appropriate font sizes that adjust to the container using viewport units (vw, vh)
+    - For landscape formats, use smaller font sizes
+    - For portrait formats, ensure text doesn't overflow
+    - Apply max-width constraints to text elements to prevent overflow
+    - Add padding around text to prevent it from touching edges`;
 
     // Add special design instructions based on the aspect ratio
     let aspectRatioDirections = "";
