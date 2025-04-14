@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Download, Share2, Ratio, Check, Copy } from "lucide-react";
 import { MultiColorLoading } from "@/components/ui/multi-color-loading";
 import iconUpload from "../assets/iconupload.png";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   DropdownMenu,
@@ -127,11 +127,15 @@ export default function FlyerPreview({
   
   // Reset autoSaveAttempted when a new flyer is set with a different image URL
   useEffect(() => {
-    // Wenn ein neuer Flyer gesetzt wird mit einer anderen URL als der zuletzt gespeicherten
+    // Reset the auto-save flag when a new design is selected
     if (generatedFlyer && generatedFlyer.imageUrl !== lastSavedImageUrlRef.current) {
+      console.log("New design detected - resetting autoSaveAttempted flag");
       setAutoSaveAttempted(false);
+      
+      // Also invalidate the query to ensure the gallery is up to date
+      queryClient.invalidateQueries({ queryKey: ['/api/creations'] });
     }
-  }, [generatedFlyer?.imageUrl]); // Nur zurücksetzen, wenn sich die Bild-URL ändert
+  }, [generatedFlyer?.imageUrl, queryClient]); // Only reset when the image URL changes
 
   // Auto-save generated flyers to gallery when they appear
   useEffect(() => {
@@ -143,6 +147,17 @@ export default function FlyerPreview({
       // 4. The user is authenticated
       // 5. This image URL hasn't been saved before
       const imageUrl = generatedFlyer?.imageUrl || null;
+      
+      // For debugging
+      console.log("Auto-save conditions:", {
+        hasFlyer: !!generatedFlyer,
+        notGenerating: !isGenerating,
+        notAttempted: !autoSaveAttempted,
+        isAuth: isAuthenticated,
+        hasUrl: !!imageUrl,
+        isDifferentUrl: imageUrl !== lastSavedImageUrlRef.current
+      });
+      
       if (
         generatedFlyer && 
         !isGenerating && 
@@ -155,17 +170,17 @@ export default function FlyerPreview({
         setIsSaving(true);
         
         try {
-          // Speichern wir die URL für spätere Vergleiche
+          // Save URL for later comparison
           lastSavedImageUrlRef.current = imageUrl;
           
-          // Ein besserer, eindeutigerer Name für das Design
+          // Create a better, more unique name for the design
           const timestamp = new Date().toLocaleTimeString();
           const designName = generatedFlyer.headline || 
             `${generatedFlyer.stylePrompt ? 
               `Design: ${generatedFlyer.stylePrompt.slice(0, 20)}...` : 
               `Design ${timestamp}`}`;
               
-          await apiRequest('POST', '/api/creations', {
+          const response = await apiRequest('POST', '/api/creations', {
             name: designName,
             imageUrl: generatedFlyer.imageUrl,
             headline: generatedFlyer.headline || null,
@@ -174,11 +189,28 @@ export default function FlyerPreview({
             template: generatedFlyer.template || null,
           });
           
-          // Keine Toast-Benachrichtigung mehr, um die Benutzeroberfläche sauberer zu halten
+          // Add a toast notification for successful save
+          toast({
+            title: "Design Saved",
+            description: "Your design has been saved to your gallery.",
+            duration: 3000,
+          });
+          
           console.log("Design successfully saved to gallery:", imageUrl.substring(0, 50) + "...");
+          
+          // Refresh the creations cache to show the newly saved design
+          queryClient.invalidateQueries({ queryKey: ['/api/creations'] });
+          
         } catch (error) {
           console.error("Error auto-saving design:", error);
-          // Don't show error notification for auto-save failures
+          
+          // Show error notification for auto-save failures
+          toast({
+            title: "Save Error",
+            description: "Failed to save your design to gallery. Please try saving it manually.",
+            variant: "destructive",
+            duration: 5000,
+          });
         } finally {
           setIsSaving(false);
         }
@@ -186,7 +218,7 @@ export default function FlyerPreview({
     };
     
     autoSaveFlyer();
-  }, [generatedFlyer, isGenerating, autoSaveAttempted, isAuthenticated]);
+  }, [generatedFlyer, isGenerating, autoSaveAttempted, isAuthenticated, toast, queryClient]);
 
   const handleDownload = () => {
     if (!generatedFlyer) return;
@@ -253,6 +285,27 @@ export default function FlyerPreview({
         </div>
         
         <div className="flex space-x-2">
+          <Button
+            className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-7 px-3 py-1 text-xs hover:bg-indigo-500/30"
+            size="sm"
+            onClick={() => {
+              // Manual save function
+              if (generatedFlyer) {
+                setAutoSaveAttempted(false); // Reset to force a save
+                // This will trigger the useEffect to save
+                lastSavedImageUrlRef.current = null; // Force a save by resetting the URL reference
+                
+                toast({
+                  title: "Processing",
+                  description: "Saving design to gallery...",
+                  duration: 2000,
+                });
+              }
+            }}
+            disabled={!generatedFlyer}
+          >
+            {isSaving ? "Saving..." : "Save to Gallery"}
+          </Button>
           <Button
             className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-7 px-3 py-1 text-xs hover:bg-indigo-500/30"
             size="sm"
