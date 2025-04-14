@@ -120,14 +120,20 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
    - Ensure ALL text is perfectly legible with appropriate contrast
    - Use font variations (weight, size) to establish visual hierarchy
 
-4. LAYOUT STRUCTURE:
-   - Design must utilize the ENTIRE canvas with balanced elements
-   - Place content in a visually appealing arrangement that uses the full space
-   - Include at least 3 distinct visual elements (headline, body, decorative elements)
+4. LAYOUT STRUCTURE (EXTREMELY IMPORTANT):
+   - The MAIN HEADLINE must be positioned in the CENTER of the canvas horizontally and vertically
+   - All text content should be centered on the page (not positioned at edges)
+   - Place the main content in a centered container div with "display: flex" and "justify-content: center"
+   - Place your primary content in a div with "position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"
+   - Design must utilize the ENTIRE canvas with balanced elements around the centered content
    - Apply professional color schemes that complement the background
    - Create clear focal points with proper spacing and alignment
 
-ABSOLUTELY REQUIRED: Your design must look like a premium, professionally-designed flyer that would be created by a top design agency. It must utilize the entire available space with properly balanced elements and visual hierarchy.`
+ABSOLUTELY REQUIRED: 
+1. Your design must look like a premium, professionally-designed flyer that would be created by a top design agency.
+2. The main text content MUST be centered both horizontally and vertically in the design. 
+3. Do not position text at the very top, bottom, or sides - keep primary content in the center region of the canvas.
+4. Make all text clearly readable with proper contrast against the background.`
       });
     }
     
@@ -710,12 +716,34 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
             max-width: 100vw !important;
           }
           
-          /* Ensure elements don't overflow container */
-          .main-content {
+          /* CENTERING FIX: Force content to be centered in viewport */
+          h1, h2, h3, h4, h5, h6, p, .headline, .title, .heading {
+            text-align: center !important;
             width: 100% !important;
-            height: 100% !important;
-            overflow: hidden !important;
-            position: relative !important;
+          }
+          
+          /* CENTERING FIX: Ensure main content is centered */
+          .main-content, main, [class*="content"], [class*="container"], section {
+            position: absolute !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            width: 90% !important;
+            text-align: center !important;
+            margin: 0 auto !important;
+            z-index: 10 !important;
+          }
+          
+          /* CENTERING FIX: Apply to any div that might contain text */
+          div[class*="text"], div[class*="title"], div[class*="content"], div[class*="headline"] {
+            position: absolute !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            width: 90% !important;
+            text-align: center !important;
+            max-width: 90% !important;
+            z-index: 5 !important;
           }
           
           /* Support for absolute positioning */
