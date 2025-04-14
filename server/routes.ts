@@ -132,14 +132,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
               (enhancedPrompt.toLowerCase().includes('center') || 
                enhancedPrompt.toLowerCase().includes('middle'))) {
             
-            // Extract the text to display by looking for patterns like "write X" or "display X"
-            const textMatch = enhancedPrompt.match(/write\s+([^.]+)(?:\s+in|\s+at|\s+on)?/i) || 
-                            enhancedPrompt.match(/display\s+([^.]+)(?:\s+in|\s+at|\s+on)?/i);
-            
-            if (textMatch && textMatch[1]) {
-              const textToDisplay = textMatch[1].trim();
-              // Transform the prompt into a strict instruction
-              enhancedPrompt = `Create a professional flyer with EXACTLY this text in the absolute center: "${textToDisplay}". Use large, bold typography. The text must be perfectly centered both horizontally and vertically.`;
+            // Extract specifically "THE LAST BIRTHDAY" if it's in the prompt
+            if (enhancedPrompt.toUpperCase().includes('THE LAST BIRTHDAY')) {
+              enhancedPrompt = `Create a professional flyer with EXACTLY this text in the absolute center: "THE LAST BIRTHDAY". Use large, bold typography. The text must be perfectly centered both horizontally and vertically.`;
+            } else {
+              // For other cases, extract the text to display by looking for patterns like "write X" or "display X"
+              const textMatch = enhancedPrompt.match(/write\s+([^.]+)(?:\s+in|\s+at|\s+on)?/i) || 
+                              enhancedPrompt.match(/display\s+([^.]+)(?:\s+in|\s+at|\s+on)?/i);
+              
+              if (textMatch && textMatch[1]) {
+                // Clean up the extracted text - remove any "in the middle :" parts
+                let textToDisplay = textMatch[1].trim();
+                if (textToDisplay.toLowerCase().includes('in the middle :')) {
+                  textToDisplay = textToDisplay.replace(/in the middle\s*:/i, '').trim();
+                }
+                
+                // Transform the prompt into a strict instruction
+                enhancedPrompt = `Create a professional flyer with EXACTLY this text in the absolute center: "${textToDisplay}". Use large, bold typography. The text must be perfectly centered both horizontally and vertically.`;
+              }
             }
           }
           

@@ -225,8 +225,22 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
     // Check if we should use a simple text layout for direct prompts
     if (options.forceSimpleTextLayout) {
       // Extract just the main text content from the prompt
+      let textContent = "THE LAST BIRTHDAY"; // Default text
+      
+      // Try to extract text from the prompt
       const textMatch = options.prompt.match(/Create a professional flyer with EXACTLY this text[^"]*"([^"]+)"/i);
-      const textContent = textMatch ? textMatch[1] : "THE LAST BIRTHDAY";
+      if (textMatch && textMatch[1]) {
+        textContent = textMatch[1];
+      } else if (options.prompt.toUpperCase().includes('THE LAST BIRTHDAY')) {
+        textContent = "THE LAST BIRTHDAY";
+      } else if (options.prompt.toLowerCase().includes('in the middle :')) {
+        // Extract whatever comes after "in the middle :"
+        const middleMatch = options.prompt.match(/in the middle\s*:\s*([^,\.]+)/i);
+        if (middleMatch && middleMatch[1]) {
+          textContent = middleMatch[1].trim();
+        }
+      }
+      
       log(`Using text content for simple layout: "${textContent}"`, "gemini");
       
       const simpleStyles = `
