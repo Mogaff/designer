@@ -301,6 +301,11 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
         
         switch(options.aspectRatio) {
           // Square formats
+          case 'original': // Original background image size
+            // For original, we use a square format that fits the full background content
+            viewportWidth = 1080;
+            viewportHeight = 1080;
+            break;
           case 'profile': // Instagram Profile (1080×1080)
             viewportWidth = 1080;
             viewportHeight = 1080;
@@ -357,7 +362,8 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
             break;
             
           default:
-            // Default dimensions for other or unknown aspect ratios
+            // For unknown aspect ratios, log a warning and use standard dimensions
+            log(`Warning: Unknown aspect ratio "${options.aspectRatio}", using default dimensions`, "gemini");
             break;
         }
       }
