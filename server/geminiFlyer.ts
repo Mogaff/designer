@@ -22,6 +22,7 @@ interface GenerationOptions {
   backgroundImageBase64?: string;
   logoBase64?: string;
   aspectRatio?: string;
+  forceSimpleTextLayout?: boolean;
 }
 
 /**
@@ -221,7 +222,179 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
   log("Starting Gemini-powered flyer generation", "gemini");
   
   try {
-    // Generate the flyer content using Gemini AI
+    // Check if we should use a simple text layout for direct prompts
+    if (options.forceSimpleTextLayout) {
+      // Extract just the main text content from the prompt
+      const textMatch = options.prompt.match(/Create a professional flyer with EXACTLY this text[^"]*"([^"]+)"/i);
+      const textContent = textMatch ? textMatch[1] : "THE LAST BIRTHDAY";
+      log(`Using text content for simple layout: "${textContent}"`, "gemini");
+      
+      const simpleStyles = `
+        body, html {
+          margin: 0;
+          padding: 0;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+        }
+      `;
+      
+      // Create full HTML document
+      const fullHtml = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Simple Text Flyer</title>
+          <style>
+            ${options.backgroundImageBase64 ? `
+              body {
+                background-image: url('data:image/jpeg;base64,${options.backgroundImageBase64}');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                position: relative;
+              }
+              
+              /* Semi-transparent overlay for better text contrast */
+              body::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.5) 100%);
+              }
+            ` : ''}
+            
+            ${simpleStyles}
+            
+            /* Ensure text is perfectly centered */
+            .centered-text {
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              text-align: center;
+              width: 100%;
+            }
+            
+            h1 {
+              font-family: 'Montserrat', 'Arial', sans-serif;
+              font-size: 10vw;
+              font-weight: 900;
+              color: white;
+              text-shadow: 0 2px 20px rgba(0,0,0,0.8);
+              margin: 0;
+              padding: 0;
+              letter-spacing: -0.02em;
+            }
+          </style>
+          <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
+        </head>
+        <body>
+          <div class="centered-text">
+            <h1>${textContent}</h1>
+          </div>
+        </body>
+        </html>
+      `;
+      
+      // Save the HTML to a temporary file
+      const tempDir = path.resolve(process.cwd(), "temp");
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+      
+      const htmlPath = path.join(tempDir, `simple-text-flyer-${Date.now()}.html`);
+      fs.writeFileSync(htmlPath, fullHtml);
+      log(`Saved simple text HTML to: ${htmlPath}`, "gemini");
+      
+      // Get Chromium executable path
+      const { stdout: chromiumPath } = await execAsync("which chromium");
+      log(`Found Chromium at: ${chromiumPath.trim()}`, "gemini");
+      
+      // Launch puppeteer
+      const browser = await puppeteer.launch({
+        headless: true,
+        args: [
+          "--no-sandbox", 
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage",
+          "--disable-gpu"
+        ],
+        executablePath: chromiumPath.trim(),
+      });
+      
+      try {
+        const page = await browser.newPage();
+        
+        // Set viewport based on aspect ratio
+        let viewportWidth = 1200;
+        let viewportHeight = 1200;
+        
+        // Apply different size based on aspect ratio
+        if (options.aspectRatio) {
+          log(`Using aspect ratio: ${options.aspectRatio}`, "gemini");
+          
+          switch(options.aspectRatio) {
+            // Square formats
+            case 'original': viewportWidth = 1080; viewportHeight = 1080; break;
+            case 'profile': viewportWidth = 1080; viewportHeight = 1080; break;
+            case 'post': viewportWidth = 1200; viewportHeight = 1200; break;
+            case 'square_ad': viewportWidth = 250; viewportHeight = 250; break;
+              
+            // Landscape formats
+            case 'fb_cover': viewportWidth = 820; viewportHeight = 312; break;
+            case 'twitter_header': viewportWidth = 1500; viewportHeight = 500; break;
+            case 'yt_thumbnail': viewportWidth = 1280; viewportHeight = 720; break;
+            case 'linkedin_banner': viewportWidth = 1584; viewportHeight = 396; break;
+            case 'instream': viewportWidth = 1920; viewportHeight = 1080; break;
+              
+            // Portrait formats
+            case 'stories': viewportWidth = 1080; viewportHeight = 1920; break;
+            case 'pinterest': viewportWidth = 1000; viewportHeight = 1500; break;
+              
+            // Display Ad formats
+            case 'leaderboard': viewportWidth = 728; viewportHeight = 90; break;
+            case 'skyscraper': viewportWidth = 160; viewportHeight = 600; break;
+            
+            default: break;
+          }
+        }
+        
+        await page.setViewport({
+          width: viewportWidth,
+          height: viewportHeight,
+          deviceScaleFactor: 2,
+        });
+        
+        // Load the HTML file
+        await page.goto(`file://${htmlPath}`, { waitUntil: 'networkidle0' });
+        
+        // Take screenshot
+        log("Taking screenshot of the simple text flyer", "gemini");
+        const screenshot = await page.screenshot({
+          type: "png",
+          fullPage: true,
+        });
+        
+        // Convert Uint8Array to Buffer
+        const buffer = Buffer.from(screenshot);
+        
+        // Clean up the temporary HTML file
+        fs.unlinkSync(htmlPath);
+        
+        return buffer;
+      } finally {
+        await browser.close();
+        log("Puppeteer browser closed", "gemini");
+      }
+    }
+    
+    // For normal designs, generate the flyer content using Gemini AI
     const { htmlContent, cssStyles } = await generateFlyerContent(options);
     
     // Create a complete HTML document with the generated content

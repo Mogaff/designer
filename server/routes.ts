@@ -124,10 +124,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (let index = 0; index < styleVariations.length && successfulDesigns.length < maxDesigns; index++) {
         const styleVariation = styleVariations[index];
         try {
+          // Force exact text prompt into a specific format
+          let enhancedPrompt = generationOptions.prompt;
+          
+          // Check if prompt contains simple text directive like "write X in the center"
+          if (enhancedPrompt.toLowerCase().includes('write') && 
+              (enhancedPrompt.toLowerCase().includes('center') || 
+               enhancedPrompt.toLowerCase().includes('middle'))) {
+            
+            // Extract the text to display by looking for patterns like "write X" or "display X"
+            const textMatch = enhancedPrompt.match(/write\s+([^.]+)(?:\s+in|\s+at|\s+on)?/i) || 
+                            enhancedPrompt.match(/display\s+([^.]+)(?:\s+in|\s+at|\s+on)?/i);
+            
+            if (textMatch && textMatch[1]) {
+              const textToDisplay = textMatch[1].trim();
+              // Transform the prompt into a strict instruction
+              enhancedPrompt = `Create a professional flyer with EXACTLY this text in the absolute center: "${textToDisplay}". Use large, bold typography. The text must be perfectly centered both horizontally and vertically.`;
+            }
+          }
+          
           const variantOptions = {
             ...generationOptions,
-            prompt: `${generationOptions.prompt} ${styleVariation}`,
-            aspectRatio: aspectRatio
+            prompt: `${enhancedPrompt} ${styleVariation}`,
+            aspectRatio: aspectRatio,
+            // Force a specific HTML structure for simple text displays
+            forceSimpleTextLayout: enhancedPrompt !== generationOptions.prompt
           };
           
           log(`Generating design variation ${index + 1}: ${styleVariation}`, "generator");
