@@ -705,98 +705,115 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
       // Inject CSS to ensure no scrolling or overflow issues and support absolute positioning
       await page.addStyleTag({
         content: `
-          html, body {
-            overflow: hidden !important;
-            max-height: 100vh !important;
-            max-width: 100vw !important;
-            position: relative !important;
-          }
-          
+          /* Reset aller Stile für besseres Zentrieren */
           * {
-            max-width: 100vw !important;
-          }
-          
-          /* CENTERING FIX: Force content to be centered in viewport */
-          h1, h2, h3, h4, h5, h6, p, .headline, .title, .heading {
-            text-align: center !important;
-            width: 100% !important;
-          }
-          
-          /* CENTERING FIX: Ensure main content is centered */
-          .main-content, main, [class*="content"], [class*="container"], section {
-            position: absolute !important;
-            top: 50% !important;
-            left: 50% !important;
-            transform: translate(-50%, -50%) !important;
-            width: 90% !important;
-            text-align: center !important;
-            margin: 0 auto !important;
-            z-index: 10 !important;
-          }
-          
-          /* CENTERING FIX: Apply to any div that might contain text */
-          div[class*="text"], div[class*="title"], div[class*="content"], div[class*="headline"] {
-            position: absolute !important;
-            top: 50% !important;
-            left: 50% !important;
-            transform: translate(-50%, -50%) !important;
-            width: 90% !important;
-            text-align: center !important;
-            max-width: 90% !important;
-            z-index: 5 !important;
-          }
-          
-          /* Support for absolute positioning */
-          [class*="absolute"], [style*="position: absolute"] {
-            position: absolute !important;
-          }
-          
-          /* Support for positioning in different areas of the canvas */
-          .top-left, [class*="top-0"][class*="left-0"] {
-            top: 0 !important;
-            left: 0 !important;
-          }
-          
-          .top-right, [class*="top-0"][class*="right-0"] {
-            top: 0 !important;
-            right: 0 !important;
-          }
-          
-          .bottom-left, [class*="bottom-0"][class*="left-0"] {
-            bottom: 0 !important;
-            left: 0 !important;
-          }
-          
-          .bottom-right, [class*="bottom-0"][class*="right-0"] {
-            bottom: 0 !important;
-            right: 0 !important;
-          }
-          
-          /* Don't restrict positioning - allow elements to be placed anywhere */
-          [style*="top:"], [style*="bottom:"], [style*="left:"], [style*="right:"],
-          [class*="top-"], [class*="bottom-"], [class*="left-"], [class*="right-"] {
-            position: absolute !important;
-          }
-          
-          /* Remove any width constraints on containers */
-          .container, section, div, header, footer, main {
+            margin: 0 !important;
+            padding: 0 !important;
             box-sizing: border-box !important;
           }
           
-          /* Allow elements with absolute positioning to have any width */
-          [style*="position: absolute"], .absolute {
-            width: auto !important;
-            max-width: 100% !important;
+          html, body {
+            width: 100% !important;
+            height: 100% !important;
+            overflow: hidden !important;
+            position: relative !important;
           }
           
-          /* Make sure text elements can span full width when needed */
-          p, h1, h2, h3, h4, h5, h6, span, a {
-            max-width: 100% !important;
+          /* Hauptfixierung für absolut zentrierten Text */
+          body::after {
+            content: "" !important;
+            display: block !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            pointer-events: none !important;
+            z-index: 1000 !important;
           }
           
-          /* Override any max-width constraints */
-          [class*="max-w-"], [style*="max-width"] {
-            max-width: 100% !important;
+          /* ABSOLUTE ZENTRIERUNGSKORREKTUR - PRIORITÄT HÖCHSTE */
+          h1, h2, h3, h4, h5, h6, p, div {
+            position: absolute !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            text-align: center !important;
+            width: 100% !important;
+            max-width: 90% !important;
+            z-index: 20 !important;
+          }
+          
+          /* Spezieller Fix für Hauptüberschrift */
+          h1, h2, .headline, .title, [class*="headline"], [class*="title"], [class*="heading"], div[class*="text"] {
+            position: absolute !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            text-align: center !important;
+            width: 100% !important;
+            max-width: 90% !important;
+            z-index: 100 !important;
+          }
+          
+          /* Container-Elemente zentrieren */
+          main, .container, [class*="container"], [class*="content"], section, article, header, footer {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            flex-direction: column !important;
+            text-align: center !important;
+          }
+          
+          /* Hintergrund und Overlay korrekt positionieren */
+          .overlay, [class*="overlay"], [class*="background"], .background {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            z-index: 0 !important;
+          }
+          
+          /* Dekorative Elemente unter dem Text */
+          .shape, [class*="shape"], [class*="decoration"], .decoration, [class*="element"], .element {
+            z-index: 10 !important;
+          }
+          
+          /* Spezifische Überschreibung für alle Positionierungen */
+          [style*="position:"], [style*="top:"], [style*="left:"], [style*="right:"], [style*="bottom:"],
+          [class*="top-"], [class*="left-"], [class*="right-"], [class*="bottom-"] {
+            position: absolute !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+          }
+          
+          /* Absolute Außerkraftsetzung aller anderen CSS-Styles */
+          [style*="text-align:"] {
+            text-align: center !important;
+          }
+          
+          [style*="margin:"], [style*="margin-left:"], [style*="margin-right:"] {
+            margin: 0 auto !important;
+          }
+          
+          [style*="display:"] {
+            display: block !important;
+          }
+          
+          /* Kein Float, keine Transformation außer Zentrierung */
+          [style*="float:"], [class*="float-"] {
+            float: none !important;
+          }
+          
+          [style*="transform:"] {
+            transform: translate(-50%, -50%) !important;
           }
         `
       });
