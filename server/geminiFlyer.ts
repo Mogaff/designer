@@ -189,7 +189,6 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
           }
           /* Ensure content uses full viewport height */
           main, div, section {
-            flex: 1;
             min-height: 100%;
             width: 100%;
           }
@@ -197,8 +196,7 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
           .main-content {
             min-height: 100vh;
             width: 100vw;
-            display: flex;
-            flex-direction: column;
+            position: relative;
           }
         `
       : `
@@ -215,7 +213,6 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
           }
           /* Ensure content uses full viewport height */
           main, div, section {
-            flex: 1;
             min-height: 100%;
             width: 100%;
           }
@@ -223,8 +220,7 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
           .main-content {
             min-height: 100vh;
             width: 100vw;
-            display: flex;
-            flex-direction: column;
+            position: relative;
           }
         `;
         
