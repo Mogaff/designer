@@ -45,10 +45,10 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     4. Incorporate creative visual elements and styling (gradients, overlays, shapes)
     5. Ensure the design is balanced, harmonious, and delivers high visual impact
     6. Design for a ${options.aspectRatio || "standard"} format
-    7. ABSOLUTELY CRITICAL: Position text with "position: absolute" and "top/left: 50%" with "transform: translate(-50%, -50%)" to ensure proper centering
-    8. ABSOLUTELY CRITICAL: Set text size using viewport units (vw) that adapt to container dimensions
-    9. ABSOLUTELY CRITICAL: Ensure text content stays within boundaries and is not cut off at edges
-    10. If background image provided, analyze its colors and create a complementary color scheme for text and elements
+    7. CRITICAL: Position ALL TEXT with absolute position at center of canvas, use percentages (50%) for positioning
+    8. CRITICAL: Make sure text is fully contained within the viewport and not cut off or oversized
+    9. Use striking typography and dramatic contrast
+    10. Ensure all content is visible without scrolling, fits perfectly in the specified dimensions
     
     IMPORTANT OUTPUT FORMAT:
     Respond with ONLY an executable HTML and CSS like a professional graphic designer. Structure your response in JSON format with:
@@ -56,22 +56,15 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     2. A 'cssStyles' field with any additional CSS styles needed
     
     The design should look like it was created by a professional designer, not generic or template-like.
+    If a background image is provided, incorporate it elegantly into the design and extract colors from it.
     
-    TEXT STYLING REQUIREMENTS:
-    - Use absolute positioning for ALL text elements with proper centering transform
-    - Main headline must be perfectly centered with position: absolute, top: 50%, left: 50%, transform: translate(-50%, -50%)
-    - Set max-width on text containers (e.g., 80%) to prevent text from extending past boundaries
-    - Use responsive font-size units that scale with viewport (e.g., vw, vh or min(5vw, 48px))
-    - Add sufficient padding/margin around text (at least 5%) to prevent edge-touching
-    - For different aspect ratios, adjust font sizes proportionally:
-      * Landscape formats: smaller text (3-4vw)
-      * Portrait formats: ensure proper spacing between lines
-      * Square formats: balanced sizing (5-6vw for headlines)
-    
-    STYLING TIPS:
-    - Use linear-gradients for backgrounds if no image provided
-    - Apply subtle text-shadow for better readability (0 2px 10px rgba(0,0,0,0.5))
-    - Create color harmony by extracting colors from the background image when available`;
+    IMPORTANT TEXT GUIDELINES:
+    - For any main headline text, ensure it is centered using 'transform: translate(-50%, -50%)' with 'top: 50%' and 'left: 50%'
+    - Set appropriate font sizes that adjust to the container using viewport units (vw, vh)
+    - For landscape formats, use smaller font sizes
+    - For portrait formats, ensure text doesn't overflow
+    - Apply max-width constraints to text elements to prevent overflow
+    - Add padding around text to prevent it from touching edges`;
 
     // Add special design instructions based on the aspect ratio
     let aspectRatioDirections = "";
@@ -169,7 +162,9 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     log(`Error generating flyer content: ${error}`, "gemini");
     throw error;
   }
-}/**
+}
+
+/**
  * Render the Gemini-generated flyer content and take a screenshot
  */
 export async function renderFlyerFromGemini(options: GenerationOptions): Promise<Buffer> {
@@ -337,19 +332,25 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
           
           /* Force all content to fill entire available space */
           .flyer-container {
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
-            overflow: hidden !important;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
           }
           
-          /* Ensure no rotated text */
-          h1, h2, h3, h4, h5, h6, p, span, div, li, a, strong, em, label, blockquote, caption, button, text {
-            transform: none !important;
-            rotate: 0deg !important;
-            transform-origin: center !important;
+          /* Ensure headline text is always centered properly */
+          .headline, h1, h2, h3, .main-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            width: auto;
+            max-width: 90%;
           }
           
           /* Custom styling from Gemini, if any */
@@ -357,9 +358,7 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
         </style>
       </head>
       <body>
-        <div class="flyer-container" style="position: absolute; inset: 0; width: 100%; height: 100%;">
-          ${htmlContent}
-        </div>
+        ${htmlContent}
       </body>
       </html>
     `;
