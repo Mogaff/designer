@@ -54,6 +54,7 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     8. Draw inspiration from award-winning poster designs and current design trends
     9. UTILIZE THE ENTIRE AVAILABLE SPACE from edge to edge - your design should fill the entire canvas
     10. Position elements throughout the entire canvas - don't cluster elements only at the top or center
+    11. If a URL or website is mentioned in the prompt, ALWAYS place it under the logo or main headline
     
     CRITICAL DESIGN REQUIREMENTS:
     1. DO NOT create any buttons or interactive elements - this is a print flyer, not a website
@@ -64,6 +65,8 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     6. FILL THE ENTIRE CANVAS from top to bottom with your design - distribute elements across the entire available area
     7. DO NOT leave large empty spaces - ensure design elements extend to all edges of the canvas
     8. DO NOT cluster all content in just the top section - spread content throughout the entire height
+    9. ALWAYS place URLs, website addresses or contact information BELOW the logo or relevant main element
+    10. FOLLOW EXACT LAYOUT INSTRUCTIONS when they are provided in the prompt (such as "place X below Y")
     
     Absolutely avoid:
     - Buttons, clickable elements, or any web-only interactive components
@@ -74,6 +77,7 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     - Basic rectangular layouts and standard columns
     - Designs that only use the top portion of the canvas
     - Layouts with excessive whitespace or empty areas
+    - Ignoring specific layout instructions provided in the prompt
     
     Return your response in the following JSON format:
     {
@@ -95,7 +99,7 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
       
       // Add explicit instructions to use the image as background
       parts.push({
-        text: "CRITICAL INSTRUCTIONS FOR LAYOUT: Use the above image as the BACKGROUND of your flyer design. Do not try to reference it with an img tag - I will handle embedding it for you. Instead, directly create HTML that assumes the image is already the background. Use appropriate text colors that contrast well with the image's colors. Add overlays or semi-transparent elements as needed to maintain text readability over the background image.\n\nMANDATORY STRUCTURE REQUIREMENT: Your HTML must create a layout that uses 100% of the available space from top to bottom. You MUST wrap your entire design in a div with 'h-screen w-full flex flex-col' classes and distribute content throughout the entire height. Add content elements that extend all the way to the bottom of the design. NEVER cluster all content just at the top - distribute it throughout the ENTIRE available height."
+        text: "CRITICAL INSTRUCTIONS FOR LAYOUT: Use the above image as the BACKGROUND of your flyer design. Do not try to reference it with an img tag - I will handle embedding it for you. Instead, directly create HTML that assumes the image is already the background. Use appropriate text colors that contrast well with the image's colors. Add overlays or semi-transparent elements as needed to maintain text readability over the background image.\n\nMANDATORY STRUCTURE REQUIREMENT: Your HTML must create a layout that uses 100% of the available space from top to bottom AND side to side. You MUST use the full width (100%) of the container. DO NOT create a narrow column or thin container that doesn't use the full width available. Your design must fill the entire canvas both vertically and horizontally.\n\nCRITICAL: Your main container must be full-width (w-full) and any logo, headers, text, and other elements should NOT be constrained to a narrow area in the middle. Spread elements to use the full available width, especially when including URLs, website addresses or text under logos."
       });
     }
     
@@ -110,7 +114,7 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
       
       // Add explicit instructions for logo placement
       parts.push({
-        text: "IMPORTANT: Use the above image as a LOGO in your flyer design. This is a company or event logo that should be prominently displayed in the design, typically at the top or in a strategic position that complements the overall layout. I will provide you with CSS to properly size and position it."
+        text: "CRITICAL: Use the above image as a LOGO in your flyer design. This is a company or event logo that should be prominently displayed in the design, typically at the top or in a strategic position that complements the overall layout. I will provide you with CSS to properly size and position it.\n\nVERY IMPORTANT: When using a logo, make sure any text associated with it (especially URLs, website addresses, etc.) appears DIRECTLY UNDERNEATH the logo and uses FULL WIDTH of the container. DO NOT constrain text or URLs to a narrow column - they must span across the width of the container and be clearly visible below the logo/header."
       });
     }
 
@@ -306,7 +310,7 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
         </style>
       </head>
       <body>
-        <div class="main-content w-full h-full flex flex-col">
+        <div class="main-content w-full h-full" style="width: 100%; height: 100%; max-width: 100vw;">
           ${htmlContent}
         </div>
       </body>
@@ -444,6 +448,35 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
             height: 100% !important;
             overflow: hidden !important;
             position: relative !important;
+          }
+          
+          /* Remove any width constraints on containers */
+          .container, section, div, header, footer, main {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 100% !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            box-sizing: border-box !important;
+          }
+          
+          /* Make sure text elements can span full width */
+          p, h1, h2, h3, h4, h5, h6, span, a {
+            width: 100% !important;
+            max-width: 100% !important;
+          }
+          
+          /* Ensure any flex containers are full-width */
+          .flex, div[class*="flex-"], div[class*="flex:"] {
+            width: 100% !important;
+            max-width: 100% !important;
+          }
+          
+          /* Override any max-width constraints */
+          [class*="max-w-"], [style*="max-width"] {
+            max-width: 100% !important;
           }
         `
       });
