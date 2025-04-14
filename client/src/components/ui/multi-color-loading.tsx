@@ -44,10 +44,10 @@ export const MultiColorLoading: React.FC<MultiColorLoadingProps> = ({
         flickerChance={0.2}
       />
       
-      {/* Loading indicator in the center */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center z-40">
+      {/* Simplified loading indicator without excessive divs */}
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 text-center">
         <div className="text-lg font-medium text-white mb-2">Loading your design</div>
-        <div className="flex space-x-2">
+        <div className="flex space-x-2 justify-center">
           <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
           <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
           <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>

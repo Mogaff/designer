@@ -45,10 +45,10 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     4. Incorporate creative visual elements and styling (gradients, overlays, shapes)
     5. Ensure the design is balanced, harmonious, and delivers high visual impact
     6. Design for a ${options.aspectRatio || "standard"} format
-    7. CRITICAL: Position ALL TEXT with absolute position at center of canvas, use percentages (50%) for positioning
-    8. CRITICAL: Make sure text is fully contained within the viewport and not cut off or oversized
-    9. Use striking typography and dramatic contrast
-    10. Ensure all content is visible without scrolling, fits perfectly in the specified dimensions
+    7. ABSOLUTELY CRITICAL: Position text with "position: absolute" and "top/left: 50%" with "transform: translate(-50%, -50%)" to ensure proper centering
+    8. ABSOLUTELY CRITICAL: Set text size using viewport units (vw) that adapt to container dimensions
+    9. ABSOLUTELY CRITICAL: Ensure text content stays within boundaries and is not cut off at edges
+    10. If background image provided, analyze its colors and create a complementary color scheme for text and elements
     
     IMPORTANT OUTPUT FORMAT:
     Respond with ONLY an executable HTML and CSS like a professional graphic designer. Structure your response in JSON format with:
@@ -56,15 +56,22 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     2. A 'cssStyles' field with any additional CSS styles needed
     
     The design should look like it was created by a professional designer, not generic or template-like.
-    If a background image is provided, incorporate it elegantly into the design.
     
-    IMPORTANT TEXT GUIDELINES:
-    - For any main headline text, ensure it is centered using 'transform: translate(-50%, -50%)' with 'top: 50%' and 'left: 50%'
-    - Set appropriate font sizes that adjust to the container using viewport units (vw, vh)
-    - For landscape formats, use smaller font sizes
-    - For portrait formats, ensure text doesn't overflow
-    - Apply max-width constraints to text elements to prevent overflow
-    - Add padding around text to prevent it from touching edges`;
+    TEXT STYLING REQUIREMENTS:
+    - Use absolute positioning for ALL text elements with proper centering transform
+    - Main headline must be perfectly centered with position: absolute, top: 50%, left: 50%, transform: translate(-50%, -50%)
+    - Set max-width on text containers (e.g., 80%) to prevent text from extending past boundaries
+    - Use responsive font-size units that scale with viewport (e.g., vw, vh or min(5vw, 48px))
+    - Add sufficient padding/margin around text (at least 5%) to prevent edge-touching
+    - For different aspect ratios, adjust font sizes proportionally:
+      * Landscape formats: smaller text (3-4vw)
+      * Portrait formats: ensure proper spacing between lines
+      * Square formats: balanced sizing (5-6vw for headlines)
+    
+    STYLING TIPS:
+    - Use linear-gradients for backgrounds if no image provided
+    - Apply subtle text-shadow for better readability (0 2px 10px rgba(0,0,0,0.5))
+    - Create color harmony by extracting colors from the background image when available`;
 
     // Add special design instructions based on the aspect ratio
     let aspectRatioDirections = "";
@@ -96,10 +103,10 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     const result = await model.generateContent({
       contents: [{ role: "user", parts }],
       generationConfig: {
-        temperature: 0.4,
+        temperature: 0.6,
         topK: 32,
         topP: 0.95,
-        maxOutputTokens: 8192,
+        maxOutputTokens: 1000,
       },
     });
 
