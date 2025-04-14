@@ -38,8 +38,9 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     "${options.prompt}"
     
     ${options.aspectRatio ? 
-      `IMPORTANT: This design is for the "${options.aspectRatio}" format with specific dimensions. 
-       Your design MUST work perfectly in this aspect ratio without cropping or distortion.` 
+      `CRITICAL: This design is for the "${options.aspectRatio}" format. 
+       Your design MUST use the ENTIRE CANVAS space from edge to edge, with content distributed throughout the entire area, not just in a small section. 
+       Content must spread from top to bottom, left to right, using the full width and height available.` 
       : ''}
     
     Your design should:
@@ -51,6 +52,8 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     6. Incorporate striking visual elements like creative dividers and shapes
     7. Use a bold, modern color palette with thoughtful color theory
     8. Draw inspiration from award-winning poster designs and current design trends
+    9. UTILIZE THE ENTIRE AVAILABLE SPACE from edge to edge - your design should fill the entire canvas
+    10. Position elements throughout the entire canvas - don't cluster elements only at the top or center
     
     CRITICAL DESIGN REQUIREMENTS:
     1. DO NOT create any buttons or interactive elements - this is a print flyer, not a website
@@ -58,6 +61,9 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     3. Keep all headings and text content perfectly straight (0 degree rotation)
     4. Use only straight text alignment (no diagonal text)
     5. Text can be left-aligned, right-aligned or centered, but never at an angle
+    6. FILL THE ENTIRE CANVAS from top to bottom with your design - distribute elements across the entire available area
+    7. DO NOT leave large empty spaces - ensure design elements extend to all edges of the canvas
+    8. DO NOT cluster all content in just the top section - spread content throughout the entire height
     
     Absolutely avoid:
     - Buttons, clickable elements, or any web-only interactive components
@@ -66,6 +72,8 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     - Outdated or generic design elements
     - Flat, uninteresting color schemes
     - Basic rectangular layouts and standard columns
+    - Designs that only use the top portion of the canvas
+    - Layouts with excessive whitespace or empty areas
     
     Return your response in the following JSON format:
     {
@@ -87,7 +95,7 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
       
       // Add explicit instructions to use the image as background
       parts.push({
-        text: "IMPORTANT: Use the above image as the BACKGROUND of your flyer design. Do not try to reference it with an img tag - I will handle embedding it for you. Instead, directly create HTML that assumes the image is already the background. Use appropriate text colors that contrast well with the image's colors. Add overlays or semi-transparent elements as needed to maintain text readability over the background image."
+        text: "CRITICAL INSTRUCTIONS FOR LAYOUT: Use the above image as the BACKGROUND of your flyer design. Do not try to reference it with an img tag - I will handle embedding it for you. Instead, directly create HTML that assumes the image is already the background. Use appropriate text colors that contrast well with the image's colors. Add overlays or semi-transparent elements as needed to maintain text readability over the background image.\n\nMANDATORY STRUCTURE REQUIREMENT: Your HTML must create a layout that uses 100% of the available space from top to bottom. You MUST wrap your entire design in a div with 'h-screen w-full flex flex-col' classes and distribute content throughout the entire height. Add content elements that extend all the way to the bottom of the design. NEVER cluster all content just at the top - distribute it throughout the ENTIRE available height."
       });
     }
     
@@ -162,20 +170,61 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
     // Add background image styling if an image was provided
     const backgroundStyle = options.backgroundImageBase64 
       ? `
-          body {
+          html, body {
             margin: 0;
             padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+          }
+          body {
             background-image: url('data:image/jpeg;base64,${options.backgroundImageBase64}');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+          }
+          /* Ensure content uses full viewport height */
+          main, div, section {
+            flex: 1;
+            min-height: 100%;
+            width: 100%;
+          }
+          /* Force content to fill the entire page */
+          .main-content {
+            min-height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
           }
         `
       : `
-          body {
+          html, body {
             margin: 0;
             padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+          }
+          body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+          }
+          /* Ensure content uses full viewport height */
+          main, div, section {
+            flex: 1;
+            min-height: 100%;
+            width: 100%;
+          }
+          /* Force content to fill the entire page */
+          .main-content {
+            min-height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
           }
         `;
         
@@ -257,7 +306,9 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
         </style>
       </head>
       <body>
-        ${htmlContent}
+        <div class="main-content w-full h-full flex flex-col">
+          ${htmlContent}
+        </div>
       </body>
       </html>
     `;
@@ -372,6 +423,29 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
         width: viewportWidth,
         height: viewportHeight,
         deviceScaleFactor: 2,
+      });
+      
+      // Inject CSS to ensure no scrolling or overflow issues
+      await page.addStyleTag({
+        content: `
+          html, body {
+            overflow: hidden !important;
+            max-height: 100vh !important;
+            max-width: 100vw !important;
+          }
+          
+          * {
+            max-width: 100vw !important;
+          }
+          
+          /* Ensure elements don't overflow container */
+          .main-content {
+            width: 100% !important;
+            height: 100% !important;
+            overflow: hidden !important;
+            position: relative !important;
+          }
+        `
       });
       
       // Load the HTML file
