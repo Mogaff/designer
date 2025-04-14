@@ -11,6 +11,7 @@ import passport from "./auth";
 import { hashPassword, isAuthenticated } from "./auth";
 import { insertUserSchema, insertDesignConfigSchema, insertUserCreditsSchema, insertUserCreationSchema } from "@shared/schema";
 import { createCheckoutSession, verifyCheckoutSession, handleStripeWebhook, CREDIT_PACKAGES } from "./stripe";
+import { addCreditsToUser } from "./add-credits";
 
 // Using the built-in type definitions from @types/multer
 
@@ -778,6 +779,11 @@ Position the main headline in the absolute center of the canvas.`;
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       res.status(500).json({ message: `Payment verification failed: ${errorMessage}` });
     }
+  });
+  
+  // Admin API endpoint zum Hinzufügen von Credits zu einem beliebigen Benutzer
+  app.post("/api/admin/credits", async (req: Request, res: Response) => {
+    await addCreditsToUser(req, res);
   });
 
   const httpServer = createServer(app);
