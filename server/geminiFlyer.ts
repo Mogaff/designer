@@ -31,58 +31,31 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
   log("Generating flyer content with Gemini AI", "gemini");
   
   try {
-    // Create a comprehensive prompt for the AI with enhanced design instructions
-    const systemPrompt = `You are an award-winning professional graphic designer who creates stunning, premium visual flyers. Your designs are used by top brands globally because of your exceptional understanding of visual hierarchy, typography, and attractive layouts.
-    
-    Create a VISUALLY STUNNING, SOPHISTICATED, and PROFESSIONAL flyer for the following prompt:
-    "${options.prompt}"
-    
-    ${options.aspectRatio ? 
-      `ASPECT RATIO REQUIREMENT: This design must be formatted for "${options.aspectRatio}" aspect ratio.
-       Your design must fully utilize the entire canvas space - edge to edge, corner to corner.` 
-      : ''}
-    
-    DESIGN STRATEGY (CRITICAL):
-    1. Create a VISUALLY STRIKING design with clear VISUAL HIERARCHY
-    2. Use BOLD, LARGE TYPOGRAPHY as the main visual element
-    3. Apply sophisticated COLOR THEORY with complementary palettes
-    4. Include GEOMETRIC SHAPES, PATTERNS, or ICONS to enhance visual appeal
-    5. Create DEPTH with layered elements, shadows, and overlays
-    6. Design should feel PREMIUM, MODERN and PROFESSIONAL
-    7. Use MULTIPLE VISUAL TECHNIQUES: contrast, repetition, alignment, proximity
-    
-    REQUIRED VISUAL ELEMENTS:
-    1. Create a BOLD HEADLINE using large, impactful typography (min 48px font size)
-    2. Apply COLOR OVERLAYS or SEMI-TRANSPARENT LAYERS for visual interest
-    3. Use GEOMETRIC SHAPES or PATTERNS to create visual structure
-    4. Include MULTIPLE TEXT SIZES to establish clear visual hierarchy
-    5. Add DECORATIVE ELEMENTS like lines, dots, or geometric shapes
-    6. Create CONTRAST between text and background for readability
-    7. Use GRADIENTS, SHADOWS or LIGHTING EFFECTS for depth and dimension
-    
-    SPECIFIC DESIGN TECHNIQUES:
-    1. Use ABSOLUTE POSITIONING to place elements precisely
-    2. Apply CREATIVE TYPOGRAPHY with multiple font weights and sizes
-    3. Create VISUAL CONTRAST through color, size, and spacing
-    4. Implement MODERN DESIGN PATTERNS like overlapping elements
-    5. Use NEGATIVE SPACE strategically
-    6. Apply subtle TEXTURE or PATTERN in background elements
-    7. Include GRAPHIC ELEMENTS like icons, shapes, or illustrations
-    
-    THIS IS CRITICAL - VISUAL APPEARANCE:
-    1. Design must look like a PREMIUM CORPORATE or PROFESSIONAL EVENT FLYER
-    2. Text must be PERFECTLY LEGIBLE with appropriate contrast
-    3. Layout must utilize the ENTIRE CANVAS with balanced elements
-    4. Design must include multiple LAYERS of visual elements for depth
-    5. Use PROFESSIONAL COLOR SCHEMES suitable for business/corporate context
-    6. Headlines must be BOLD and ATTENTION-GRABBING
-    7. Overall design must appear POLISHED and PROFESSIONALLY DESIGNED
-    
-    Return your response in the following JSON format:
-    {
-      "htmlContent": "the complete HTML code for the flyer",
-      "cssStyles": "comprehensive custom CSS styles for advanced visual effects"
-    }`;
+    // Create a specific template and prompt for the AI to fill in with content
+    const systemPrompt = `You are going to fill in a professional flyer template with content from a user prompt.
+
+The following is the user's prompt that describes what they want in the flyer:
+"${options.prompt}"
+
+I've already created a professional-looking flyer template with the proper HTML structure and CSS. 
+YOUR ONLY JOB is to replace the placeholder content with relevant content from the user's prompt.
+
+DO NOT CHANGE the HTML structure or CSS styling - only replace the text content in the designated areas.
+
+Here are the sections you need to fill with SPECIFIC CONTENT from the user's prompt:
+1. MAIN_HEADLINE - Create a bold, attention-grabbing headline (5-8 words maximum)
+2. SUBHEADING - Create a short, supportive subheading (10-15 words maximum)
+3. BODY_TEXT - The main descriptive text from the prompt (30-50 words)
+4. CALL_TO_ACTION - A compelling call to action (5-10 words)
+5. HIGHLIGHT_1, HIGHLIGHT_2, HIGHLIGHT_3 - Three key benefits or features (3-5 words each)
+
+Your response should contain ONLY the JSON with these replacements. DO NOT add any explanations.
+Use exactly this format:
+
+{
+  "htmlContent": "<div class='flyer-content'>...(the complete HTML with your replacements)...</div>",
+  "cssStyles": ""
+}`;
 
     // Create parts for the generation
     const parts: Part[] = [{ text: systemPrompt }];
@@ -95,40 +68,6 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
           data: options.backgroundImageBase64
         }
       });
-      
-      // Add explicit instructions to use the image as background
-      parts.push({
-        text: `ADVANCED DESIGN INSTRUCTIONS (CRUCIAL):
-
-1. PROFESSIONAL LAYOUT STRUCTURE:
-   - Create an eye-catching, professional-quality design with clear visual hierarchy
-   - Include bold headlines (minimum 48px size) with supporting text elements
-   - Add semi-transparent overlays over the background image to enhance text readability
-   - Use absolute positioning to precisely place elements throughout the entire canvas
-
-2. VISUAL DESIGN ELEMENTS (MUST INCLUDE):
-   - Geometric shapes (circles, rectangles, lines) to create visual interest
-   - Multiple layers of design elements at different opacity levels
-   - Color overlays or gradients that complement the background image
-   - Visual separators between content sections (lines, shapes, color blocks)
-   - Background image should be visible but enhanced with professional styling
-
-3. TYPOGRAPHY REQUIREMENTS:
-   - Use large, bold fonts for headlines (minimum 48px)
-   - Create clear contrast between headline and body text
-   - Apply professional font pairings (headings vs. body text)
-   - Ensure ALL text is perfectly legible with appropriate contrast
-   - Use font variations (weight, size) to establish visual hierarchy
-
-4. LAYOUT STRUCTURE:
-   - Design must utilize the ENTIRE canvas with balanced elements
-   - Place content in a visually appealing arrangement that uses the full space
-   - Include at least 3 distinct visual elements (headline, body, decorative elements)
-   - Apply professional color schemes that complement the background
-   - Create clear focal points with proper spacing and alignment
-
-ABSOLUTELY REQUIRED: Your design must look like a premium, professionally-designed flyer that would be created by a top design agency. It must utilize the entire available space with properly balanced elements and visual hierarchy.`
-      });
     }
     
     // Add logo to the parts if provided
@@ -139,32 +78,49 @@ ABSOLUTELY REQUIRED: Your design must look like a premium, professionally-design
           data: options.logoBase64
         }
       });
-      
-      // Add explicit instructions for logo placement
-      parts.push({
-        text: `PROFESSIONAL LOGO IMPLEMENTATION:
-
-1. LOGO PLACEMENT:
-   - Position the logo in a visually prominent location that enhances the overall design
-   - If the prompt specifies logo placement, follow those instructions exactly
-   - Ensure the logo has adequate whitespace around it to maintain visual clarity
-   - Apply appropriate styling (shadows, subtle glows, etc.) to integrate the logo with the design
-
-2. BRANDING CONSISTENCY:
-   - Use colors that complement both the logo and the overall design scheme
-   - Maintain brand integrity by ensuring the logo is properly sized and positioned
-   - Create visual connections between the logo and other design elements
-   - Use the logo as an anchor point for the overall visual hierarchy
-
-3. INTEGRATION TECHNIQUES:
-   - Apply subtle styling effects to make the logo feel integrated with the design
-   - Consider using geometric shapes or lines that extend from or frame the logo
-   - Ensure the logo stands out clearly against any background elements
-   - Apply subtle overlay effects if needed to maintain readability
-
-The logo should be incorporated in a way that makes it an integral part of the professional design rather than looking like a separate element that was simply placed on top.`
-      });
     }
+
+    // Add the specific flyer template that Gemini will fill in
+    parts.push({
+      text: `
+Here is the template you should fill with content. ONLY REPLACE the placeholder text (MAIN_HEADLINE, SUBHEADING, etc.) with appropriate content from the user prompt. DO NOT CHANGE anything else:
+
+<div class="flyer-content">
+  <!-- Overlay for better text contrast -->
+  <div class="overlay"></div>
+  
+  <!-- Decorative elements -->
+  <div class="shape circle shape-1"></div>
+  <div class="shape circle shape-2"></div>
+  <div class="shape rectangle shape-3"></div>
+  <div class="shape rectangle shape-4"></div>
+  
+  <!-- Main content area -->
+  <div class="text-container main-content">
+    <h1 class="headline">MAIN_HEADLINE</h1>
+    <h2 class="subheading">SUBHEADING</h2>
+    <p class="body-text">BODY_TEXT</p>
+    <div class="cta-button">CALL_TO_ACTION</div>
+  </div>
+  
+  <!-- Highlight boxes -->
+  <div class="highlights-container">
+    <div class="highlight-box">
+      <div class="highlight-icon">•</div>
+      <div class="highlight-text">HIGHLIGHT_1</div>
+    </div>
+    <div class="highlight-box">
+      <div class="highlight-icon">•</div>
+      <div class="highlight-text">HIGHLIGHT_2</div>
+    </div>
+    <div class="highlight-box">
+      <div class="highlight-icon">•</div>
+      <div class="highlight-text">HIGHLIGHT_3</div>
+    </div>
+  </div>
+</div>
+`
+    });
 
     // Generate content using Gemini
     const result = await model.generateContent(parts);
@@ -186,7 +142,7 @@ The logo should be incorporated in a way that makes it an integral part of the p
     }
     
     // Fallback: Try to extract HTML content manually
-    const htmlMatch = text.match(/<html[^>]*>[\s\S]*<\/html>/i);
+    const htmlMatch = text.match(/<div class="flyer-content">[\s\S]*<\/div>/i);
     if (htmlMatch) {
       return {
         htmlContent: htmlMatch[0],
@@ -371,6 +327,7 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
             height: 100%;
             overflow: hidden;
             position: relative;
+            font-family: 'Montserrat', sans-serif;
           }
           
           /* Force all content to fill entire available space */
@@ -383,82 +340,185 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
             overflow: hidden !important;
           }
           
-          /* Enhanced text styles for professional appearance */
-          h1, h2, h3 {
-            line-height: 1.2;
-            letter-spacing: -0.025em;
-            font-weight: 700;
+          /* Main flyer styling */
+          .flyer-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            font-family: 'Montserrat', sans-serif;
           }
           
-          h1 {
-            font-size: clamp(2.5rem, 8vw, 5rem);
-            letter-spacing: -0.03em;
-          }
-          
-          h2 {
-            font-size: clamp(1.8rem, 5vw, 3.5rem);
-            letter-spacing: -0.02em;
-          }
-          
-          /* Advanced visual effects */
-          .gradient-text {
-            background-clip: text !important;
-            -webkit-background-clip: text !important;
-            color: transparent !important;
-            background-image: linear-gradient(to right, var(--tw-gradient-stops)) !important;
-          }
-          
-          .gradient-bg {
-            background-size: 200% 200% !important;
-            animation: gradient 15s ease infinite !important;
-          }
-          
-          /* Design elements */
+          /* Overlay for text contrast */
           .overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            background: linear-gradient(135deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.7) 100%);
             z-index: 1;
           }
           
-          /* Common geometric shapes */
+          /* Decorative shapes */
           .shape {
             position: absolute;
-            z-index: 0;
+            z-index: 2;
           }
           
-          .circle {
+          .shape-1 {
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 50%;
+            top: -100px;
+            right: -50px;
+            backdrop-filter: blur(5px);
           }
           
-          .rectangle {
-            border-radius: 4px;
+          .shape-2 {
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            bottom: -50px;
+            left: -50px;
+            backdrop-filter: blur(8px);
           }
           
-          /* Text container to ensure proper positioning */
-          .text-container {
+          .shape-3 {
+            width: 300px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            top: 30%;
+            right: -50px;
+            transform: rotate(-45deg);
+          }
+          
+          .shape-4 {
+            width: 400px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            bottom: 25%;
+            left: -100px;
+            transform: rotate(30deg);
+          }
+          
+          /* Main content area */
+          .main-content {
             position: absolute;
-            z-index: 10;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            z-index: 5;
+            text-align: center;
+            color: white;
           }
           
-          /* Enhanced visual hierarchy settings */
-          .headline-box {
-            padding: 1rem 2rem;
-            margin-bottom: 1.5rem;
-            width: 100%;
-          }
-          
-          .content-box {
-            padding: 1rem 1.5rem;
+          .headline {
+            font-size: 4rem;
+            font-weight: 800;
             margin-bottom: 1rem;
-            width: 100%;
+            line-height: 1.1;
+            background: linear-gradient(45deg, #ffffff, #b8b8b8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
           }
           
-          /* Ensure elements use full width */
-          .full-width {
-            width: 100% !important;
+          .subheading {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            color: #e0e0e0;
+          }
+          
+          .body-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 2.5rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            color: #f0f0f0;
+          }
+          
+          /* Call to action button */
+          .cta-button {
+            display: inline-block;
+            background: linear-gradient(45deg, #4a6cf7, #0ea5e9);
+            color: white;
+            font-weight: 700;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            font-size: 1.25rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            margin-bottom: 3rem;
+          }
+          
+          /* Highlight boxes */
+          .highlights-container {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            bottom: 8%;
+            left: 0;
+            width: 100%;
+            z-index: 5;
+          }
+          
+          .highlight-box {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            border-left: 3px solid #4a6cf7;
+          }
+          
+          .highlight-icon {
+            font-size: 1.8rem;
+            color: #4a6cf7;
+            margin-right: 0.75rem;
+          }
+          
+          .highlight-text {
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+          }
+          
+          /* Responsive adjustments */
+          @media (max-width: 768px) {
+            .headline {
+              font-size: 3rem;
+            }
+            
+            .subheading {
+              font-size: 1.4rem;
+            }
+            
+            .body-text {
+              font-size: 1rem;
+            }
+            
+            .highlights-container {
+              flex-direction: column;
+              align-items: center;
+              gap: 1rem;
+              bottom: 5%;
+            }
           }
           
           /* Ensure no rotated text */
@@ -468,7 +528,7 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
             transform-origin: center !important;
           }
           
-          /* Custom styling from Gemini */
+          /* Custom styling from Gemini, if any */
           ${cssStyles}
         </style>
       </head>
