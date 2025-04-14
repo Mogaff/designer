@@ -32,55 +32,56 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
   
   try {
     // Create a comprehensive prompt for the AI with enhanced design instructions
-    const systemPrompt = `You are an award-winning graphic designer who creates stunning, visually exciting flyers using modern web technologies. You specialize in creating visually striking designs with bold typography, creative layouts, and innovative use of color.
+    const systemPrompt = `You are an award-winning professional graphic designer who creates stunning, premium visual flyers. Your designs are used by top brands globally because of your exceptional understanding of visual hierarchy, typography, and attractive layouts.
     
-    Create an exceptionally creative and professional flyer matching EXACTLY the following prompt from the user:
+    Create a VISUALLY STUNNING, SOPHISTICATED, and PROFESSIONAL flyer for the following prompt:
     "${options.prompt}"
     
     ${options.aspectRatio ? 
-      `ABSOLUTE REQUIREMENT: This design MUST be formatted SPECIFICALLY for the "${options.aspectRatio}" aspect ratio.
-       Your design must PERFECTLY adhere to this aspect ratio and use the entire available canvas.
-       NEVER compress the content into just a portion of the available space.` 
+      `ASPECT RATIO REQUIREMENT: This design must be formatted for "${options.aspectRatio}" aspect ratio.
+       Your design must fully utilize the entire canvas space - edge to edge, corner to corner.` 
       : ''}
     
-    PRECISE LAYOUT INSTRUCTIONS:
-    1. You MUST place design elements EXACTLY where specified in the user's prompt
-    2. If the prompt says "put X at the top/bottom/corner/side" you MUST follow these instructions precisely
-    3. If the prompt says text should appear under a logo, it must be positioned directly underneath it
-    4. Text elements should use the FULL WIDTH of their container unless otherwise specified
-    5. Content should be distributed according to the user's wishes, not according to conventional design rules
-    6. Design elements MUST be positioned according to the prompt instructions, regardless of traditional design principles
-    7. If the prompt gives specific positioning instructions (like corners, sides, top, bottom), PRECISELY follow them
+    DESIGN STRATEGY (CRITICAL):
+    1. Create a VISUALLY STRIKING design with clear VISUAL HIERARCHY
+    2. Use BOLD, LARGE TYPOGRAPHY as the main visual element
+    3. Apply sophisticated COLOR THEORY with complementary palettes
+    4. Include GEOMETRIC SHAPES, PATTERNS, or ICONS to enhance visual appeal
+    5. Create DEPTH with layered elements, shadows, and overlays
+    6. Design should feel PREMIUM, MODERN and PROFESSIONAL
+    7. Use MULTIPLE VISUAL TECHNIQUES: contrast, repetition, alignment, proximity
     
-    ESSENTIAL CREATIVE REQUIREMENTS:
-    1. Use Tailwind CSS with creative, non-conventional layouts that fulfill the user's exact specifications
-    2. Implement bold, eye-catching typography throughout the ENTIRE design area
-    3. Use gradients, overlays, and creative backgrounds that utilize the FULL canvas
-    4. Position elements throughout the entire canvas - use ALL areas including corners, edges, and sides
-    5. If the prompt mentions specific regions of the canvas (top, bottom, corners), place content EXACTLY there
-    6. FILL THE ENTIRE CANVAS from edge to edge - no unused space unless specifically requested
-    7. Elements should span the FULL WIDTH of their containers unless specified otherwise
+    REQUIRED VISUAL ELEMENTS:
+    1. Create a BOLD HEADLINE using large, impactful typography (min 48px font size)
+    2. Apply COLOR OVERLAYS or SEMI-TRANSPARENT LAYERS for visual interest
+    3. Use GEOMETRIC SHAPES or PATTERNS to create visual structure
+    4. Include MULTIPLE TEXT SIZES to establish clear visual hierarchy
+    5. Add DECORATIVE ELEMENTS like lines, dots, or geometric shapes
+    6. Create CONTRAST between text and background for readability
+    7. Use GRADIENTS, SHADOWS or LIGHTING EFFECTS for depth and dimension
     
-    CRITICAL DESIGN RULES:
-    1. DO NOT create any buttons or interactive elements - this is a print flyer
-    2. DO NOT use rotated, diagonal, or slanted text - ALL text must be perfectly horizontal
-    3. You MUST follow ANY placement instructions in the prompt EXACTLY
-    4. NEVER constrain text or elements to narrow columns - use the full available width
-    5. ALWAYS follow the user's directions about element positioning, regardless of design conventions
-    6. FOLLOW the exact aspect ratio provided and design specifically for those dimensions
-    7. ALL elements, especially URLs and text under logos, must span the FULL available width
+    SPECIFIC DESIGN TECHNIQUES:
+    1. Use ABSOLUTE POSITIONING to place elements precisely
+    2. Apply CREATIVE TYPOGRAPHY with multiple font weights and sizes
+    3. Create VISUAL CONTRAST through color, size, and spacing
+    4. Implement MODERN DESIGN PATTERNS like overlapping elements
+    5. Use NEGATIVE SPACE strategically
+    6. Apply subtle TEXTURE or PATTERN in background elements
+    7. Include GRAPHIC ELEMENTS like icons, shapes, or illustrations
     
-    Your final design MUST:
-    - Follow the exact layout specifications from the prompt
-    - Use the complete canvas from edge to edge
-    - Position elements precisely where requested
-    - Allow full-width elements to span the entire available space
-    - NOT condense elements into narrow columns or limited areas
+    THIS IS CRITICAL - VISUAL APPEARANCE:
+    1. Design must look like a PREMIUM CORPORATE or PROFESSIONAL EVENT FLYER
+    2. Text must be PERFECTLY LEGIBLE with appropriate contrast
+    3. Layout must utilize the ENTIRE CANVAS with balanced elements
+    4. Design must include multiple LAYERS of visual elements for depth
+    5. Use PROFESSIONAL COLOR SCHEMES suitable for business/corporate context
+    6. Headlines must be BOLD and ATTENTION-GRABBING
+    7. Overall design must appear POLISHED and PROFESSIONALLY DESIGNED
     
     Return your response in the following JSON format:
     {
       "htmlContent": "the complete HTML code for the flyer",
-      "cssStyles": "any custom CSS styles needed to create advanced effects"
+      "cssStyles": "comprehensive custom CSS styles for advanced visual effects"
     }`;
 
     // Create parts for the generation
@@ -97,7 +98,36 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
       
       // Add explicit instructions to use the image as background
       parts.push({
-        text: "CRITICAL DESIGN INSTRUCTIONS: The provided image will serve as the BACKGROUND for your flyer design. I will handle embedding it for you - do not reference it with an img tag. Create HTML that assumes the image is already the background. Choose text colors that contrast properly with the image, and add overlays/semi-transparent elements as needed for readability.\n\nABSOLUTE POSITIONING REQUIREMENT: You MUST create a layout that uses ABSOLUTE POSITIONING to place elements EXACTLY where the user wants them. Place elements in ALL areas - corners, edges, top, bottom, center - according to the user's prompt. Your design must place text PRECISELY where specified - if text should be at the top left, bottom right, etc., it MUST appear exactly there.\n\nFULL WIDTH MANDATE: ALL text elements (particularly URLs and descriptions) must span the FULL WIDTH of their container. DO NOT create narrow columns or restrict text to a thin area. When placing logos and text, they MUST use the entire width available to them.\n\nPOSITIONING FREEDOM: Use absolute positioning (position: absolute) with specific top/bottom/left/right values to place elements EXACTLY where the user wants them. You have COMPLETE FREEDOM to place elements anywhere on the canvas, not just in conventional sections."
+        text: `ADVANCED DESIGN INSTRUCTIONS (CRUCIAL):
+
+1. PROFESSIONAL LAYOUT STRUCTURE:
+   - Create an eye-catching, professional-quality design with clear visual hierarchy
+   - Include bold headlines (minimum 48px size) with supporting text elements
+   - Add semi-transparent overlays over the background image to enhance text readability
+   - Use absolute positioning to precisely place elements throughout the entire canvas
+
+2. VISUAL DESIGN ELEMENTS (MUST INCLUDE):
+   - Geometric shapes (circles, rectangles, lines) to create visual interest
+   - Multiple layers of design elements at different opacity levels
+   - Color overlays or gradients that complement the background image
+   - Visual separators between content sections (lines, shapes, color blocks)
+   - Background image should be visible but enhanced with professional styling
+
+3. TYPOGRAPHY REQUIREMENTS:
+   - Use large, bold fonts for headlines (minimum 48px)
+   - Create clear contrast between headline and body text
+   - Apply professional font pairings (headings vs. body text)
+   - Ensure ALL text is perfectly legible with appropriate contrast
+   - Use font variations (weight, size) to establish visual hierarchy
+
+4. LAYOUT STRUCTURE:
+   - Design must utilize the ENTIRE canvas with balanced elements
+   - Place content in a visually appealing arrangement that uses the full space
+   - Include at least 3 distinct visual elements (headline, body, decorative elements)
+   - Apply professional color schemes that complement the background
+   - Create clear focal points with proper spacing and alignment
+
+ABSOLUTELY REQUIRED: Your design must look like a premium, professionally-designed flyer that would be created by a top design agency. It must utilize the entire available space with properly balanced elements and visual hierarchy.`
       });
     }
     
@@ -112,7 +142,27 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
       
       // Add explicit instructions for logo placement
       parts.push({
-        text: "CRITICAL: Use the above image as a LOGO in your flyer design. This is a company or event logo that should be positioned EXACTLY where the user's prompt specifies. If no specific location is given, place it in a strategic position that complements the overall layout.\n\nABSOLUTE POSITIONING: You MUST use absolute positioning to place the logo precisely where specified in the prompt. If the prompt mentions 'place logo at top left' or 'logo in bottom right', you MUST follow these instructions exactly using absolute positioning.\n\nASSOCIATED TEXT: Any text associated with the logo (URLs, website addresses, taglines) should be positioned exactly where specified in the prompt. If no specific position is mentioned, place it directly below the logo and make it use the full available width."
+        text: `PROFESSIONAL LOGO IMPLEMENTATION:
+
+1. LOGO PLACEMENT:
+   - Position the logo in a visually prominent location that enhances the overall design
+   - If the prompt specifies logo placement, follow those instructions exactly
+   - Ensure the logo has adequate whitespace around it to maintain visual clarity
+   - Apply appropriate styling (shadows, subtle glows, etc.) to integrate the logo with the design
+
+2. BRANDING CONSISTENCY:
+   - Use colors that complement both the logo and the overall design scheme
+   - Maintain brand integrity by ensuring the logo is properly sized and positioned
+   - Create visual connections between the logo and other design elements
+   - Use the logo as an anchor point for the overall visual hierarchy
+
+3. INTEGRATION TECHNIQUES:
+   - Apply subtle styling effects to make the logo feel integrated with the design
+   - Consider using geometric shapes or lines that extend from or frame the logo
+   - Ensure the logo stands out clearly against any background elements
+   - Apply subtle overlay effects if needed to maintain readability
+
+The logo should be incorporated in a way that makes it an integral part of the professional design rather than looking like a separate element that was simply placed on top.`
       });
     }
 
@@ -260,6 +310,7 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Gemini Generated Flyer</title>
         <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Montserrat:wght@100..900&family=Raleway:wght@100..900&family=Poppins:wght@100..900&display=swap" rel="stylesheet">
         <script>
           tailwind.config = {
             theme: {
@@ -268,6 +319,9 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
                   'gradient': 'gradient 8s ease infinite',
                   'float': 'float 6s ease-in-out infinite',
                   'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                  'slide-in': 'slideIn 1s ease-out forwards',
+                  'fade-in': 'fadeIn 1.2s ease-out forwards',
+                  'scale-in': 'scaleIn 0.8s cubic-bezier(0.17, 0.67, 0.83, 0.67) forwards',
                 },
                 keyframes: {
                   gradient: {
@@ -277,7 +331,25 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
                   float: {
                     '0%, 100%': { transform: 'translateY(0)' },
                     '50%': { transform: 'translateY(-10px)' },
+                  },
+                  slideIn: {
+                    '0%': { transform: 'translateX(-100%)', opacity: 0 },
+                    '100%': { transform: 'translateX(0)', opacity: 1 },
+                  },
+                  fadeIn: {
+                    '0%': { opacity: 0 },
+                    '100%': { opacity: 1 },
+                  },
+                  scaleIn: {
+                    '0%': { transform: 'scale(0.8)', opacity: 0 },
+                    '100%': { transform: 'scale(1)', opacity: 1 },
                   }
+                },
+                fontFamily: {
+                  'sans': ['Inter', 'ui-sans-serif', 'system-ui'],
+                  'montserrat': ['Montserrat', 'ui-sans-serif', 'system-ui'],
+                  'raleway': ['Raleway', 'ui-sans-serif', 'system-ui'],
+                  'poppins': ['Poppins', 'ui-sans-serif', 'system-ui']
                 }
               }
             }
@@ -287,29 +359,121 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
           ${backgroundStyle}
           ${logoStyle}
           
-          /* Advanced effects */
-          .gradient-text {
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-            background-image: linear-gradient(to right, var(--tw-gradient-stops));
-          }
-          .gradient-bg {
-            background-size: 200% 200%;
-            animation: gradient 15s ease infinite;
+          /* Reset to ensure flyer fills entire canvas */
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
           }
           
-          /* Ensure no rotated text (enforce horizontal-only text) */
+          html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+          }
+          
+          /* Force all content to fill entire available space */
+          .flyer-container {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            overflow: hidden !important;
+          }
+          
+          /* Enhanced text styles for professional appearance */
+          h1, h2, h3 {
+            line-height: 1.2;
+            letter-spacing: -0.025em;
+            font-weight: 700;
+          }
+          
+          h1 {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            letter-spacing: -0.03em;
+          }
+          
+          h2 {
+            font-size: clamp(1.8rem, 5vw, 3.5rem);
+            letter-spacing: -0.02em;
+          }
+          
+          /* Advanced visual effects */
+          .gradient-text {
+            background-clip: text !important;
+            -webkit-background-clip: text !important;
+            color: transparent !important;
+            background-image: linear-gradient(to right, var(--tw-gradient-stops)) !important;
+          }
+          
+          .gradient-bg {
+            background-size: 200% 200% !important;
+            animation: gradient 15s ease infinite !important;
+          }
+          
+          /* Design elements */
+          .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+          }
+          
+          /* Common geometric shapes */
+          .shape {
+            position: absolute;
+            z-index: 0;
+          }
+          
+          .circle {
+            border-radius: 50%;
+          }
+          
+          .rectangle {
+            border-radius: 4px;
+          }
+          
+          /* Text container to ensure proper positioning */
+          .text-container {
+            position: absolute;
+            z-index: 10;
+          }
+          
+          /* Enhanced visual hierarchy settings */
+          .headline-box {
+            padding: 1rem 2rem;
+            margin-bottom: 1.5rem;
+            width: 100%;
+          }
+          
+          .content-box {
+            padding: 1rem 1.5rem;
+            margin-bottom: 1rem;
+            width: 100%;
+          }
+          
+          /* Ensure elements use full width */
+          .full-width {
+            width: 100% !important;
+          }
+          
+          /* Ensure no rotated text */
           h1, h2, h3, h4, h5, h6, p, span, div, li, a, strong, em, label, blockquote, caption, button, text {
             transform: none !important;
             rotate: 0deg !important;
             transform-origin: center !important;
           }
+          
+          /* Custom styling from Gemini */
           ${cssStyles}
         </style>
       </head>
       <body>
-        <div class="main-content w-full h-full relative" style="width: 100%; height: 100%; max-width: 100vw; position: relative;">
+        <div class="flyer-container" style="position: absolute; inset: 0; width: 100%; height: 100%;">
           ${htmlContent}
         </div>
       </body>
