@@ -302,15 +302,12 @@ export default function FlyerPreview({
           </div>
         ) : (
           <div className="w-full h-full flex flex-col">
-            <div className="flex-grow p-4 flex items-center justify-center">
+            <div className="flex-grow p-0 flex items-center justify-center">
               <div 
-                className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-900/20 to-purple-900/30 border border-indigo-500/20 mx-auto"
+                className="relative flex items-center justify-center overflow-hidden mx-auto w-full h-full"
                 style={{
-                  maxWidth: '90%',
-                  maxHeight: '90%',
-                  padding: '2rem',
-                  width: getContainerWidth(aspectRatio), 
-                  height: getContainerHeight(aspectRatio)
+                  maxWidth: '100%',
+                  maxHeight: '100%',
                 }}
               >
                 {generatedFlyer && (
@@ -320,14 +317,13 @@ export default function FlyerPreview({
                     alignItems: 'center', 
                     width: '100%', 
                     height: '100%',
-                    // Das Seitenverhältnis wird direkt über das Container-Element gesteuert
                   }}>
                     <img 
                       ref={imageRef}
                       src={generatedFlyer.imageUrl} 
                       alt="Generated design" 
-                      className="max-w-full max-h-full object-contain"
-                      style={{ maxHeight: '65vh' }}
+                      className="w-full h-full object-contain"
+                      style={{ width: '100%', height: '100%' }}
                     />
                   </div>
                 )}
@@ -337,12 +333,7 @@ export default function FlyerPreview({
                   </div>
                 )}
                 
-                {/* Aspect ratio label */}
-                {!isGenerating && (
-                  <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] px-2 py-1">
-                    {aspectRatioOptions.find(o => o.id === aspectRatio)?.label || aspectRatio}
-                  </div>
-                )}
+                {/* Aspect ratio label - removed to allow full image display */}
               </div>
             </div>
             
