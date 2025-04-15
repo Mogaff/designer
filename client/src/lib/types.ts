@@ -4,6 +4,7 @@ export interface GeneratedFlyer {
   content: string;
   stylePrompt: string;
   template: string;
+  fontSettings?: FontSettings;
 }
 
 export interface DesignVariation {
@@ -16,12 +17,24 @@ export interface DesignSuggestions {
   designs: DesignVariation[];
 }
 
+export interface FontSettings {
+  headingFont: string;
+  bodyFont: string;
+}
+
+export interface GoogleFont {
+  family: string;
+  variants: string[];
+  category: string;
+}
+
 export type FlyerGenerationRequest = {
   prompt: string;
   headline: string;
   content: string;
   template: string;
   image: File;
+  fontSettings?: FontSettings;
 };
 
 export type AiFlyerGenerationRequest = {
@@ -30,4 +43,5 @@ export type AiFlyerGenerationRequest = {
   logo?: File;
   designCount?: number;
   aspectRatio?: string;
+  fontSettings?: FontSettings;
 };

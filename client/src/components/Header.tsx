@@ -1,4 +1,4 @@
-import { LogIn, LogOut, User, CreditCard, Star, DollarSign, Images } from "lucide-react";
+import { LogIn, LogOut, User, CreditCard, Star, DollarSign, Images, Settings as SettingsIcon } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -103,6 +103,13 @@ export default function Header() {
                   <DropdownMenuItem>
                     <Images className="h-4 w-4 mr-2" />
                     My Gallery
+                  </DropdownMenuItem>
+                </Link>
+
+                <Link href="/settings">
+                  <DropdownMenuItem>
+                    <SettingsIcon className="h-4 w-4 mr-2" />
+                    Font Settings
                   </DropdownMenuItem>
                 </Link>
                 

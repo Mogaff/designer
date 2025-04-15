@@ -7,7 +7,9 @@ import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import Pricing from "@/pages/Pricing";
 import Gallery from "@/pages/Gallery";
+import Settings from "@/pages/Settings";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { UserSettingsProvider } from "@/contexts/UserSettingsContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 function Router() {
@@ -33,6 +35,12 @@ function Router() {
         </ProtectedRoute>
       </Route>
       
+      <Route path="/settings">
+        <ProtectedRoute>
+          <Settings />
+        </ProtectedRoute>
+      </Route>
+      
       {/* 404 page also requires authentication */}
       <Route>
         <ProtectedRoute>
@@ -47,8 +55,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router />
-        <Toaster />
+        <UserSettingsProvider>
+          <Router />
+          <Toaster />
+        </UserSettingsProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

@@ -46,6 +46,8 @@ export const userCreations = pgTable("user_creations", {
   metadata: jsonb("metadata"),
   created_at: timestamp("created_at").defaultNow(),
   favorite: boolean("favorite").default(false).notNull(),
+  heading_font: text("heading_font"),
+  body_font: text("body_font"),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -82,6 +84,8 @@ export const insertUserCreationSchema = createInsertSchema(userCreations).pick({
   template: true,
   metadata: true,
   favorite: true,
+  heading_font: true,
+  body_font: true,
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
