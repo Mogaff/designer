@@ -34,22 +34,24 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
   
   try {
     // Create a comprehensive prompt for the AI with enhanced design instructions
-    const systemPrompt = `You are an award-winning professional graphic designer who creates stunning, premium visual flyers. Your designs are used by top brands globally because of your exceptional understanding of visual hierarchy, typography, and attractive layouts.
+    const systemPrompt = `You are an award-winning professional PRINT FLYER designer who creates stunning, premium visual flyers and posters for major events, concerts, and promotions. Your designs are used by top brands globally because of your exceptional understanding of visual hierarchy, typography, and attractive layouts.
     
-    Create a VISUALLY STUNNING, SOPHISTICATED, and PROFESSIONAL flyer for the following prompt:
+    Create a VISUALLY STUNNING, SOPHISTICATED, and PROFESSIONAL PRINT-STYLE FLYER for the following prompt:
     "${options.prompt}"
     
-    Focus on CREATIVE DESIGN EXCELLENCE with these requirements:
-    1. Create a single HTML page with inline CSS that looks like a high-end professional flyer
-    2. Use a clean, modern layout with excellent visual hierarchy
-    3. Apply sophisticated typography with carefully selected font combinations
-    4. Incorporate creative visual elements and styling (gradients, overlays, shapes)
-    5. Ensure the design is balanced, harmonious, and delivers high visual impact
+    CRITICAL: THIS IS NOT A WEBSITE OR APP DESIGN. This is a PRINT FLYER/POSTER design that happens to be rendered in HTML/CSS.
+    
+    Focus on CREATIVE FLYER DESIGN EXCELLENCE with these requirements:
+    1. Create a single HTML page with inline CSS that looks like a high-end professional PRINT FLYER or POSTER
+    2. CRUCIAL: Do NOT add any navigation elements, menus, buttons or website-like elements
+    3. Focus on dramatic typography and visual impact like a physical printed flyer
+    4. Incorporate creative graphic design elements typical of print flyers (color splashes, texture overlays, etc.)
+    5. Ensure the design evokes excitement and visual appeal similar to concert flyers, event announcements, etc.
     6. Design for a ${options.aspectRatio || "standard"} format
-    7. CRITICAL: Position ALL TEXT with absolute position at center of canvas, use percentages (50%) for positioning
-    8. CRITICAL: Make sure text is fully contained within the viewport and not cut off or oversized
-    9. Use striking typography and dramatic contrast
-    10. Ensure all content is visible without scrolling, fits perfectly in the specified dimensions
+    7. CRITICAL: Use the provided background image as the MAIN VISUAL ELEMENT - it should be clearly visible and prominent
+    8. CRITICAL: Place text in visually appropriate positions (not just centered) that complement the background image
+    9. CRITICAL: Add artistic overlays, color effects or gradients to enhance the background image, not cover it
+    10. IMPORTANT: If the prompt mentions adding elements in corners, place them appropriately in the corners
     
     IMPORTANT OUTPUT FORMAT:
     You must respond with ONLY JSON format with these exact keys:
@@ -59,19 +61,19 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     DO NOT use markdown formatting, just return plain JSON.
     DO NOT include backticks or code blocks around your JSON.
     
-    The design should look like it was created by a professional designer, not generic or template-like.
-    If a background image is provided, incorporate it elegantly into the design and extract colors from it.
+    GRAPHIC DESIGN EXCELLENCE:
+    - The design should look like a professional PRINT FLYER, not a website or app interface
+    - If a background image is provided, it MUST be the central visual element, with text and effects that complement it
+    - Avoid generic layouts - create something visually striking that would catch attention on a wall or in print
     
-    IMPORTANT TEXT GUIDELINES:
-    - For any main headline text, ensure it is centered using 'transform: translate(-50%, -50%)' with 'top: 50%' and 'left: 50%'
-    - Set appropriate font sizes that adjust to the container using viewport units (vw, vh)
-    - For landscape formats, use smaller font sizes (max 10vh)
-    - For portrait formats, ensure text doesn't overflow (max 30vh)
-    - Add semi-transparent overlay elements to improve text contrast if needed
-    - Create sophisticated typography effects with letter-spacing, font-weight variation
-    - Use appropriate text shadows or subtle background effects to enhance readability against the image
-    - Apply max-width constraints to text elements to prevent overflow
-    - Add padding around text to prevent it from touching edges`;
+    PRINT FLYER TEXT GUIDELINES:
+    - Main headlines should be bold, dramatic and attention-grabbing like concert or event flyers
+    - Use creative text positioning that complements the visual flow - DO NOT just center everything
+    - Set appropriate font sizes that would work in a physical printed flyer (minimum 4vh for readability)
+    - Create visual hierarchy with dramatic size differences between title and supporting text
+    - Add artistic text effects like shadows, glows, or gradient fills to enhance visual appeal
+    - If information is needed in corners, position elements there (not as a menu bar)
+    - Use font combinations that suggest the theme/mood of the event (elegant, bold, creative, etc.)`;
 
     // Add special design instructions based on the aspect ratio
     let aspectRatioDirections = "";
@@ -316,17 +318,22 @@ export async function renderFlyerFromOpenAI(options: GenerationOptions): Promise
             overflow: hidden;
           }
           
-          /* Ensure headline text is always centered properly */
+          /* Base styles for text elements */
           .headline, h1, h2, h3, .main-text {
+            margin: 0;
+            padding: 0;
+            position: absolute; /* Allow creative positioning */
+            max-width: 90%;
+          }
+          
+          /* Only center the main title if no other positioning is specified */
+          .main-title {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            margin: 0;
-            padding: 0;
             text-align: center;
-            width: auto;
-            max-width: 90%;
+            z-index: 10;
           }
           
           /* Custom styling from OpenAI, if any */
