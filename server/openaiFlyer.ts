@@ -52,9 +52,12 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     10. Ensure all content is visible without scrolling, fits perfectly in the specified dimensions
     
     IMPORTANT OUTPUT FORMAT:
-    Respond with ONLY an executable HTML and CSS like a professional graphic designer. Structure your response in JSON format with:
-    1. A 'htmlContent' field containing clean, valid HTML
-    2. A 'cssStyles' field with any additional CSS styles needed
+    You must respond with ONLY JSON format with these exact keys:
+    { "htmlContent": "your HTML here", "cssStyles": "your CSS here" }
+    
+    DO NOT include any explanation, just return valid JSON.
+    DO NOT use markdown formatting, just return plain JSON.
+    DO NOT include backticks or code blocks around your JSON.
     
     The design should look like it was created by a professional designer, not generic or template-like.
     If a background image is provided, incorporate it elegantly into the design and extract colors from it.
@@ -62,8 +65,11 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     IMPORTANT TEXT GUIDELINES:
     - For any main headline text, ensure it is centered using 'transform: translate(-50%, -50%)' with 'top: 50%' and 'left: 50%'
     - Set appropriate font sizes that adjust to the container using viewport units (vw, vh)
-    - For landscape formats, use smaller font sizes
-    - For portrait formats, ensure text doesn't overflow
+    - For landscape formats, use smaller font sizes (max 10vh)
+    - For portrait formats, ensure text doesn't overflow (max 30vh)
+    - Add semi-transparent overlay elements to improve text contrast if needed
+    - Create sophisticated typography effects with letter-spacing, font-weight variation
+    - Use appropriate text shadows or subtle background effects to enhance readability against the image
     - Apply max-width constraints to text elements to prevent overflow
     - Add padding around text to prevent it from touching edges`;
 
@@ -107,51 +113,28 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
 
     // Parse the JSON from the response
     let responseJson: GeminiResponse;
+    
+    // Try to parse the entire response as JSON
     try {
-      // Try to parse the entire response as JSON
-      responseJson = JSON.parse(text);
+      // Clean up any possible markdown formatting or code blocks
+      const cleanText = text
+        .replace(/```json/g, '')
+        .replace(/```/g, '')
+        .trim();
+        
+      responseJson = JSON.parse(cleanText);
       
       // Validate the structure
       if (!responseJson.htmlContent || !responseJson.cssStyles) {
-        throw new Error("Invalid response structure");
+        throw new Error("Invalid response structure: missing required fields");
       }
-    } catch (error) {
-      log(`Failed to parse JSON response: ${error}`, "openai");
-      
-      // Fallback: Try to extract HTML and CSS from the text manually
-      const htmlMatch = text.match(/<html.*?>([\s\S]*?)<\/html>/i) || 
-                        text.match(/<body.*?>([\s\S]*?)<\/body>/i) ||
-                        text.match(/(<div.*?>[\s\S]*?<\/div>)/i);
-                        
-      const cssMatch = text.match(/<style.*?>([\s\S]*?)<\/style>/i) ||
-                       text.match(/cssStyles['"]\s*:\s*['"]([^'"]*)['"]/i);
-      
-      responseJson = {
-        htmlContent: htmlMatch ? htmlMatch[0] : `<div class="flyer-content">
-          <h1 class="headline">FLYER CONTENT</h1>
-          <p>The AI generated content could not be parsed correctly.</p>
-        </div>`,
-        cssStyles: cssMatch ? cssMatch[1] : `
-          .flyer-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            padding: 2rem;
-            text-align: center;
-            color: white;
-          }
-          .headline {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-          }
-        `
-      };
+    } catch (error: any) {
+      log(`Failed to parse JSON response: ${error}, text: ${text}`, "openai");
+      throw new Error(`Failed to parse AI response: ${error.message || String(error)}`);
     }
 
     return responseJson;
-  } catch (error) {
+  } catch (error: any) {
     log(`Error generating flyer content: ${error}`, "openai");
     throw error;
   }
@@ -446,7 +429,7 @@ export async function renderFlyerFromOpenAI(options: GenerationOptions): Promise
       await browser.close();
       log("Puppeteer browser closed", "openai");
     }
-  } catch (error) {
+  } catch (error: any) {
     log(`Error generating flyer: ${error}`, "openai");
     throw error;
   }
