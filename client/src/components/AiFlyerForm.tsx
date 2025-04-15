@@ -240,17 +240,6 @@ export default function AiFlyerForm({
       return;
     }
 
-    // Add client-side logging for uploads
-    if (backgroundImage) {
-      console.log(`Uploading background image: ${backgroundImage.name}, size: ${backgroundImage.size} bytes, type: ${backgroundImage.type}`);
-    } else {
-      console.log("No background image selected for upload");
-    }
-    
-    if (logo) {
-      console.log(`Uploading logo: ${logo.name}, size: ${logo.size} bytes, type: ${logo.type}`);
-    }
-
     setIsGenerating(true);
     generateAiFlyerMutation.mutate({ 
       prompt, 

@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Download, Share2, Ratio, Check, Copy } from "lucide-react";
 import { MultiColorLoading } from "@/components/ui/multi-color-loading";
 import iconUpload from "../assets/iconupload.png";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   DropdownMenu,
@@ -127,15 +127,11 @@ export default function FlyerPreview({
   
   // Reset autoSaveAttempted when a new flyer is set with a different image URL
   useEffect(() => {
-    // Reset the auto-save flag when a new design is selected
+    // Wenn ein neuer Flyer gesetzt wird mit einer anderen URL als der zuletzt gespeicherten
     if (generatedFlyer && generatedFlyer.imageUrl !== lastSavedImageUrlRef.current) {
-      console.log("New design detected - resetting autoSaveAttempted flag");
       setAutoSaveAttempted(false);
-      
-      // Also invalidate the query to ensure the gallery is up to date
-      queryClient.invalidateQueries({ queryKey: ['/api/creations'] });
     }
-  }, [generatedFlyer?.imageUrl, queryClient]); // Only reset when the image URL changes
+  }, [generatedFlyer?.imageUrl]); // Nur zurücksetzen, wenn sich die Bild-URL ändert
 
   // Auto-save generated flyers to gallery when they appear
   useEffect(() => {
@@ -147,17 +143,6 @@ export default function FlyerPreview({
       // 4. The user is authenticated
       // 5. This image URL hasn't been saved before
       const imageUrl = generatedFlyer?.imageUrl || null;
-      
-      // For debugging
-      console.log("Auto-save conditions:", {
-        hasFlyer: !!generatedFlyer,
-        notGenerating: !isGenerating,
-        notAttempted: !autoSaveAttempted,
-        isAuth: isAuthenticated,
-        hasUrl: !!imageUrl,
-        isDifferentUrl: imageUrl !== lastSavedImageUrlRef.current
-      });
-      
       if (
         generatedFlyer && 
         !isGenerating && 
@@ -170,17 +155,17 @@ export default function FlyerPreview({
         setIsSaving(true);
         
         try {
-          // Save URL for later comparison
+          // Speichern wir die URL für spätere Vergleiche
           lastSavedImageUrlRef.current = imageUrl;
           
-          // Create a better, more unique name for the design
+          // Ein besserer, eindeutigerer Name für das Design
           const timestamp = new Date().toLocaleTimeString();
           const designName = generatedFlyer.headline || 
             `${generatedFlyer.stylePrompt ? 
               `Design: ${generatedFlyer.stylePrompt.slice(0, 20)}...` : 
               `Design ${timestamp}`}`;
               
-          const response = await apiRequest('POST', '/api/creations', {
+          await apiRequest('POST', '/api/creations', {
             name: designName,
             imageUrl: generatedFlyer.imageUrl,
             headline: generatedFlyer.headline || null,
@@ -189,28 +174,11 @@ export default function FlyerPreview({
             template: generatedFlyer.template || null,
           });
           
-          // Add a toast notification for successful save
-          toast({
-            title: "Design Saved",
-            description: "Your design has been saved to your gallery.",
-            duration: 3000,
-          });
-          
+          // Keine Toast-Benachrichtigung mehr, um die Benutzeroberfläche sauberer zu halten
           console.log("Design successfully saved to gallery:", imageUrl.substring(0, 50) + "...");
-          
-          // Refresh the creations cache to show the newly saved design
-          queryClient.invalidateQueries({ queryKey: ['/api/creations'] });
-          
         } catch (error) {
           console.error("Error auto-saving design:", error);
-          
-          // Show error notification for auto-save failures
-          toast({
-            title: "Save Error",
-            description: "Failed to save your design to gallery. Please try saving it manually.",
-            variant: "destructive",
-            duration: 5000,
-          });
+          // Don't show error notification for auto-save failures
         } finally {
           setIsSaving(false);
         }
@@ -218,7 +186,7 @@ export default function FlyerPreview({
     };
     
     autoSaveFlyer();
-  }, [generatedFlyer, isGenerating, autoSaveAttempted, isAuthenticated, toast, queryClient]);
+  }, [generatedFlyer, isGenerating, autoSaveAttempted, isAuthenticated]);
 
   const handleDownload = () => {
     if (!generatedFlyer) return;
@@ -288,27 +256,6 @@ export default function FlyerPreview({
           <Button
             className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-7 px-3 py-1 text-xs hover:bg-indigo-500/30"
             size="sm"
-            onClick={() => {
-              // Manual save function
-              if (generatedFlyer) {
-                setAutoSaveAttempted(false); // Reset to force a save
-                // This will trigger the useEffect to save
-                lastSavedImageUrlRef.current = null; // Force a save by resetting the URL reference
-                
-                toast({
-                  title: "Processing",
-                  description: "Saving design to gallery...",
-                  duration: 2000,
-                });
-              }
-            }}
-            disabled={!generatedFlyer}
-          >
-            {isSaving ? "Saving..." : "Save to Gallery"}
-          </Button>
-          <Button
-            className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-7 px-3 py-1 text-xs hover:bg-indigo-500/30"
-            size="sm"
             onClick={handleDownload}
             disabled={!generatedFlyer}
           >
@@ -355,12 +302,15 @@ export default function FlyerPreview({
           </div>
         ) : (
           <div className="w-full h-full flex flex-col">
-            <div className="flex-grow p-0 flex items-center justify-center">
+            <div className="flex-grow p-4 flex items-center justify-center">
               <div 
-                className="relative flex items-center justify-center overflow-hidden mx-auto w-full h-full"
+                className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-900/20 to-purple-900/30 border border-indigo-500/20 mx-auto"
                 style={{
-                  maxWidth: '100%',
-                  maxHeight: '100%',
+                  maxWidth: '90%',
+                  maxHeight: '90%',
+                  padding: '2rem',
+                  width: getContainerWidth(aspectRatio), 
+                  height: getContainerHeight(aspectRatio)
                 }}
               >
                 {generatedFlyer && (
@@ -370,13 +320,14 @@ export default function FlyerPreview({
                     alignItems: 'center', 
                     width: '100%', 
                     height: '100%',
+                    // Das Seitenverhältnis wird direkt über das Container-Element gesteuert
                   }}>
                     <img 
                       ref={imageRef}
                       src={generatedFlyer.imageUrl} 
                       alt="Generated design" 
-                      className="w-full h-full object-contain"
-                      style={{ width: '100%', height: '100%' }}
+                      className="max-w-full max-h-full object-contain"
+                      style={{ maxHeight: '65vh' }}
                     />
                   </div>
                 )}
@@ -386,7 +337,12 @@ export default function FlyerPreview({
                   </div>
                 )}
                 
-                {/* Aspect ratio label - removed to allow full image display */}
+                {/* Aspect ratio label */}
+                {!isGenerating && (
+                  <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] px-2 py-1">
+                    {aspectRatioOptions.find(o => o.id === aspectRatio)?.label || aspectRatio}
+                  </div>
+                )}
               </div>
             </div>
             

@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import path from "path";
 import fs from "fs";
 import { generateFlyer } from "./flyerGenerator";
-import { renderFlyerFromOpenAI } from "./openaiFlyer";
+import { renderFlyerFromGemini } from "./geminiFlyer";
 import multer from "multer";
 import { log } from "./vite";
 import passport from "./auth";
@@ -33,7 +33,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/admin/credits", (req: Request, res: Response) => {
     res.sendFile(path.resolve(process.cwd(), "add-credits.html"));
   });
-  // API endpoint to generate multiple flyer designs using OpenAI
+  // API endpoint to generate multiple flyer designs using Gemini AI
   app.post("/api/generate-ai", isAuthenticated, uploadFields, async (req: Request, res: Response) => {
     try {
       log("AI Flyer generation started", "generator");
@@ -84,7 +84,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       log(`Generating AI flyer with prompt: ${prompt}`, "generator");
       
-      // Generate options for OpenAI
+      // Generate options for Gemini
       const generationOptions: { 
         prompt: string; 
         backgroundImageBase64?: string;
@@ -96,25 +96,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Add images to options if provided (using type assertion for files)
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
       
-      // Debug logging for file uploads
-      log(`Files received in request: ${JSON.stringify(req.files ? Object.keys(req.files) : 'none')}`, "generator");
-      
       if (files && files.backgroundImage && files.backgroundImage[0]) {
-        log(`Background image received: ${files.backgroundImage[0].originalname}, size: ${files.backgroundImage[0].size} bytes`, "generator");
+        log("Background image received for AI generation", "generator");
         const backgroundImageBase64 = files.backgroundImage[0].buffer.toString('base64');
         generationOptions.backgroundImageBase64 = backgroundImageBase64;
-        log("Background image successfully converted to base64", "generator");
-      } else {
-        log("No background image received in the request", "generator");
       }
       
       if (files && files.logo && files.logo[0]) {
-        log(`Logo received: ${files.logo[0].originalname}, size: ${files.logo[0].size} bytes`, "generator");
+        log("Logo image received for AI generation", "generator");
         const logoBase64 = files.logo[0].buffer.toString('base64');
         generationOptions.logoBase64 = logoBase64;
-        log("Logo successfully converted to base64", "generator");
-      } else {
-        log("No logo received in the request", "generator");
       }
       
       // Generate 4 design variations with slightly different style instructions
@@ -125,7 +116,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         "with a professional, corporate style"
       ];
       
-      // Generate designs sequentially
+      // Generate designs sequentially to avoid quota limits
       log("Generating design variations", "generator");
       const successfulDesigns = [];
       
@@ -133,28 +124,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (let index = 0; index < styleVariations.length && successfulDesigns.length < maxDesigns; index++) {
         const styleVariation = styleVariations[index];
         try {
-          // Force exact text prompt into a specific format
-          let enhancedPrompt = generationOptions.prompt;
-          
-          // Don't try to be clever with text extraction
-          // Just enhance the prompt with specific design instructions 
-          // for emphasis on professional, centered text layouts
-          enhancedPrompt = `${enhancedPrompt}. 
-Create a professional, eye-catching flyer with clear visual hierarchy. 
-The text must be perfectly centered and dominant in the design.
-Use bold typography, dramatic contrast, and ensure all text is clearly readable.
-Position the main headline in the absolute center of the canvas.`;
-          
           const variantOptions = {
             ...generationOptions,
-            prompt: `${enhancedPrompt} ${styleVariation}`,
-            aspectRatio: aspectRatio,
-            // Force a specific HTML structure for simple text displays
-            forceSimpleTextLayout: enhancedPrompt !== generationOptions.prompt
+            prompt: `${generationOptions.prompt} ${styleVariation}`,
+            aspectRatio: aspectRatio
           };
           
           log(`Generating design variation ${index + 1}: ${styleVariation}`, "generator");
-          const screenshot = await renderFlyerFromOpenAI(variantOptions);
+          const screenshot = await renderFlyerFromGemini(variantOptions);
           successfulDesigns.push({
             imageBuffer: screenshot,
             style: styleVariation
@@ -166,10 +143,10 @@ Position the main headline in the absolute center of the canvas.`;
           }
         } catch (error) {
           log(`Error generating design variation ${index + 1}: ${error}`, "generator");
-          // If we hit a rate limit, stop trying more variations
+          // If this is a quota error, stop trying more variations
           const errorMessage = String(error);
-          if (errorMessage.includes("429 Too Many Requests")) {
-            log("Stopping design generation due to rate limits", "generator");
+          if (errorMessage.includes("API quota limit reached") || errorMessage.includes("429 Too Many Requests")) {
+            log("Stopping design generation due to API quota limits", "generator");
             break;
           }
         }
@@ -216,9 +193,9 @@ Position the main headline in the absolute center of the canvas.`;
       log(`Error generating AI flyer: ${error}`, "generator");
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       
-      // Handle rate limit errors
-      if (errorMessage.includes("429 Too Many Requests")) {
-        // Send 429 Too Many Requests status code for rate limit errors
+      // Handle API quota limit errors
+      if (errorMessage.includes("API quota limit reached")) {
+        // Send 429 Too Many Requests status code for quota limit errors
         res.status(429).json({ 
           message: errorMessage,
           quotaExceeded: true

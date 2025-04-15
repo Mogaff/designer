@@ -1,17 +1,16 @@
+import { GoogleGenerativeAI, Part } from "@google/generative-ai";
 import { log } from "./vite";
 import puppeteer from "puppeteer";
 import { exec } from "child_process";
 import { promisify } from "util";
 import * as fs from "fs";
 import * as path from "path";
-import OpenAI from "openai";
 
 const execAsync = promisify(exec);
 
-// Initialize the OpenAI API with the API key
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Initialize the Gemini AI with the API key
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
 
 type GeminiResponse = {
   htmlContent: string;
@@ -23,230 +22,180 @@ interface GenerationOptions {
   backgroundImageBase64?: string;
   logoBase64?: string;
   aspectRatio?: string;
-  forceSimpleTextLayout?: boolean;
 }
 
 /**
- * Generate HTML and CSS for a flyer based on a prompt using OpenAI
+ * Generate HTML and CSS for a flyer based on a prompt using Gemini AI
  */
 export async function generateFlyerContent(options: GenerationOptions): Promise<GeminiResponse> {
-  log("Generating flyer content with OpenAI", "openai");
+  log("Generating flyer content with Gemini AI", "gemini");
   
   try {
     // Create a comprehensive prompt for the AI with enhanced design instructions
-    const systemPrompt = `You are an award-winning professional graphic designer who creates stunning, premium visual flyers. Your designs are used by top brands globally because of your exceptional understanding of visual hierarchy, typography, and attractive layouts.
+    const systemPrompt = `You are an award-winning graphic designer who creates stunning, visually exciting flyers using modern web technologies. You specialize in creating visually striking designs with bold typography, creative layouts, and innovative use of color.
     
-    Create a VISUALLY STUNNING, SOPHISTICATED, and PROFESSIONAL flyer for the following prompt:
+    Create an exceptionally creative and professional flyer using Tailwind CSS and modern design techniques based on the following prompt:
     "${options.prompt}"
     
-    Focus on CREATIVE DESIGN EXCELLENCE with these requirements:
-    1. Create a single HTML page with inline CSS that looks like a high-end professional flyer
-    2. Use a clean, modern layout with excellent visual hierarchy
-    3. Apply sophisticated typography with carefully selected font combinations
-    4. Incorporate creative visual elements and styling (gradients, overlays, shapes)
-    5. Ensure the design is balanced, harmonious, and delivers high visual impact
-    6. Design for a ${options.aspectRatio || "standard"} format
-    7. CRITICAL: Position ALL TEXT with absolute position at center of canvas, use percentages (50%) for positioning
-    8. CRITICAL: Make sure text is fully contained within the viewport and not cut off or oversized
-    9. Use striking typography and dramatic contrast
-    10. Ensure all content is visible without scrolling, fits perfectly in the specified dimensions
+    ${options.aspectRatio ? 
+      `IMPORTANT: This design is for the "${options.aspectRatio}" format with specific dimensions. 
+       Your design MUST work perfectly in this aspect ratio without cropping or distortion.` 
+      : ''}
     
-    IMPORTANT OUTPUT FORMAT:
-    Respond with ONLY an executable HTML and CSS like a professional graphic designer. Structure your response in JSON format with:
-    1. A 'htmlContent' field containing clean, valid HTML
-    2. A 'cssStyles' field with any additional CSS styles needed
+    Your design should:
+    1. Use Tailwind CSS with creative, non-conventional layouts - avoid boring grid layouts and basic designs
+    2. Implement bold, eye-catching typography with font combinations that create visual hierarchy
+    3. Use gradients, overlays, and creative backgrounds that feel modern and professional
+    4. Incorporate creative use of shapes and asymmetrical layouts
+    5. Make the design feel like it was created by a professional graphic designer
+    6. Incorporate striking visual elements like creative dividers and shapes
+    7. Use a bold, modern color palette with thoughtful color theory
+    8. Draw inspiration from award-winning poster designs and current design trends
     
-    The design should look like it was created by a professional designer, not generic or template-like.
-    If a background image is provided, incorporate it elegantly into the design and extract colors from it.
+    CRITICAL DESIGN REQUIREMENTS:
+    1. DO NOT create any buttons or interactive elements - this is a print flyer, not a website
+    2. DO NOT use rotated, diagonal, or slanted text - ALL text must be perfectly horizontal
+    3. Keep all headings and text content perfectly straight (0 degree rotation)
+    4. Use only straight text alignment (no diagonal text)
+    5. Text can be left-aligned, right-aligned or centered, but never at an angle
     
-    IMPORTANT TEXT GUIDELINES:
-    - For any main headline text, ensure it is centered using 'transform: translate(-50%, -50%)' with 'top: 50%' and 'left: 50%'
-    - Set appropriate font sizes that adjust to the container using viewport units (vw, vh)
-    - For landscape formats, use smaller font sizes
-    - For portrait formats, ensure text doesn't overflow
-    - Apply max-width constraints to text elements to prevent overflow
-    - Add padding around text to prevent it from touching edges`;
+    Absolutely avoid:
+    - Buttons, clickable elements, or any web-only interactive components
+    - Rotated, angled, or diagonal text of any kind
+    - Boring, templated layouts with basic grids
+    - Outdated or generic design elements
+    - Flat, uninteresting color schemes
+    - Basic rectangular layouts and standard columns
+    
+    Return your response in the following JSON format:
+    {
+      "htmlContent": "the complete HTML code for the flyer",
+      "cssStyles": "any custom CSS styles needed to create advanced effects"
+    }`;
 
-    // Add special design instructions based on the aspect ratio
-    let aspectRatioDirections = "";
-    if (options.aspectRatio) {
-      switch (options.aspectRatio) {
-        case 'stories':
-          aspectRatioDirections = "This is a vertical Stories format (1080×1920). Design with vertical flow, large typography, and ensure key elements are centered.";
-          break;
-        case 'post':
-          aspectRatioDirections = "This is a square social media post (1200×1200). Create a balanced, centered design with equal emphasis on all sides.";
-          break;
-        case 'fb_cover':
-        case 'twitter_header':
-          aspectRatioDirections = "This is a wide header/cover format. Design with horizontal flow, and place key elements in the center or left side.";
-          break;
-        default:
-          aspectRatioDirections = `Design specifically for ${options.aspectRatio} format, optimizing visual elements for this aspect ratio.`;
-          break;
-      }
+    // Create parts for the generation
+    const parts: Part[] = [{ text: systemPrompt }];
+    
+    // Add background image to the parts if provided
+    if (options.backgroundImageBase64) {
+      parts.push({
+        inlineData: {
+          mimeType: "image/jpeg",
+          data: options.backgroundImageBase64
+        }
+      });
+      
+      // Add explicit instructions to use the image as background
+      parts.push({
+        text: "IMPORTANT: Use the above image as the BACKGROUND of your flyer design. Do not try to reference it with an img tag - I will handle embedding it for you. Instead, directly create HTML that assumes the image is already the background. Use appropriate text colors that contrast well with the image's colors. Add overlays or semi-transparent elements as needed to maintain text readability over the background image."
+      });
+    }
+    
+    // Add logo to the parts if provided
+    if (options.logoBase64) {
+      parts.push({
+        inlineData: {
+          mimeType: "image/jpeg",
+          data: options.logoBase64
+        }
+      });
+      
+      // Add explicit instructions for logo placement
+      parts.push({
+        text: "IMPORTANT: Use the above image as a LOGO in your flyer design. This is a company or event logo that should be prominently displayed in the design, typically at the top or in a strategic position that complements the overall layout. I will provide you with CSS to properly size and position it."
+      });
     }
 
-    const fullPrompt = `${systemPrompt}
-    ${aspectRatioDirections}`;
-
-    // Generate the response from OpenAI
-    const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        { role: "system", content: "You are a professional designer specialized in creating stunning flyers." },
-        { role: "user", content: fullPrompt }
-      ],
-      temperature: 0.7,
-      max_tokens: 3000,
-      top_p: 0.95
-    });
-
-    const text = response.choices[0].message.content || "";
-    log(`Received OpenAI response of length: ${text.length}`, "openai");
-
-    // Parse the JSON from the response
-    let responseJson: GeminiResponse;
+    // Generate content using Gemini
+    const result = await model.generateContent(parts);
+    const response = await result.response;
+    const text = response.text();
+    
     try {
-      // Try to parse the entire response as JSON
-      responseJson = JSON.parse(text);
-      
-      // Validate the structure
-      if (!responseJson.htmlContent || !responseJson.cssStyles) {
-        throw new Error("Invalid response structure");
+      // Try to extract JSON from the response
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const jsonContent = JSON.parse(jsonMatch[0]);
+        return {
+          htmlContent: jsonContent.htmlContent || "",
+          cssStyles: jsonContent.cssStyles || ""
+        };
       }
-    } catch (error) {
-      log(`Failed to parse JSON response: ${error}`, "openai");
-      
-      // Fallback: Try to extract HTML and CSS from the text manually
-      const htmlMatch = text.match(/<html.*?>([\s\S]*?)<\/html>/i) || 
-                        text.match(/<body.*?>([\s\S]*?)<\/body>/i) ||
-                        text.match(/(<div.*?>[\s\S]*?<\/div>)/i);
-                        
-      const cssMatch = text.match(/<style.*?>([\s\S]*?)<\/style>/i) ||
-                       text.match(/cssStyles['"]\s*:\s*['"]([^'"]*)['"]/i);
-      
-      responseJson = {
-        htmlContent: htmlMatch ? htmlMatch[0] : `<div class="flyer-content">
-          <h1 class="headline">FLYER CONTENT</h1>
-          <p>The AI generated content could not be parsed correctly.</p>
-        </div>`,
-        cssStyles: cssMatch ? cssMatch[1] : `
-          .flyer-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            padding: 2rem;
-            text-align: center;
-            color: white;
-          }
-          .headline {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-          }
-        `
+    } catch (parseError) {
+      log(`Error parsing Gemini JSON response: ${parseError}`, "gemini");
+    }
+    
+    // Fallback: Try to extract HTML content manually
+    const htmlMatch = text.match(/<html[^>]*>[\s\S]*<\/html>/i);
+    if (htmlMatch) {
+      return {
+        htmlContent: htmlMatch[0],
+        cssStyles: ""
       };
     }
-
-    return responseJson;
-  } catch (error) {
-    log(`Error generating flyer content: ${error}`, "openai");
+    
+    throw new Error("Could not extract valid HTML from the Gemini response");
+  } catch (error: any) {
+    log(`Error generating content with Gemini: ${error}`, "gemini");
+    
+    // Check for quota limit exceeded error
+    const errorMessage = String(error);
+    if (errorMessage.includes("429 Too Many Requests") && errorMessage.includes("quota")) {
+      throw new Error("API quota limit reached: The Gemini AI API free tier limit has been reached for today. Please try again tomorrow or upgrade to a paid plan.");
+    }
+    
     throw error;
   }
 }
 
 /**
- * Render the OpenAI-generated flyer content and take a screenshot
+ * Render the Gemini-generated flyer content and take a screenshot
  */
-export async function renderFlyerFromOpenAI(options: GenerationOptions): Promise<Buffer> {
-  log("Starting OpenAI-powered flyer generation", "openai");
+export async function renderFlyerFromGemini(options: GenerationOptions): Promise<Buffer> {
+  log("Starting Gemini-powered flyer generation", "gemini");
   
   try {
-    // Generate the flyer content using OpenAI
+    // Generate the flyer content using Gemini AI
     const { htmlContent, cssStyles } = await generateFlyerContent(options);
     
     // Create a complete HTML document with the generated content
     // Add background image styling if an image was provided
     const backgroundStyle = options.backgroundImageBase64 
       ? `
-          html, body {
+          body {
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-          }
-          body {
-            background-image: url('data:image/png;base64,${options.backgroundImageBase64}');
+            background-image: url('data:image/jpeg;base64,${options.backgroundImageBase64}');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             min-height: 100vh;
-            position: relative; /* Support for absolute positioning */
-          }
-          /* Ensure content uses full viewport height */
-          main, div, section {
-            min-height: 100%;
-            width: 100%;
-          }
-          /* Force content to fill the entire page */
-          .main-content {
-            min-height: 100vh;
-            width: 100vw;
-            position: relative;
           }
         `
       : `
-          html, body {
+          body {
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-          }
-          body {
-            min-height: 100vh;
-            position: relative; /* Support for absolute positioning */
-          }
-          /* Ensure content uses full viewport height */
-          main, div, section {
-            min-height: 100%;
-            width: 100%;
-          }
-          /* Force content to fill the entire page */
-          .main-content {
-            min-height: 100vh;
-            width: 100vw;
-            position: relative;
           }
         `;
         
     // Add logo styling if a logo was provided
     const logoStyle = options.logoBase64
       ? `
-          /* Logo styling - positioned absolutely as directed by prompt */
+          /* Logo styling */
           .logo-container {
-            display: block;
-            position: absolute; /* Allow placing anywhere on canvas */
+            display: inline-block;
+            position: relative;
           }
           .logo-image {
             max-width: 100%;
             height: auto;
-            position: absolute; /* Can be placed anywhere */
           }
           #company-logo {
-            content: url('data:image/png;base64,${options.logoBase64}');
+            content: url('data:image/jpeg;base64,${options.logoBase64}');
             max-width: 200px;
             max-height: 100px;
             object-fit: contain;
-            position: absolute; /* Allow creative freedom in placement */
-          }
-          
-          /* Support all Tailwind positioning classes for logos and elements */
-          [class*="logo"], img, .logo-container, #company-logo, .logo-image {
-            position: absolute !important;
           }
         `
       : '';
@@ -257,9 +206,8 @@ export async function renderFlyerFromOpenAI(options: GenerationOptions): Promise
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>OpenAI Generated Flyer</title>
+        <title>Gemini Generated Flyer</title>
         <script src="https://cdn.tailwindcss.com"></script>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Montserrat:wght@100..900&family=Raleway:wght@100..900&family=Poppins:wght@100..900&display=swap" rel="stylesheet">
         <script>
           tailwind.config = {
             theme: {
@@ -268,9 +216,6 @@ export async function renderFlyerFromOpenAI(options: GenerationOptions): Promise
                   'gradient': 'gradient 8s ease infinite',
                   'float': 'float 6s ease-in-out infinite',
                   'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                  'slide-in': 'slideIn 1s ease-out forwards',
-                  'fade-in': 'fadeIn 1.2s ease-out forwards',
-                  'scale-in': 'scaleIn 0.8s cubic-bezier(0.17, 0.67, 0.83, 0.67) forwards',
                 },
                 keyframes: {
                   gradient: {
@@ -280,25 +225,7 @@ export async function renderFlyerFromOpenAI(options: GenerationOptions): Promise
                   float: {
                     '0%, 100%': { transform: 'translateY(0)' },
                     '50%': { transform: 'translateY(-10px)' },
-                  },
-                  slideIn: {
-                    '0%': { transform: 'translateX(-100%)', opacity: 0 },
-                    '100%': { transform: 'translateX(0)', opacity: 1 },
-                  },
-                  fadeIn: {
-                    '0%': { opacity: 0 },
-                    '100%': { opacity: 1 },
-                  },
-                  scaleIn: {
-                    '0%': { transform: 'scale(0.8)', opacity: 0 },
-                    '100%': { transform: 'scale(1)', opacity: 1 },
                   }
-                },
-                fontFamily: {
-                  'sans': ['Inter', 'ui-sans-serif', 'system-ui'],
-                  'montserrat': ['Montserrat', 'ui-sans-serif', 'system-ui'],
-                  'raleway': ['Raleway', 'ui-sans-serif', 'system-ui'],
-                  'poppins': ['Poppins', 'ui-sans-serif', 'system-ui']
                 }
               }
             }
@@ -308,45 +235,24 @@ export async function renderFlyerFromOpenAI(options: GenerationOptions): Promise
           ${backgroundStyle}
           ${logoStyle}
           
-          /* Reset to ensure flyer fills entire canvas */
-          * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+          /* Advanced effects */
+          .gradient-text {
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            background-image: linear-gradient(to right, var(--tw-gradient-stops));
+          }
+          .gradient-bg {
+            background-size: 200% 200%;
+            animation: gradient 15s ease infinite;
           }
           
-          html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            position: relative;
-            font-family: 'Montserrat', sans-serif;
+          /* Ensure no rotated text (enforce horizontal-only text) */
+          h1, h2, h3, h4, h5, h6, p, span, div, li, a, strong, em, label, blockquote, caption, button, text {
+            transform: none !important;
+            rotate: 0deg !important;
+            transform-origin: center !important;
           }
-          
-          /* Force all content to fill entire available space */
-          .flyer-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-          }
-          
-          /* Ensure headline text is always centered properly */
-          .headline, h1, h2, h3, .main-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            margin: 0;
-            padding: 0;
-            text-align: center;
-            width: auto;
-            max-width: 90%;
-          }
-          
-          /* Custom styling from OpenAI, if any */
           ${cssStyles}
         </style>
       </head>
@@ -362,13 +268,13 @@ export async function renderFlyerFromOpenAI(options: GenerationOptions): Promise
       fs.mkdirSync(tempDir, { recursive: true });
     }
     
-    const htmlPath = path.join(tempDir, `openai-flyer-${Date.now()}.html`);
+    const htmlPath = path.join(tempDir, `gemini-flyer-${Date.now()}.html`);
     fs.writeFileSync(htmlPath, fullHtml);
-    log(`Saved generated HTML to: ${htmlPath}`, "openai");
+    log(`Saved generated HTML to: ${htmlPath}`, "gemini");
     
     // Get Chromium executable path
     const { stdout: chromiumPath } = await execAsync("which chromium");
-    log(`Found Chromium at: ${chromiumPath.trim()}`, "openai");
+    log(`Found Chromium at: ${chromiumPath.trim()}`, "gemini");
     
     // Launch puppeteer
     const browser = await puppeteer.launch({
@@ -385,37 +291,74 @@ export async function renderFlyerFromOpenAI(options: GenerationOptions): Promise
     try {
       const page = await browser.newPage();
       
-      // Set viewport based on aspect ratio
-      let viewportWidth = 1200;
+      // Set viewport based on aspect ratio if provided
+      let viewportWidth = 800;
       let viewportHeight = 1200;
       
       // Apply different size based on aspect ratio
       if (options.aspectRatio) {
-        log(`Using aspect ratio: ${options.aspectRatio}`, "openai");
+        log(`Using aspect ratio: ${options.aspectRatio}`, "gemini");
         
         switch(options.aspectRatio) {
           // Square formats
-          case 'original': viewportWidth = 1080; viewportHeight = 1080; break;
-          case 'profile': viewportWidth = 1080; viewportHeight = 1080; break;
-          case 'post': viewportWidth = 1200; viewportHeight = 1200; break;
-          case 'square_ad': viewportWidth = 250; viewportHeight = 250; break;
+          case 'profile': // Instagram Profile (1080×1080)
+            viewportWidth = 1080;
+            viewportHeight = 1080;
+            break;
+          case 'post': // Social Media Post (1200×1200)
+            viewportWidth = 1200;
+            viewportHeight = 1200;
+            break;
+          case 'square_ad': // Square Ad (250×250)
+            viewportWidth = 250;
+            viewportHeight = 250;
+            break;
             
           // Landscape formats
-          case 'fb_cover': viewportWidth = 820; viewportHeight = 312; break;
-          case 'twitter_header': viewportWidth = 1500; viewportHeight = 500; break;
-          case 'yt_thumbnail': viewportWidth = 1280; viewportHeight = 720; break;
-          case 'linkedin_banner': viewportWidth = 1584; viewportHeight = 396; break;
-          case 'instream': viewportWidth = 1920; viewportHeight = 1080; break;
+          case 'fb_cover': // Facebook Cover (820×312)
+            viewportWidth = 820;
+            viewportHeight = 312;
+            break;
+          case 'twitter_header': // Twitter Header (1500×500)
+            viewportWidth = 1500;
+            viewportHeight = 500;
+            break;
+          case 'yt_thumbnail': // YouTube Thumbnail (1280×720)
+            viewportWidth = 1280;
+            viewportHeight = 720;
+            break;
+          case 'linkedin_banner': // LinkedIn Banner (1584×396)
+            viewportWidth = 1584;
+            viewportHeight = 396;
+            break;
+          case 'instream': // Video Ad (1920×1080)
+            viewportWidth = 1920;
+            viewportHeight = 1080;
+            break;
             
           // Portrait formats
-          case 'stories': viewportWidth = 1080; viewportHeight = 1920; break;
-          case 'pinterest': viewportWidth = 1000; viewportHeight = 1500; break;
+          case 'stories': // Instagram Stories (1080×1920)
+            viewportWidth = 1080;
+            viewportHeight = 1920;
+            break;
+          case 'pinterest': // Pinterest Pin (1000×1500)
+            viewportWidth = 1000;
+            viewportHeight = 1500;
+            break;
             
           // Display Ad formats
-          case 'leaderboard': viewportWidth = 728; viewportHeight = 90; break;
-          case 'skyscraper': viewportWidth = 160; viewportHeight = 600; break;
-          
-          default: break;
+          case 'leaderboard': // Leaderboard Ad (728×90)
+            viewportWidth = 728;
+            viewportHeight = 90;
+            break;
+          case 'skyscraper': // Skyscraper Ad (160×600)
+            viewportWidth = 160;
+            viewportHeight = 600;
+            break;
+            
+          default:
+            // Default dimensions for other or unknown aspect ratios
+            break;
         }
       }
       
@@ -429,7 +372,7 @@ export async function renderFlyerFromOpenAI(options: GenerationOptions): Promise
       await page.goto(`file://${htmlPath}`, { waitUntil: 'networkidle0' });
       
       // Take screenshot
-      log("Taking screenshot of the OpenAI-generated flyer", "openai");
+      log("Taking screenshot of the Gemini-generated flyer", "gemini");
       const screenshot = await page.screenshot({
         type: "png",
         fullPage: true,
@@ -442,12 +385,20 @@ export async function renderFlyerFromOpenAI(options: GenerationOptions): Promise
       fs.unlinkSync(htmlPath);
       
       return buffer;
+      
     } finally {
       await browser.close();
-      log("Puppeteer browser closed", "openai");
+      log("Puppeteer browser closed", "gemini");
     }
-  } catch (error) {
-    log(`Error generating flyer: ${error}`, "openai");
+  } catch (error: any) {
+    log(`Error in Gemini flyer generation: ${error}`, "gemini");
+    
+    // Check for quota limit exceeded error
+    const errorMessage = String(error);
+    if (errorMessage.includes("429 Too Many Requests") && errorMessage.includes("quota")) {
+      throw new Error("API quota limit reached: The Gemini AI API free tier limit has been reached for today. Please try again tomorrow or upgrade to a paid plan.");
+    }
+    
     throw error;
   }
 }
