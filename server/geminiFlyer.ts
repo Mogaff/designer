@@ -92,15 +92,14 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
 
     // Generate the response from OpenAI
     const response = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-3.5-turbo",
       messages: [
         { role: "system", content: "You are a professional designer specialized in creating stunning flyers." },
         { role: "user", content: fullPrompt }
       ],
       temperature: 0.7,
       max_tokens: 3000,
-      top_p: 0.95,
-      response_format: { type: "json_object" }
+      top_p: 0.95
     });
 
     const text = response.choices[0].message.content || "";
@@ -159,13 +158,13 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
 }
 
 /**
- * Render the Gemini-generated flyer content and take a screenshot
+ * Render the OpenAI-generated flyer content and take a screenshot
  */
 export async function renderFlyerFromGemini(options: GenerationOptions): Promise<Buffer> {
-  log("Starting Gemini-powered flyer generation", "gemini");
+  log("Starting OpenAI-powered flyer generation", "openai");
   
   try {
-    // Generate the flyer content using Gemini AI
+    // Generate the flyer content using OpenAI
     const { htmlContent, cssStyles } = await generateFlyerContent(options);
     
     // Create a complete HTML document with the generated content
@@ -258,7 +257,7 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Gemini Generated Flyer</title>
+        <title>OpenAI Generated Flyer</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Montserrat:wght@100..900&family=Raleway:wght@100..900&family=Poppins:wght@100..900&display=swap" rel="stylesheet">
         <script>
@@ -365,11 +364,11 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
     
     const htmlPath = path.join(tempDir, `gemini-flyer-${Date.now()}.html`);
     fs.writeFileSync(htmlPath, fullHtml);
-    log(`Saved generated HTML to: ${htmlPath}`, "gemini");
+    log(`Saved generated HTML to: ${htmlPath}`, "openai");
     
     // Get Chromium executable path
     const { stdout: chromiumPath } = await execAsync("which chromium");
-    log(`Found Chromium at: ${chromiumPath.trim()}`, "gemini");
+    log(`Found Chromium at: ${chromiumPath.trim()}`, "openai");
     
     // Launch puppeteer
     const browser = await puppeteer.launch({
@@ -392,7 +391,7 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
       
       // Apply different size based on aspect ratio
       if (options.aspectRatio) {
-        log(`Using aspect ratio: ${options.aspectRatio}`, "gemini");
+        log(`Using aspect ratio: ${options.aspectRatio}`, "openai");
         
         switch(options.aspectRatio) {
           // Square formats
@@ -430,7 +429,7 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
       await page.goto(`file://${htmlPath}`, { waitUntil: 'networkidle0' });
       
       // Take screenshot
-      log("Taking screenshot of the Gemini-generated flyer", "gemini");
+      log("Taking screenshot of the OpenAI-generated flyer", "openai");
       const screenshot = await page.screenshot({
         type: "png",
         fullPage: true,
@@ -445,10 +444,10 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
       return buffer;
     } finally {
       await browser.close();
-      log("Puppeteer browser closed", "gemini");
+      log("Puppeteer browser closed", "openai");
     }
   } catch (error) {
-    log(`Error generating flyer: ${error}`, "gemini");
+    log(`Error generating flyer: ${error}`, "openai");
     throw error;
   }
 }
