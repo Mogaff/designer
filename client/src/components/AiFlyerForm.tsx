@@ -5,13 +5,14 @@ import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { GeneratedFlyer, AiFlyerGenerationRequest, DesignSuggestions, DesignVariation } from "@/lib/types";
+import { GeneratedFlyer, AiFlyerGenerationRequest, DesignSuggestions, DesignVariation, FontSettings } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { ImageIcon, Upload } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import backgroundGradient from "../assets/background-gradient.png";
 import backgroundGradient2 from "../assets/backgroundd-gradient.png";
+import { useUserSettings } from "@/contexts/UserSettingsContext";
 import { 
   Select,
   SelectContent,
@@ -43,6 +44,7 @@ export default function AiFlyerForm({
   const [logo, setLogo] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [designCount, setDesignCount] = useState<string>("4"); // Default to 4 designs
+  const { fontSettings } = useUserSettings(); // Get font settings from context
   
   type AspectRatioOption = {
     id: string;
@@ -92,6 +94,12 @@ export default function AiFlyerForm({
       
       if (data.aspectRatio) {
         formData.append("aspectRatio", data.aspectRatio);
+      }
+      
+      // Add font settings to request
+      if (data.fontSettings) {
+        formData.append("headingFont", data.fontSettings.headingFont);
+        formData.append("bodyFont", data.fontSettings.bodyFont);
       }
       
       const response = await apiRequest("POST", "/api/generate-ai", formData);
@@ -246,7 +254,8 @@ export default function AiFlyerForm({
       backgroundImage: backgroundImage || undefined,
       logo: logo || undefined,
       designCount: parseInt(designCount),
-      aspectRatio
+      aspectRatio,
+      fontSettings // Include font settings from UserSettingsContext
     });
   };
 

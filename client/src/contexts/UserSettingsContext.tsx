@@ -3,27 +3,42 @@ import { FontSettings } from '@/lib/types';
 import { preloadCommonFonts } from '@/lib/fontService';
 
 // Default font settings
-const DEFAULT_FONTS: FontSettings = {
+export const DEFAULT_FONTS: FontSettings = {
   headingFont: 'Montserrat',
   bodyFont: 'Open Sans'
 };
 
 // Context type definition
-interface UserSettingsContextType {
+export interface UserSettingsContextType {
   fontSettings: FontSettings;
   setFontSettings: (settings: FontSettings) => void;
   resetFontSettings: () => void;
 }
 
+// Create the context with default values to avoid undefined checks
+const defaultContextValue: UserSettingsContextType = {
+  fontSettings: DEFAULT_FONTS,
+  setFontSettings: () => {}, // No-op function
+  resetFontSettings: () => {} // No-op function
+};
+
 // Create the context
-const UserSettingsContext = createContext<UserSettingsContextType | undefined>(undefined);
+export const UserSettingsContext = createContext<UserSettingsContextType>(defaultContextValue);
+
+// Custom hook for using the context
+export const useUserSettings = () => useContext(UserSettingsContext);
 
 // Provider component
-export function UserSettingsProvider({ children }: { children: React.ReactNode }) {
+export const UserSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Get settings from localStorage or use defaults
   const [fontSettings, setFontSettings] = useState<FontSettings>(() => {
-    const savedSettings = localStorage.getItem('userFontSettings');
-    return savedSettings ? JSON.parse(savedSettings) : DEFAULT_FONTS;
+    try {
+      const savedSettings = localStorage.getItem('userFontSettings');
+      return savedSettings ? JSON.parse(savedSettings) : DEFAULT_FONTS;
+    } catch (error) {
+      console.error('Error loading font settings:', error);
+      return DEFAULT_FONTS;
+    }
   });
 
   // Update localStorage when settings change
@@ -53,13 +68,4 @@ export function UserSettingsProvider({ children }: { children: React.ReactNode }
       {children}
     </UserSettingsContext.Provider>
   );
-}
-
-// Custom hook for using the context
-export function useUserSettings() {
-  const context = useContext(UserSettingsContext);
-  if (context === undefined) {
-    throw new Error('useUserSettings must be used within a UserSettingsProvider');
-  }
-  return context;
-}
+};
