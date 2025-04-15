@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import path from "path";
 import fs from "fs";
 import { generateFlyer } from "./flyerGenerator";
-import { renderFlyerFromOpenAI } from "./geminiFlyer";
+import { renderFlyerFromOpenAI } from "./openaiFlyer";
 import multer from "multer";
 import { log } from "./vite";
 import passport from "./auth";
@@ -33,7 +33,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/admin/credits", (req: Request, res: Response) => {
     res.sendFile(path.resolve(process.cwd(), "add-credits.html"));
   });
-  // API endpoint to generate multiple flyer designs using Gemini AI
+  // API endpoint to generate multiple flyer designs using OpenAI
   app.post("/api/generate-ai", isAuthenticated, uploadFields, async (req: Request, res: Response) => {
     try {
       log("AI Flyer generation started", "generator");
@@ -125,7 +125,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         "with a professional, corporate style"
       ];
       
-      // Generate designs sequentially to avoid quota limits
+      // Generate designs sequentially
       log("Generating design variations", "generator");
       const successfulDesigns = [];
       
@@ -166,10 +166,10 @@ Position the main headline in the absolute center of the canvas.`;
           }
         } catch (error) {
           log(`Error generating design variation ${index + 1}: ${error}`, "generator");
-          // If this is a quota error, stop trying more variations
+          // If we hit a rate limit, stop trying more variations
           const errorMessage = String(error);
-          if (errorMessage.includes("API quota limit reached") || errorMessage.includes("429 Too Many Requests")) {
-            log("Stopping design generation due to API quota limits", "generator");
+          if (errorMessage.includes("429 Too Many Requests")) {
+            log("Stopping design generation due to rate limits", "generator");
             break;
           }
         }
@@ -216,9 +216,9 @@ Position the main headline in the absolute center of the canvas.`;
       log(`Error generating AI flyer: ${error}`, "generator");
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       
-      // Handle API quota limit errors
-      if (errorMessage.includes("API quota limit reached")) {
-        // Send 429 Too Many Requests status code for quota limit errors
+      // Handle rate limit errors
+      if (errorMessage.includes("429 Too Many Requests")) {
+        // Send 429 Too Many Requests status code for rate limit errors
         res.status(429).json({ 
           message: errorMessage,
           quotaExceeded: true
