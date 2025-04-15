@@ -402,7 +402,7 @@ export default function AiFlyerForm({
           </div>
         </div>
         
-        {/* Design Settings - Count and Font Info */}
+        {/* Design Settings - Count, Aspect Ratio and Fonts */}
         <div className="grid grid-cols-2 gap-4 mb-3">
           {/* Design Count Selector */}
           <div className="space-y-1">
@@ -431,32 +431,71 @@ export default function AiFlyerForm({
             </div>
           </div>
           
-          {/* Font Info */}
+          {/* Font Selection */}
           <div className="space-y-1">
-            <Label htmlFor="typography" className="text-xs font-medium text-white/70 flex items-center gap-1">
+            <Label htmlFor="fontSelection" className="text-xs font-medium text-white/70 flex items-center gap-1">
               <TypeIcon className="h-3 w-3 opacity-80" />
               Typography
             </Label>
-            <div className="flex items-center justify-between h-9 px-3 rounded-md bg-white/10 border border-white/10 text-white/80">
-              <div className="text-xs opacity-90 flex gap-1.5">
-                <span style={{ fontFamily: fontSettings.headingFont }}>H: {fontSettings.headingFont}</span>
-                <span className="opacity-60">|</span>
-                <span style={{ fontFamily: fontSettings.bodyFont }}>B: {fontSettings.bodyFont}</span>
-              </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-6 text-xs px-2 opacity-80 hover:opacity-100 hover:bg-white/5"
-                onClick={() => window.location.href = '/settings'}
+            <div className="grid grid-cols-2 gap-2">
+              <Select
+                value={fontSettings.headingFont}
+                onValueChange={(value) => {
+                  const { setFontSettings } = useUserSettings();
+                  setFontSettings({
+                    ...fontSettings,
+                    headingFont: value
+                  });
+                  // Preload the font
+                  loadFont(value);
+                }}
               >
-                Edit
-              </Button>
+                <SelectTrigger className="h-9 text-xs bg-white/10 border-white/10 text-white">
+                  <SelectValue placeholder="Heading Font" />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  <div className="max-h-60 overflow-y-auto">
+                    {['Roboto', 'Montserrat', 'Open Sans', 'Lato', 'Poppins', 'Oswald', 'Playfair Display', 'Raleway', 'Bebas Neue', 'Anton'].map((font) => (
+                      <SelectItem key={font} value={font}>
+                        <span style={{ fontFamily: font }}>{font}</span>
+                      </SelectItem>
+                    ))}
+                  </div>
+                </SelectContent>
+              </Select>
+              
+              <Select
+                value={fontSettings.bodyFont}
+                onValueChange={(value) => {
+                  const { setFontSettings } = useUserSettings();
+                  setFontSettings({
+                    ...fontSettings,
+                    bodyFont: value
+                  });
+                  // Preload the font
+                  loadFont(value);
+                }}
+              >
+                <SelectTrigger className="h-9 text-xs bg-white/10 border-white/10 text-white">
+                  <SelectValue placeholder="Body Font" />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  <div className="max-h-60 overflow-y-auto">
+                    {['Open Sans', 'Roboto', 'Lato', 'Nunito', 'Source Sans Pro', 'Montserrat', 'Raleway', 'PT Sans', 'Roboto Slab', 'Merriweather'].map((font) => (
+                      <SelectItem key={font} value={font}>
+                        <span style={{ fontFamily: font }}>{font}</span>
+                      </SelectItem>
+                    ))}
+                  </div>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
         
-        {/* Aspect Ratio Selector */}
+        {/* Second row with Aspect Ratio */}
         <div className="mb-3">
+          {/* Aspect Ratio Selector */}
           <div className="space-y-1">
             <Label htmlFor="aspectRatio" className="text-xs font-medium text-white/70">
               Aspect Ratio
