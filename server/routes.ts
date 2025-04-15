@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import path from "path";
 import fs from "fs";
 import { generateFlyer } from "./flyerGenerator";
-import { renderFlyerFromGemini } from "./geminiFlyer";
+import { renderFlyerFromOpenAI } from "./geminiFlyer";
 import multer from "multer";
 import { log } from "./vite";
 import passport from "./auth";
@@ -84,7 +84,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       log(`Generating AI flyer with prompt: ${prompt}`, "generator");
       
-      // Generate options for Gemini
+      // Generate options for OpenAI
       const generationOptions: { 
         prompt: string; 
         backgroundImageBase64?: string;
@@ -154,7 +154,7 @@ Position the main headline in the absolute center of the canvas.`;
           };
           
           log(`Generating design variation ${index + 1}: ${styleVariation}`, "generator");
-          const screenshot = await renderFlyerFromGemini(variantOptions);
+          const screenshot = await renderFlyerFromOpenAI(variantOptions);
           successfulDesigns.push({
             imageBuffer: screenshot,
             style: styleVariation

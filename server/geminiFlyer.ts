@@ -160,7 +160,7 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
 /**
  * Render the OpenAI-generated flyer content and take a screenshot
  */
-export async function renderFlyerFromGemini(options: GenerationOptions): Promise<Buffer> {
+export async function renderFlyerFromOpenAI(options: GenerationOptions): Promise<Buffer> {
   log("Starting OpenAI-powered flyer generation", "openai");
   
   try {
@@ -346,7 +346,7 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
             max-width: 90%;
           }
           
-          /* Custom styling from Gemini, if any */
+          /* Custom styling from OpenAI, if any */
           ${cssStyles}
         </style>
       </head>
@@ -362,7 +362,7 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
       fs.mkdirSync(tempDir, { recursive: true });
     }
     
-    const htmlPath = path.join(tempDir, `gemini-flyer-${Date.now()}.html`);
+    const htmlPath = path.join(tempDir, `openai-flyer-${Date.now()}.html`);
     fs.writeFileSync(htmlPath, fullHtml);
     log(`Saved generated HTML to: ${htmlPath}`, "openai");
     
