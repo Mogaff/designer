@@ -1,18 +1,19 @@
-import { useState, FormEvent, ChangeEvent } from "react";
+import { useState, FormEvent, ChangeEvent, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { GeneratedFlyer, AiFlyerGenerationRequest, DesignSuggestions, DesignVariation, FontSettings } from "@/lib/types";
+import { GeneratedFlyer, AiFlyerGenerationRequest, DesignSuggestions, DesignVariation, FontSettings, GoogleFont } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { ImageIcon, Upload } from "lucide-react";
+import { ImageIcon, Upload, TypeIcon } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import backgroundGradient from "../assets/background-gradient.png";
 import backgroundGradient2 from "../assets/backgroundd-gradient.png";
 import { useUserSettings } from "@/contexts/UserSettingsContext";
+import { loadGoogleFonts, loadFont } from '@/lib/fontService';
 import { 
   Select,
   SelectContent,
@@ -401,7 +402,7 @@ export default function AiFlyerForm({
           </div>
         </div>
         
-        {/* Design Settings - Count and Aspect Ratio */}
+        {/* Design Settings - Count, Aspect Ratio and Fonts */}
         <div className="grid grid-cols-2 gap-4 mb-3">
           {/* Design Count Selector */}
           <div className="space-y-1">
@@ -430,6 +431,70 @@ export default function AiFlyerForm({
             </div>
           </div>
           
+          {/* Font Selection */}
+          <div className="space-y-1">
+            <Label htmlFor="fontSelection" className="text-xs font-medium text-white/70 flex items-center gap-1">
+              <TypeIcon className="h-3 w-3 opacity-80" />
+              Typography
+            </Label>
+            <div className="grid grid-cols-2 gap-2">
+              <Select
+                value={fontSettings.headingFont}
+                onValueChange={(value) => {
+                  const { setFontSettings } = useUserSettings();
+                  setFontSettings({
+                    ...fontSettings,
+                    headingFont: value
+                  });
+                  // Preload the font
+                  loadFont(value);
+                }}
+              >
+                <SelectTrigger className="h-9 text-xs bg-white/10 border-white/10 text-white">
+                  <SelectValue placeholder="Heading Font" />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  <div className="max-h-60 overflow-y-auto">
+                    {['Roboto', 'Montserrat', 'Open Sans', 'Lato', 'Poppins', 'Oswald', 'Playfair Display', 'Raleway', 'Bebas Neue', 'Anton'].map((font) => (
+                      <SelectItem key={font} value={font}>
+                        <span style={{ fontFamily: font }}>{font}</span>
+                      </SelectItem>
+                    ))}
+                  </div>
+                </SelectContent>
+              </Select>
+              
+              <Select
+                value={fontSettings.bodyFont}
+                onValueChange={(value) => {
+                  const { setFontSettings } = useUserSettings();
+                  setFontSettings({
+                    ...fontSettings,
+                    bodyFont: value
+                  });
+                  // Preload the font
+                  loadFont(value);
+                }}
+              >
+                <SelectTrigger className="h-9 text-xs bg-white/10 border-white/10 text-white">
+                  <SelectValue placeholder="Body Font" />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  <div className="max-h-60 overflow-y-auto">
+                    {['Open Sans', 'Roboto', 'Lato', 'Nunito', 'Source Sans Pro', 'Montserrat', 'Raleway', 'PT Sans', 'Roboto Slab', 'Merriweather'].map((font) => (
+                      <SelectItem key={font} value={font}>
+                        <span style={{ fontFamily: font }}>{font}</span>
+                      </SelectItem>
+                    ))}
+                  </div>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+        
+        {/* Second row with Aspect Ratio */}
+        <div className="mb-3">
           {/* Aspect Ratio Selector */}
           <div className="space-y-1">
             <Label htmlFor="aspectRatio" className="text-xs font-medium text-white/70">
