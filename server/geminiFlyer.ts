@@ -1,16 +1,17 @@
-import { GoogleGenerativeAI, Part } from "@google/generative-ai";
 import { log } from "./vite";
 import puppeteer from "puppeteer";
 import { exec } from "child_process";
 import { promisify } from "util";
 import * as fs from "fs";
 import * as path from "path";
+import OpenAI from "openai";
 
 const execAsync = promisify(exec);
 
-// Initialize the Gemini AI with the API key
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+// Initialize the OpenAI API with the API key
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 type GeminiResponse = {
   htmlContent: string;
@@ -26,10 +27,10 @@ interface GenerationOptions {
 }
 
 /**
- * Generate HTML and CSS for a flyer based on a prompt using Gemini AI
+ * Generate HTML and CSS for a flyer based on a prompt using OpenAI
  */
 export async function generateFlyerContent(options: GenerationOptions): Promise<GeminiResponse> {
-  log("Generating flyer content with Gemini AI", "gemini");
+  log("Generating flyer content with OpenAI", "openai");
   
   try {
     // Create a comprehensive prompt for the AI with enhanced design instructions
@@ -89,41 +90,34 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     const fullPrompt = `${systemPrompt}
     ${aspectRatioDirections}`;
 
-    // Process background image if provided
-    const parts: Part[] = [{ text: fullPrompt }];
-    
-    // Generate the response from Gemini AI
-    const result = await model.generateContent({
-      contents: [{ role: "user", parts }],
-      generationConfig: {
-        temperature: 0.6,
-        topK: 32,
-        topP: 0.95,
-        maxOutputTokens: 1000,
-      },
+    // Generate the response from OpenAI
+    const response = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [
+        { role: "system", content: "You are a professional designer specialized in creating stunning flyers." },
+        { role: "user", content: fullPrompt }
+      ],
+      temperature: 0.7,
+      max_tokens: 3000,
+      top_p: 0.95,
+      response_format: { type: "json_object" }
     });
 
-    const text = result.response.text();
-    log(`Received Gemini response of length: ${text.length}`, "gemini");
+    const text = response.choices[0].message.content || "";
+    log(`Received OpenAI response of length: ${text.length}`, "openai");
 
     // Parse the JSON from the response
     let responseJson: GeminiResponse;
     try {
-      // Extract JSON if it's wrapped in markdown code blocks
-      const jsonMatch = text.match(/```(?:json)?(.*?)```/s);
-      if (jsonMatch && jsonMatch[1]) {
-        responseJson = JSON.parse(jsonMatch[1].trim());
-      } else {
-        // Try to parse the entire response as JSON
-        responseJson = JSON.parse(text);
-      }
+      // Try to parse the entire response as JSON
+      responseJson = JSON.parse(text);
       
       // Validate the structure
       if (!responseJson.htmlContent || !responseJson.cssStyles) {
         throw new Error("Invalid response structure");
       }
     } catch (error) {
-      log(`Failed to parse JSON response: ${error}`, "gemini");
+      log(`Failed to parse JSON response: ${error}`, "openai");
       
       // Fallback: Try to extract HTML and CSS from the text manually
       const htmlMatch = text.match(/<html.*?>([\s\S]*?)<\/html>/i) || 
@@ -159,7 +153,7 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
 
     return responseJson;
   } catch (error) {
-    log(`Error generating flyer content: ${error}`, "gemini");
+    log(`Error generating flyer content: ${error}`, "openai");
     throw error;
   }
 }
