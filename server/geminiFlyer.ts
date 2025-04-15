@@ -186,7 +186,7 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
             overflow: hidden;
           }
           body {
-            background-image: url('data:image/jpeg;base64,${options.backgroundImageBase64}');
+            background-image: url('data:image/png;base64,${options.backgroundImageBase64}');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -244,7 +244,7 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
             position: absolute; /* Can be placed anywhere */
           }
           #company-logo {
-            content: url('data:image/jpeg;base64,${options.logoBase64}');
+            content: url('data:image/png;base64,${options.logoBase64}');
             max-width: 200px;
             max-height: 100px;
             object-fit: contain;

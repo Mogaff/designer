@@ -96,16 +96,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Add images to options if provided (using type assertion for files)
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
       
+      // Debug logging for file uploads
+      log(`Files received in request: ${JSON.stringify(req.files ? Object.keys(req.files) : 'none')}`, "generator");
+      
       if (files && files.backgroundImage && files.backgroundImage[0]) {
-        log("Background image received for AI generation", "generator");
+        log(`Background image received: ${files.backgroundImage[0].originalname}, size: ${files.backgroundImage[0].size} bytes`, "generator");
         const backgroundImageBase64 = files.backgroundImage[0].buffer.toString('base64');
         generationOptions.backgroundImageBase64 = backgroundImageBase64;
+        log("Background image successfully converted to base64", "generator");
+      } else {
+        log("No background image received in the request", "generator");
       }
       
       if (files && files.logo && files.logo[0]) {
-        log("Logo image received for AI generation", "generator");
+        log(`Logo received: ${files.logo[0].originalname}, size: ${files.logo[0].size} bytes`, "generator");
         const logoBase64 = files.logo[0].buffer.toString('base64');
         generationOptions.logoBase64 = logoBase64;
+        log("Logo successfully converted to base64", "generator");
+      } else {
+        log("No logo received in the request", "generator");
       }
       
       // Generate 4 design variations with slightly different style instructions
