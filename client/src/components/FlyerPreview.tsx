@@ -133,60 +133,50 @@ export default function FlyerPreview({
     }
   }, [generatedFlyer?.imageUrl]); // Nur zurücksetzen, wenn sich die Bild-URL ändert
 
-  // Auto-save generated flyers to gallery when they appear
-  useEffect(() => {
-    const autoSaveFlyer = async () => {
-      // Only try to auto-save if:
-      // 1. We have a generated flyer
-      // 2. We're not currently generating
-      // 3. We haven't attempted to auto-save this flyer yet
-      // 4. The user is authenticated
-      // 5. This image URL hasn't been saved before
-      const imageUrl = generatedFlyer?.imageUrl || null;
-      if (
-        generatedFlyer && 
-        !isGenerating && 
-        !autoSaveAttempted && 
-        isAuthenticated && 
-        imageUrl && 
-        imageUrl !== lastSavedImageUrlRef.current
-      ) {
-        setAutoSaveAttempted(true);
-        setIsSaving(true);
-        
-        try {
-          // Speichern wir die URL für spätere Vergleiche
-          lastSavedImageUrlRef.current = imageUrl;
-          
-          // Ein besserer, eindeutigerer Name für das Design
-          const timestamp = new Date().toLocaleTimeString();
-          const designName = generatedFlyer.headline || 
-            `${generatedFlyer.stylePrompt ? 
-              `Design: ${generatedFlyer.stylePrompt.slice(0, 20)}...` : 
-              `Design ${timestamp}`}`;
-              
-          await apiRequest('POST', '/api/creations', {
-            name: designName,
-            imageUrl: generatedFlyer.imageUrl,
-            headline: generatedFlyer.headline || null,
-            content: generatedFlyer.content || null,
-            stylePrompt: generatedFlyer.stylePrompt || null,
-            template: generatedFlyer.template || null,
-          });
-          
-          // Keine Toast-Benachrichtigung mehr, um die Benutzeroberfläche sauberer zu halten
-          console.log("Design successfully saved to gallery:", imageUrl.substring(0, 50) + "...");
-        } catch (error) {
-          console.error("Error auto-saving design:", error);
-          // Don't show error notification for auto-save failures
-        } finally {
-          setIsSaving(false);
-        }
-      }
-    };
+  // Manual save function for flyers - no more auto-save
+  const saveDesignToGallery = async () => {
+    if (!generatedFlyer || !isAuthenticated) return;
     
-    autoSaveFlyer();
-  }, [generatedFlyer, isGenerating, autoSaveAttempted, isAuthenticated]);
+    setIsSaving(true);
+    
+    try {
+      const imageUrl = generatedFlyer.imageUrl;
+      
+      // Track the URL to avoid duplicates
+      lastSavedImageUrlRef.current = imageUrl;
+      
+      // Create a better, more unique name for the design
+      const timestamp = new Date().toLocaleTimeString();
+      const designName = generatedFlyer.headline || 
+        `${generatedFlyer.stylePrompt ? 
+          `Design: ${generatedFlyer.stylePrompt.slice(0, 20)}...` : 
+          `Design ${timestamp}`}`;
+          
+      await apiRequest('POST', '/api/creations', {
+        name: designName,
+        imageUrl: generatedFlyer.imageUrl,
+        headline: generatedFlyer.headline || null,
+        content: generatedFlyer.content || null,
+        stylePrompt: generatedFlyer.stylePrompt || null,
+        template: generatedFlyer.template || null,
+      });
+      
+      toast({
+        title: "Design saved!",
+        description: "Your design has been saved to your gallery."
+      });
+      
+    } catch (error) {
+      console.error("Error saving design:", error);
+      toast({
+        title: "Save failed",
+        description: "There was a problem saving your design. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleDownload = () => {
     if (!generatedFlyer) return;
@@ -254,6 +244,20 @@ export default function FlyerPreview({
         
         <div className="flex space-x-2">
           <Button
+            className="bg-green-600/70 backdrop-blur-sm border-none text-white h-7 px-3 py-1 text-xs hover:bg-green-600/90"
+            size="sm"
+            onClick={saveDesignToGallery}
+            disabled={!generatedFlyer || isSaving}
+          >
+            {isSaving ? (
+              <span className="h-3 w-3 mr-1 animate-spin">⏳</span>
+            ) : (
+              <Check className="h-3 w-3 mr-1" />
+            )}
+            Save to Gallery
+          </Button>
+          
+          <Button
             className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-7 px-3 py-1 text-xs hover:bg-indigo-500/30"
             size="sm"
             onClick={handleDownload}
@@ -262,6 +266,7 @@ export default function FlyerPreview({
             <Download className="h-3 w-3 mr-1" />
             Download
           </Button>
+          
           <Button
             className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-7 px-3 py-1 text-xs hover:bg-indigo-500/30"
             size="sm"
