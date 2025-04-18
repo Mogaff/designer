@@ -269,7 +269,10 @@ export default function BrandKit({ onOpenPanel }: BrandKitProps) {
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="flex items-center justify-between text-white">
+      <SidebarGroupLabel 
+        className="flex items-center justify-between text-white cursor-pointer" 
+        onClick={onOpenPanel}
+      >
         <div className="flex items-center">
           <div className="flex items-center justify-center w-6 h-6 rounded-md bg-gradient-to-br from-violet-600 to-indigo-700">
             <PaintBucket className="h-3.5 w-3.5 text-white" />
