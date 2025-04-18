@@ -35,7 +35,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { PaintBucket, Plus, Trash2, Edit, Check } from 'lucide-react';
+import { PaintBucket, Plus, Trash2, Edit, Check, PlusCircle, Upload } from 'lucide-react';
 import { queryClient } from '@/lib/queryClient';
 
 // Definition for BrandKit type
@@ -266,15 +266,17 @@ export default function BrandKit() {
   return (
     <SidebarGroup>
       <SidebarGroupLabel className="flex items-center justify-between text-white">
-        <span className="flex items-center uppercase font-semibold">
-          <PaintBucket className="h-5 w-5" />
-          <span className="sidebar-text ml-2">Brand Kit</span>
-        </span>
+        <div className="flex items-center">
+          <div className="flex items-center justify-center w-6 h-6 rounded-md bg-gradient-to-br from-violet-600 to-indigo-700">
+            <PaintBucket className="h-3.5 w-3.5 text-white" />
+          </div>
+          <span className="sidebar-text ml-2 uppercase font-medium tracking-wide text-xs">Brand Kit</span>
+        </div>
         <SidebarGroupAction asChild>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-6 w-6 text-white hover:bg-white/10 sidebar-text">
-                <Plus className="h-4 w-4" />
+              <Button variant="ghost" size="icon" className="h-6 w-6 text-white hover:bg-white/10 rounded-full sidebar-text">
+                <Plus className="h-3.5 w-3.5" />
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -300,6 +302,48 @@ export default function BrandKit() {
                       </FormItem>
                     )}
                   />
+
+                  <div className="mb-4">
+                    <Label className="text-sm font-medium">Brand Logo</Label>
+                    <div className="mt-2">
+                      <div className="flex items-center gap-4">
+                        <div className="h-20 w-20 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center relative overflow-hidden">
+                          <input 
+                            type="file" 
+                            id="logo-upload" 
+                            className="hidden" 
+                            accept="image/*"
+                            onChange={(e) => {
+                              // In a real implementation, this would trigger file upload
+                              console.log('Logo upload:', e.target.files?.[0]);
+                            }}
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600">
+                            <PaintBucket className="h-8 w-8 text-white opacity-70" />
+                          </div>
+                          <label 
+                            htmlFor="logo-upload" 
+                            className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
+                          >
+                            <Upload className="h-6 w-6 text-white" />
+                            <span className="sr-only">Upload Logo</span>
+                          </label>
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-sm font-medium">Upload Logo</h4>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            Square PNG or JPG recommended. This will appear in your generated designs.
+                          </p>
+                          <label 
+                            htmlFor="logo-upload" 
+                            className="mt-2 inline-flex h-8 items-center justify-center rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 cursor-pointer"
+                          >
+                            Choose File
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
                   <div className="grid grid-cols-3 gap-4">
                     <FormField
@@ -476,31 +520,49 @@ export default function BrandKit() {
             {brandKits.length > 0 ? (
               brandKits.map((brandKit) => (
                 <SidebarMenuItem key={brandKit.id}>
-                  <div className="flex items-center justify-between w-full p-2 rounded-md hover:bg-white/10 text-white">
+                  <div className="flex items-center justify-between w-full p-2 rounded-md hover:bg-white/10 text-white group">
                     <div className="flex items-center">
-                      <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: brandKit.primary_color || '#4f46e5' }}
-                      ></div>
-                      <span className="truncate sidebar-text ml-2">{brandKit.name}</span>
+                      <div className="flex h-5 w-5 items-center justify-center rounded-sm" 
+                           style={{ backgroundColor: brandKit.primary_color || '#4f46e5', 
+                                   boxShadow: `0 0 10px ${brandKit.primary_color || '#4f46e5'}40` }}>
+                        {brandKit.logo_url ? (
+                          <img src={brandKit.logo_url} alt="Logo" className="w-3 h-3 object-contain" />
+                        ) : (
+                          <div className="w-3 h-3 rounded-full bg-white/70"></div>
+                        )}
+                      </div>
+                      <span className="truncate sidebar-text ml-2 text-xs font-medium">{brandKit.name}</span>
                       {brandKit.is_active && (
-                        <Check className="h-3 w-3 text-green-500 sidebar-text ml-1" />
+                        <div className="sidebar-text ml-1.5 bg-green-600/20 p-0.5 rounded-sm">
+                          <Check className="h-2 w-2 text-green-500" />
+                        </div>
                       )}
                     </div>
-                    <div className="flex space-x-1 sidebar-text">
-                      <Button variant="ghost" size="icon" className="h-6 w-6 text-white hover:bg-white/10" onClick={() => handleEdit(brandKit)}>
-                        <Edit className="h-3 w-3" />
+                    <div className="flex space-x-1 sidebar-text opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button variant="ghost" size="icon" className="h-5 w-5 text-white hover:bg-white/10 rounded-full" onClick={() => handleEdit(brandKit)}>
+                        <Edit className="h-2.5 w-2.5" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-6 w-6 text-white hover:bg-white/10" onClick={() => handleDelete(brandKit.id)}>
-                        <Trash2 className="h-3 w-3" />
+                      <Button variant="ghost" size="icon" className="h-5 w-5 text-white hover:bg-white/10 rounded-full" onClick={() => handleDelete(brandKit.id)}>
+                        <Trash2 className="h-2.5 w-2.5" />
                       </Button>
                     </div>
                   </div>
                 </SidebarMenuItem>
               ))
             ) : (
-              <div className="text-center text-white/60 p-2 text-sm sidebar-text">
-                No brand kits yet
+              <div className="flex flex-col items-center justify-center space-y-1 p-2 sidebar-text">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-500/10 mb-1">
+                  <PlusCircle className="w-4 h-4 text-indigo-400" />
+                </div>
+                <p className="text-center text-white/60 text-xs">No brand kits yet</p>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-xs h-7 px-3 rounded-full bg-white/5 hover:bg-white/10 text-white/80"
+                  onClick={() => setIsAddDialogOpen(true)}
+                >
+                  Create a brand kit
+                </Button>
               </div>
             )}
           </SidebarMenu>
