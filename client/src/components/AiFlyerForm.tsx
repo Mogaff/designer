@@ -397,61 +397,74 @@ export default function AiFlyerForm({
           
           <div>
             <p className="text-xs text-white/80 mb-1 ml-1">Logo</p>
-            {/* Logo Upload - Fixed size container */}
-            <div className="relative w-full h-28 overflow-hidden rounded-xl group transition-all duration-300 border border-gray-800/50 hover:border-indigo-500/50 hover:shadow-md hover:shadow-indigo-500/20">
-              {/* Background Gradient Image */}
-              <div className="absolute inset-0 z-0">
-                <img 
-                  src={backgroundGradient2} 
-                  alt="" 
-                  className="h-full w-full object-cover"
-                />
-              </div>
-              
-              {logoPreview ? (
-                <div className="relative w-full h-full flex items-center justify-center z-10 rounded-xl overflow-hidden">
-                  <div className="p-2 flex items-center justify-center h-full w-full bg-white/5">
-                    <img 
-                      src={logoPreview} 
-                      alt="Logo Preview" 
-                      className="max-h-full max-w-full object-contain" 
-                    />
+            {/* Logo Upload - Only shown when no active brand kit */}
+            {!activeBrandKit ? (
+              <div className="relative w-full h-28 overflow-hidden rounded-xl group transition-all duration-300 border border-gray-800/50 hover:border-indigo-500/50 hover:shadow-md hover:shadow-indigo-500/20">
+                {/* Background Gradient Image */}
+                <div className="absolute inset-0 z-0">
+                  <img 
+                    src={backgroundGradient2} 
+                    alt="" 
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                
+                {logoPreview ? (
+                  <div className="relative w-full h-full flex items-center justify-center z-10 rounded-xl overflow-hidden">
+                    <div className="p-2 flex items-center justify-center h-full w-full bg-white/5">
+                      <img 
+                        src={logoPreview} 
+                        alt="Logo Preview" 
+                        className="max-h-full max-w-full object-contain" 
+                      />
+                    </div>
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/70 rounded-xl">
+                      <Button 
+                        type="button" 
+                        variant="destructive" 
+                        size="sm" 
+                        onClick={clearLogo}
+                        className="rounded-md h-7 text-xs px-3"
+                      >
+                        Remove
+                      </Button>
+                    </div>
                   </div>
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/70 rounded-xl">
+                ) : (
+                  <div className="flex items-center justify-center h-full w-full relative z-10 rounded-xl backdrop-blur-md">
+                    <Input
+                      id="logo-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoChange}
+                      className="hidden"
+                    />
                     <Button 
                       type="button" 
-                      variant="destructive" 
-                      size="sm" 
-                      onClick={clearLogo}
-                      className="rounded-md h-7 text-xs px-3"
+                      className="bg-indigo-500/30 backdrop-blur-md text-white rounded-full hover:bg-indigo-500/50 transition-all border border-indigo-500/40 shadow-lg"
+                      onClick={() => document.getElementById('logo-upload')?.click()}
                     >
-                      Remove
+                      {isMobile ? (
+                        <Upload className="h-4 w-4" />
+                      ) : (
+                        <span className="px-4">Select Logo</span>
+                      )}
                     </Button>
                   </div>
+                )}
+              </div>
+            ) : (
+              <div className="relative w-full h-28 overflow-hidden rounded-xl group transition-all duration-300 border border-gray-800/50 bg-black/20">
+                <div className="flex flex-col items-center justify-center h-full w-full text-center p-3">
+                  {activeBrandKit.logo_url && (
+                    <div className="w-12 h-12 rounded-md flex items-center justify-center overflow-hidden mb-2">
+                      <img src={activeBrandKit.logo_url} alt="Brand Logo" className="max-h-full max-w-full object-contain" />
+                    </div>
+                  )}
+                  <p className="text-sm text-white/80">Using logo from Brand Kit: <span className="font-medium">{activeBrandKit.name}</span></p>
                 </div>
-              ) : (
-                <div className="flex items-center justify-center h-full w-full relative z-10 rounded-xl backdrop-blur-md">
-                  <Input
-                    id="logo-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleLogoChange}
-                    className="hidden"
-                  />
-                  <Button 
-                    type="button" 
-                    className="bg-indigo-500/30 backdrop-blur-md text-white rounded-full hover:bg-indigo-500/50 transition-all border border-indigo-500/40 shadow-lg"
-                    onClick={() => document.getElementById('logo-upload')?.click()}
-                  >
-                    {isMobile ? (
-                      <Upload className="h-4 w-4" />
-                    ) : (
-                      <span className="px-4">Select Logo</span>
-                    )}
-                  </Button>
-                </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
         
