@@ -59,7 +59,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <Link href="/">
-                    <Button variant={location === '/' ? 'secondary' : 'ghost'} className="w-full justify-start">
+                    <Button variant="ghost" className={`w-full justify-start ${location === '/' ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white hover:bg-white/10'}`}>
                       <Home className="h-5 w-5" />
                       <span className="sidebar-text ml-2">Home</span>
                     </Button>
@@ -70,7 +70,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <Link href="/gallery">
-                    <Button variant={location === '/gallery' ? 'secondary' : 'ghost'} className="w-full justify-start">
+                    <Button variant="ghost" className={`w-full justify-start ${location === '/gallery' ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white hover:bg-white/10'}`}>
                       <Grid className="h-5 w-5" />
                       <span className="sidebar-text ml-2">Gallery</span>
                     </Button>
@@ -90,7 +90,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <Link href="/settings">
-                    <Button variant={location === '/settings' ? 'secondary' : 'ghost'} className="w-full justify-start">
+                    <Button variant="ghost" className={`w-full justify-start ${location === '/settings' ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white hover:bg-white/10'}`}>
                       <Settings className="h-5 w-5" />
                       <span className="sidebar-text ml-2">Settings</span>
                     </Button>

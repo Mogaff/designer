@@ -50,7 +50,7 @@ export function useSidebar() {
 }
 
 const sidebarVariants = cva(
-  "shadow-sm flex flex-col h-screen transition-all duration-300 fixed top-0 border-r border-border bg-card",
+  "shadow-sm flex flex-col h-screen transition-all duration-300 fixed top-0 border-r border-white/10 backdrop-blur-md bg-black/40",
   {
     variants: {
       side: {
