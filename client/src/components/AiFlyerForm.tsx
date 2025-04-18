@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { GeneratedFlyer, AiFlyerGenerationRequest, DesignSuggestions, DesignVariation, FontSettings, GoogleFont, BrandKit } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { ImageIcon, Upload, TypeIcon, Check } from "lucide-react";
+import { ImageIcon, Upload, TypeIcon, Check, PaintBucket } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import backgroundGradient from "../assets/background-gradient.png";
 import backgroundGradient2 from "../assets/backgroundd-gradient.png";
@@ -258,13 +258,33 @@ export default function AiFlyerForm({
     }
 
     setIsGenerating(true);
+    
+    // Use brand kit fonts if available, otherwise use user settings
+    const fontsToUse: FontSettings = activeBrandKit 
+      ? {
+          headingFont: activeBrandKit.heading_font || fontSettings.headingFont,
+          bodyFont: activeBrandKit.body_font || fontSettings.bodyFont
+        }
+      : fontSettings;
+      
+    // If using brand kit, add the brand colors to the prompt
+    let enhancedPrompt = prompt;
+    if (activeBrandKit) {
+      enhancedPrompt += ` Use these brand colors: primary color ${activeBrandKit.primary_color}, secondary color ${activeBrandKit.secondary_color}, accent color ${activeBrandKit.accent_color}.`;
+      
+      // If brand voice is defined, also add that to the prompt
+      if (activeBrandKit.brand_voice) {
+        enhancedPrompt += ` Brand voice: ${activeBrandKit.brand_voice}.`;
+      }
+    }
+    
     generateAiFlyerMutation.mutate({ 
-      prompt, 
+      prompt: enhancedPrompt, 
       backgroundImage: backgroundImage || undefined,
       logo: logo || undefined,
       designCount: parseInt(designCount),
       aspectRatio,
-      fontSettings // Include font settings from UserSettingsContext
+      fontSettings: fontsToUse // Use brand kit fonts if active
     });
   };
 
@@ -283,6 +303,31 @@ export default function AiFlyerForm({
       <div className="mb-2">
         <h2 className="text-base font-semibold text-white">Create Design</h2>
       </div>
+      
+      {/* Brand Kit Badge */}
+      {activeBrandKit && (
+        <div className="mb-3 p-2 rounded-lg border border-indigo-500/30 bg-indigo-500/10 backdrop-blur-sm">
+          <div className="flex items-center gap-2">
+            <div className="flex-shrink-0 h-8 w-8 rounded bg-white/10 p-1 flex items-center justify-center overflow-hidden">
+              {activeBrandKit.logo_url ? (
+                <img src={activeBrandKit.logo_url} alt="Brand Logo" className="max-h-full max-w-full object-contain" />
+              ) : (
+                <PaintBucket className="h-4 w-4 text-indigo-400" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-medium text-white truncate">{activeBrandKit.name}</h3>
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-300 border border-green-500/30">
+                  <Check className="mr-1 h-3 w-3" />
+                  Active
+                </span>
+              </div>
+              <p className="text-xs text-white/60 truncate">Using brand colors and typography</p>
+            </div>
+          </div>
+        </div>
+      )}
       
       <p className="text-xs text-white/70 mb-3">
         Enter a detailed prompt and optionally upload background image and logo for your design.
@@ -439,66 +484,88 @@ export default function AiFlyerForm({
             </div>
           </div>
           
-          {/* Font Selection */}
-          <div className="space-y-1">
-            <Label htmlFor="fontSelection" className="text-xs font-medium text-white/70 flex items-center gap-1">
-              <TypeIcon className="h-3 w-3 opacity-80" />
-              Typography
-            </Label>
-            <div className="grid grid-cols-2 gap-2">
-              <Select
-                value={fontSettings.headingFont}
-                onValueChange={(value) => {
-                  const { setFontSettings } = useUserSettings();
-                  setFontSettings({
-                    ...fontSettings,
-                    headingFont: value
-                  });
-                  // Preload the font
-                  loadFont(value);
-                }}
-              >
-                <SelectTrigger className="h-9 text-xs bg-white/10 border-white/10 text-white">
-                  <SelectValue placeholder="Heading Font" />
-                </SelectTrigger>
-                <SelectContent className="max-h-60">
-                  <div className="max-h-60 overflow-y-auto">
-                    {['Roboto', 'Montserrat', 'Open Sans', 'Lato', 'Poppins', 'Oswald', 'Playfair Display', 'Raleway', 'Bebas Neue', 'Anton'].map((font) => (
-                      <SelectItem key={font} value={font}>
-                        <span style={{ fontFamily: font }}>{font}</span>
-                      </SelectItem>
-                    ))}
-                  </div>
-                </SelectContent>
-              </Select>
-              
-              <Select
-                value={fontSettings.bodyFont}
-                onValueChange={(value) => {
-                  const { setFontSettings } = useUserSettings();
-                  setFontSettings({
-                    ...fontSettings,
-                    bodyFont: value
-                  });
-                  // Preload the font
-                  loadFont(value);
-                }}
-              >
-                <SelectTrigger className="h-9 text-xs bg-white/10 border-white/10 text-white">
-                  <SelectValue placeholder="Body Font" />
-                </SelectTrigger>
-                <SelectContent className="max-h-60">
-                  <div className="max-h-60 overflow-y-auto">
-                    {['Open Sans', 'Roboto', 'Lato', 'Nunito', 'Source Sans Pro', 'Montserrat', 'Raleway', 'PT Sans', 'Roboto Slab', 'Merriweather'].map((font) => (
-                      <SelectItem key={font} value={font}>
-                        <span style={{ fontFamily: font }}>{font}</span>
-                      </SelectItem>
-                    ))}
-                  </div>
-                </SelectContent>
-              </Select>
+          {/* Font Selection - Only shown if no active Brand Kit */}
+          {!activeBrandKit && (
+            <div className="space-y-1">
+              <Label htmlFor="fontSelection" className="text-xs font-medium text-white/70 flex items-center gap-1">
+                <TypeIcon className="h-3 w-3 opacity-80" />
+                Typography
+              </Label>
+              <div className="grid grid-cols-2 gap-2">
+                <Select
+                  value={fontSettings.headingFont}
+                  onValueChange={(value) => {
+                    const { setFontSettings } = useUserSettings();
+                    setFontSettings({
+                      ...fontSettings,
+                      headingFont: value
+                    });
+                    // Preload the font
+                    loadFont(value);
+                  }}
+                >
+                  <SelectTrigger className="h-9 text-xs bg-white/10 border-white/10 text-white">
+                    <SelectValue placeholder="Heading Font" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    <div className="max-h-60 overflow-y-auto">
+                      {['Roboto', 'Montserrat', 'Open Sans', 'Lato', 'Poppins', 'Oswald', 'Playfair Display', 'Raleway', 'Bebas Neue', 'Anton'].map((font) => (
+                        <SelectItem key={font} value={font}>
+                          <span style={{ fontFamily: font }}>{font}</span>
+                        </SelectItem>
+                      ))}
+                    </div>
+                  </SelectContent>
+                </Select>
+                
+                <Select
+                  value={fontSettings.bodyFont}
+                  onValueChange={(value) => {
+                    const { setFontSettings } = useUserSettings();
+                    setFontSettings({
+                      ...fontSettings,
+                      bodyFont: value
+                    });
+                    // Preload the font
+                    loadFont(value);
+                  }}
+                >
+                  <SelectTrigger className="h-9 text-xs bg-white/10 border-white/10 text-white">
+                    <SelectValue placeholder="Body Font" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    <div className="max-h-60 overflow-y-auto">
+                      {['Open Sans', 'Roboto', 'Lato', 'Nunito', 'Source Sans Pro', 'Montserrat', 'Raleway', 'PT Sans', 'Roboto Slab', 'Merriweather'].map((font) => (
+                        <SelectItem key={font} value={font}>
+                          <span style={{ fontFamily: font }}>{font}</span>
+                        </SelectItem>
+                      ))}
+                    </div>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
+          )}
+          
+          {/* If Brand Kit is active, show what fonts are being used */}
+          {activeBrandKit && (
+            <div className="space-y-1">
+              <Label className="text-xs font-medium text-white/70 flex items-center gap-1">
+                <TypeIcon className="h-3 w-3 opacity-80" />
+                Brand Typography
+              </Label>
+              <div className="bg-white/10 rounded-md p-2 border border-white/5 text-xs text-white/70">
+                <div className="flex items-center gap-1 mb-1">
+                  <span className="font-medium">Heading:</span>
+                  <span style={{ fontFamily: (activeBrandKit.heading_font || 'inherit') as string }}>{activeBrandKit.heading_font || 'Default'}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="font-medium">Body:</span>
+                  <span style={{ fontFamily: (activeBrandKit.body_font || 'inherit') as string }}>{activeBrandKit.body_font || 'Default'}</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
         
         {/* Second row with Aspect Ratio */}
