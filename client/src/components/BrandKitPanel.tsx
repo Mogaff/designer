@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { X, PlusCircle, Check, Edit, Trash2, PaintBucket, Upload, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { BrandKit } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -74,12 +74,62 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
     }
   });
   
+  // Mutations for creating and updating brand kits
+  const queryClient = useQueryClient();
+  
+  const createBrandKitMutation = useMutation<any, Error, BrandKitFormValues>({
+    mutationFn: async (data: BrandKitFormValues) => {
+      const response = await fetch('/api/brand-kits', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create brand kit');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/brand-kits'] });
+      setView('list');
+    },
+  });
+  
+  const updateBrandKitMutation = useMutation<any, Error, BrandKitFormValues & { id: number }>({
+    mutationFn: async (data: BrandKitFormValues & { id: number }) => {
+      const response = await fetch(`/api/brand-kits/${data.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to update brand kit');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/brand-kits'] });
+      setView('list');
+    },
+  });
+  
   // Handle form submission
   const onSubmit = (data: BrandKitFormValues) => {
-    console.log('Form submitted:', data);
-    // Here you would typically make an API call to save the brand kit
-    // After saving, you could navigate back to the list view
-    setView('list');
+    if (view === 'create') {
+      createBrandKitMutation.mutate(data);
+    } else if (view === 'edit' && selectedKit) {
+      updateBrandKitMutation.mutate({ ...data, id: selectedKit.id });
+    }
   };
   
   // Handle navigating to create a new brand kit
@@ -253,15 +303,6 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
                       <PaintBucket className="w-5 h-5 text-indigo-400" />
                     </div>
                     <p className="text-center text-white/60 mb-3 text-sm">No brand kits yet</p>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={handleCreateNew}
-                      className="h-8 px-3.5 rounded-full bg-white/5 hover:bg-white/10 text-white/80 border-white/10 text-xs"
-                    >
-                      <PlusCircle className="h-3.5 w-3.5 mr-1.5" />
-                      Create a brand kit
-                    </Button>
                   </div>
                 )}
               </div>
