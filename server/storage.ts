@@ -1,9 +1,10 @@
 import { 
-  users, userCredits, designConfigs, userCreations,
+  users, userCredits, designConfigs, userCreations, brandKits,
   type User, type InsertUser, 
   type UserCredits, type InsertUserCredits,
   type DesignConfig, type InsertDesignConfig,
-  type UserCreation, type InsertUserCreation
+  type UserCreation, type InsertUserCreation, 
+  type BrandKit, type InsertBrandKit
 } from "@shared/schema";
 
 // Storage interface with CRUD methods for users, credits, design configurations, and user creations
@@ -24,6 +25,14 @@ export interface IStorage {
   getDesignConfig(id: number): Promise<DesignConfig | undefined>;
   createDesignConfig(config: InsertDesignConfig): Promise<DesignConfig>;
   updateDesignConfig(id: number, updates: Partial<InsertDesignConfig>): Promise<DesignConfig | undefined>;
+  
+  // Brand Kit management
+  getBrandKits(userId: number): Promise<BrandKit[]>;
+  getBrandKit(id: number, userId?: number): Promise<BrandKit | undefined>;
+  getActiveBrandKit(userId: number): Promise<BrandKit | undefined>;
+  createBrandKit(brandKit: InsertBrandKit): Promise<BrandKit>;
+  updateBrandKit(id: number, updates: Partial<InsertBrandKit>, userId?: number): Promise<BrandKit | undefined>;
+  deleteBrandKit(id: number, userId?: number): Promise<boolean>;
   
   // User Creations - Erweiterte Methoden mit Benutzerfilterung
   getUserCreations(userId: number): Promise<UserCreation[]>;

@@ -34,6 +34,22 @@ export const designConfigs = pgTable("design_configs", {
   created_at: timestamp("created_at").defaultNow(),
 });
 
+export const brandKits = pgTable("brand_kits", {
+  id: serial("id").primaryKey(),
+  user_id: integer("user_id").references(() => users.id).notNull(),
+  name: text("name").notNull(),
+  primary_color: text("primary_color"),
+  secondary_color: text("secondary_color"),
+  accent_color: text("accent_color"),
+  logo_url: text("logo_url"),
+  heading_font: text("heading_font"),
+  body_font: text("body_font"),
+  brand_voice: text("brand_voice"),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+  is_active: boolean("is_active").default(true).notNull(),
+});
+
 export const userCreations = pgTable("user_creations", {
   id: serial("id").primaryKey(),
   user_id: integer("user_id").references(() => users.id).notNull(),
@@ -48,6 +64,7 @@ export const userCreations = pgTable("user_creations", {
   favorite: boolean("favorite").default(false).notNull(),
   heading_font: text("heading_font"),
   body_font: text("body_font"),
+  brand_kit_id: integer("brand_kit_id").references(() => brandKits.id),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -86,6 +103,20 @@ export const insertUserCreationSchema = createInsertSchema(userCreations).pick({
   favorite: true,
   heading_font: true,
   body_font: true,
+  brand_kit_id: true,
+});
+
+export const insertBrandKitSchema = createInsertSchema(brandKits).pick({
+  user_id: true,
+  name: true,
+  primary_color: true,
+  secondary_color: true,
+  accent_color: true,
+  logo_url: true,
+  heading_font: true,
+  body_font: true,
+  brand_voice: true,
+  is_active: true,
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -96,6 +127,9 @@ export type UserCredits = typeof userCredits.$inferSelect;
 
 export type InsertDesignConfig = z.infer<typeof insertDesignConfigSchema>;
 export type DesignConfig = typeof designConfigs.$inferSelect;
+
+export type InsertBrandKit = z.infer<typeof insertBrandKitSchema>;
+export type BrandKit = typeof brandKits.$inferSelect;
 
 export type InsertUserCreation = z.infer<typeof insertUserCreationSchema>;
 export type UserCreation = typeof userCreations.$inferSelect;
