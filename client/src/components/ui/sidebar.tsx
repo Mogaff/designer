@@ -50,7 +50,7 @@ function useSidebar() {
 }
 
 const sidebarVariants = cva(
-  "shadow-sm flex flex-col h-full transition-all duration-300",
+  "shadow-sm flex flex-col h-screen transition-all duration-300 fixed top-0 border-r border-border bg-card",
   {
     variants: {
       side: {
@@ -194,8 +194,10 @@ export const SidebarGroupAction = ({
   asChild = false,
   ...props
 }: React.HTMLAttributes<HTMLDivElement> & { asChild?: boolean }) => {
-  const Comp = asChild ? React.Fragment : "div";
-  return <Comp className={cn("", className)} {...props} />;
+  if (asChild) {
+    return <>{props.children}</>;
+  }
+  return <div className={cn("", className)} {...props} />;
 };
 
 export const SidebarMenu = ({
@@ -218,10 +220,13 @@ export const SidebarMenuButton = ({
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { asChild?: boolean }) => {
   const { expanded } = useSidebar();
-  const Comp = asChild ? React.Fragment : "button";
+  
+  if (asChild) {
+    return <>{props.children}</>;
+  }
 
   return (
-    <Comp
+    <button
       className={cn(
         "block w-full",
         !expanded && "px-0 py-2",
@@ -249,8 +254,8 @@ export const SidebarInset = ({
   return (
     <div
       className={cn(
-        "transition-all duration-300",
-        isIconMode && expanded ? "ml-64" : "ml-16",
+        "transition-all duration-300 w-full min-h-screen",
+        isIconMode && expanded ? "pl-64" : "pl-16",
         className
       )}
       {...props}

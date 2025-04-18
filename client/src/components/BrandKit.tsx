@@ -265,15 +265,15 @@ export default function BrandKit() {
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="flex items-center justify-between">
-        <span className="flex items-center">
+      <SidebarGroupLabel className="flex items-center justify-between text-white">
+        <span className="flex items-center uppercase font-semibold">
           <PaintBucket className="mr-2 h-4 w-4" />
           Brand Kit
         </span>
         <SidebarGroupAction asChild>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-6 w-6">
+              <Button variant="ghost" size="icon" className="h-6 w-6 text-white hover:bg-white/10">
                 <Plus className="h-4 w-4" />
               </Button>
             </DialogTrigger>
@@ -476,7 +476,7 @@ export default function BrandKit() {
             {brandKits.length > 0 ? (
               brandKits.map((brandKit) => (
                 <SidebarMenuItem key={brandKit.id}>
-                  <div className="flex items-center justify-between w-full p-2 rounded-md hover:bg-secondary/50">
+                  <div className="flex items-center justify-between w-full p-2 rounded-md hover:bg-white/10 text-white">
                     <div className="flex items-center">
                       <div
                         className="w-3 h-3 rounded-full mr-2"
@@ -488,10 +488,10 @@ export default function BrandKit() {
                       )}
                     </div>
                     <div className="flex space-x-1">
-                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEdit(brandKit)}>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 text-white hover:bg-white/10" onClick={() => handleEdit(brandKit)}>
                         <Edit className="h-3 w-3" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleDelete(brandKit.id)}>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 text-white hover:bg-white/10" onClick={() => handleDelete(brandKit.id)}>
                         <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
@@ -499,7 +499,7 @@ export default function BrandKit() {
                 </SidebarMenuItem>
               ))
             ) : (
-              <div className="text-center text-muted-foreground p-2 text-sm">
+              <div className="text-center text-white/60 p-2 text-sm">
                 No brand kits yet
               </div>
             )}

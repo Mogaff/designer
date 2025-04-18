@@ -25,7 +25,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
-import BrandKit from './BrandKit';
+import BrandKit from '@/components/BrandKit';
 
 type AppLayoutProps = {
   children: React.ReactNode;
@@ -49,13 +49,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
   };
 
   return (
-    <SidebarProvider defaultCollapsed={false} collapsible="icon" as="div">
+    <SidebarProvider defaultCollapsed={true} collapsible="icon" as="div">
       <div className="flex min-h-screen">
-        <Sidebar side="left" className="border-r border-border">
-          <SidebarHeader className="px-2 py-2">
+        <Sidebar side="left" className="border-r border-border bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800 text-white">
+          <SidebarHeader className="px-2 py-4">
             <div className="flex items-center space-x-2">
-              <SidebarTrigger />
               <span className="text-lg font-semibold">DesignFlow AI</span>
+              <SidebarTrigger />
             </div>
           </SidebarHeader>
           
@@ -64,8 +64,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <Link href="/">
-                    <Button variant={location === '/' ? 'default' : 'ghost'} className="w-full justify-start">
-                      <Home className="mr-2 h-4 w-4" />
+                    <Button variant={location === '/' ? 'secondary' : 'ghost'} className="w-full justify-start">
+                      <Home className="mr-2 h-5 w-5" />
                       <span>Home</span>
                     </Button>
                   </Link>
@@ -75,39 +75,28 @@ export default function AppLayout({ children }: AppLayoutProps) {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <Link href="/gallery">
-                    <Button variant={location === '/gallery' ? 'default' : 'ghost'} className="w-full justify-start">
-                      <Grid className="mr-2 h-4 w-4" />
+                    <Button variant={location === '/gallery' ? 'secondary' : 'ghost'} className="w-full justify-start">
+                      <Grid className="mr-2 h-5 w-5" />
                       <span>Gallery</span>
-                    </Button>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/pricing">
-                    <Button variant={location === '/pricing' ? 'default' : 'ghost'} className="w-full justify-start">
-                      <CreditCard className="mr-2 h-4 w-4" />
-                      <span>Credits</span>
                     </Button>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
             
-            <SidebarSeparator />
+            <SidebarSeparator className="bg-white/10" />
             
             {/* Brand Kit Section */}
             <BrandKit />
             
-            <SidebarSeparator />
+            <SidebarSeparator className="bg-white/10" />
             
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <Link href="/settings">
-                    <Button variant={location === '/settings' ? 'default' : 'ghost'} className="w-full justify-start">
-                      <Settings className="mr-2 h-4 w-4" />
+                    <Button variant={location === '/settings' ? 'secondary' : 'ghost'} className="w-full justify-start">
+                      <Settings className="mr-2 h-5 w-5" />
                       <span>Settings</span>
                     </Button>
                   </Link>
@@ -116,10 +105,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
             </SidebarMenu>
           </SidebarContent>
           
-          <SidebarFooter className="border-t border-border p-2">
+          <SidebarFooter className="border-t border-white/10 p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <Avatar className="h-8 w-8">
+                <Avatar className="h-8 w-8 bg-emerald-700">
                   {user?.photoURL ? (
                     <AvatarImage src={user.photoURL} alt={user.displayName || 'User'} />
                   ) : (
@@ -127,10 +116,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
                   )}
                 </Avatar>
                 <div className="ml-2">
-                  <p className="text-sm font-medium">{user?.displayName || user?.email}</p>
+                  <p className="text-sm font-medium text-white">{user?.displayName || user?.email}</p>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" onClick={logout}>
+              <Button variant="ghost" size="icon" onClick={logout} className="text-white hover:bg-white/10">
                 <LogOut className="h-4 w-4" />
               </Button>
             </div>
