@@ -77,9 +77,14 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     "${options.prompt}"
     
     ${options.aspectRatio ? 
-      `IMPORTANT: This design is for the ${aspectRatioInfo}. 
-       Your design MUST work perfectly in this aspect ratio without cropping or distortion.
-       CREATE A CONTAINER DIV WITH THE EXACT DIMENSIONS TO MATCH THIS ASPECT RATIO.` 
+      `EXTREMELY IMPORTANT: This design is for the ${aspectRatioInfo}. 
+       Your design MUST precisely fit this exact aspect ratio without any overflow or extra space.
+       YOU MUST create your design inside a parent container with fixed dimensions matching exactly this aspect ratio.
+       Always wrap your design in a parent div like this:
+       <div class="flyer-container" style="width: [WIDTH]px; height: [HEIGHT]px; overflow: hidden;">
+         <!-- Your design goes here -->
+       </div>
+       Replace [WIDTH] and [HEIGHT] with the exact pixel dimensions specified for this format.` 
       : ''}
     
     Your design should:
@@ -98,6 +103,8 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     3. Keep all headings and text content perfectly straight (0 degree rotation)
     4. Use only straight text alignment (no diagonal text)
     5. Text can be left-aligned, right-aligned or centered, but never at an angle
+    6. Ensure ALL content fits within the specified container - nothing should overflow or be cut off
+    7. The flyer design must respect the aspect ratio exactly - no extra space or padding outside the main container
     
     Absolutely avoid:
     - Buttons, clickable elements, or any web-only interactive components
@@ -105,7 +112,8 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     - Boring, templated layouts with basic grids
     - Outdated or generic design elements
     - Flat, uninteresting color schemes
-    - Basic rectangular layouts and standard columns
+    - Content that overflows the specified dimensions
+    - Responsive or fluid layouts - use fixed pixel dimensions instead
     
     Return your response in the following JSON format:
     {
@@ -413,18 +421,30 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
       
       // Take screenshot
       log("Taking screenshot of the Gemini-generated flyer", "gemini");
-      const screenshot = await page.screenshot({
-        type: "png",
-        fullPage: true,
-      });
       
-      // Convert Uint8Array to Buffer
-      const buffer = Buffer.from(screenshot);
+      // First try to find the flyer-container element
+      const elementHandle = await page.$('.flyer-container');
       
-      // Clean up the temporary HTML file
+      if (elementHandle) {
+        // If we can find the container, take a screenshot of just that element
+        log("Found flyer-container element, taking targeted screenshot", "gemini");
+        const screenshot = await elementHandle.screenshot({
+          type: "png",
+          omitBackground: false
+        });
+        return Buffer.from(screenshot);
+      } else {
+        // Fallback to a standard screenshot with the configured viewport
+        log("No flyer-container found, taking viewport screenshot", "gemini");
+        const screenshot = await page.screenshot({
+          type: "png",
+          fullPage: false
+        });
+        return Buffer.from(screenshot);
+      }
+      
+      // Clean up the temporary HTML file before returning
       fs.unlinkSync(htmlPath);
-      
-      return buffer;
       
     } finally {
       await browser.close();
