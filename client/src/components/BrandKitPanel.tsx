@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, ChangeEvent } from 'react';
 import { X, PlusCircle, Check, Edit, Trash2, PaintBucket, Upload, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -43,8 +43,10 @@ type BrandKitFormValues = z.infer<typeof brandKitSchema>;
 
 export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [view, setView] = useState<View>('list');
   const [selectedKit, setSelectedKit] = useState<BrandKit | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string>('');
   
   // Form setup
   const form = useForm<BrandKitFormValues>({
@@ -136,6 +138,7 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
   const handleCreateNew = () => {
     form.reset(); // Reset form when creating a new kit
     setSelectedKit(null);
+    setLogoPreview('');
     setView('create');
   };
   
@@ -156,12 +159,35 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
     
     form.reset(formValues);
     setSelectedKit(brandKit);
+    setLogoPreview(brandKit.logo_url || '');
     setView('edit');
   };
   
   // Handle back button to return to list
   const handleBackToList = () => {
     setView('list');
+  };
+  
+  // Handle logo file upload
+  const handleLogoUpload = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+  
+  // Handle file selection
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    // Read the file and convert to base64
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      setLogoPreview(base64String);
+      form.setValue('logo_url', base64String);
+    };
+    reader.readAsDataURL(file);
   };
   
   // Handle click outside to close
@@ -455,10 +481,10 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
                       <FormControl>
                         <div className="flex items-center space-x-2">
                           <div 
-                            className="h-10 w-10 rounded-md flex items-center justify-center bg-black/30 border border-white/10"
+                            className="h-10 w-10 rounded-md flex items-center justify-center bg-black/30 border border-white/10 overflow-hidden"
                           >
-                            {field.value ? (
-                              <img src={field.value} alt="Logo" className="w-6 h-6 object-contain" />
+                            {logoPreview || field.value ? (
+                              <img src={logoPreview || field.value} alt="Logo" className="w-6 h-6 object-contain" />
                             ) : (
                               <Upload className="h-4 w-4 text-white/50" />
                             )}
@@ -467,10 +493,18 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
                             type="button"
                             variant="outline"
                             size="sm"
+                            onClick={handleLogoUpload}
                             className="h-8 text-xs bg-black/20 border-white/10 text-white/80 hover:bg-white/10"
                           >
                             Upload Logo
                           </Button>
+                          <input 
+                            type="file" 
+                            ref={fileInputRef}
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleFileChange}
+                          />
                         </div>
                       </FormControl>
                     </FormItem>
