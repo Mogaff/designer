@@ -374,6 +374,26 @@ export class DatabaseStorage implements IStorage {
 
   // Design configuration
   async getDesignConfigs(userId: number): Promise<DesignConfig[]> {
+    // If userId is 0, we're looking for system configs
+    if (userId === 0) {
+      // For system configs, try to get user_id = 0 first, if none exist, get all configs
+      const systemConfigs = await db
+        .select()
+        .from(designConfigs)
+        .where(eq(designConfigs.user_id, 0));
+      
+      if (systemConfigs.length > 0) {
+        return systemConfigs;
+      }
+      
+      // Fallback to any config if none with user_id = 0 exist
+      return db
+        .select()
+        .from(designConfigs)
+        .limit(5);
+    }
+    
+    // For normal users, get their configs and optionally system configs
     return db
       .select()
       .from(designConfigs)

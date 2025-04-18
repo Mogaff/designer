@@ -18,7 +18,7 @@ async function main() {
   // Create users table
   await pool.query(`
     CREATE TABLE "users" (
-      "id" SERIAL PRIMARY KEY,
+      "id" INTEGER PRIMARY KEY,
       "username" TEXT NOT NULL UNIQUE,
       "password" TEXT NOT NULL,
       "firebase_uid" TEXT UNIQUE,
@@ -81,13 +81,27 @@ async function main() {
 
   // Create a default user
   try {
+    // Create system user (id = 0)
     await pool.query(`
-      INSERT INTO "users" ("username", "password", "firebase_uid", "email", "display_name")
-      VALUES ('test_user', '$2b$10$EpRnTzVlqHNP0.fUbXUwSOyuiXe/QLSUG6xNekdHgTGmrpHEfIoxm', 'test-user-123', 'test@example.com', 'Test User')
+      INSERT INTO "users" ("id", "username", "password", "firebase_uid", "email", "display_name")
+      VALUES (0, 'system', '$2b$10$EpRnTzVlqHNP0.fUbXUwSOyuiXe/QLSUG6xNekdHgTGmrpHEfIoxm', 'system-user', 'system@example.com', 'System')
+    `);
+    
+    // Create regular test user with ID 1
+    await pool.query(`
+      INSERT INTO "users" ("id", "username", "password", "firebase_uid", "email", "display_name")
+      VALUES (1, 'test_user', '$2b$10$EpRnTzVlqHNP0.fUbXUwSOyuiXe/QLSUG6xNekdHgTGmrpHEfIoxm', 'test-user-123', 'test@example.com', 'Test User')
     `);
     console.log('Created default user');
 
     // Create default design config
+    // Create a system design config (user_id = 0)
+    await pool.query(`
+      INSERT INTO "design_configs" ("user_id", "name", "num_variations", "credits_per_design", "active")
+      VALUES (0, 'System Default', 3, 1, true)
+    `);
+    
+    // Also create a user-specific design config
     await pool.query(`
       INSERT INTO "design_configs" ("user_id", "name", "num_variations", "credits_per_design", "active")
       VALUES (1, 'Default Config', 3, 1, true)

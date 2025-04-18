@@ -63,9 +63,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(404).json({ message: "Design configuration not found" });
         }
       } else {
-        // Get default configuration
-        const configs = await storage.getDesignConfigs(0); // System configs have user_id 0
-        designConfig = configs.find(c => c.active) || configs[0];
+        // Try to get system configs first
+        const systemConfigs = await storage.getDesignConfigs(0); // System configs have user_id 0
+        
+        if (systemConfigs && systemConfigs.length > 0) {
+          designConfig = systemConfigs.find(c => c.active) || systemConfigs[0];
+        } else {
+          // Try to get user configs as fallback
+          const userConfigs = await storage.getDesignConfigs(userId);
+          
+          if (userConfigs && userConfigs.length > 0) {
+            designConfig = userConfigs.find(c => c.active) || userConfigs[0];
+          } else {
+            // Create a default config if none exists
+            designConfig = await storage.createDesignConfig({
+              user_id: userId,
+              name: 'Default Config',
+              num_variations: 3,
+              credits_per_design: 1,
+              active: true
+            });
+          }
+        }
       }
       
       // Calculate credits required based on number of designs
