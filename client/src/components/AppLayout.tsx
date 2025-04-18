@@ -93,21 +93,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
             
             {/* Brand Kit Section */}
             <BrandKit onOpenPanel={handleOpenBrandKitPanel} />
-            
-            <SidebarSeparator className="bg-white/10" />
-            
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/settings">
-                    <Button variant="ghost" className={`w-full justify-start ${location === '/settings' ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white hover:bg-white/10'}`}>
-                      <Settings className="h-5 w-5" />
-                      <span className="sidebar-text ml-2">Settings</span>
-                    </Button>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
           </SidebarContent>
           
           <SidebarFooter className="border-t border-white/10 p-3">
