@@ -89,8 +89,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         prompt: string; 
         backgroundImageBase64?: string;
         logoBase64?: string;
+        aspectRatio?: string;
       } = {
-        prompt: prompt
+        prompt: prompt,
+        aspectRatio: aspectRatio
       };
       
       // Add images to options if provided (using type assertion for files)

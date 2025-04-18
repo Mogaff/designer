@@ -31,6 +31,45 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
   log("Generating flyer content with Gemini AI", "gemini");
   
   try {
+    // Get sizing info for the prompt based on aspect ratio
+    let aspectRatioInfo = "";
+    if (options.aspectRatio) {
+      switch(options.aspectRatio) {
+        // Square formats
+        case 'profile': // Instagram Profile (1080×1080)
+          aspectRatioInfo = "SQUARE (1:1) format for Instagram Profile (1080×1080 pixels)";
+          break;
+        case 'post': // Social Media Post (1200×1200)
+          aspectRatioInfo = "SQUARE (1:1) format for Social Media Posts (1200×1200 pixels)";
+          break;
+        // Landscape formats
+        case 'fb_cover': // Facebook Cover (820×312)
+          aspectRatioInfo = "WIDE RECTANGULAR format for Facebook Cover (820×312 pixels)";
+          break;
+        case 'twitter_header': // Twitter Header (1500×500)
+          aspectRatioInfo = "WIDE RECTANGULAR format for Twitter Header (1500×500 pixels)";
+          break;
+        case 'yt_thumbnail': // YouTube Thumbnail (1280×720)
+          aspectRatioInfo = "LANDSCAPE format for YouTube Thumbnail (1280×720 pixels, 16:9 ratio)";
+          break;
+        case 'linkedin_banner': // LinkedIn Banner (1584×396)
+          aspectRatioInfo = "VERY WIDE format for LinkedIn Banner (1584×396 pixels, 4:1 ratio)";
+          break;
+        case 'instream': // Video Ad (1920×1080)
+          aspectRatioInfo = "LANDSCAPE format for Video Ads (1920×1080 pixels, 16:9 ratio)";
+          break;
+        // Portrait formats
+        case 'stories': // Instagram Stories (1080×1920)
+          aspectRatioInfo = "VERTICAL format for Instagram Stories (1080×1920 pixels, 9:16 ratio)";
+          break;
+        case 'pinterest': // Pinterest Pin (1000×1500)
+          aspectRatioInfo = "VERTICAL format for Pinterest Pins (1000×1500 pixels, 2:3 ratio)";
+          break;
+        default:
+          aspectRatioInfo = `Format "${options.aspectRatio}" with appropriate dimensions`;
+      }
+    }
+
     // Create a comprehensive prompt for the AI with enhanced design instructions
     const systemPrompt = `You are an award-winning graphic designer who creates stunning, visually exciting flyers using modern web technologies. You specialize in creating visually striking designs with bold typography, creative layouts, and innovative use of color.
     
@@ -38,8 +77,9 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     "${options.prompt}"
     
     ${options.aspectRatio ? 
-      `IMPORTANT: This design is for the "${options.aspectRatio}" format with specific dimensions. 
-       Your design MUST work perfectly in this aspect ratio without cropping or distortion.` 
+      `IMPORTANT: This design is for the ${aspectRatioInfo}. 
+       Your design MUST work perfectly in this aspect ratio without cropping or distortion.
+       CREATE A CONTAINER DIV WITH THE EXACT DIMENSIONS TO MATCH THIS ASPECT RATIO.` 
       : ''}
     
     Your design should:
