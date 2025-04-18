@@ -64,16 +64,23 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
     }
   });
   
-  // Query to fetch brand kits
+  // Query to fetch brand kits with improved error handling and caching
   const { data: brandKits = [], isLoading, isError } = useQuery<BrandKit[]>({
     queryKey: ['/api/brand-kits'],
     queryFn: async () => {
       const response = await fetch('/api/brand-kits');
       if (!response.ok) {
+        console.error('Failed to load brand kits:', await response.text());
         throw new Error('Failed to load brand kits');
       }
-      return response.json().then((data) => data.brandKits);
-    }
+      const data = await response.json();
+      console.log('Loaded brand kits:', data);
+      return data.brandKits || [];
+    },
+    staleTime: 1000, // Consider data fresh for 1 second
+    refetchOnMount: true, // Always refetch on mount
+    refetchOnWindowFocus: true, // Refetch when window regains focus
+    retry: 3, // Retry failed requests 3 times
   });
   
   // Mutations for creating and updating brand kits
@@ -223,6 +230,14 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
     reader.readAsDataURL(file);
   };
   
+  // Manually refetch brand kits when panel opens
+  useEffect(() => {
+    if (isOpen) {
+      console.log('Brand Kit Panel opened, refetching data...');
+      queryClient.invalidateQueries({ queryKey: ['/api/brand-kits'] });
+    }
+  }, [isOpen, queryClient]);
+
   // Handle click outside to close
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
