@@ -354,16 +354,23 @@ export default function BrandKit() {
                           <FormLabel>Primary Color</FormLabel>
                           <FormControl>
                             <div className="flex items-center space-x-2">
+                              <div className="relative">
+                                <div 
+                                  className="h-10 w-10 rounded-md flex items-center justify-center overflow-hidden border border-white/10" 
+                                  style={{ backgroundColor: field.value || '#4f46e5', boxShadow: `0 0 15px ${field.value || '#4f46e5'}40` }}
+                                >
+                                  <Input
+                                    type="color"
+                                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                    {...field}
+                                    value={field.value || '#4f46e5'}
+                                  />
+                                </div>
+                              </div>
                               <Input
-                                type="color"
-                                className="h-10 w-10"
                                 {...field}
                                 value={field.value || '#4f46e5'}
-                              />
-                              <Input
-                                {...field}
-                                value={field.value || '#4f46e5'}
-                                className="flex-1"
+                                className="flex-1 bg-black/20 border-white/10 text-white rounded-md"
                               />
                             </div>
                           </FormControl>
@@ -380,16 +387,23 @@ export default function BrandKit() {
                           <FormLabel>Secondary</FormLabel>
                           <FormControl>
                             <div className="flex items-center space-x-2">
+                              <div className="relative">
+                                <div 
+                                  className="h-10 w-10 rounded-md flex items-center justify-center overflow-hidden border border-white/10" 
+                                  style={{ backgroundColor: field.value || '#a5b4fc', boxShadow: `0 0 15px ${field.value || '#a5b4fc'}40` }}
+                                >
+                                  <Input
+                                    type="color"
+                                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                    {...field}
+                                    value={field.value || '#a5b4fc'}
+                                  />
+                                </div>
+                              </div>
                               <Input
-                                type="color"
-                                className="h-10 w-10"
                                 {...field}
                                 value={field.value || '#a5b4fc'}
-                              />
-                              <Input
-                                {...field}
-                                value={field.value || '#a5b4fc'}
-                                className="flex-1"
+                                className="flex-1 bg-black/20 border-white/10 text-white rounded-md"
                               />
                             </div>
                           </FormControl>
@@ -406,16 +420,23 @@ export default function BrandKit() {
                           <FormLabel>Accent</FormLabel>
                           <FormControl>
                             <div className="flex items-center space-x-2">
+                              <div className="relative">
+                                <div 
+                                  className="h-10 w-10 rounded-md flex items-center justify-center overflow-hidden border border-white/10" 
+                                  style={{ backgroundColor: field.value || '#f59e0b', boxShadow: `0 0 15px ${field.value || '#f59e0b'}40` }}
+                                >
+                                  <Input
+                                    type="color"
+                                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                    {...field}
+                                    value={field.value || '#f59e0b'}
+                                  />
+                                </div>
+                              </div>
                               <Input
-                                type="color"
-                                className="h-10 w-10"
                                 {...field}
                                 value={field.value || '#f59e0b'}
-                              />
-                              <Input
-                                {...field}
-                                value={field.value || '#f59e0b'}
-                                className="flex-1"
+                                className="flex-1 bg-black/20 border-white/10 text-white rounded-md"
                               />
                             </div>
                           </FormControl>
@@ -603,16 +624,23 @@ export default function BrandKit() {
                         <FormLabel>Primary Color</FormLabel>
                         <FormControl>
                           <div className="flex items-center space-x-2">
+                            <div className="relative">
+                              <div 
+                                className="h-10 w-10 rounded-md flex items-center justify-center overflow-hidden border border-white/10" 
+                                style={{ backgroundColor: field.value || '#4f46e5', boxShadow: `0 0 15px ${field.value || '#4f46e5'}40` }}
+                              >
+                                <Input
+                                  type="color"
+                                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                  {...field}
+                                  value={field.value || '#4f46e5'}
+                                />
+                              </div>
+                            </div>
                             <Input
-                              type="color"
-                              className="h-10 w-10"
                               {...field}
                               value={field.value || '#4f46e5'}
-                            />
-                            <Input
-                              {...field}
-                              value={field.value || '#4f46e5'}
-                              className="flex-1"
+                              className="flex-1 bg-black/20 border-white/10 text-white rounded-md"
                             />
                           </div>
                         </FormControl>
@@ -629,16 +657,23 @@ export default function BrandKit() {
                         <FormLabel>Secondary</FormLabel>
                         <FormControl>
                           <div className="flex items-center space-x-2">
+                            <div className="relative">
+                              <div 
+                                className="h-10 w-10 rounded-md flex items-center justify-center overflow-hidden border border-white/10" 
+                                style={{ backgroundColor: field.value || '#a5b4fc', boxShadow: `0 0 15px ${field.value || '#a5b4fc'}40` }}
+                              >
+                                <Input
+                                  type="color"
+                                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                  {...field}
+                                  value={field.value || '#a5b4fc'}
+                                />
+                              </div>
+                            </div>
                             <Input
-                              type="color"
-                              className="h-10 w-10"
                               {...field}
                               value={field.value || '#a5b4fc'}
-                            />
-                            <Input
-                              {...field}
-                              value={field.value || '#a5b4fc'}
-                              className="flex-1"
+                              className="flex-1 bg-black/20 border-white/10 text-white rounded-md"
                             />
                           </div>
                         </FormControl>
@@ -655,16 +690,23 @@ export default function BrandKit() {
                         <FormLabel>Accent</FormLabel>
                         <FormControl>
                           <div className="flex items-center space-x-2">
+                            <div className="relative">
+                              <div 
+                                className="h-10 w-10 rounded-md flex items-center justify-center overflow-hidden border border-white/10" 
+                                style={{ backgroundColor: field.value || '#f59e0b', boxShadow: `0 0 15px ${field.value || '#f59e0b'}40` }}
+                              >
+                                <Input
+                                  type="color"
+                                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                  {...field}
+                                  value={field.value || '#f59e0b'}
+                                />
+                              </div>
+                            </div>
                             <Input
-                              type="color"
-                              className="h-10 w-10"
                               {...field}
                               value={field.value || '#f59e0b'}
-                            />
-                            <Input
-                              {...field}
-                              value={field.value || '#f59e0b'}
-                              className="flex-1"
+                              className="flex-1 bg-black/20 border-white/10 text-white rounded-md"
                             />
                           </div>
                         </FormControl>
@@ -682,7 +724,7 @@ export default function BrandKit() {
                       <FormItem>
                         <FormLabel>Heading Font</FormLabel>
                         <FormControl>
-                          <Input placeholder="Arial" {...field} />
+                          <Input placeholder="Arial" {...field} className="bg-black/20 border-white/10 text-white rounded-md" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -696,7 +738,7 @@ export default function BrandKit() {
                       <FormItem>
                         <FormLabel>Body Font</FormLabel>
                         <FormControl>
-                          <Input placeholder="Helvetica" {...field} />
+                          <Input placeholder="Helvetica" {...field} className="bg-black/20 border-white/10 text-white rounded-md" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
