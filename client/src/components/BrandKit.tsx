@@ -7,7 +7,8 @@ import {
   SidebarGroupAction,
   SidebarMenu,
   SidebarMenuItem,
-  SidebarMenuButton
+  SidebarMenuButton,
+  useSidebar
 } from '@/components/ui/sidebar';
 import {
   Dialog,
@@ -75,6 +76,7 @@ export default function BrandKit() {
   const [selectedBrandKit, setSelectedBrandKit] = useState<BrandKit | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { expanded } = useSidebar();
 
   // Get all brand kits
   const { data: brandKitsData, isLoading, isError } = useQuery<{ brandKits: BrandKit[] }>({
