@@ -8,28 +8,20 @@
   white-space: nowrap;
 }
 
-/* Logo styling */
 .sidebar-collapsed .sidebar-text {
   width: 0;
   opacity: 0;
+  display: none !important;
   overflow: hidden;
+  margin-left: 0 !important;
   visibility: hidden;
-}
-
-.sidebar-collapsed .sidebar-logo img {
-  height: 28px;
-  width: auto;
-}
-
-.sidebar-logo img {
-  transition: all 0.3s ease;
-  height: 28px;
 }
 
 /* Center icons in collapsed state */
 .sidebar-collapsed button,
 .sidebar-collapsed .flex {
   justify-content: center !important;
+  align-items: center !important;
 }
 
 .sidebar-collapsed button svg,

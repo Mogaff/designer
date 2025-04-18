@@ -41,7 +41,7 @@ export const SidebarProvider = ({
   );
 };
 
-export function useSidebar() {
+function useSidebar() {
   const context = React.useContext(SidebarContext);
   if (context === undefined) {
     throw new Error("useSidebar must be used within a SidebarProvider");
@@ -59,7 +59,7 @@ const sidebarVariants = cva(
       },
       expanded: {
         true: "w-64",
-        false: "w-14", 
+        false: "w-16", 
       },
     },
     defaultVariants: {
@@ -273,7 +273,7 @@ export const SidebarInset = ({
     <div
       className={cn(
         "transition-all duration-300 w-full min-h-screen",
-        isIconMode && expanded ? "pl-64" : "pl-14",
+        isIconMode && expanded ? "pl-64" : "pl-16",
         className
       )}
       {...props}
