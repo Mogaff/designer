@@ -58,12 +58,12 @@ interface BrandKit {
 // Form validation schema for creating/editing a brand kit
 const brandKitSchema = z.object({
   name: z.string().min(1, { message: 'Name is required' }),
-  primary_color: z.string().nullable().optional(),
-  secondary_color: z.string().nullable().optional(),
-  accent_color: z.string().nullable().optional(),
-  heading_font: z.string().nullable().optional(),
-  body_font: z.string().nullable().optional(),
-  brand_voice: z.string().nullable().optional(),
+  primary_color: z.string().optional().default(''),
+  secondary_color: z.string().optional().default(''),
+  accent_color: z.string().optional().default(''),
+  heading_font: z.string().optional().default(''),
+  body_font: z.string().optional().default(''),
+  brand_voice: z.string().optional().default(''),
   is_active: z.boolean().default(true),
 });
 
@@ -77,17 +77,21 @@ export default function BrandKit() {
   const queryClient = useQueryClient();
 
   // Get all brand kits
-  const { data: brandKits, isLoading, isError } = useQuery({
+  const { data: brandKitsData, isLoading, isError } = useQuery<{ brandKits: BrandKit[] }>({
     queryKey: ['/api/brand-kits'],
     refetchOnWindowFocus: false,
   });
 
+  const brandKits = brandKitsData?.brandKits || [];
+
   // Get active brand kit
-  const { data: activeBrandKit } = useQuery({
+  const { data: activeBrandKitData } = useQuery<{ brandKit: BrandKit }>({
     queryKey: ['/api/brand-kits/active'],
     refetchOnWindowFocus: false,
-    enabled: brandKits?.brandKits?.some((kit: BrandKit) => kit.is_active),
+    enabled: brandKits.some((kit) => kit.is_active),
   });
+  
+  const activeBrandKit = activeBrandKitData?.brandKit;
 
   // Add brand kit mutation
   const addBrandKitMutation = useMutation({
@@ -469,8 +473,8 @@ export default function BrandKit() {
           <div className="text-center text-red-500 p-2 text-sm">Failed to load brand kits</div>
         ) : (
           <SidebarMenu>
-            {brandKits?.brandKits?.length > 0 ? (
-              brandKits.brandKits.map((brandKit: BrandKit) => (
+            {brandKits.length > 0 ? (
+              brandKits.map((brandKit) => (
                 <SidebarMenuItem key={brandKit.id}>
                   <div className="flex items-center justify-between w-full p-2 rounded-md hover:bg-secondary/50">
                     <div className="flex items-center">

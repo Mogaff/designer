@@ -191,9 +191,11 @@ export const SidebarGroupContent = ({
 
 export const SidebarGroupAction = ({
   className,
+  asChild = false,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) => {
-  return <div className={cn("", className)} {...props} />;
+}: React.HTMLAttributes<HTMLDivElement> & { asChild?: boolean }) => {
+  const Comp = asChild ? React.Fragment : "div";
+  return <Comp className={cn("", className)} {...props} />;
 };
 
 export const SidebarMenu = ({

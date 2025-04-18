@@ -12,39 +12,52 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { UserSettingsProvider } from "@/contexts/UserSettingsContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
+// Import our new AppLayout component
+import AppLayout from "@/components/AppLayout"; 
+
 function Router() {
   return (
     <Switch>
       {/* Login is the only route that doesn't require authentication */}
       <Route path="/login" component={Login} />
       
-      {/* All other routes require authentication */}
+      {/* All other routes require authentication and use the AppLayout */}
       <Route path="/">
         <ProtectedRoute>
-          <Home />
+          <AppLayout>
+            <Home />
+          </AppLayout>
         </ProtectedRoute>
       </Route>
       <Route path="/pricing">
         <ProtectedRoute>
-          <Pricing />
+          <AppLayout>
+            <Pricing />
+          </AppLayout>
         </ProtectedRoute>
       </Route>
       <Route path="/gallery">
         <ProtectedRoute>
-          <Gallery />
+          <AppLayout>
+            <Gallery />
+          </AppLayout>
         </ProtectedRoute>
       </Route>
       
       <Route path="/settings">
         <ProtectedRoute>
-          <Settings />
+          <AppLayout>
+            <Settings />
+          </AppLayout>
         </ProtectedRoute>
       </Route>
       
       {/* 404 page also requires authentication */}
       <Route>
         <ProtectedRoute>
-          <NotFound />
+          <AppLayout>
+            <NotFound />
+          </AppLayout>
         </ProtectedRoute>
       </Route>
     </Switch>
