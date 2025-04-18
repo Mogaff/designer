@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, Link } from 'wouter';
 import { 
   Sidebar, 
@@ -20,10 +20,8 @@ import {
   CreditCard,
   PaintBucket,
   LogOut,
-  PanelLeft,
-  Sparkles
+  PanelLeft
 } from 'lucide-react';
-import gsap from 'gsap';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
@@ -36,41 +34,6 @@ type AppLayoutProps = {
 export default function AppLayout({ children }: AppLayoutProps) {
   const [location] = useLocation();
   const { user, logout } = useAuth();
-  const logoRef = useRef<HTMLDivElement>(null);
-  const sparkleRef = useRef<SVGSVGElement>(null);
-  
-  // Animation effect for the logo
-  useEffect(() => {
-    if (logoRef.current && sparkleRef.current) {
-      // Initial setup
-      gsap.set(sparkleRef.current, { opacity: 0, scale: 0.5 });
-      
-      // Create animation timeline
-      const tl = gsap.timeline({ repeat: -1, repeatDelay: 3 });
-      
-      tl.to(sparkleRef.current, { 
-        opacity: 1, 
-        scale: 1.2, 
-        duration: 0.5,
-        ease: "power2.out"
-      })
-      .to(sparkleRef.current, { 
-        opacity: 0, 
-        scale: 0.5, 
-        duration: 0.3,
-        ease: "power2.in"
-      });
-      
-      // Pulse animation for the logo
-      gsap.to(logoRef.current, {
-        boxShadow: '0 0 15px 2px rgba(99, 102, 241, 0.7)',
-        repeat: -1,
-        yoyo: true,
-        duration: 2,
-        ease: "sine.inOut"
-      });
-    }
-  }, []);
   
   // Display only the initials of the user's name
   const getUserInitials = () => {
@@ -89,21 +52,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
     <SidebarProvider defaultCollapsed={true} collapsible="icon" as="div">
       <div className="flex min-h-screen">
         <Sidebar side="left" className="sidebar border-r border-border bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800 text-white">
-          
-          <SidebarHeader className="flex justify-center p-4 border-b border-white/10">
-            <div 
-              ref={logoRef}
-              className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-700 to-indigo-500 flex items-center justify-center relative"
-              style={{ boxShadow: '0 0 10px rgba(99, 102, 241, 0.5)' }}
-            >
-              <span className="text-xl font-bold text-white">AI</span>
-              <Sparkles 
-                ref={sparkleRef}
-                className="absolute -top-1 -right-1 text-amber-400"
-                size={14}
-              />
-            </div>
-          </SidebarHeader>
+
           
           <SidebarContent>
             <SidebarMenu>
