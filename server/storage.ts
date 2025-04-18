@@ -273,7 +273,9 @@ export class MemStorage implements IStorage {
       template: creation.template || null,
       metadata: creation.metadata || null,
       favorite: creation.favorite ?? false,
-      created_at: now
+      created_at: now,
+      heading_font: creation.heading_font || null,
+      body_font: creation.body_font || null
     };
     
     this.userCreationsMap.set(id, userCreation);
@@ -316,4 +318,176 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+import { db } from "./db";
+import { eq, and, desc } from "drizzle-orm";
+
+export class DatabaseStorage implements IStorage {
+  // User methods
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async getUserByFirebaseUid(firebaseUid: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.firebase_uid, firebaseUid));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async updateUserCredits(userId: number, newBalance: number): Promise<User | undefined> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ credits_balance: newBalance })
+      .where(eq(users.id, userId))
+      .returning();
+    return updatedUser || undefined;
+  }
+
+  // Credits management
+  async addCreditsTransaction(creditTx: InsertUserCredits): Promise<UserCredits> {
+    const [transaction] = await db
+      .insert(userCredits)
+      .values(creditTx)
+      .returning();
+    return transaction;
+  }
+
+  async getUserCreditsHistory(userId: number): Promise<UserCredits[]> {
+    return db
+      .select()
+      .from(userCredits)
+      .where(eq(userCredits.user_id, userId))
+      .orderBy(desc(userCredits.created_at));
+  }
+
+  // Design configuration
+  async getDesignConfigs(userId: number): Promise<DesignConfig[]> {
+    return db
+      .select()
+      .from(designConfigs)
+      .where(eq(designConfigs.user_id, userId));
+  }
+
+  async getDesignConfig(id: number): Promise<DesignConfig | undefined> {
+    const [config] = await db
+      .select()
+      .from(designConfigs)
+      .where(eq(designConfigs.id, id));
+    return config || undefined;
+  }
+
+  async createDesignConfig(config: InsertDesignConfig): Promise<DesignConfig> {
+    const [designConfig] = await db
+      .insert(designConfigs)
+      .values(config)
+      .returning();
+    return designConfig;
+  }
+
+  async updateDesignConfig(
+    id: number,
+    updates: Partial<InsertDesignConfig>
+  ): Promise<DesignConfig | undefined> {
+    const [updatedConfig] = await db
+      .update(designConfigs)
+      .set(updates)
+      .where(eq(designConfigs.id, id))
+      .returning();
+    return updatedConfig || undefined;
+  }
+
+  // User Creations
+  async getUserCreations(userId: number): Promise<UserCreation[]> {
+    return db
+      .select()
+      .from(userCreations)
+      .where(eq(userCreations.user_id, userId))
+      .orderBy(desc(userCreations.created_at));
+  }
+
+  async getUserCreation(id: number, userId?: number): Promise<UserCreation | undefined> {
+    let query = db.select().from(userCreations).where(eq(userCreations.id, id));
+    
+    if (userId !== undefined) {
+      // Create a new query with the additional condition
+      const results = await db
+        .select()
+        .from(userCreations)
+        .where(and(
+          eq(userCreations.id, id),
+          eq(userCreations.user_id, userId)
+        ));
+      return results[0] || undefined;
+    } else {
+      const results = await query;
+      return results[0] || undefined;
+    }
+  }
+
+  async createUserCreation(creation: InsertUserCreation): Promise<UserCreation> {
+    const [userCreation] = await db
+      .insert(userCreations)
+      .values(creation)
+      .returning();
+    return userCreation;
+  }
+
+  async updateUserCreation(
+    id: number,
+    updates: Partial<InsertUserCreation>,
+    userId?: number
+  ): Promise<UserCreation | undefined> {
+    if (userId !== undefined) {
+      const [updatedCreation] = await db
+        .update(userCreations)
+        .set(updates)
+        .where(and(
+          eq(userCreations.id, id),
+          eq(userCreations.user_id, userId)
+        ))
+        .returning();
+      return updatedCreation || undefined;
+    } else {
+      const [updatedCreation] = await db
+        .update(userCreations)
+        .set(updates)
+        .where(eq(userCreations.id, id))
+        .returning();
+      return updatedCreation || undefined;
+    }
+  }
+
+  async deleteUserCreation(id: number, userId?: number): Promise<boolean> {
+    if (userId !== undefined) {
+      const result = await db
+        .delete(userCreations)
+        .where(and(
+          eq(userCreations.id, id),
+          eq(userCreations.user_id, userId)
+        ))
+        .returning({ id: userCreations.id });
+      return result.length > 0;
+    } else {
+      const result = await db
+        .delete(userCreations)
+        .where(eq(userCreations.id, id))
+        .returning({ id: userCreations.id });
+      return result.length > 0;
+    }
+  }
+}
+
+// Create and initialize the database storage
+export const storage = new DatabaseStorage();
