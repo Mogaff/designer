@@ -8,24 +8,31 @@
   white-space: nowrap;
 }
 
-.sidebar-collapsed .sidebar-text {
+/* Logo styling */
+.sidebar[data-collapsed=true] .sidebar-text {
   width: 0;
   opacity: 0;
-  display: none !important;
   overflow: hidden;
-  margin-left: 0 !important;
   visibility: hidden;
 }
 
-/* Center icons in collapsed state */
-.sidebar-collapsed button,
-.sidebar-collapsed .flex {
-  justify-content: center !important;
-  align-items: center !important;
+.sidebar[data-collapsed=true] .sidebar-logo img {
+  height: 28px;
+  width: auto;
 }
 
-.sidebar-collapsed button svg,
-.sidebar-collapsed .flex svg {
+.sidebar-logo img {
+  transition: all 0.3s ease;
+}
+
+/* Center icons in collapsed state */
+.sidebar[data-collapsed=true] button,
+.sidebar[data-collapsed=true] .flex {
+  justify-content: center !important;
+}
+
+.sidebar[data-collapsed=true] button svg,
+.sidebar[data-collapsed=true] .flex svg {
   margin: 0 !important;
 }
 
