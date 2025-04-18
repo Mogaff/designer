@@ -3,11 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   SidebarGroup,
   SidebarGroupLabel,
-  SidebarGroupContent,
   SidebarGroupAction,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton
 } from '@/components/ui/sidebar';
 import {
   Dialog,
@@ -545,274 +541,213 @@ export default function BrandKit({ onOpenPanel }: BrandKitProps) {
         </SidebarGroupAction>
       </SidebarGroupLabel>
 
-      <SidebarGroupContent>
-        {isLoading ? (
-          <div className="flex justify-center p-4">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-          </div>
-        ) : isError ? (
-          <div className="text-center text-red-500 p-2 text-sm sidebar-text">Failed to load brand kits</div>
-        ) : (
-          <SidebarMenu>
-            {brandKits.length > 0 ? (
-              brandKits.map((brandKit) => (
-                <SidebarMenuItem key={brandKit.id}>
-                  <div className="flex items-center justify-between w-full p-2 rounded-md hover:bg-white/10 text-white group">
-                    <div className="flex items-center">
-                      <div className="flex h-5 w-5 items-center justify-center rounded-sm" 
-                           style={{ backgroundColor: brandKit.primary_color || '#4f46e5', 
-                                   boxShadow: `0 0 10px ${brandKit.primary_color || '#4f46e5'}40` }}>
-                        {brandKit.logo_url ? (
-                          <img src={brandKit.logo_url} alt="Logo" className="w-3 h-3 object-contain" />
-                        ) : (
-                          <div className="w-3 h-3 rounded-full bg-white/70"></div>
-                        )}
-                      </div>
-                      <span className="truncate sidebar-text ml-2 text-xs font-medium">{brandKit.name}</span>
-                      {brandKit.is_active && (
-                        <div className="sidebar-text ml-1.5 bg-green-600/20 p-0.5 rounded-sm">
-                          <Check className="h-2 w-2 text-green-500" />
+      {/* Edit dialog for brand kits */}
+      <SlidingDialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <SlidingDialogContent>
+          <SlidingDialogHeader>
+            <SlidingDialogTitle>Edit Brand Kit</SlidingDialogTitle>
+            <SlidingDialogDescription>
+              Update your brand kit settings
+            </SlidingDialogDescription>
+          </SlidingDialogHeader>
+
+          <Form {...editForm}>
+            <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
+              <FormField
+                control={editForm.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="My Brand" {...field} className="bg-black/20 border-white/10 text-white rounded-md" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-3 gap-4">
+                <FormField
+                  control={editForm.control}
+                  name="primary_color"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Primary Color</FormLabel>
+                      <FormControl>
+                        <div className="flex items-center space-x-2">
+                          <div className="relative">
+                            <div 
+                              className="h-10 w-10 rounded-md flex items-center justify-center overflow-hidden border border-white/10" 
+                              style={{ backgroundColor: field.value || '#4f46e5', boxShadow: `0 0 15px ${field.value || '#4f46e5'}40` }}
+                            >
+                              <Input
+                                type="color"
+                                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                {...field}
+                                value={field.value || '#4f46e5'}
+                              />
+                            </div>
+                          </div>
+                          <Input
+                            {...field}
+                            value={field.value || '#4f46e5'}
+                            className="flex-1 bg-black/20 border-white/10 text-white rounded-md"
+                          />
                         </div>
-                      )}
-                    </div>
-                    <div className="flex space-x-1 sidebar-text opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button variant="ghost" size="icon" className="h-5 w-5 text-white hover:bg-white/10 rounded-full" onClick={() => handleEdit(brandKit)}>
-                        <Edit className="h-2.5 w-2.5" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-5 w-5 text-white hover:bg-white/10 rounded-full" onClick={() => handleDelete(brandKit.id)}>
-                        <Trash2 className="h-2.5 w-2.5" />
-                      </Button>
-                    </div>
-                  </div>
-                </SidebarMenuItem>
-              ))
-            ) : (
-              <div className="flex flex-col items-center justify-center space-y-1 p-2 sidebar-text">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-500/10 mb-1">
-                  <PlusCircle className="w-4 h-4 text-indigo-400" />
-                </div>
-                <p className="text-center text-white/60 text-xs">No brand kits yet</p>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-xs h-7 px-3 rounded-full bg-white/5 hover:bg-white/10 text-white/80"
-                  onClick={() => setIsAddDialogOpen(true)}
-                >
-                  Create a brand kit
-                </Button>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={editForm.control}
+                  name="secondary_color"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Secondary</FormLabel>
+                      <FormControl>
+                        <div className="flex items-center space-x-2">
+                          <div className="relative">
+                            <div 
+                              className="h-10 w-10 rounded-md flex items-center justify-center overflow-hidden border border-white/10" 
+                              style={{ backgroundColor: field.value || '#a5b4fc', boxShadow: `0 0 15px ${field.value || '#a5b4fc'}40` }}
+                            >
+                              <Input
+                                type="color"
+                                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                {...field}
+                                value={field.value || '#a5b4fc'}
+                              />
+                            </div>
+                          </div>
+                          <Input
+                            {...field}
+                            value={field.value || '#a5b4fc'}
+                            className="flex-1 bg-black/20 border-white/10 text-white rounded-md"
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={editForm.control}
+                  name="accent_color"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Accent</FormLabel>
+                      <FormControl>
+                        <div className="flex items-center space-x-2">
+                          <div className="relative">
+                            <div 
+                              className="h-10 w-10 rounded-md flex items-center justify-center overflow-hidden border border-white/10" 
+                              style={{ backgroundColor: field.value || '#f59e0b', boxShadow: `0 0 15px ${field.value || '#f59e0b'}40` }}
+                            >
+                              <Input
+                                type="color"
+                                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                {...field}
+                                value={field.value || '#f59e0b'}
+                              />
+                            </div>
+                          </div>
+                          <Input
+                            {...field}
+                            value={field.value || '#f59e0b'}
+                            className="flex-1 bg-black/20 border-white/10 text-white rounded-md"
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
-            )}
-          </SidebarMenu>
-        )}
 
-        {/* Edit Dialog */}
-        <SlidingDialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <SlidingDialogContent>
-            <SlidingDialogHeader>
-              <SlidingDialogTitle>Edit Brand Kit</SlidingDialogTitle>
-              <SlidingDialogDescription>
-                Update your brand kit settings
-              </SlidingDialogDescription>
-            </SlidingDialogHeader>
-
-            <Form {...editForm}>
-              <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={editForm.control}
-                  name="name"
+                  name="heading_font"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Name</FormLabel>
+                      <FormLabel>Heading Font</FormLabel>
                       <FormControl>
-                        <Input placeholder="My Brand" {...field} className="bg-black/20 border-white/10 text-white rounded-md" />
+                        <Input placeholder="Arial" {...field} className="bg-black/20 border-white/10 text-white rounded-md" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                <div className="grid grid-cols-3 gap-4">
-                  <FormField
-                    control={editForm.control}
-                    name="primary_color"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Primary Color</FormLabel>
-                        <FormControl>
-                          <div className="flex items-center space-x-2">
-                            <div className="relative">
-                              <div 
-                                className="h-10 w-10 rounded-md flex items-center justify-center overflow-hidden border border-white/10" 
-                                style={{ backgroundColor: field.value || '#4f46e5', boxShadow: `0 0 15px ${field.value || '#4f46e5'}40` }}
-                              >
-                                <Input
-                                  type="color"
-                                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                                  {...field}
-                                  value={field.value || '#4f46e5'}
-                                />
-                              </div>
-                            </div>
-                            <Input
-                              {...field}
-                              value={field.value || '#4f46e5'}
-                              className="flex-1 bg-black/20 border-white/10 text-white rounded-md"
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={editForm.control}
-                    name="secondary_color"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Secondary</FormLabel>
-                        <FormControl>
-                          <div className="flex items-center space-x-2">
-                            <div className="relative">
-                              <div 
-                                className="h-10 w-10 rounded-md flex items-center justify-center overflow-hidden border border-white/10" 
-                                style={{ backgroundColor: field.value || '#a5b4fc', boxShadow: `0 0 15px ${field.value || '#a5b4fc'}40` }}
-                              >
-                                <Input
-                                  type="color"
-                                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                                  {...field}
-                                  value={field.value || '#a5b4fc'}
-                                />
-                              </div>
-                            </div>
-                            <Input
-                              {...field}
-                              value={field.value || '#a5b4fc'}
-                              className="flex-1 bg-black/20 border-white/10 text-white rounded-md"
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={editForm.control}
-                    name="accent_color"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Accent</FormLabel>
-                        <FormControl>
-                          <div className="flex items-center space-x-2">
-                            <div className="relative">
-                              <div 
-                                className="h-10 w-10 rounded-md flex items-center justify-center overflow-hidden border border-white/10" 
-                                style={{ backgroundColor: field.value || '#f59e0b', boxShadow: `0 0 15px ${field.value || '#f59e0b'}40` }}
-                              >
-                                <Input
-                                  type="color"
-                                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                                  {...field}
-                                  value={field.value || '#f59e0b'}
-                                />
-                              </div>
-                            </div>
-                            <Input
-                              {...field}
-                              value={field.value || '#f59e0b'}
-                              className="flex-1 bg-black/20 border-white/10 text-white rounded-md"
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={editForm.control}
-                    name="heading_font"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Heading Font</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Arial" {...field} className="bg-black/20 border-white/10 text-white rounded-md" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={editForm.control}
-                    name="body_font"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Body Font</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Helvetica" {...field} className="bg-black/20 border-white/10 text-white rounded-md" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
                 <FormField
                   control={editForm.control}
-                  name="brand_voice"
+                  name="body_font"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Brand Voice</FormLabel>
+                      <FormLabel>Body Font</FormLabel>
                       <FormControl>
-                        <Input placeholder="Professional and friendly" {...field} className="bg-black/20 border-white/10 text-white rounded-md" />
+                        <Input placeholder="Helvetica" {...field} className="bg-black/20 border-white/10 text-white rounded-md" />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={editForm.control}
+                name="brand_voice"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Brand Voice</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Professional and friendly" {...field} className="bg-black/20 border-white/10 text-white rounded-md" />
+                    </FormControl>
+                    <FormDescription>
+                      A short description of your brand's tone and voice
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={editForm.control}
+                name="is_active"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                    <div className="space-y-0.5">
+                      <FormLabel>Active</FormLabel>
                       <FormDescription>
-                        A short description of your brand's tone and voice
+                        Make this your active brand kit for new designs
                       </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
 
-                <FormField
-                  control={editForm.control}
-                  name="is_active"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                      <div className="space-y-0.5">
-                        <FormLabel>Active</FormLabel>
-                        <FormDescription>
-                          Make this your active brand kit for new designs
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                <SlidingDialogFooter>
-                  <Button variant="outline" type="button" onClick={() => setIsEditDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={updateBrandKitMutation.isPending}>
-                    {updateBrandKitMutation.isPending ? 'Updating...' : 'Update'}
-                  </Button>
-                </SlidingDialogFooter>
-              </form>
-            </Form>
-          </SlidingDialogContent>
-        </SlidingDialog>
-      </SidebarGroupContent>
+              <SlidingDialogFooter>
+                <Button variant="outline" type="button" onClick={() => setIsEditDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={updateBrandKitMutation.isPending}>
+                  {updateBrandKitMutation.isPending ? 'Updating...' : 'Update'}
+                </Button>
+              </SlidingDialogFooter>
+            </form>
+          </Form>
+        </SlidingDialogContent>
+      </SlidingDialog>
     </SidebarGroup>
   );
 }
