@@ -1,14 +1,14 @@
 import { useState, FormEvent, ChangeEvent, useEffect } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { GeneratedFlyer, AiFlyerGenerationRequest, DesignSuggestions, DesignVariation, FontSettings, GoogleFont } from "@/lib/types";
+import { GeneratedFlyer, AiFlyerGenerationRequest, DesignSuggestions, DesignVariation, FontSettings, GoogleFont, BrandKit } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { ImageIcon, Upload, TypeIcon } from "lucide-react";
+import { ImageIcon, Upload, TypeIcon, Check } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import backgroundGradient from "../assets/background-gradient.png";
 import backgroundGradient2 from "../assets/backgroundd-gradient.png";
@@ -46,6 +46,14 @@ export default function AiFlyerForm({
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [designCount, setDesignCount] = useState<string>("4"); // Default to 4 designs
   const { fontSettings } = useUserSettings(); // Get font settings from context
+  
+  // Get active brand kit
+  const { data: activeBrandKitData } = useQuery<{ brandKit: BrandKit }>({
+    queryKey: ['/api/brand-kits/active'],
+    refetchOnWindowFocus: false,
+  });
+  
+  const activeBrandKit = activeBrandKitData?.brandKit;
   
   type AspectRatioOption = {
     id: string;
