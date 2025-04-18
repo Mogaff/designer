@@ -3,29 +3,44 @@
 @tailwind utilities;
 
 /* Custom sidebar styles */
-.sidebar-collapsed .sidebar-text {
-  display: none;
-}
-
 .sidebar-text {
-  transition: opacity 0.3s ease;
+  transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
 .sidebar-collapsed .sidebar-text {
-  opacity: 0;
   width: 0;
+  opacity: 0;
+  display: none;
   overflow: hidden;
+  margin-left: 0 !important;
 }
 
 /* Center icons in collapsed state */
-.sidebar-collapsed button svg,
-.sidebar-collapsed .flex svg {
-  margin: 0 auto;
+.sidebar-collapsed button,
+.sidebar-collapsed .flex {
+  justify-content: center !important;
+  align-items: center !important;
 }
 
-/* Improve spacing in collapsed state */
-.sidebar-collapsed .flex {
-  justify-content: center;
+.sidebar-collapsed button svg,
+.sidebar-collapsed .flex svg {
+  margin: 0 !important;
+}
+
+.sidebar-collapsed .w-full {
+  text-align: center;
+}
+
+/* Fix button alignment in collapsed state */
+.sidebar-collapsed button {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Improve icon visibility */
+button svg {
+  min-width: 20px;
 }
 
 :root {

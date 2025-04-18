@@ -267,13 +267,13 @@ export default function BrandKit() {
     <SidebarGroup>
       <SidebarGroupLabel className="flex items-center justify-between text-white">
         <span className="flex items-center uppercase font-semibold">
-          <PaintBucket className="mr-2 h-5 w-5" />
-          <span className="sidebar-text">Brand Kit</span>
+          <PaintBucket className="h-5 w-5" />
+          <span className="sidebar-text ml-2">Brand Kit</span>
         </span>
         <SidebarGroupAction asChild>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-6 w-6 text-white hover:bg-white/10">
+              <Button variant="ghost" size="icon" className="h-6 w-6 text-white hover:bg-white/10 sidebar-text">
                 <Plus className="h-4 w-4" />
               </Button>
             </DialogTrigger>
@@ -470,7 +470,7 @@ export default function BrandKit() {
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
           </div>
         ) : isError ? (
-          <div className="text-center text-red-500 p-2 text-sm">Failed to load brand kits</div>
+          <div className="text-center text-red-500 p-2 text-sm sidebar-text">Failed to load brand kits</div>
         ) : (
           <SidebarMenu>
             {brandKits.length > 0 ? (
@@ -479,12 +479,12 @@ export default function BrandKit() {
                   <div className="flex items-center justify-between w-full p-2 rounded-md hover:bg-white/10 text-white">
                     <div className="flex items-center">
                       <div
-                        className="w-3 h-3 rounded-full mr-2"
+                        className="w-3 h-3 rounded-full"
                         style={{ backgroundColor: brandKit.primary_color || '#4f46e5' }}
                       ></div>
-                      <span className="truncate sidebar-text">{brandKit.name}</span>
+                      <span className="truncate sidebar-text ml-2">{brandKit.name}</span>
                       {brandKit.is_active && (
-                        <Check className="ml-2 h-3 w-3 text-green-500" />
+                        <Check className="h-3 w-3 text-green-500 sidebar-text ml-1" />
                       )}
                     </div>
                     <div className="flex space-x-1 sidebar-text">
@@ -499,7 +499,7 @@ export default function BrandKit() {
                 </SidebarMenuItem>
               ))
             ) : (
-              <div className="text-center text-white/60 p-2 text-sm">
+              <div className="text-center text-white/60 p-2 text-sm sidebar-text">
                 No brand kits yet
               </div>
             )}

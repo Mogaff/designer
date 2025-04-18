@@ -52,10 +52,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
     <SidebarProvider defaultCollapsed={true} collapsible="icon" as="div">
       <div className="flex min-h-screen">
         <Sidebar side="left" className="border-r border-border bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800 text-white">
-          <SidebarHeader className="px-2 py-4">
-            <div className="flex items-center space-x-2">
-              <span className="text-lg font-semibold">DesignFlow AI</span>
-              <SidebarTrigger />
+          <SidebarHeader className="p-4">
+            <div className="flex items-center justify-center">
+              <span className="text-lg font-semibold sidebar-text">DesignFlow AI</span>
             </div>
           </SidebarHeader>
           
@@ -65,8 +64,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 <SidebarMenuButton asChild>
                   <Link href="/">
                     <Button variant={location === '/' ? 'secondary' : 'ghost'} className="w-full justify-start">
-                      <Home className="mr-2 h-5 w-5" />
-                      <span>Home</span>
+                      <Home className="h-5 w-5" />
+                      <span className="sidebar-text ml-2">Home</span>
                     </Button>
                   </Link>
                 </SidebarMenuButton>
@@ -76,8 +75,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 <SidebarMenuButton asChild>
                   <Link href="/gallery">
                     <Button variant={location === '/gallery' ? 'secondary' : 'ghost'} className="w-full justify-start">
-                      <Grid className="mr-2 h-5 w-5" />
-                      <span>Gallery</span>
+                      <Grid className="h-5 w-5" />
+                      <span className="sidebar-text ml-2">Gallery</span>
                     </Button>
                   </Link>
                 </SidebarMenuButton>
@@ -96,8 +95,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 <SidebarMenuButton asChild>
                   <Link href="/settings">
                     <Button variant={location === '/settings' ? 'secondary' : 'ghost'} className="w-full justify-start">
-                      <Settings className="mr-2 h-5 w-5" />
-                      <span>Settings</span>
+                      <Settings className="h-5 w-5" />
+                      <span className="sidebar-text ml-2">Settings</span>
                     </Button>
                   </Link>
                 </SidebarMenuButton>
@@ -115,11 +114,11 @@ export default function AppLayout({ children }: AppLayoutProps) {
                     <AvatarFallback>{getUserInitials()}</AvatarFallback>
                   )}
                 </Avatar>
-                <div className="ml-2">
+                <div className="ml-2 sidebar-text">
                   <p className="text-sm font-medium text-white">{user?.displayName || user?.email}</p>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" onClick={logout} className="text-white hover:bg-white/10">
+              <Button variant="ghost" size="icon" onClick={logout} className="text-white hover:bg-white/10 sidebar-text">
                 <LogOut className="h-4 w-4" />
               </Button>
             </div>
