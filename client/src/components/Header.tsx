@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import { LogIn, LogOut, User, CreditCard, Star, DollarSign, Images, Settings as SettingsIcon } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,6 +21,23 @@ export default function Header() {
   const { isAuthenticated, user, logout } = useAuth();
   const [location, navigate] = useLocation();
   const { expanded, collapsible } = useSidebar();
+  const [isMobile, setIsMobile] = useState(false);
+  
+  // Erkennen mobiler Geräte
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    
+    // Initial prüfen
+    checkMobile();
+    
+    // Event Listener für Größenänderungen
+    window.addEventListener('resize', checkMobile);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Query user credits when authenticated
   const { data: creditData, isLoading: isLoadingCredits } = useQuery<CreditsResponse>({
@@ -41,7 +59,11 @@ export default function Header() {
         <div 
           className="flex items-center transition-all duration-300 ease-in-out"
           style={{
-            transform: `translateX(${collapsible === "icon" ? (expanded ? "16rem" : "6.5rem") : "2.5rem"})`
+            transform: `translateX(${
+              collapsible === "icon" 
+              ? (expanded ? "16rem" : isMobile ? "8rem" : "6.5rem") 
+              : isMobile ? "3.5rem" : "2.5rem"
+            })`
           }}
         >
           <Link href="/">
