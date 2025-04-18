@@ -45,7 +45,7 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
   return (
     <div 
       className={cn(
-        "fixed top-20 left-[calc(var(--sidebar-collapsed-width)+8px)] w-72 max-h-[80vh] overflow-hidden rounded-lg bg-black/60 backdrop-blur-md z-40 border border-white/10 transform transition-all duration-300 ease-in-out shadow-xl",
+        "fixed top-16 left-[calc(var(--sidebar-collapsed-width)+2px)] w-72 max-h-[80vh] overflow-hidden rounded-lg bg-black/60 backdrop-blur-md z-40 border border-white/10 transform transition-all duration-300 ease-in-out shadow-xl",
         isOpen ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0 pointer-events-none"
       )}
       ref={panelRef}

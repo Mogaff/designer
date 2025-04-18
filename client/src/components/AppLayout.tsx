@@ -59,7 +59,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   };
 
   return (
-    <SidebarProvider defaultCollapsed={true} collapsible="icon" as="div">
+    <SidebarProvider defaultCollapsed={true} collapsible={false} as="div">
       <div className="flex min-h-screen">
         <Sidebar side="left" className="sidebar border-r border-border bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800 text-white">
 

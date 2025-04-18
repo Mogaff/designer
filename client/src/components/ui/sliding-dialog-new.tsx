@@ -43,15 +43,10 @@ export const SlidingDialogTrigger: React.FC<React.ButtonHTMLAttributes<HTMLButto
   children,
   ...props
 }) => {
-  return asChild ? (
-    React.Children.map(children, child => 
-      React.isValidElement(child) 
-        ? React.cloneElement(child as React.ReactElement<any>, { ...props })
-        : child
-    )[0]
-  ) : (
-    <button {...props}>{children}</button>
-  );
+  if (asChild && children && React.isValidElement(children)) {
+    return React.cloneElement(children as React.ReactElement<any>, { ...props });
+  }
+  return <button {...props}>{children}</button>;
 };
 
 export const SlidingDialogContent: React.FC<SlidingDialogContentProps & { 
@@ -84,7 +79,7 @@ export const SlidingDialogContent: React.FC<SlidingDialogContentProps & {
     <div
       ref={ref}
       className={cn(
-        "fixed left-[calc(var(--sidebar-width))] top-16 z-50 h-auto rounded-lg w-72 max-h-[80vh] overflow-auto border border-white/10 bg-black/60 backdrop-blur-md shadow-lg duration-300 transition-transform",
+        "fixed left-[calc(var(--sidebar-collapsed-width)+2px)] top-16 z-50 h-auto rounded-lg w-72 max-h-[80vh] overflow-auto border border-white/10 bg-black/60 backdrop-blur-md shadow-lg duration-300 transition-transform",
         open ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0 pointer-events-none",
         className
       )}
@@ -111,7 +106,7 @@ export const SlidingDialogHeader: React.FC<React.HTMLAttributes<HTMLDivElement>>
 }) => (
   <div
     className={cn(
-      "flex flex-col space-y-1.5 border-b border-white/10 p-4",
+      "flex flex-col space-y-1 border-b border-white/10 p-3",
       className
     )}
     {...props}
@@ -127,7 +122,7 @@ export const SlidingDialogFooter: React.FC<React.HTMLAttributes<HTMLDivElement>>
 }) => (
   <div
     className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 border-t border-white/10 p-4",
+      "flex flex-row justify-end space-x-2 border-t border-white/10 p-3",
       className
     )}
     {...props}
@@ -143,7 +138,7 @@ export const SlidingDialogTitle: React.FC<React.HTMLAttributes<HTMLHeadingElemen
 }) => (
   <h3
     className={cn(
-      "text-lg font-semibold leading-none tracking-tight text-white",
+      "text-base font-medium leading-tight tracking-tight text-white",
       className
     )}
     {...props}
@@ -158,7 +153,7 @@ export const SlidingDialogDescription: React.FC<React.HTMLAttributes<HTMLParagra
   ...props
 }) => (
   <p
-    className={cn("text-sm text-white/70", className)}
+    className={cn("text-xs text-white/70 mt-1", className)}
     {...props}
   >
     {children}

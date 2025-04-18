@@ -17,6 +17,29 @@
   visibility: hidden;
 }
 
+/* Create tooltip effect for sidebar buttons */
+.sidebar button {
+  position: relative;
+}
+
+.sidebar button:hover .sidebar-text {
+  position: absolute;
+  display: block !important;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  margin-left: 10px !important;
+  opacity: 1;
+  visibility: visible;
+  width: auto;
+  z-index: 50;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
 /* Center icons in collapsed state */
 .sidebar-collapsed button,
 .sidebar-collapsed .flex {
