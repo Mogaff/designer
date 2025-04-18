@@ -51,12 +51,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
   return (
     <SidebarProvider defaultCollapsed={true} collapsible="icon" as="div">
       <div className="flex min-h-screen">
-        <Sidebar side="left" className="border-r border-border bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800 text-white">
-          <SidebarHeader className="p-4">
-            <div className="flex items-center justify-center">
-              <span className="text-lg font-semibold sidebar-text">DesignFlow AI</span>
-            </div>
-          </SidebarHeader>
+        <Sidebar side="left" className="sidebar border-r border-border bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800 text-white">
+
           
           <SidebarContent>
             <SidebarMenu>

@@ -11,9 +11,10 @@
 .sidebar-collapsed .sidebar-text {
   width: 0;
   opacity: 0;
-  display: none;
+  display: none !important;
   overflow: hidden;
   margin-left: 0 !important;
+  visibility: hidden;
 }
 
 /* Center icons in collapsed state */
@@ -34,13 +35,31 @@
 
 /* Fix button alignment in collapsed state */
 .sidebar-collapsed button {
-  padding-left: 0 !important;
-  padding-right: 0 !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-/* Improve icon visibility */
+/* Improve icon visibility and positioning */
 button svg {
   min-width: 20px;
+}
+
+/* Ensure sidebar has proper spacing */
+.sidebar {
+  padding-top: 1rem;
+}
+
+/* Fix spacing between menu items */
+.sidebar-menu-item {
+  margin-bottom: 4px;
+}
+
+/* Center color dot in collapsed state */
+.sidebar-collapsed [class*="rounded-full"] {
+  margin: 0 auto !important;
 }
 
 :root {
