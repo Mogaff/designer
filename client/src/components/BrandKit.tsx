@@ -69,7 +69,11 @@ const brandKitSchema = z.object({
 
 type BrandKitFormValues = z.infer<typeof brandKitSchema>;
 
-export default function BrandKit() {
+interface BrandKitProps {
+  onOpenPanel: () => void;
+}
+
+export default function BrandKit({ onOpenPanel }: BrandKitProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedBrandKit, setSelectedBrandKit] = useState<BrandKit | null>(null);

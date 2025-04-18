@@ -45,3 +45,19 @@ export type AiFlyerGenerationRequest = {
   aspectRatio?: string;
   fontSettings?: FontSettings;
 };
+
+export interface BrandKit {
+  id: number;
+  user_id: number;
+  name: string;
+  primary_color: string | null;
+  secondary_color: string | null;
+  accent_color: string | null;
+  logo_url: string | null;
+  heading_font: string | null;
+  body_font: string | null;
+  brand_voice: string | null;
+  created_at: string;
+  updated_at: string;
+  is_active: boolean;
+}

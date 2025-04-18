@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { X, PlusCircle, Check, Edit, Trash2, PaintBucket, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
-import { BrandKit as BrandKitType } from '@/lib/types';
+import { BrandKit } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 interface BrandKitPanelProps {
@@ -14,7 +14,7 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   
   // Query to fetch brand kits
-  const { data: brandKits = [], isLoading, isError } = useQuery<BrandKitType[]>({
+  const { data: brandKits = [], isLoading, isError } = useQuery<BrandKit[]>({
     queryKey: ['/api/brand-kits'],
     queryFn: async () => {
       const response = await fetch('/api/brand-kits');

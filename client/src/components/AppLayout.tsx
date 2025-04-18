@@ -26,6 +26,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import BrandKit from '@/components/BrandKit';
+import { BrandKitPanel } from '@/components/BrandKitPanel';
 
 type AppLayoutProps = {
   children: React.ReactNode;
@@ -34,6 +35,7 @@ type AppLayoutProps = {
 export default function AppLayout({ children }: AppLayoutProps) {
   const [location] = useLocation();
   const { user, logout } = useAuth();
+  const [isBrandKitPanelOpen, setIsBrandKitPanelOpen] = useState(false);
   
   // Display only the initials of the user's name
   const getUserInitials = () => {
@@ -46,6 +48,14 @@ export default function AppLayout({ children }: AppLayoutProps) {
       .join('')
       .toUpperCase()
       .substring(0, 2);
+  };
+  
+  const handleOpenBrandKitPanel = () => {
+    setIsBrandKitPanelOpen(true);
+  };
+  
+  const handleCloseBrandKitPanel = () => {
+    setIsBrandKitPanelOpen(false);
   };
 
   return (
@@ -82,7 +92,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
             <SidebarSeparator className="bg-white/10" />
             
             {/* Brand Kit Section */}
-            <BrandKit />
+            <BrandKit onOpenPanel={handleOpenBrandKitPanel} />
             
             <SidebarSeparator className="bg-white/10" />
             
@@ -124,6 +134,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
         <SidebarInset className="flex-1 overflow-auto">
           {children}
         </SidebarInset>
+        
+        {/* Brand Kit Panel */}
+        <BrandKitPanel isOpen={isBrandKitPanelOpen} onClose={handleCloseBrandKitPanel} />
       </div>
     </SidebarProvider>
   );
