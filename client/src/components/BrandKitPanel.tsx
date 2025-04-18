@@ -18,7 +18,6 @@ import {
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useToast } from '@/hooks/use-toast';
 
 type View = 'list' | 'create' | 'edit';
 
@@ -48,8 +47,6 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
   const [view, setView] = useState<View>('list');
   const [selectedKit, setSelectedKit] = useState<BrandKit | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>('');
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
   
   // Form setup
   const form = useForm<BrandKitFormValues>({
@@ -80,6 +77,7 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
   });
   
   // Mutations for creating and updating brand kits
+  const queryClient = useQueryClient();
   
   const createBrandKitMutation = useMutation<any, Error, BrandKitFormValues>({
     mutationFn: async (data: BrandKitFormValues) => {
@@ -192,39 +190,6 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
     reader.readAsDataURL(file);
   };
   
-  // Handle setting a brand kit as active
-  const handleSetActive = (id: number) => {
-    const updateData = { is_active: true };
-    
-    fetch(`/api/brand-kits/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(updateData),
-    })
-      .then(response => {
-        if (!response.ok) throw new Error('Failed to update brand kit');
-        return response.json();
-      })
-      .then(() => {
-        // Refetch brand kits to update the UI
-        queryClient.invalidateQueries({ queryKey: ['/api/brand-kits'] });
-        toast({
-          title: "Brand kit activated",
-          description: "Your brand kit is now active and will be used for new designs.",
-        });
-      })
-      .catch(error => {
-        console.error('Error updating brand kit:', error);
-        toast({
-          title: "Error",
-          description: "Failed to set brand kit as active. Please try again.",
-          variant: "destructive",
-        });
-      });
-  };
-  
   // Handle click outside to close
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -296,9 +261,9 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
                   brandKits.map((brandKit) => (
                     <div key={brandKit.id} className="bg-white/5 rounded-lg p-2.5 shadow-sm">
                       <div className="flex items-center justify-between mb-1.5">
-                        <div className="flex items-center cursor-pointer" onClick={() => !brandKit.is_active && handleSetActive(brandKit.id)}>
+                        <div className="flex items-center">
                           <div 
-                            className={`h-7 w-7 rounded-md flex items-center justify-center overflow-hidden mr-2 ${!brandKit.is_active ? "hover:ring-2 hover:ring-white/30" : ""}`}
+                            className="h-7 w-7 rounded-md flex items-center justify-center overflow-hidden" 
                             style={{ backgroundColor: brandKit.primary_color || '#4f46e5', boxShadow: `0 0 10px ${brandKit.primary_color || '#4f46e5'}60` }}
                           >
                             {brandKit.logo_url ? (
@@ -307,30 +272,15 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
                               <div className="w-3 h-3 rounded-full bg-white/70"></div>
                             )}
                           </div>
-                          
-                          <div className="flex flex-col">
-                            <div className="flex items-center">
-                              <span className="font-medium text-white text-sm">{brandKit.name}</span>
-                              {brandKit.is_active && (
-                                <div className="ml-2 bg-green-600/20 p-0.5 px-1.5 rounded text-xs text-green-500 flex items-center">
-                                  <Check className="h-2.5 w-2.5 mr-0.5" />
-                                  Active
-                                </div>
-                              )}
+                          <span className="ml-2 font-medium text-white text-sm">{brandKit.name}</span>
+                          {brandKit.is_active && (
+                            <div className="ml-2 bg-green-600/20 p-0.5 px-1.5 rounded text-xs text-green-500 flex items-center">
+                              <Check className="h-2.5 w-2.5 mr-0.5" />
+                              Active
                             </div>
-                          </div>
+                          )}
                         </div>
-                        
-                        <div className="flex items-center space-x-1">
-                          <div 
-                            onClick={() => !brandKit.is_active && handleSetActive(brandKit.id)}
-                            className={`flex items-center justify-center w-5 h-5 rounded-full border ${brandKit.is_active 
-                              ? 'border-green-500 bg-green-500/20' 
-                              : 'border-white/30 bg-black/30 hover:bg-white/10 cursor-pointer'}`}
-                          >
-                            {brandKit.is_active && <Check className="h-3 w-3 text-green-500" />}
-                          </div>
-                          
+                        <div className="flex space-x-1">
                           <Button 
                             variant="ghost" 
                             size="icon" 
@@ -339,7 +289,6 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
                           >
                             <Edit className="h-2.5 w-2.5" />
                           </Button>
-                          
                           <Button 
                             variant="ghost" 
                             size="icon" 
