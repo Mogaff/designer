@@ -299,6 +299,7 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
                         !brandKit.is_active && "hover:bg-white/10"
                       )}
                       onClick={(e) => handleSetActive(brandKit, e)}
+                      title={brandKit.is_active ? "Bereits aktiv" : "Klicken, um als aktiv zu setzen"}
                     >
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center">
