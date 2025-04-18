@@ -292,7 +292,14 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
               <div className="space-y-3">
                 {brandKits.length > 0 ? (
                   brandKits.map((brandKit) => (
-                    <div key={brandKit.id} className="bg-white/5 rounded-lg p-2.5 shadow-sm">
+                    <div 
+                      key={brandKit.id} 
+                      className={cn(
+                        "bg-white/5 rounded-lg p-2.5 shadow-sm cursor-pointer transition-all duration-200",
+                        !brandKit.is_active && "hover:bg-white/10"
+                      )}
+                      onClick={(e) => handleSetActive(brandKit, e)}
+                    >
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center">
                           <div 
@@ -317,7 +324,7 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            onClick={() => handleEdit(brandKit)}
+                            onClick={(e) => { e.stopPropagation(); handleEdit(brandKit); }}
                             className="h-5 w-5 text-white hover:bg-white/10 rounded-full"
                           >
                             <Edit className="h-2.5 w-2.5" />
