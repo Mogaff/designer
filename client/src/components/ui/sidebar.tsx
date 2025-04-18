@@ -81,12 +81,30 @@ export const Sidebar = ({
   expanded: forcedExpanded,
   ...props
 }: SidebarProps) => {
-  const { expanded } = useSidebar();
+  const { expanded, setExpanded, collapsible } = useSidebar();
   const isExpanded = forcedExpanded !== undefined ? forcedExpanded : expanded;
+  
+  const handleMouseEnter = () => {
+    if (collapsible === "icon") {
+      setExpanded(true);
+    }
+  };
+  
+  const handleMouseLeave = () => {
+    if (collapsible === "icon") {
+      setExpanded(false);
+    }
+  };
 
   return (
     <aside
-      className={cn(sidebarVariants({ side, expanded: isExpanded }), className)}
+      className={cn(
+        sidebarVariants({ side, expanded: isExpanded }), 
+        !isExpanded && "sidebar-collapsed",
+        className
+      )}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       {...props}
     />
   );
@@ -162,8 +180,8 @@ export const SidebarGroupLabel = ({
   return (
     <div
       className={cn(
-        "mb-2 px-2 text-xs uppercase tracking-wider text-muted-foreground",
-        expanded ? "text-left" : "text-center",
+        "mb-2 px-2 text-xs uppercase tracking-wider",
+        expanded ? "text-left" : "text-center flex justify-center items-center",
         className
       )}
       {...props}
@@ -229,7 +247,7 @@ export const SidebarMenuButton = ({
     <button
       className={cn(
         "block w-full",
-        !expanded && "px-0 py-2",
+        !expanded && "px-0 py-2 flex justify-center items-center",
         className
       )}
       {...props}

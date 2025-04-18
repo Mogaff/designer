@@ -267,8 +267,8 @@ export default function BrandKit() {
     <SidebarGroup>
       <SidebarGroupLabel className="flex items-center justify-between text-white">
         <span className="flex items-center uppercase font-semibold">
-          <PaintBucket className="mr-2 h-4 w-4" />
-          Brand Kit
+          <PaintBucket className="mr-2 h-5 w-5" />
+          <span className="sidebar-text">Brand Kit</span>
         </span>
         <SidebarGroupAction asChild>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -482,12 +482,12 @@ export default function BrandKit() {
                         className="w-3 h-3 rounded-full mr-2"
                         style={{ backgroundColor: brandKit.primary_color || '#4f46e5' }}
                       ></div>
-                      <span className="truncate">{brandKit.name}</span>
+                      <span className="truncate sidebar-text">{brandKit.name}</span>
                       {brandKit.is_active && (
                         <Check className="ml-2 h-3 w-3 text-green-500" />
                       )}
                     </div>
-                    <div className="flex space-x-1">
+                    <div className="flex space-x-1 sidebar-text">
                       <Button variant="ghost" size="icon" className="h-6 w-6 text-white hover:bg-white/10" onClick={() => handleEdit(brandKit)}>
                         <Edit className="h-3 w-3" />
                       </Button>
