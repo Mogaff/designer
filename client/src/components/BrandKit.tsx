@@ -26,7 +26,7 @@ import {
   SlidingDialogHeader,
   SlidingDialogTitle,
   SlidingDialogTrigger
-} from '@/components/ui/sliding-dialog';
+} from '@/components/ui/sliding-dialog-new';
 import {
   Form,
   FormControl,
@@ -289,19 +289,19 @@ export default function BrandKit({ onOpenPanel }: BrandKitProps) {
           <span className="sidebar-text ml-2 uppercase font-medium tracking-wide text-xs">Brand Kit</span>
         </div>
         <SidebarGroupAction asChild>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
+          <SlidingDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <SlidingDialogTrigger asChild>
               <Button variant="ghost" size="icon" className="h-6 w-6 text-white hover:bg-white/10 rounded-full sidebar-text">
                 <Plus className="h-3.5 w-3.5" />
               </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add Brand Kit</DialogTitle>
-                <DialogDescription>
+            </SlidingDialogTrigger>
+            <SlidingDialogContent>
+              <SlidingDialogHeader>
+                <SlidingDialogTitle>Add Brand Kit</SlidingDialogTitle>
+                <SlidingDialogDescription>
                   Create a new brand kit to store your brand's colors, fonts, and voice.
-                </DialogDescription>
-              </DialogHeader>
+                </SlidingDialogDescription>
+              </SlidingDialogHeader>
 
               <Form {...addForm}>
                 <form onSubmit={addForm.handleSubmit(onAddSubmit)} className="space-y-4">
@@ -530,18 +530,18 @@ export default function BrandKit({ onOpenPanel }: BrandKitProps) {
                     )}
                   />
 
-                  <DialogFooter>
+                  <SlidingDialogFooter>
                     <Button variant="outline" type="button" onClick={() => setIsAddDialogOpen(false)}>
                       Cancel
                     </Button>
                     <Button type="submit" disabled={addBrandKitMutation.isPending}>
                       {addBrandKitMutation.isPending ? 'Creating...' : 'Create'}
                     </Button>
-                  </DialogFooter>
+                  </SlidingDialogFooter>
                 </form>
               </Form>
-            </DialogContent>
-          </Dialog>
+            </SlidingDialogContent>
+          </SlidingDialog>
         </SidebarGroupAction>
       </SidebarGroupLabel>
 

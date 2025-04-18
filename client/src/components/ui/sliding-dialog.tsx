@@ -36,7 +36,7 @@ const SlidingDialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed right-0 top-0 z-50 h-full w-80 overflow-auto border-l border-white/10 bg-black/60 backdrop-blur-md shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-right-full",
+        "fixed left-[calc(var(--sidebar-width))] top-16 z-50 h-auto rounded-lg w-72 max-h-[80vh] overflow-auto border border-white/10 bg-black/60 backdrop-blur-md shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-left-full data-[state=open]:slide-in-from-left-1/2",
         className
       )}
       {...props}
