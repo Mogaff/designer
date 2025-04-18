@@ -18,6 +18,7 @@ import {
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useToast } from '@/hooks/use-toast';
 
 type View = 'list' | 'create' | 'edit';
 
@@ -47,6 +48,8 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
   const [view, setView] = useState<View>('list');
   const [selectedKit, setSelectedKit] = useState<BrandKit | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>('');
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   // Form setup
   const form = useForm<BrandKitFormValues>({
@@ -77,7 +80,6 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
   });
   
   // Mutations for creating and updating brand kits
-  const queryClient = useQueryClient();
   
   const createBrandKitMutation = useMutation<any, Error, BrandKitFormValues>({
     mutationFn: async (data: BrandKitFormValues) => {
@@ -280,7 +282,16 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
                             </div>
                           )}
                         </div>
-                        <div className="flex space-x-1">
+                        <div className="flex items-center space-x-1">
+                          {!brandKit.is_active && (
+                            <Button 
+                              variant="ghost"
+                              onClick={() => handleSetActive(brandKit.id)}
+                              className="h-6 bg-black/10 hover:bg-black/20 border border-white/10 text-white/70 rounded text-[10px] px-1.5"
+                            >
+                              Set Active
+                            </Button>
+                          )}
                           <Button 
                             variant="ghost" 
                             size="icon" 
