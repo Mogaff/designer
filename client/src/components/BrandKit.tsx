@@ -1,0 +1,694 @@
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
+  SidebarGroupAction,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton
+} from '@/components/ui/sidebar';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { useToast } from '@/hooks/use-toast';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { PaintBucket, Plus, Trash2, Edit, Check } from 'lucide-react';
+import { queryClient } from '@/lib/queryClient';
+
+// Definition for BrandKit type
+interface BrandKit {
+  id: number;
+  user_id: number;
+  name: string;
+  primary_color: string | null;
+  secondary_color: string | null;
+  accent_color: string | null;
+  logo_url: string | null;
+  heading_font: string | null;
+  body_font: string | null;
+  brand_voice: string | null;
+  created_at: string;
+  updated_at: string;
+  is_active: boolean;
+}
+
+// Form validation schema for creating/editing a brand kit
+const brandKitSchema = z.object({
+  name: z.string().min(1, { message: 'Name is required' }),
+  primary_color: z.string().nullable().optional(),
+  secondary_color: z.string().nullable().optional(),
+  accent_color: z.string().nullable().optional(),
+  heading_font: z.string().nullable().optional(),
+  body_font: z.string().nullable().optional(),
+  brand_voice: z.string().nullable().optional(),
+  is_active: z.boolean().default(true),
+});
+
+type BrandKitFormValues = z.infer<typeof brandKitSchema>;
+
+export default function BrandKit() {
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedBrandKit, setSelectedBrandKit] = useState<BrandKit | null>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Get all brand kits
+  const { data: brandKits, isLoading, isError } = useQuery({
+    queryKey: ['/api/brand-kits'],
+    refetchOnWindowFocus: false,
+  });
+
+  // Get active brand kit
+  const { data: activeBrandKit } = useQuery({
+    queryKey: ['/api/brand-kits/active'],
+    refetchOnWindowFocus: false,
+    enabled: brandKits?.brandKits?.some((kit: BrandKit) => kit.is_active),
+  });
+
+  // Add brand kit mutation
+  const addBrandKitMutation = useMutation({
+    mutationFn: async (data: BrandKitFormValues) => {
+      const response = await fetch('/api/brand-kits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create brand kit');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/brand-kits'] });
+      toast({
+        title: 'Success',
+        description: 'Brand kit created successfully',
+      });
+      setIsAddDialogOpen(false);
+      addForm.reset();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Update brand kit mutation
+  const updateBrandKitMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: BrandKitFormValues }) => {
+      const response = await fetch(`/api/brand-kits/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to update brand kit');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/brand-kits'] });
+      toast({
+        title: 'Success',
+        description: 'Brand kit updated successfully',
+      });
+      setIsEditDialogOpen(false);
+      setSelectedBrandKit(null);
+      editForm.reset();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Delete brand kit mutation
+  const deleteBrandKitMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/brand-kits/${id}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to delete brand kit');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/brand-kits'] });
+      toast({
+        title: 'Success',
+        description: 'Brand kit deleted successfully',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Form for adding a new brand kit
+  const addForm = useForm<BrandKitFormValues>({
+    resolver: zodResolver(brandKitSchema),
+    defaultValues: {
+      name: '',
+      primary_color: '#4f46e5',
+      secondary_color: '#a5b4fc',
+      accent_color: '#f59e0b',
+      heading_font: 'Arial',
+      body_font: 'Helvetica',
+      brand_voice: '',
+      is_active: true,
+    },
+  });
+
+  // Form for editing an existing brand kit
+  const editForm = useForm<BrandKitFormValues>({
+    resolver: zodResolver(brandKitSchema),
+    defaultValues: {
+      name: '',
+      primary_color: '',
+      secondary_color: '',
+      accent_color: '',
+      heading_font: '',
+      body_font: '',
+      brand_voice: '',
+      is_active: false,
+    },
+  });
+
+  // Update edit form when a brand kit is selected
+  useEffect(() => {
+    if (selectedBrandKit) {
+      editForm.reset({
+        name: selectedBrandKit.name,
+        primary_color: selectedBrandKit.primary_color || '',
+        secondary_color: selectedBrandKit.secondary_color || '',
+        accent_color: selectedBrandKit.accent_color || '',
+        heading_font: selectedBrandKit.heading_font || '',
+        body_font: selectedBrandKit.body_font || '',
+        brand_voice: selectedBrandKit.brand_voice || '',
+        is_active: selectedBrandKit.is_active,
+      });
+    }
+  }, [selectedBrandKit, editForm]);
+
+  // Handle brand kit submission
+  const onAddSubmit = (data: BrandKitFormValues) => {
+    addBrandKitMutation.mutate(data);
+  };
+
+  // Handle brand kit update
+  const onEditSubmit = (data: BrandKitFormValues) => {
+    if (selectedBrandKit) {
+      updateBrandKitMutation.mutate({ id: selectedBrandKit.id, data });
+    }
+  };
+
+  // Handle brand kit deletion
+  const handleDelete = (id: number) => {
+    if (confirm('Are you sure you want to delete this brand kit?')) {
+      deleteBrandKitMutation.mutate(id);
+    }
+  };
+
+  // Open edit dialog
+  const handleEdit = (brandKit: BrandKit) => {
+    setSelectedBrandKit(brandKit);
+    setIsEditDialogOpen(true);
+  };
+
+  return (
+    <SidebarGroup>
+      <SidebarGroupLabel className="flex items-center justify-between">
+        <span className="flex items-center">
+          <PaintBucket className="mr-2 h-4 w-4" />
+          Brand Kit
+        </span>
+        <SidebarGroupAction asChild>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-6 w-6">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add Brand Kit</DialogTitle>
+                <DialogDescription>
+                  Create a new brand kit to store your brand's colors, fonts, and voice.
+                </DialogDescription>
+              </DialogHeader>
+
+              <Form {...addForm}>
+                <form onSubmit={addForm.handleSubmit(onAddSubmit)} className="space-y-4">
+                  <FormField
+                    control={addForm.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="My Brand" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="grid grid-cols-3 gap-4">
+                    <FormField
+                      control={addForm.control}
+                      name="primary_color"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Primary Color</FormLabel>
+                          <FormControl>
+                            <div className="flex items-center space-x-2">
+                              <Input
+                                type="color"
+                                className="h-10 w-10"
+                                {...field}
+                                value={field.value || '#4f46e5'}
+                              />
+                              <Input
+                                {...field}
+                                value={field.value || '#4f46e5'}
+                                className="flex-1"
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={addForm.control}
+                      name="secondary_color"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Secondary</FormLabel>
+                          <FormControl>
+                            <div className="flex items-center space-x-2">
+                              <Input
+                                type="color"
+                                className="h-10 w-10"
+                                {...field}
+                                value={field.value || '#a5b4fc'}
+                              />
+                              <Input
+                                {...field}
+                                value={field.value || '#a5b4fc'}
+                                className="flex-1"
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={addForm.control}
+                      name="accent_color"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Accent</FormLabel>
+                          <FormControl>
+                            <div className="flex items-center space-x-2">
+                              <Input
+                                type="color"
+                                className="h-10 w-10"
+                                {...field}
+                                value={field.value || '#f59e0b'}
+                              />
+                              <Input
+                                {...field}
+                                value={field.value || '#f59e0b'}
+                                className="flex-1"
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={addForm.control}
+                      name="heading_font"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Heading Font</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Arial" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={addForm.control}
+                      name="body_font"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Body Font</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Helvetica" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={addForm.control}
+                    name="brand_voice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Brand Voice</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Professional and friendly" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          A short description of your brand's tone and voice
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={addForm.control}
+                    name="is_active"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                        <div className="space-y-0.5">
+                          <FormLabel>Active</FormLabel>
+                          <FormDescription>
+                            Make this your active brand kit for new designs
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <DialogFooter>
+                    <Button variant="outline" type="button" onClick={() => setIsAddDialogOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={addBrandKitMutation.isPending}>
+                      {addBrandKitMutation.isPending ? 'Creating...' : 'Create'}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
+        </SidebarGroupAction>
+      </SidebarGroupLabel>
+
+      <SidebarGroupContent>
+        {isLoading ? (
+          <div className="flex justify-center p-4">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+          </div>
+        ) : isError ? (
+          <div className="text-center text-red-500 p-2 text-sm">Failed to load brand kits</div>
+        ) : (
+          <SidebarMenu>
+            {brandKits?.brandKits?.length > 0 ? (
+              brandKits.brandKits.map((brandKit: BrandKit) => (
+                <SidebarMenuItem key={brandKit.id}>
+                  <div className="flex items-center justify-between w-full p-2 rounded-md hover:bg-secondary/50">
+                    <div className="flex items-center">
+                      <div
+                        className="w-3 h-3 rounded-full mr-2"
+                        style={{ backgroundColor: brandKit.primary_color || '#4f46e5' }}
+                      ></div>
+                      <span className="truncate">{brandKit.name}</span>
+                      {brandKit.is_active && (
+                        <Check className="ml-2 h-3 w-3 text-green-500" />
+                      )}
+                    </div>
+                    <div className="flex space-x-1">
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEdit(brandKit)}>
+                        <Edit className="h-3 w-3" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleDelete(brandKit.id)}>
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </SidebarMenuItem>
+              ))
+            ) : (
+              <div className="text-center text-muted-foreground p-2 text-sm">
+                No brand kits yet
+              </div>
+            )}
+          </SidebarMenu>
+        )}
+
+        {/* Edit Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Brand Kit</DialogTitle>
+              <DialogDescription>
+                Update your brand kit settings
+              </DialogDescription>
+            </DialogHeader>
+
+            <Form {...editForm}>
+              <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
+                <FormField
+                  control={editForm.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="My Brand" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-3 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="primary_color"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Primary Color</FormLabel>
+                        <FormControl>
+                          <div className="flex items-center space-x-2">
+                            <Input
+                              type="color"
+                              className="h-10 w-10"
+                              {...field}
+                              value={field.value || '#4f46e5'}
+                            />
+                            <Input
+                              {...field}
+                              value={field.value || '#4f46e5'}
+                              className="flex-1"
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={editForm.control}
+                    name="secondary_color"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Secondary</FormLabel>
+                        <FormControl>
+                          <div className="flex items-center space-x-2">
+                            <Input
+                              type="color"
+                              className="h-10 w-10"
+                              {...field}
+                              value={field.value || '#a5b4fc'}
+                            />
+                            <Input
+                              {...field}
+                              value={field.value || '#a5b4fc'}
+                              className="flex-1"
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={editForm.control}
+                    name="accent_color"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Accent</FormLabel>
+                        <FormControl>
+                          <div className="flex items-center space-x-2">
+                            <Input
+                              type="color"
+                              className="h-10 w-10"
+                              {...field}
+                              value={field.value || '#f59e0b'}
+                            />
+                            <Input
+                              {...field}
+                              value={field.value || '#f59e0b'}
+                              className="flex-1"
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="heading_font"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Heading Font</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Arial" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={editForm.control}
+                    name="body_font"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Body Font</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Helvetica" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={editForm.control}
+                  name="brand_voice"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Brand Voice</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Professional and friendly" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        A short description of your brand's tone and voice
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={editForm.control}
+                  name="is_active"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                      <div className="space-y-0.5">
+                        <FormLabel>Active</FormLabel>
+                        <FormDescription>
+                          Make this your active brand kit for new designs
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <DialogFooter>
+                  <Button variant="outline" type="button" onClick={() => setIsEditDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={updateBrandKitMutation.isPending}>
+                    {updateBrandKitMutation.isPending ? 'Updating...' : 'Update'}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  );
+}

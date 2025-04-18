@@ -452,7 +452,7 @@ export class MemStorage implements IStorage {
 }
 
 import { db } from "./db";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, not } from "drizzle-orm";
 
 export class DatabaseStorage implements IStorage {
   // User methods
@@ -710,14 +710,24 @@ export class DatabaseStorage implements IStorage {
     
     // If updating to active, deactivate other brand kits for this user
     if (updates.is_active) {
-      await db
-        .update(brandKits)
-        .set({ is_active: false })
+      // First get all active brand kits except this one
+      const otherActiveBrandKits = await db
+        .select()
+        .from(brandKits)
         .where(and(
           eq(brandKits.user_id, brandKit.user_id),
-          eq(brandKits.is_active, true),
-          brandKits.id != id
+          eq(brandKits.is_active, true)
         ));
+        
+      // Then update each one individually (except for the current one)
+      for (const kit of otherActiveBrandKits) {
+        if (kit.id !== id) {
+          await db
+            .update(brandKits)
+            .set({ is_active: false })
+            .where(eq(brandKits.id, kit.id));
+        }
+      }
     }
     
     // Set the updated_at timestamp

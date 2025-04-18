@@ -705,6 +705,176 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Brand Kit API routes
+  
+  // Get all brand kits for the authenticated user
+  app.get("/api/brand-kits", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const brandKits = await storage.getBrandKits(userId);
+      
+      res.json({ brandKits });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to get brand kits: ${errorMessage}` });
+    }
+  });
+  
+  // Get the active brand kit for the user
+  app.get("/api/brand-kits/active", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const activeBrandKit = await storage.getActiveBrandKit(userId);
+      
+      if (!activeBrandKit) {
+        return res.status(404).json({ message: "No active brand kit found" });
+      }
+      
+      res.json({ brandKit: activeBrandKit });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to get active brand kit: ${errorMessage}` });
+    }
+  });
+  
+  // Get a specific brand kit by ID
+  app.get("/api/brand-kits/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const brandKitId = parseInt(req.params.id);
+      if (isNaN(brandKitId)) {
+        return res.status(400).json({ message: "Invalid brand kit ID" });
+      }
+      
+      const userId = (req.user as any).id;
+      const brandKit = await storage.getBrandKit(brandKitId, userId);
+      
+      if (!brandKit) {
+        return res.status(404).json({ message: "Brand kit not found or not owned by user" });
+      }
+      
+      res.json({ brandKit });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to get brand kit: ${errorMessage}` });
+    }
+  });
+  
+  // Create a new brand kit for the user
+  app.post("/api/brand-kits", isAuthenticated, uploadFields, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      
+      // Parse request body
+      const result = insertBrandKitSchema.safeParse({
+        ...req.body,
+        user_id: userId
+      });
+      
+      if (!result.success) {
+        return res.status(400).json({ 
+          message: "Invalid brand kit data", 
+          errors: result.error.format() 
+        });
+      }
+      
+      // Handle logo upload if provided
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      let logoUrl = req.body.logo_url;
+      
+      if (files && files.logo && files.logo[0]) {
+        // In a real app, you'd upload this to cloud storage
+        // For now, we'll convert to base64 and store in the database
+        const logoBase64 = `data:${files.logo[0].mimetype};base64,${files.logo[0].buffer.toString('base64')}`;
+        logoUrl = logoBase64;
+      }
+      
+      // Create the brand kit
+      const brandKit = await storage.createBrandKit({
+        ...result.data,
+        logo_url: logoUrl
+      });
+      
+      res.status(201).json({ brandKit });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to create brand kit: ${errorMessage}` });
+    }
+  });
+  
+  // Update an existing brand kit
+  app.put("/api/brand-kits/:id", isAuthenticated, uploadFields, async (req: Request, res: Response) => {
+    try {
+      const brandKitId = parseInt(req.params.id);
+      if (isNaN(brandKitId)) {
+        return res.status(400).json({ message: "Invalid brand kit ID" });
+      }
+      
+      const userId = (req.user as any).id;
+      
+      // Check if brand kit exists and belongs to user
+      const existingBrandKit = await storage.getBrandKit(brandKitId, userId);
+      if (!existingBrandKit) {
+        return res.status(404).json({ message: "Brand kit not found or not owned by user" });
+      }
+      
+      // Handle logo upload if provided
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      let logoUrl = req.body.logo_url;
+      
+      if (files && files.logo && files.logo[0]) {
+        // In a real app, you'd upload this to cloud storage
+        // For now, we'll convert to base64 and store in the database
+        const logoBase64 = `data:${files.logo[0].mimetype};base64,${files.logo[0].buffer.toString('base64')}`;
+        logoUrl = logoBase64;
+      }
+      
+      // Update the brand kit
+      const updatedBrandKit = await storage.updateBrandKit(
+        brandKitId,
+        {
+          ...req.body,
+          logo_url: logoUrl || undefined
+        },
+        userId
+      );
+      
+      res.json({ brandKit: updatedBrandKit });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to update brand kit: ${errorMessage}` });
+    }
+  });
+  
+  // Delete a brand kit
+  app.delete("/api/brand-kits/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const brandKitId = parseInt(req.params.id);
+      if (isNaN(brandKitId)) {
+        return res.status(400).json({ message: "Invalid brand kit ID" });
+      }
+      
+      const userId = (req.user as any).id;
+      
+      // Check if brand kit exists and belongs to user
+      const brandKit = await storage.getBrandKit(brandKitId, userId);
+      if (!brandKit) {
+        return res.status(404).json({ message: "Brand kit not found or not owned by user" });
+      }
+      
+      // Delete the brand kit
+      const success = await storage.deleteBrandKit(brandKitId, userId);
+      
+      if (success) {
+        res.json({ message: "Brand kit deleted successfully" });
+      } else {
+        res.status(500).json({ message: "Failed to delete brand kit" });
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to delete brand kit: ${errorMessage}` });
+    }
+  });
+  
   // Stripe payment integration endpoints
   
   // Create a checkout session for Stripe payment
