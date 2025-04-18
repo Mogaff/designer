@@ -75,6 +75,8 @@ button svg {
   --color-grey-900: #212121;
   --color-black: #121212;
   --background-gradient: linear-gradient(135deg, var(--color-grey-900) 0%, var(--color-black) 100%);
+  --sidebar-width: 280px;
+  --sidebar-collapsed-width: 60px;
 }
 
 @layer base {

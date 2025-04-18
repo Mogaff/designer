@@ -45,20 +45,20 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
   return (
     <div 
       className={cn(
-        "fixed top-0 right-0 h-screen w-80 bg-black/60 backdrop-blur-md z-40 border-l border-white/10 transform transition-transform duration-300 ease-in-out shadow-xl",
-        isOpen ? "translate-x-0" : "translate-x-full"
+        "fixed top-20 left-[calc(var(--sidebar-collapsed-width)+8px)] w-72 max-h-[80vh] overflow-hidden rounded-lg bg-black/60 backdrop-blur-md z-40 border border-white/10 transform transition-all duration-300 ease-in-out shadow-xl",
+        isOpen ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0 pointer-events-none"
       )}
       ref={panelRef}
     >
-      <div className="flex flex-col h-full">
-        <div className="flex items-center justify-between p-4 border-b border-white/10">
-          <h2 className="text-lg font-medium text-white">Brand Kits</h2>
-          <Button variant="ghost" size="icon" onClick={onClose} className="text-white hover:bg-white/10">
+      <div className="flex flex-col max-h-[80vh]">
+        <div className="flex items-center justify-between p-3 border-b border-white/10">
+          <h2 className="text-base font-medium text-white">Brand Kits</h2>
+          <Button variant="ghost" size="icon" onClick={onClose} className="text-white hover:bg-white/10 h-7 w-7">
             <X className="h-4 w-4" />
           </Button>
         </div>
         
-        <div className="flex-1 overflow-auto p-4">
+        <div className="overflow-y-auto p-3" style={{ maxHeight: 'calc(80vh - 120px)' }}>
           {isLoading ? (
             <div className="flex justify-center p-4">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
@@ -66,76 +66,76 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
           ) : isError ? (
             <div className="text-center text-red-500 p-2 text-sm">Failed to load brand kits</div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {brandKits.length > 0 ? (
                 brandKits.map((brandKit) => (
-                  <div key={brandKit.id} className="bg-white/5 rounded-lg p-3 shadow-sm">
-                    <div className="flex items-center justify-between mb-2">
+                  <div key={brandKit.id} className="bg-white/5 rounded-lg p-2.5 shadow-sm">
+                    <div className="flex items-center justify-between mb-1.5">
                       <div className="flex items-center">
                         <div 
-                          className="h-8 w-8 rounded-md flex items-center justify-center overflow-hidden" 
+                          className="h-7 w-7 rounded-md flex items-center justify-center overflow-hidden" 
                           style={{ backgroundColor: brandKit.primary_color || '#4f46e5', boxShadow: `0 0 10px ${brandKit.primary_color || '#4f46e5'}60` }}
                         >
                           {brandKit.logo_url ? (
-                            <img src={brandKit.logo_url} alt="Logo" className="w-5 h-5 object-contain" />
+                            <img src={brandKit.logo_url} alt="Logo" className="w-4 h-4 object-contain" />
                           ) : (
-                            <div className="w-4 h-4 rounded-full bg-white/70"></div>
+                            <div className="w-3 h-3 rounded-full bg-white/70"></div>
                           )}
                         </div>
-                        <span className="ml-2 font-medium text-white">{brandKit.name}</span>
+                        <span className="ml-2 font-medium text-white text-sm">{brandKit.name}</span>
                         {brandKit.is_active && (
                           <div className="ml-2 bg-green-600/20 p-0.5 px-1.5 rounded text-xs text-green-500 flex items-center">
-                            <Check className="h-3 w-3 mr-1" />
+                            <Check className="h-2.5 w-2.5 mr-0.5" />
                             Active
                           </div>
                         )}
                       </div>
                       <div className="flex space-x-1">
-                        <Button variant="ghost" size="icon" className="h-6 w-6 text-white hover:bg-white/10 rounded-full">
-                          <Edit className="h-3 w-3" />
+                        <Button variant="ghost" size="icon" className="h-5 w-5 text-white hover:bg-white/10 rounded-full">
+                          <Edit className="h-2.5 w-2.5" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-6 w-6 text-white hover:bg-white/10 rounded-full">
-                          <Trash2 className="h-3 w-3" />
+                        <Button variant="ghost" size="icon" className="h-5 w-5 text-white hover:bg-white/10 rounded-full">
+                          <Trash2 className="h-2.5 w-2.5" />
                         </Button>
                       </div>
                     </div>
                     
-                    <div className="grid grid-cols-3 gap-2 mt-3">
+                    <div className="grid grid-cols-3 gap-1.5 mt-2">
                       <div 
-                        className="h-10 rounded-md"
+                        className="h-8 rounded-md"
                         style={{ backgroundColor: brandKit.primary_color || '#4f46e5' }}
                       ></div>
                       <div 
-                        className="h-10 rounded-md"
+                        className="h-8 rounded-md"
                         style={{ backgroundColor: brandKit.secondary_color || '#a5b4fc' }}
                       ></div>
                       <div 
-                        className="h-10 rounded-md"
+                        className="h-8 rounded-md"
                         style={{ backgroundColor: brandKit.accent_color || '#f59e0b' }}
                       ></div>
                     </div>
                     
-                    <div className="mt-3 text-xs text-white/70">
+                    <div className="mt-2 text-xs text-white/70">
                       <p><span className="text-white/50">Heading:</span> {brandKit.heading_font || 'Not set'}</p>
                       <p><span className="text-white/50">Body:</span> {brandKit.body_font || 'Not set'}</p>
                       {brandKit.brand_voice && (
-                        <p className="mt-1 italic">{brandKit.brand_voice}</p>
+                        <p className="mt-1 italic text-xs">{brandKit.brand_voice}</p>
                       )}
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="flex flex-col items-center justify-center p-6">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-indigo-500/10 mb-3">
-                    <PaintBucket className="w-6 h-6 text-indigo-400" />
+                <div className="flex flex-col items-center justify-center p-4">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-indigo-500/10 mb-2">
+                    <PaintBucket className="w-5 h-5 text-indigo-400" />
                   </div>
-                  <p className="text-center text-white/60 mb-4">No brand kits yet</p>
+                  <p className="text-center text-white/60 mb-3 text-sm">No brand kits yet</p>
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="h-9 px-4 rounded-full bg-white/5 hover:bg-white/10 text-white/80 border-white/10"
+                    className="h-8 px-3.5 rounded-full bg-white/5 hover:bg-white/10 text-white/80 border-white/10 text-xs"
                   >
-                    <PlusCircle className="h-4 w-4 mr-2" />
+                    <PlusCircle className="h-3.5 w-3.5 mr-1.5" />
                     Create a brand kit
                   </Button>
                 </div>
@@ -144,12 +144,12 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
           )}
         </div>
         
-        <div className="p-4 border-t border-white/10">
+        <div className="p-3 border-t border-white/10">
           <Button 
             variant="default" 
-            className="w-full h-10 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white"
+            className="w-full h-8 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white text-xs"
           >
-            <PlusCircle className="h-4 w-4 mr-2" />
+            <PlusCircle className="h-3.5 w-3.5 mr-1.5" />
             Create New Brand Kit
           </Button>
         </div>

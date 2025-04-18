@@ -19,6 +19,15 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog';
 import {
+  SlidingDialog,
+  SlidingDialogContent,
+  SlidingDialogDescription,
+  SlidingDialogFooter,
+  SlidingDialogHeader,
+  SlidingDialogTitle,
+  SlidingDialogTrigger
+} from '@/components/ui/sliding-dialog';
+import {
   Form,
   FormControl,
   FormDescription,
@@ -597,14 +606,14 @@ export default function BrandKit({ onOpenPanel }: BrandKitProps) {
         )}
 
         {/* Edit Dialog */}
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Edit Brand Kit</DialogTitle>
-              <DialogDescription>
+        <SlidingDialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <SlidingDialogContent>
+            <SlidingDialogHeader>
+              <SlidingDialogTitle>Edit Brand Kit</SlidingDialogTitle>
+              <SlidingDialogDescription>
                 Update your brand kit settings
-              </DialogDescription>
-            </DialogHeader>
+              </SlidingDialogDescription>
+            </SlidingDialogHeader>
 
             <Form {...editForm}>
               <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
@@ -791,18 +800,18 @@ export default function BrandKit({ onOpenPanel }: BrandKitProps) {
                   )}
                 />
 
-                <DialogFooter>
+                <SlidingDialogFooter>
                   <Button variant="outline" type="button" onClick={() => setIsEditDialogOpen(false)}>
                     Cancel
                   </Button>
                   <Button type="submit" disabled={updateBrandKitMutation.isPending}>
                     {updateBrandKitMutation.isPending ? 'Updating...' : 'Update'}
                   </Button>
-                </DialogFooter>
+                </SlidingDialogFooter>
               </form>
             </Form>
-          </DialogContent>
-        </Dialog>
+          </SlidingDialogContent>
+        </SlidingDialog>
       </SidebarGroupContent>
     </SidebarGroup>
   );
