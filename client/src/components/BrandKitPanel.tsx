@@ -4,6 +4,13 @@ import { Button } from '@/components/ui/button';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { BrandKit } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
@@ -480,11 +487,23 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
                       <FormItem>
                         <FormLabel className="text-xs text-white">Heading Font</FormLabel>
                         <FormControl>
-                          <Input 
-                            {...field} 
-                            className="bg-black/20 border-white/10 text-white text-xs h-8 rounded-md" 
-                            placeholder="Montserrat"
-                          />
+                          <Select 
+                            value={field.value} 
+                            onValueChange={field.onChange}
+                          >
+                            <SelectTrigger className="h-8 text-xs bg-black/20 border-white/10 text-white">
+                              <SelectValue placeholder="Heading Font" />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-60">
+                              <div className="max-h-60 overflow-y-auto">
+                                {['Roboto', 'Montserrat', 'Open Sans', 'Lato', 'Poppins', 'Oswald', 'Playfair Display', 'Raleway', 'Bebas Neue', 'Anton'].map((font) => (
+                                  <SelectItem key={font} value={font}>
+                                    <span style={{ fontFamily: font }}>{font}</span>
+                                  </SelectItem>
+                                ))}
+                              </div>
+                            </SelectContent>
+                          </Select>
                         </FormControl>
                       </FormItem>
                     )}
@@ -497,11 +516,23 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
                       <FormItem>
                         <FormLabel className="text-xs text-white">Body Font</FormLabel>
                         <FormControl>
-                          <Input 
-                            {...field} 
-                            className="bg-black/20 border-white/10 text-white text-xs h-8 rounded-md" 
-                            placeholder="Inter"
-                          />
+                          <Select 
+                            value={field.value} 
+                            onValueChange={field.onChange}
+                          >
+                            <SelectTrigger className="h-8 text-xs bg-black/20 border-white/10 text-white">
+                              <SelectValue placeholder="Body Font" />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-60">
+                              <div className="max-h-60 overflow-y-auto">
+                                {['Open Sans', 'Roboto', 'Lato', 'Nunito', 'Source Sans Pro', 'Montserrat', 'Raleway', 'PT Sans', 'Roboto Slab', 'Merriweather'].map((font) => (
+                                  <SelectItem key={font} value={font}>
+                                    <span style={{ fontFamily: font }}>{font}</span>
+                                  </SelectItem>
+                                ))}
+                              </div>
+                            </SelectContent>
+                          </Select>
                         </FormControl>
                       </FormItem>
                     )}
