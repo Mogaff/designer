@@ -54,8 +54,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
         <Sidebar side="left" className="sidebar border-r border-border bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800 text-white">
           
           <SidebarHeader className="flex justify-center p-4 border-b border-white/10">
-            <div className="sidebar-logo h-9 w-9 flex items-center justify-center relative">
-              <img src="/ha.png" alt="ha'itu" className="h-9 sidebar-text opacity-100" />
+            <div className="sidebar-logo flex items-center justify-center">
+              <img src="/ha.png" alt="ha'itu" className="h-9 w-auto" />
             </div>
           </SidebarHeader>
           
