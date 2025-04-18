@@ -7,6 +7,7 @@ async function main() {
   // First drop existing tables if they exist (in reverse order of dependencies)
   try {
     await pool.query(`DROP TABLE IF EXISTS "user_creations" CASCADE`);
+    await pool.query(`DROP TABLE IF EXISTS "brand_kits" CASCADE`);
     await pool.query(`DROP TABLE IF EXISTS "design_configs" CASCADE`);
     await pool.query(`DROP TABLE IF EXISTS "user_credits" CASCADE`);
     await pool.query(`DROP TABLE IF EXISTS "users" CASCADE`);
@@ -78,6 +79,26 @@ async function main() {
     )
   `);
   console.log('Created user_creations table');
+  
+  // Create brand_kits table
+  await pool.query(`
+    CREATE TABLE "brand_kits" (
+      "id" SERIAL PRIMARY KEY,
+      "user_id" INTEGER NOT NULL REFERENCES "users"("id"),
+      "name" TEXT NOT NULL,
+      "primary_color" TEXT,
+      "secondary_color" TEXT,
+      "accent_color" TEXT,
+      "logo_url" TEXT,
+      "heading_font" TEXT,
+      "body_font" TEXT,
+      "brand_voice" TEXT,
+      "created_at" TIMESTAMP DEFAULT NOW(),
+      "updated_at" TIMESTAMP DEFAULT NOW(),
+      "is_active" BOOLEAN DEFAULT true NOT NULL
+    )
+  `);
+  console.log('Created brand_kits table');
 
   // Create a default user
   try {
