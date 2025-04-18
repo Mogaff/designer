@@ -41,7 +41,7 @@ export default function Header() {
         <div 
           className="flex items-center transition-all duration-300 ease-in-out"
           style={{
-            transform: `translateX(${collapsible === "icon" ? (expanded ? "16rem" : "4.5rem") : "1.5rem"})`
+            transform: `translateX(${collapsible === "icon" ? (expanded ? "16rem" : "6.5rem") : "2.5rem"})`
           }}
         >
           <Link href="/">
