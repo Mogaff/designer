@@ -22,6 +22,7 @@ import {
   LogOut,
   PanelLeft
 } from 'lucide-react';
+import haituLogo from '@/assets/ha.png';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
@@ -55,7 +56,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           
           <SidebarHeader className="flex justify-center p-4 border-b border-white/10">
             <div className="sidebar-logo flex items-center justify-center">
-              <img src="/ha.png" alt="ha'itu" className="h-9 w-auto" />
+              <img src={haituLogo} alt="ha'itu" className="h-8 w-auto" />
             </div>
           </SidebarHeader>
           

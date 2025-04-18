@@ -59,7 +59,7 @@ const sidebarVariants = cva(
       },
       expanded: {
         true: "w-64",
-        false: "w-16", 
+        false: "w-14", 
       },
     },
     defaultVariants: {
@@ -273,7 +273,7 @@ export const SidebarInset = ({
     <div
       className={cn(
         "transition-all duration-300 w-full min-h-screen",
-        isIconMode && expanded ? "pl-64" : "pl-16",
+        isIconMode && expanded ? "pl-64" : "pl-14",
         className
       )}
       {...props}

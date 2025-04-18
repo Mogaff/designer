@@ -9,30 +9,31 @@
 }
 
 /* Logo styling */
-.sidebar[data-collapsed=true] .sidebar-text {
+.sidebar-collapsed .sidebar-text {
   width: 0;
   opacity: 0;
   overflow: hidden;
   visibility: hidden;
 }
 
-.sidebar[data-collapsed=true] .sidebar-logo img {
+.sidebar-collapsed .sidebar-logo img {
   height: 28px;
   width: auto;
 }
 
 .sidebar-logo img {
   transition: all 0.3s ease;
+  height: 28px;
 }
 
 /* Center icons in collapsed state */
-.sidebar[data-collapsed=true] button,
-.sidebar[data-collapsed=true] .flex {
+.sidebar-collapsed button,
+.sidebar-collapsed .flex {
   justify-content: center !important;
 }
 
-.sidebar[data-collapsed=true] button svg,
-.sidebar[data-collapsed=true] .flex svg {
+.sidebar-collapsed button svg,
+.sidebar-collapsed .flex svg {
   margin: 0 !important;
 }
 
