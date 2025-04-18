@@ -79,6 +79,30 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
   // Mutations for creating and updating brand kits
   const queryClient = useQueryClient();
   
+  // Set active brand kit mutation
+  const setActiveBrandKitMutation = useMutation<any, Error, number>({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/brand-kits/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ is_active: true }),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to set active brand kit');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/brand-kits'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/brand-kits/active'] });
+    },
+  });
+  
   const createBrandKitMutation = useMutation<any, Error, BrandKitFormValues>({
     mutationFn: async (data: BrandKitFormValues) => {
       const response = await fetch('/api/brand-kits', {
@@ -161,6 +185,15 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
     setSelectedKit(brandKit);
     setLogoPreview(brandKit.logo_url || '');
     setView('edit');
+  };
+  
+  // Handle setting a brand kit as active
+  const handleSetActive = (brandKit: BrandKit, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering parent click events
+    
+    if (!brandKit.is_active) {
+      setActiveBrandKitMutation.mutate(brandKit.id);
+    }
   };
   
   // Handle back button to return to list
