@@ -64,7 +64,6 @@ export const userCreations = pgTable("user_creations", {
   favorite: boolean("favorite").default(false).notNull(),
   heading_font: text("heading_font"),
   body_font: text("body_font"),
-  brand_kit_id: integer("brand_kit_id").references(() => brandKits.id),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -103,7 +102,6 @@ export const insertUserCreationSchema = createInsertSchema(userCreations).pick({
   favorite: true,
   heading_font: true,
   body_font: true,
-  brand_kit_id: true,
 });
 
 export const insertBrandKitSchema = createInsertSchema(brandKits).pick({

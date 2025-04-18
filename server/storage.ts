@@ -47,10 +47,12 @@ export class MemStorage implements IStorage {
   private userCreditsMap: Map<number, UserCredits>;
   private designConfigsMap: Map<number, DesignConfig>;
   private userCreationsMap: Map<number, UserCreation>;
+  private brandKitsMap: Map<number, BrandKit>;
   private userIdCounter: number;
   private creditsTxIdCounter: number;
   private configIdCounter: number;
   private creationIdCounter: number;
+  private brandKitIdCounter: number;
 
   constructor() {
     this.usersMap = new Map();
