@@ -296,7 +296,7 @@ export default function BrandKit() {
                       <FormItem>
                         <FormLabel>Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="My Brand" {...field} />
+                          <Input placeholder="My Brand" {...field} className="bg-black/20 border-white/10 text-white rounded-md" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -454,7 +454,7 @@ export default function BrandKit() {
                         <FormItem>
                           <FormLabel>Heading Font</FormLabel>
                           <FormControl>
-                            <Input placeholder="Arial" {...field} />
+                            <Input placeholder="Arial" {...field} className="bg-black/20 border-white/10 text-white rounded-md" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -468,7 +468,7 @@ export default function BrandKit() {
                         <FormItem>
                           <FormLabel>Body Font</FormLabel>
                           <FormControl>
-                            <Input placeholder="Helvetica" {...field} />
+                            <Input placeholder="Helvetica" {...field} className="bg-black/20 border-white/10 text-white rounded-md" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -483,7 +483,7 @@ export default function BrandKit() {
                       <FormItem>
                         <FormLabel>Brand Voice</FormLabel>
                         <FormControl>
-                          <Input placeholder="Professional and friendly" {...field} />
+                          <Input placeholder="Professional and friendly" {...field} className="bg-black/20 border-white/10 text-white rounded-md" />
                         </FormControl>
                         <FormDescription>
                           A short description of your brand's tone and voice
@@ -608,7 +608,7 @@ export default function BrandKit() {
                     <FormItem>
                       <FormLabel>Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="My Brand" {...field} />
+                        <Input placeholder="My Brand" {...field} className="bg-black/20 border-white/10 text-white rounded-md" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -753,7 +753,7 @@ export default function BrandKit() {
                     <FormItem>
                       <FormLabel>Brand Voice</FormLabel>
                       <FormControl>
-                        <Input placeholder="Professional and friendly" {...field} />
+                        <Input placeholder="Professional and friendly" {...field} className="bg-black/20 border-white/10 text-white rounded-md" />
                       </FormControl>
                       <FormDescription>
                         A short description of your brand's tone and voice
