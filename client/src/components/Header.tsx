@@ -14,10 +14,12 @@ import { useQuery } from "@tanstack/react-query";
 import { getQueryFn } from "@/lib/queryClient";
 import { Badge } from "@/components/ui/badge";
 import { CreditsResponse } from "@/lib/creditTypes";
+import { useSidebar } from "@/components/ui/sidebar";
 
 export default function Header() {
   const { isAuthenticated, user, logout } = useAuth();
   const [location, navigate] = useLocation();
+  const { expanded, collapsible } = useSidebar();
 
   // Query user credits when authenticated
   const { data: creditData, isLoading: isLoadingCredits } = useQuery<CreditsResponse>({
@@ -36,7 +38,12 @@ export default function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 pt-2 pb-2 px-4 sm:px-6 lg:px-8">
       <div className="max-w-full mx-auto flex justify-between items-center">
-        <div className="flex items-center">
+        <div 
+          className="flex items-center transition-transform duration-300"
+          style={{
+            marginLeft: collapsible === "icon" ? (expanded ? "16rem" : "3.5rem") : "1rem"
+          }}
+        >
           <Link href="/">
             <div className="cursor-pointer">
               <h1 className="text-xl font-semibold text-white">ha'itu</h1>

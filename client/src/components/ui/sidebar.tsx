@@ -41,7 +41,7 @@ export const SidebarProvider = ({
   );
 };
 
-function useSidebar() {
+export function useSidebar() {
   const context = React.useContext(SidebarContext);
   if (context === undefined) {
     throw new Error("useSidebar must be used within a SidebarProvider");
