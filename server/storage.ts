@@ -59,10 +59,12 @@ export class MemStorage implements IStorage {
     this.userCreditsMap = new Map();
     this.designConfigsMap = new Map();
     this.userCreationsMap = new Map();
+    this.brandKitsMap = new Map();
     this.userIdCounter = 1;
     this.creditsTxIdCounter = 1;
     this.configIdCounter = 1;
     this.creationIdCounter = 1;
+    this.brandKitIdCounter = 1;
     
     // Create default design config
     this.createDesignConfig({
@@ -327,6 +329,126 @@ export class MemStorage implements IStorage {
     this.userCreationsMap.delete(id);
     return true;
   }
+
+  // Brand Kit methods
+  async getBrandKits(userId: number): Promise<BrandKit[]> {
+    // Get all brand kits for a user
+    const brandKits = Array.from(this.brandKitsMap.values()).filter(
+      kit => kit.user_id === userId
+    );
+    
+    // Sort by creation date, newest first
+    return brandKits.sort((a, b) => {
+      const dateA = a.created_at instanceof Date ? a.created_at : new Date();
+      const dateB = b.created_at instanceof Date ? b.created_at : new Date();
+      return dateB.getTime() - dateA.getTime();
+    });
+  }
+  
+  async getBrandKit(id: number, userId?: number): Promise<BrandKit | undefined> {
+    // Get the brand kit by ID
+    const brandKit = this.brandKitsMap.get(id);
+    
+    // If userId is provided, strictly enforce user-based privacy
+    if (brandKit && userId !== undefined) {
+      // Only return if it belongs to the specified user
+      return brandKit.user_id === userId ? brandKit : undefined;
+    }
+    
+    // Otherwise just return the brand kit (API layer will do permission check)
+    return brandKit;
+  }
+  
+  async getActiveBrandKit(userId: number): Promise<BrandKit | undefined> {
+    // Find the active brand kit for the user
+    return Array.from(this.brandKitsMap.values()).find(
+      kit => kit.user_id === userId && kit.is_active
+    );
+  }
+  
+  async createBrandKit(brandKit: InsertBrandKit): Promise<BrandKit> {
+    const id = this.brandKitIdCounter++;
+    const now = new Date();
+    
+    // If setting this as active, deactivate other brand kits for this user
+    if (brandKit.is_active) {
+      const userBrandKits = Array.from(this.brandKitsMap.values()).filter(
+        kit => kit.user_id === brandKit.user_id && kit.is_active
+      );
+      
+      for (const kit of userBrandKits) {
+        const updatedKit = { ...kit, is_active: false };
+        this.brandKitsMap.set(kit.id, updatedKit);
+      }
+    }
+    
+    const newBrandKit: BrandKit = {
+      id,
+      user_id: brandKit.user_id,
+      name: brandKit.name,
+      primary_color: brandKit.primary_color || null,
+      secondary_color: brandKit.secondary_color || null,
+      accent_color: brandKit.accent_color || null,
+      logo_url: brandKit.logo_url || null,
+      heading_font: brandKit.heading_font || null,
+      body_font: brandKit.body_font || null,
+      brand_voice: brandKit.brand_voice || null,
+      created_at: now,
+      updated_at: now,
+      is_active: brandKit.is_active ?? true
+    };
+    
+    this.brandKitsMap.set(id, newBrandKit);
+    return newBrandKit;
+  }
+  
+  async updateBrandKit(
+    id: number,
+    updates: Partial<InsertBrandKit>,
+    userId?: number
+  ): Promise<BrandKit | undefined> {
+    // Get the brand kit with optional user filtering
+    const brandKit = await this.getBrandKit(id, userId);
+    
+    // If no brand kit found or userId provided and doesn't match, return undefined
+    if (!brandKit) return undefined;
+    
+    // If updating to active, deactivate other brand kits for this user
+    if (updates.is_active) {
+      const userBrandKits = Array.from(this.brandKitsMap.values()).filter(
+        kit => kit.user_id === brandKit.user_id && kit.id !== id && kit.is_active
+      );
+      
+      for (const kit of userBrandKits) {
+        const updatedKit = { ...kit, is_active: false };
+        this.brandKitsMap.set(kit.id, updatedKit);
+      }
+    }
+    
+    // Create updated brand kit (ensuring we don't change the user_id to a different user)
+    const updatedBrandKit = {
+      ...brandKit,
+      ...updates,
+      // Ensure user_id can't be changed to a different user's ID
+      user_id: brandKit.user_id,
+      updated_at: new Date()
+    };
+    
+    this.brandKitsMap.set(id, updatedBrandKit);
+    return updatedBrandKit;
+  }
+  
+  async deleteBrandKit(id: number, userId?: number): Promise<boolean> {
+    // Get the brand kit first, with optional user filtering
+    const brandKit = await this.getBrandKit(id, userId);
+    
+    // If no brand kit or userId is provided and doesn't match, return false
+    if (!brandKit) return false;
+    
+    // Otherwise delete the brand kit
+    this.brandKitsMap.delete(id);
+    return true;
+  }
 }
 
 import { db } from "./db";
@@ -515,6 +637,131 @@ export class DatabaseStorage implements IStorage {
         .delete(userCreations)
         .where(eq(userCreations.id, id))
         .returning({ id: userCreations.id });
+      return result.length > 0;
+    }
+  }
+  
+  // Brand Kit methods
+  async getBrandKits(userId: number): Promise<BrandKit[]> {
+    return db
+      .select()
+      .from(brandKits)
+      .where(eq(brandKits.user_id, userId))
+      .orderBy(desc(brandKits.created_at));
+  }
+  
+  async getBrandKit(id: number, userId?: number): Promise<BrandKit | undefined> {
+    let query = db.select().from(brandKits).where(eq(brandKits.id, id));
+    
+    if (userId !== undefined) {
+      // Create a new query with the additional condition
+      const results = await db
+        .select()
+        .from(brandKits)
+        .where(and(
+          eq(brandKits.id, id),
+          eq(brandKits.user_id, userId)
+        ));
+      return results[0] || undefined;
+    } else {
+      const results = await query;
+      return results[0] || undefined;
+    }
+  }
+  
+  async getActiveBrandKit(userId: number): Promise<BrandKit | undefined> {
+    const results = await db
+      .select()
+      .from(brandKits)
+      .where(and(
+        eq(brandKits.user_id, userId),
+        eq(brandKits.is_active, true)
+      ));
+    return results[0] || undefined;
+  }
+  
+  async createBrandKit(brandKit: InsertBrandKit): Promise<BrandKit> {
+    // If setting this as active, deactivate other brand kits for this user
+    if (brandKit.is_active) {
+      await db
+        .update(brandKits)
+        .set({ is_active: false })
+        .where(and(
+          eq(brandKits.user_id, brandKit.user_id),
+          eq(brandKits.is_active, true)
+        ));
+    }
+    
+    const [newBrandKit] = await db
+      .insert(brandKits)
+      .values(brandKit)
+      .returning();
+    return newBrandKit;
+  }
+  
+  async updateBrandKit(
+    id: number,
+    updates: Partial<InsertBrandKit>,
+    userId?: number
+  ): Promise<BrandKit | undefined> {
+    // Check if brand kit exists and belongs to user if userId provided
+    const brandKit = await this.getBrandKit(id, userId);
+    if (!brandKit) return undefined;
+    
+    // If updating to active, deactivate other brand kits for this user
+    if (updates.is_active) {
+      await db
+        .update(brandKits)
+        .set({ is_active: false })
+        .where(and(
+          eq(brandKits.user_id, brandKit.user_id),
+          eq(brandKits.is_active, true),
+          brandKits.id != id
+        ));
+    }
+    
+    // Set the updated_at timestamp
+    const fullUpdates = {
+      ...updates,
+      updated_at: new Date()
+    };
+    
+    // Perform the update with the correct conditions
+    if (userId !== undefined) {
+      const [updatedBrandKit] = await db
+        .update(brandKits)
+        .set(fullUpdates)
+        .where(and(
+          eq(brandKits.id, id),
+          eq(brandKits.user_id, userId)
+        ))
+        .returning();
+      return updatedBrandKit || undefined;
+    } else {
+      const [updatedBrandKit] = await db
+        .update(brandKits)
+        .set(fullUpdates)
+        .where(eq(brandKits.id, id))
+        .returning();
+      return updatedBrandKit || undefined;
+    }
+  }
+  
+  async deleteBrandKit(id: number, userId?: number): Promise<boolean> {
+    if (userId !== undefined) {
+      const result = await db
+        .delete(brandKits)
+        .where(and(
+          eq(brandKits.id, id),
+          eq(brandKits.user_id, userId)
+        ))
+        .returning({ id: brandKits.id });
+      return result.length > 0;
+    } else {
+      const result = await db
+        .delete(brandKits)
+        .where(eq(brandKits.id, id))
+        .returning({ id: brandKits.id });
       return result.length > 0;
     }
   }

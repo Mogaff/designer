@@ -9,7 +9,7 @@ import multer from "multer";
 import { log } from "./vite";
 import passport from "./auth";
 import { hashPassword, isAuthenticated } from "./auth";
-import { insertUserSchema, insertDesignConfigSchema, insertUserCreditsSchema, insertUserCreationSchema } from "@shared/schema";
+import { insertUserSchema, insertDesignConfigSchema, insertUserCreditsSchema, insertUserCreationSchema, insertBrandKitSchema } from "@shared/schema";
 import { createCheckoutSession, verifyCheckoutSession, handleStripeWebhook, CREDIT_PACKAGES } from "./stripe";
 
 // Using the built-in type definitions from @types/multer
