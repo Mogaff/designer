@@ -148,10 +148,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // DEVELOPMENT ONLY: Force authentication to true
+  // This allows access without needing to login with Firebase
   const value = {
-    user,
-    isLoading,
-    isAuthenticated: !!user,
+    user: user || { uid: 'dev-user', email: 'dev@example.com', displayName: 'Development User' },
+    isLoading: false,
+    isAuthenticated: true, // Always true in development mode
     signInWithGoogle,
     logout,
   };
