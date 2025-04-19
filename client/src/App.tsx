@@ -64,6 +64,9 @@ function Router() {
   );
 }
 
+// Import TestUserSwitcher
+import TestUserSwitcher from "./components/TestUserSwitcher";
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -71,6 +74,8 @@ function App() {
         <UserSettingsProvider>
           <Router />
           <Toaster />
+          {/* Add the test user switcher component */}
+          <TestUserSwitcher />
         </UserSettingsProvider>
       </AuthProvider>
     </QueryClientProvider>
