@@ -129,12 +129,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         generationOptions.logoBase64 = logoBase64;
       }
       
-      // Generate 4 design variations with slightly different style instructions
+      // Generate 4 design variations with distinct professional style instructions
       const styleVariations = [
-        "with a bold, high-contrast style",
-        "with a minimal, elegant style",
-        "with a creative, artistic style",
-        "with a professional, corporate style"
+        "with a luxury brand aesthetic using dramatic contrasts and premium typography",
+        "with a modern minimalist style emphasizing elegant white space and refined typography",
+        "with a creative high-fashion approach using artistic compositions and sophisticated color",
+        "with a premium corporate look featuring polished visuals and architectural precision"
       ];
       
       // Generate designs sequentially to avoid quota limits
