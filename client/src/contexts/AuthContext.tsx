@@ -1,6 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { getCurrentTestUserId } from '@/lib/queryClient';
+import { 
+  auth, 
+  signInWithPopup,
+  googleProvider,
+  signOut,
+  onAuthStateChanged
+} from '@/lib/firebase';
+import type { User as FirebaseUser } from 'firebase/auth';
 
 // Types for our auth context
 type User = {
@@ -33,44 +40,89 @@ export const useAuth = () => useContext(AuthContext);
 // Provider component
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false); // No need to load
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  // Set up mock user based on test user ID
+  // Watch auth state changes
   useEffect(() => {
-    const testUserId = getCurrentTestUserId();
-    // Create a mock user based on test user ID
-    setUser({
-      uid: `test-user-${testUserId}`,
-      email: `test${testUserId}@example.com`,
-      displayName: `Test User ${testUserId}`,
-      photoURL: null
+    
+    // Watch Firebase auth state
+    const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
+      setIsLoading(false);
+      if (fbUser) {
+        // User is signed in
+        setUser({
+          uid: fbUser.uid,
+          email: fbUser.email,
+          displayName: fbUser.displayName,
+          photoURL: fbUser.photoURL
+        });
+      } else {
+        // User is signed out
+        setUser(null);
+      }
     });
-  }, []);
 
-  // Mock Google sign-in function for testing
+    // Cleanup subscription
+    return () => unsubscribe();
+  }, [toast]);
+
+  // Google sign-in function with popup
   const signInWithGoogle = async () => {
     try {
       setIsLoading(true);
-      console.log('Using test user authentication...');
+      console.log('Starting Google sign-in with popup...');
       
-      // Using a test user instead of real Google auth
-      const testUserId = getCurrentTestUserId();
-      setUser({
-        uid: `test-user-${testUserId}`,
-        email: `test${testUserId}@example.com`,
-        displayName: `Test User ${testUserId}`,
-        photoURL: null
-      });
+      const result = await signInWithPopup(auth, googleProvider);
+      console.log('Popup login successful:', result.user.email);
+      
+      // Get the Firebase token to send to our backend
+      const idToken = await result.user.getIdToken();
+      
+      // Check if user exists in our backend, and create if needed
+      try {
+        // First try to get user profile - this will create user if doesn't exist
+        // because our authentication middleware handles that
+        const response = await fetch('/api/auth/user', {
+          headers: {
+            'Authorization': `Bearer ${idToken}`
+          }
+        });
+        
+        // If user doesn't exist, our middleware will create one
+        if (response.ok) {
+          const userData = await response.json();
+          console.log('User data from backend:', userData);
+        }
+      } catch (backendError) {
+        console.error('Error communicating with backend:', backendError);
+        // We can continue even if this fails, as subsequent API calls
+        // will also include the token and create user if needed
+      }
       
       toast({
-        title: 'Test login successful',
-        description: `You are now logged in as Test User ${testUserId}.`,
+        title: 'Login successful',
+        description: 'You are now logged in with Google.',
       });
     } catch (error: any) {
+      let errorMessage = 'Google sign-in failed';
+      console.error('Google sign-in error:', error);
+      
+      // Better error messages for common issues
+      if (error.code === 'auth/popup-closed-by-user') {
+        errorMessage = 'Login cancelled. Please try again.';
+      } else if (error.code === 'auth/popup-blocked') {
+        errorMessage = 'Login popup was blocked. Please enable popups for this site.';
+      } else if (error.code === 'auth/unauthorized-domain') {
+        errorMessage = 'Authentication problem: This domain must be authorized in the Firebase console.';
+        console.error('Domain not authorized:', window.location.origin, 'Please add to Firebase console');
+      } else if (error.code) {
+        errorMessage = `Authentication error: ${error.code}`;
+      }
+      
       toast({
         title: 'Login failed',
-        description: 'Test user login failed.',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
@@ -78,15 +130,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Mock logout function for testing
+  // Logout function
   const logout = async () => {
     try {
       setIsLoading(true);
-      setUser(null);
+      await signOut(auth);
+      // Toast message removed to simplify the logout experience
     } catch (error: any) {
       toast({
         title: 'Logout Failed',
-        description: 'There was an issue logging you out',
+        description: error.message || 'There was an issue logging you out',
         variant: 'destructive',
       });
       throw error;
@@ -98,7 +151,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const value = {
     user,
     isLoading,
-    isAuthenticated: true, // Always authenticated for testing
+    isAuthenticated: !!user,
     signInWithGoogle,
     logout,
   };

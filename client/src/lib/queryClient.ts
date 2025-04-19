@@ -1,20 +1,19 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { auth } from './firebase';
 
-// For testing multiple users without Firebase
-let currentTestUserId = 1;
-
-// Function to switch between test users (for development only)
-export function switchTestUser(userId: number) {
-  currentTestUserId = userId;
-  // Invalidate all queries to refetch with new user
-  queryClient.invalidateQueries();
-  console.log(`Switched to test user ${userId}`);
-  return currentTestUserId;
-}
-
-// Get current test user ID
-export function getCurrentTestUserId() {
-  return currentTestUserId;
+// Get the current Firebase authentication token for API requests
+async function getFirebaseToken(): Promise<string | null> {
+  try {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return null;
+    
+    // Get the ID token from Firebase
+    const token = await currentUser.getIdToken(true);
+    return token;
+  } catch (error) {
+    console.error("Error getting Firebase token:", error);
+    return null;
+  }
 }
 
 async function throwIfResNotOk(res: Response) {
@@ -36,14 +35,18 @@ export async function apiRequest(
   
   // Prepare headers
   let requestHeaders: Record<string, string> = {
-    ...(headers || {}),
-    // Add test user ID header
-    'X-Test-User-ID': currentTestUserId.toString()
+    ...(headers || {})
   };
   
   // Only add content-type for JSON data (browser will set it automatically for FormData with boundary)
   if (data && !isFormData && !isRawFormData) {
     requestHeaders["Content-Type"] = "application/json";
+  }
+  
+  // Add Firebase authentication token if available
+  const firebaseToken = await getFirebaseToken();
+  if (firebaseToken) {
+    requestHeaders["Authorization"] = `Bearer ${firebaseToken}`;
   }
   
   const res = await fetch(url, {
@@ -64,10 +67,14 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    // Prepare headers with test user ID
-    const headers: Record<string, string> = {
-      'X-Test-User-ID': currentTestUserId.toString()
-    };
+    // Get Firebase token for authentication
+    const firebaseToken = await getFirebaseToken();
+    
+    // Prepare headers with authentication
+    const headers: Record<string, string> = {};
+    if (firebaseToken) {
+      headers["Authorization"] = `Bearer ${firebaseToken}`;
+    }
     
     const res = await fetch(queryKey[0] as string, {
       credentials: "include",

@@ -54,58 +54,62 @@ export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, salt);
 }
 
-// Authentication middleware with multiple test users
+// Authentication middleware
 export function isAuthenticated(req: Request, res: Response, next: NextFunction) {
-  // TEMPORARY: For testing purposes only!
-  // This allows all requests to pass through without authentication
-  // WARNING: Remove this in production
-  
-  // Check if we have a user ID in the headers for testing different users
-  const testUserId = req.headers['x-test-user-id'] ? parseInt(req.headers['x-test-user-id'] as string) : 1;
-  
-  // If not authenticated yet, apply test user
-  if (!req.isAuthenticated()) {
-    // Make sure we have this test user in our storage
-    storage.getUser(testUserId).then(async (user) => {
-      if (!user) {
-        // Create the test user in storage if it doesn't exist
-        try {
-          const username = `test_user_${testUserId}`;
-          const testPassword = 'not_real_password';
-          const hashedPassword = await hashPassword(testPassword);
-          
-          await storage.createUser({
-            username: username,
-            email: `test${testUserId}@example.com`,
-            password: hashedPassword,
-            firebase_uid: `mock_firebase_uid_${testUserId}`
-          });
-          console.log(`Created test user ${testUserId} for testing`);
-        } catch (err) {
-          console.error(`Error creating test user ${testUserId}:`, err);
-        }
-      }
-    }).catch(err => {
-      console.error(`Error checking for test user ${testUserId}:`, err);
-    });
-    
-    // Set the test user on the request
-    req.user = {
-      id: testUserId,
-      username: `test_user_${testUserId}`,
-      email: `test${testUserId}@example.com`,
-      password: 'not_real_password',
-      firebase_uid: `mock_firebase_uid_${testUserId}`
-    };
+  // Check if user is authenticated with session
+  if (req.isAuthenticated() && req.user) {
+    // User is authenticated via session
+    return next();
   }
   
-  return next();
-  
-  // Original authentication logic (commented out for testing)
-  // if (req.isAuthenticated()) {
-  //   return next();
-  // }
-  // res.status(401).json({ message: 'Unauthorized' });
+  // If not authenticated via session, check for Firebase token in Authorization header
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const firebaseUid = authHeader.split('Bearer ')[1];
+    
+    // Get user by Firebase UID
+    storage.getUserByFirebaseUid(firebaseUid)
+      .then(async (user) => {
+        if (user) {
+          // User exists in our database, set them as the authenticated user
+          req.user = user;
+          return next();
+        } else {
+          // User doesn't exist yet, but has a valid Firebase token
+          // Auto-create user with Firebase info
+          try {
+            const username = `user_${Date.now()}`; // Generate a unique username
+            const randomPassword = Math.random().toString(36).slice(-10);
+            const hashedPassword = await hashPassword(randomPassword);
+            
+            // Create new user with Firebase UID
+            const newUser = await storage.createUser({
+              username,
+              password: hashedPassword,
+              firebase_uid: firebaseUid,
+              email: null, // These could be provided if sent from client
+              display_name: null
+            });
+            
+            console.log(`Created new user for Firebase UID: ${firebaseUid}`);
+            
+            // Set the new user as authenticated
+            req.user = newUser;
+            return next();
+          } catch (err) {
+            console.error("Error creating user from Firebase auth:", err);
+            return res.status(500).json({ message: "Failed to create user account" });
+          }
+        }
+      })
+      .catch(err => {
+        console.error("Error checking Firebase user:", err);
+        return res.status(401).json({ message: "Unauthorized: Invalid Firebase token" });
+      });
+  } else {
+    // No authentication method provided
+    return res.status(401).json({ message: "Unauthorized: No valid authentication" });
+  }
 }
 
 export default passport;

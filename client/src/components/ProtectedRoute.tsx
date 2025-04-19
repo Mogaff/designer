@@ -9,11 +9,8 @@ interface ProtectedRouteProps {
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading } = useAuth();
 
-  // In test mode, we will allow direct access to all routes
-  const testMode = true;
-
   // Show loading state while checking authentication
-  if (isLoading && !testMode) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
@@ -21,11 +18,11 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  // If not authenticated and not in test mode, redirect to login
-  if (!isAuthenticated && !testMode) {
+  // If not authenticated, redirect to login
+  if (!isAuthenticated) {
     return <Redirect to="/login" />;
   }
 
-  // Either authenticated or in test mode, render the children
+  // If authenticated, render the children
   return <>{children}</>;
 }
