@@ -24,17 +24,18 @@ export default function Login() {
   const handleGoogleSignIn = async () => {
     setIsSubmitting(true);
     try {
-      // With redirect auth we don't want to wait for the promise to resolve
-      // as the page will reload during the process
+      // Try Firebase authentication
       signInWithGoogle();
-      // We don't redirect here anymore as the redirect will happen automatically
-      // and we'll check for the redirect result in the AuthContext
     } catch (error) {
       console.error('Google Sign-in error:', error);
-      // Error is handled in the auth context
       setIsSubmitting(false);
     }
-    // Don't set isSubmitting to false here as the page will reload
+  };
+  
+  // Direct access option (uses the backend auto-login)
+  const handleDevelopmentAccess = () => {
+    // Just navigate to home page - the server's auto-login will handle auth
+    setLocation('/');
   };
 
   // Create an array of image URLs for GridMotion
@@ -58,7 +59,7 @@ export default function Login() {
       {/* Overlay with gradient - lighter opacity */}
       <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/40 via-black/20 to-black/40" />
       
-      {/* Content - Only Google Sign-In */}
+      {/* Content - Google Sign-In and Development Access */}
       <div className="relative z-20 flex justify-center items-center min-h-screen">
         <div 
           className="rounded-xl p-6 shadow-xl bg-white/10 backdrop-blur-md" 
@@ -75,6 +76,15 @@ export default function Login() {
             >
               <FcGoogle className="h-7 w-7 bg-white rounded-full p-1" />
               <span className="font-medium">{isSubmitting ? 'Verarbeite...' : 'Mit Google anmelden'}</span>
+            </button>
+            
+            <div className="text-center text-white/70 text-sm">or</div>
+            
+            <button 
+              className="bg-gray-600 hover:bg-gray-700 text-white py-2.5 px-5 rounded-md flex items-center justify-center gap-3 transition-all shadow-md w-full"
+              onClick={handleDevelopmentAccess}
+            >
+              <span className="font-medium">Access as Test User</span>
             </button>
           </div>
         </div>
