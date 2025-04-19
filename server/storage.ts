@@ -632,6 +632,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteUserCreation(id: number, userId?: number): Promise<boolean> {
     if (userId !== undefined) {
+      // Always filter by userId if provided to enforce privacy
       const result = await db
         .delete(userCreations)
         .where(and(
@@ -641,6 +642,8 @@ export class DatabaseStorage implements IStorage {
         .returning({ id: userCreations.id });
       return result.length > 0;
     } else {
+      // WARNING: When no userId is provided, this could delete any user's creation
+      // This should ONLY be used internally by admin routes with proper permission checks
       const result = await db
         .delete(userCreations)
         .where(eq(userCreations.id, id))
@@ -659,10 +662,9 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getBrandKit(id: number, userId?: number): Promise<BrandKit | undefined> {
-    let query = db.select().from(brandKits).where(eq(brandKits.id, id));
-    
+    // Always filter by userId if provided to enforce privacy
     if (userId !== undefined) {
-      // Create a new query with the additional condition
+      // Create a query with conditions for both id and user_id
       const results = await db
         .select()
         .from(brandKits)
@@ -672,7 +674,13 @@ export class DatabaseStorage implements IStorage {
         ));
       return results[0] || undefined;
     } else {
-      const results = await query;
+      // When no userId is provided, only API routes that properly handle permissions
+      // should use this, as it could return any user's brand kit
+      // This should ONLY be used internally by admin routes with proper permission checks
+      const results = await db
+        .select()
+        .from(brandKits)
+        .where(eq(brandKits.id, id));
       return results[0] || undefined;
     }
   }
@@ -746,6 +754,7 @@ export class DatabaseStorage implements IStorage {
     
     // Perform the update with the correct conditions
     if (userId !== undefined) {
+      // Always filter by userId if provided to enforce privacy
       const [updatedBrandKit] = await db
         .update(brandKits)
         .set(fullUpdates)
@@ -756,6 +765,8 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return updatedBrandKit || undefined;
     } else {
+      // WARNING: When no userId is provided, this could update any user's brand kit
+      // This should ONLY be used internally by admin routes with proper permission checks
       const [updatedBrandKit] = await db
         .update(brandKits)
         .set(fullUpdates)
@@ -767,6 +778,7 @@ export class DatabaseStorage implements IStorage {
   
   async deleteBrandKit(id: number, userId?: number): Promise<boolean> {
     if (userId !== undefined) {
+      // Always filter by userId if provided to enforce privacy
       const result = await db
         .delete(brandKits)
         .where(and(
@@ -776,6 +788,8 @@ export class DatabaseStorage implements IStorage {
         .returning({ id: brandKits.id });
       return result.length > 0;
     } else {
+      // WARNING: When no userId is provided, this could delete any user's brand kit
+      // This should ONLY be used internally by admin routes with proper permission checks
       const result = await db
         .delete(brandKits)
         .where(eq(brandKits.id, id))
