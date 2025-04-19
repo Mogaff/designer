@@ -7,7 +7,9 @@ import {
   getRedirectResult,
   GoogleAuthProvider,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signInAnonymously
 } from 'firebase/auth';
 
 // Firebase configuration using environment variables
@@ -36,7 +38,23 @@ googleProvider.setCustomParameters({
   prompt: 'select_account'
 });
 
-// Export essential services - now including redirect methods
+// Check if we're in development mode (on Replit)
+const isDevelopment = window.location.hostname.includes('replit.dev');
+
+// Function to sign in with development account (anonymous auth)
+const signInWithDevelopmentAccount = async () => {
+  try {
+    // Use anonymous sign-in for development environments
+    const result = await signInAnonymously(auth);
+    console.log('Development login successful');
+    return result;
+  } catch (error) {
+    console.error('Development login error:', error);
+    throw error;
+  }
+};
+
+// Export essential services - now including redirect methods and development mode
 export { 
   auth, 
   signInWithPopup,
@@ -44,5 +62,9 @@ export {
   getRedirectResult,
   googleProvider,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signInAnonymously,
+  signInWithDevelopmentAccount,
+  isDevelopment
 };

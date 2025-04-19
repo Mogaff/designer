@@ -8,6 +8,7 @@ import { GridMotion } from '@/components/ui/grid-motion';
 import { designImages } from '@/assets/images';
 import { useIsMobile } from '@/hooks/use-mobile';
 import meshGradient from '@assets/Bildschirmfoto 2025-04-02 um 01.54.14.png';
+import { isDevelopment } from '@/lib/firebase';
 
 export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -77,7 +78,14 @@ export default function Login() {
               disabled={isSubmitting}
             >
               <FcGoogle className="h-7 w-7 bg-white rounded-full p-1" />
-              <span className="font-medium">{isSubmitting ? 'Verarbeite...' : 'Mit Google anmelden'}</span>
+              <span className="font-medium">
+                {isSubmitting 
+                  ? 'Verarbeite...' 
+                  : isDevelopment 
+                    ? 'Login with Development Account' 
+                    : 'Mit Google anmelden'
+                }
+              </span>
             </button>
             
             <div className="text-center text-white/70 text-sm">or</div>

@@ -7,7 +7,9 @@ import {
   getRedirectResult,
   googleProvider,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  signInWithDevelopmentAccount,
+  isDevelopment
 } from '@/lib/firebase';
 import type { User as FirebaseUser } from 'firebase/auth';
 
@@ -131,22 +133,43 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     checkRedirectResult();
   }, [toast]);
 
-  // Google sign-in function with redirect
+  // Google sign-in function with fallback for development
   const signInWithGoogle = async () => {
     try {
       setIsLoading(true);
-      console.log('Starting Google sign-in with redirect...');
       
-      // Use redirect-based auth instead of popup
-      await signInWithRedirect(auth, googleProvider);
-      // The page will redirect to Google and then back to our app
-      // The redirect result will be processed in the useEffect above
-      
+      // Check if we're in development environment (Replit)
+      if (isDevelopment) {
+        console.log('Development environment detected, using anonymous auth...');
+        
+        // Use anonymous authentication for development
+        const result = await signInWithDevelopmentAccount();
+        console.log('Development login successful');
+        
+        // Set a simulated user in development mode
+        setUser({
+          uid: result.user.uid,
+          email: 'dev@example.com',
+          displayName: 'Development User',
+          photoURL: null
+        });
+        
+        toast({
+          title: 'Development Login',
+          description: 'You are now logged in with a development account',
+        });
+      } else {
+        // Regular environment - use Google authentication
+        console.log('Starting Google sign-in with redirect...');
+        await signInWithRedirect(auth, googleProvider);
+        // The page will redirect to Google and then back to our app
+        // The redirect result will be processed in the useEffect above
+      }
     } catch (error: any) {
-      let errorMessage = 'Google sign-in failed';
-      console.error('Google sign-in error:', error);
+      let errorMessage = 'Authentication failed';
+      console.error('Sign-in error:', error);
       
-      // Error handling for redirect method
+      // Error handling
       if (error.code === 'auth/unauthorized-domain') {
         errorMessage = 'Authentication problem: This domain must be authorized in the Firebase console.';
         console.error('Domain not authorized:', window.location.origin, 'Please add to Firebase console');
