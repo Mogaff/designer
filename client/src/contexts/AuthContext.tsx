@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, [toast]);
 
-  // Einfache Google Sign-in Funktion mit Popup
+  // Google sign-in function with popup
   const signInWithGoogle = async () => {
     try {
       setIsLoading(true);
@@ -76,28 +76,52 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const result = await signInWithPopup(auth, googleProvider);
       console.log('Popup login successful:', result.user.email);
       
-      toast({
-        title: 'Login erfolgreich',
-        description: 'Sie sind jetzt mit Google angemeldet.',
-      });
-    } catch (error: any) {
-      let errorMessage = 'Anmeldung mit Google fehlgeschlagen';
-      console.error('Google sign-in error:', error);
+      // Get the Firebase token to send to our backend
+      const idToken = await result.user.getIdToken();
       
-      // Bessere Fehlermeldungen für häufige Fehler
-      if (error.code === 'auth/popup-closed-by-user') {
-        errorMessage = 'Anmeldung abgebrochen. Bitte versuchen Sie es erneut.';
-      } else if (error.code === 'auth/popup-blocked') {
-        errorMessage = 'Anmelde-Popup wurde blockiert. Bitte aktivieren Sie Popups für diese Seite.';
-      } else if (error.code === 'auth/unauthorized-domain') {
-        errorMessage = 'Authentifizierungsproblem: Diese Domain muss in der Firebase-Konsole autorisiert werden.';
-        console.error('Domain nicht autorisiert:', window.location.origin, 'Bitte in Firebase-Konsole hinzufügen');
-      } else if (error.code) {
-        errorMessage = `Authentifizierungsfehler: ${error.code}`;
+      // Check if user exists in our backend, and create if needed
+      try {
+        // First try to get user profile - this will create user if doesn't exist
+        // because our authentication middleware handles that
+        const response = await fetch('/api/auth/user', {
+          headers: {
+            'Authorization': `Bearer ${idToken}`
+          }
+        });
+        
+        // If user doesn't exist, our middleware will create one
+        if (response.ok) {
+          const userData = await response.json();
+          console.log('User data from backend:', userData);
+        }
+      } catch (backendError) {
+        console.error('Error communicating with backend:', backendError);
+        // We can continue even if this fails, as subsequent API calls
+        // will also include the token and create user if needed
       }
       
       toast({
-        title: 'Anmeldung fehlgeschlagen',
+        title: 'Login successful',
+        description: 'You are now logged in with Google.',
+      });
+    } catch (error: any) {
+      let errorMessage = 'Google sign-in failed';
+      console.error('Google sign-in error:', error);
+      
+      // Better error messages for common issues
+      if (error.code === 'auth/popup-closed-by-user') {
+        errorMessage = 'Login cancelled. Please try again.';
+      } else if (error.code === 'auth/popup-blocked') {
+        errorMessage = 'Login popup was blocked. Please enable popups for this site.';
+      } else if (error.code === 'auth/unauthorized-domain') {
+        errorMessage = 'Authentication problem: This domain must be authorized in the Firebase console.';
+        console.error('Domain not authorized:', window.location.origin, 'Please add to Firebase console');
+      } else if (error.code) {
+        errorMessage = `Authentication error: ${error.code}`;
+      }
+      
+      toast({
+        title: 'Login failed',
         description: errorMessage,
         variant: 'destructive',
       });
