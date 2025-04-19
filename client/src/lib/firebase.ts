@@ -3,6 +3,8 @@ import { initializeApp } from 'firebase/app';
 import { 
   getAuth, 
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   signOut,
   onAuthStateChanged
@@ -20,24 +22,26 @@ const firebaseConfig = {
 
 console.log("Initializing Firebase with standard configuration");
 
-// Einfache Firebase-Initialisierung ohne irgendwelche komplexen Anpassungen
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// Standard Google Auth Provider ohne zusätzliche Parameter
+// Standard Google Auth Provider
 const googleProvider = new GoogleAuthProvider();
 googleProvider.addScope('email');
 googleProvider.addScope('profile');
 
-// Einfache Einstellungen für den Login-Dialog
+// Simple settings for login dialog
 googleProvider.setCustomParameters({
   prompt: 'select_account'
 });
 
-// Nur die wesentlichen Dienste exportieren - wir verwenden keine Redirects mehr
+// Export essential services - now including redirect methods
 export { 
   auth, 
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   googleProvider,
   signOut,
   onAuthStateChanged

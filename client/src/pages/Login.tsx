@@ -24,8 +24,10 @@ export default function Login() {
   const handleGoogleSignIn = async () => {
     setIsSubmitting(true);
     try {
-      // Try Firebase authentication
-      signInWithGoogle();
+      // Try Firebase authentication with redirect
+      await signInWithGoogle();
+      // The page will redirect to Google and then back to our app
+      // Note: The page will refresh after the redirect, so no need to reset isSubmitting
     } catch (error) {
       console.error('Google Sign-in error:', error);
       setIsSubmitting(false);

@@ -3,6 +3,8 @@ import { useToast } from '@/hooks/use-toast';
 import { 
   auth, 
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   googleProvider,
   signOut,
   onAuthStateChanged
@@ -67,53 +69,85 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, [toast]);
 
-  // Google sign-in function with popup
+  // Check for redirect result on component mount
+  useEffect(() => {
+    async function checkRedirectResult() {
+      try {
+        setIsLoading(true);
+        // Get redirect result
+        const result = await getRedirectResult(auth);
+        
+        // If we have a result, the user has been redirected back from Google
+        if (result && result.user) {
+          console.log('Redirect login successful:', result.user.email);
+          
+          // Get the Firebase token to send to our backend
+          const idToken = await result.user.getIdToken();
+          
+          // Check if user exists in our backend, and create if needed
+          try {
+            const response = await fetch('/api/auth/user', {
+              headers: {
+                'Authorization': `Bearer ${idToken}`
+              }
+            });
+            
+            if (response.ok) {
+              const userData = await response.json();
+              console.log('User data from backend:', userData);
+              
+              toast({
+                title: 'Login successful',
+                description: 'You are now logged in with Google.',
+              });
+            }
+          } catch (backendError) {
+            console.error('Error communicating with backend:', backendError);
+          }
+        }
+      } catch (error: any) {
+        if (error.code) {
+          let errorMessage = 'Authentication error';
+          console.error('Google sign-in redirect error:', error);
+          
+          if (error.code === 'auth/unauthorized-domain') {
+            errorMessage = 'Authentication problem: This domain must be authorized in the Firebase console.';
+            console.error('Domain not authorized:', window.location.origin, 'Please add to Firebase console');
+          } else {
+            errorMessage = `Authentication error: ${error.code}`;
+          }
+          
+          toast({
+            title: 'Login failed',
+            description: errorMessage,
+            variant: 'destructive',
+          });
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    checkRedirectResult();
+  }, [toast]);
+
+  // Google sign-in function with redirect
   const signInWithGoogle = async () => {
     try {
       setIsLoading(true);
-      console.log('Starting Google sign-in with popup...');
+      console.log('Starting Google sign-in with redirect...');
       
-      const result = await signInWithPopup(auth, googleProvider);
-      console.log('Popup login successful:', result.user.email);
+      // Use redirect-based auth instead of popup
+      await signInWithRedirect(auth, googleProvider);
+      // The page will redirect to Google and then back to our app
+      // The redirect result will be processed in the useEffect above
       
-      // Get the Firebase token to send to our backend
-      const idToken = await result.user.getIdToken();
-      
-      // Check if user exists in our backend, and create if needed
-      try {
-        // First try to get user profile - this will create user if doesn't exist
-        // because our authentication middleware handles that
-        const response = await fetch('/api/auth/user', {
-          headers: {
-            'Authorization': `Bearer ${idToken}`
-          }
-        });
-        
-        // If user doesn't exist, our middleware will create one
-        if (response.ok) {
-          const userData = await response.json();
-          console.log('User data from backend:', userData);
-        }
-      } catch (backendError) {
-        console.error('Error communicating with backend:', backendError);
-        // We can continue even if this fails, as subsequent API calls
-        // will also include the token and create user if needed
-      }
-      
-      toast({
-        title: 'Login successful',
-        description: 'You are now logged in with Google.',
-      });
     } catch (error: any) {
       let errorMessage = 'Google sign-in failed';
       console.error('Google sign-in error:', error);
       
-      // Better error messages for common issues
-      if (error.code === 'auth/popup-closed-by-user') {
-        errorMessage = 'Login cancelled. Please try again.';
-      } else if (error.code === 'auth/popup-blocked') {
-        errorMessage = 'Login popup was blocked. Please enable popups for this site.';
-      } else if (error.code === 'auth/unauthorized-domain') {
+      // Error handling for redirect method
+      if (error.code === 'auth/unauthorized-domain') {
         errorMessage = 'Authentication problem: This domain must be authorized in the Firebase console.';
         console.error('Domain not authorized:', window.location.origin, 'Please add to Firebase console');
       } else if (error.code) {
@@ -125,7 +159,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         description: errorMessage,
         variant: 'destructive',
       });
-    } finally {
+      
       setIsLoading(false);
     }
   };
