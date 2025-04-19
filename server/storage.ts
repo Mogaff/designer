@@ -571,10 +571,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserCreation(id: number, userId?: number): Promise<UserCreation | undefined> {
-    let query = db.select().from(userCreations).where(eq(userCreations.id, id));
-    
+    // Always filter by userId if provided to enforce privacy
     if (userId !== undefined) {
-      // Create a new query with the additional condition
+      // Create a query with conditions for both id and user_id
       const results = await db
         .select()
         .from(userCreations)
@@ -584,7 +583,13 @@ export class DatabaseStorage implements IStorage {
         ));
       return results[0] || undefined;
     } else {
-      const results = await query;
+      // When no userId is provided, only API routes that properly handle permissions
+      // should use this, as it could return any user's creation
+      // This should ONLY be used internally by admin routes with proper permission checks
+      const results = await db
+        .select()
+        .from(userCreations)
+        .where(eq(userCreations.id, id));
       return results[0] || undefined;
     }
   }
@@ -603,6 +608,7 @@ export class DatabaseStorage implements IStorage {
     userId?: number
   ): Promise<UserCreation | undefined> {
     if (userId !== undefined) {
+      // Always filter by userId if provided to enforce privacy
       const [updatedCreation] = await db
         .update(userCreations)
         .set(updates)
@@ -613,6 +619,8 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return updatedCreation || undefined;
     } else {
+      // WARNING: When no userId is provided, this could update any user's creation
+      // This should ONLY be used internally by admin routes with proper permission checks
       const [updatedCreation] = await db
         .update(userCreations)
         .set(updates)
