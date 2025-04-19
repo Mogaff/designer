@@ -14,14 +14,7 @@ export default function Login() {
   const { signInWithGoogle, isAuthenticated } = useAuth();
   const [_, setLocation] = useLocation();
   const isMobile = useIsMobile();
-  
-  // AUTO-REDIRECT TO HOME (Development mode only)
-  // This is a temporary fix while Firebase domain authorization is sorted out
-  React.useEffect(() => {
-    // Immediately redirect to the home page
-    setLocation('/');
-  }, []);
-  
+
   // If already authenticated, redirect to home
   if (isAuthenticated) {
     setLocation('/');
