@@ -173,8 +173,8 @@ export async function processAdBurst(req: Request, res: Response) {
     try {
       // Check if we have Anthropic API key
       if (process.env.ANTHROPIC_API_KEY) {
-        // Import Anthropic utilities dynamically to avoid circular dependencies
-        const { generateMarketingCopy } = await import('./anthropic_utils');
+        // Import simplified Anthropic utilities
+        const { generateMarketingCopy } = await import('./anthropic_simple');
         
         // Try to at least generate script with Claude
         const script = await generateMarketingCopy({
