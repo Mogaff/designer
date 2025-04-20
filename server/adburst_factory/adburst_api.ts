@@ -216,9 +216,16 @@ export async function processAdBurstRequest(req: Request, res: Response) {
       console.error('Error generating video:', videoError);
       
       // Return a more useful response with both the script and the error
-      return res.status(500).json({
+      // Special handling for API LIMITATION error message
+      const errorMessage = videoError instanceof Error ? videoError.message : 'Unknown error';
+      const isApiLimitation = errorMessage.includes('API LIMITATION:');
+      
+      // For API limitations, we use a 200 status with success: false
+      // This allows the UI to handle it differently than a server error
+      return res.status(isApiLimitation ? 200 : 500).json({
         success: false,
-        message: `Error generating video: ${videoError instanceof Error ? videoError.message : 'Unknown error'}`,
+        message: errorMessage,
+        isApiLimitation: isApiLimitation,
         partialResults: {
           script,
           generatedAt: new Date().toISOString(),
@@ -226,7 +233,7 @@ export async function processAdBurstRequest(req: Request, res: Response) {
           apiStatus: {
             claude: "Success", // Script was generated 
             geminiVeo: "Unavailable", // Video generation API limitation
-            errorDetails: videoError instanceof Error ? videoError.message : 'Unknown error'
+            errorDetails: errorMessage
           }
         }
       });

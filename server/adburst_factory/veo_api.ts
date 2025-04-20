@@ -212,8 +212,10 @@ export async function imageToVideo(imagePath: string): Promise<string> {
         // Check for various limitation messages that Gemini might return
         if (responseText.includes('Video output is not possible in this environment') ||
             responseText.includes('As an AI, I cannot create and output video files') ||
-            responseText.includes('would be a video if I had the capability')) {
-          errorMessage = 'Video generation is currently unavailable. The Gemini API has indicated it cannot produce video content in this environment. This is a limitation of the current API access level rather than an error in your request.';
+            responseText.includes('would be a video if I had the capability') ||
+            responseText.includes('cannot create and upload video files') ||
+            responseText.includes('I cannot create') && responseText.includes('video')) {
+          errorMessage = 'API LIMITATION: Video generation is currently unavailable. The Gemini API has indicated it cannot produce video content in this environment. This is a limitation of the current API access level rather than an error in your request.';
           console.error('API LIMITATION DETECTED:', errorMessage);
         }
       }
