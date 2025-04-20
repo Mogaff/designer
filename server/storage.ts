@@ -472,11 +472,38 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(insertUser)
-      .returning();
-    return user;
+    try {
+      // First check if the user already exists (by firebase_uid or username)
+      if (insertUser.firebase_uid) {
+        const existingUser = await this.getUserByFirebaseUid(insertUser.firebase_uid);
+        if (existingUser) {
+          return existingUser;
+        }
+      }
+      
+      if (insertUser.username) {
+        const existingUser = await this.getUserByUsername(insertUser.username);
+        if (existingUser) {
+          return existingUser;
+        }
+      }
+      
+      // Make sure password is defined
+      if (!insertUser.password) {
+        insertUser.password = '';
+      }
+      
+      // Insert the user
+      const [user] = await db
+        .insert(users)
+        .values(insertUser)
+        .returning();
+      
+      return user;
+    } catch (error) {
+      console.error('Error creating user:', error);
+      throw new Error(`Failed to create user: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   async updateUserCredits(userId: number, newBalance: number): Promise<User | undefined> {
