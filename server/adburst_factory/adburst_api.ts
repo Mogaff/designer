@@ -41,8 +41,17 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
+// Import all our API integrations
+import { imageToVideo } from './veo_api';
+import { generateAdScript } from './openai_api';
+import { textToSpeech } from './elevenlabs_api';
+import { combineVideoAudio } from './ffmpeg_utils';
+import { uploadToBuffer } from './buffer_api';
+
 /**
- * Generate script using Claude 3.7
+ * Generate script using GPT-4o or Claude 3.7
+ * Primary: GPT-4o for script generation
+ * Fallback: Claude 3.7 if OpenAI fails
  */
 async function generateScript(options: {
   productName: string;
@@ -50,48 +59,57 @@ async function generateScript(options: {
   targetAudience?: string;
 }): Promise<string> {
   try {
-    console.log('Generating script with Claude 3.7...');
-    
-    const systemPrompt = `You are an expert marketing copywriter. Create short, compelling ad copy for video advertisements.`;
-    
-    const userPrompt = `Write a concise, engaging 8-second advertisement script (about 30-40 words) for:
-      
-      Product: ${options.productName}
-      ${options.productDescription ? `Description: ${options.productDescription}` : ''}
-      ${options.targetAudience ? `Target Audience: ${options.targetAudience}` : ''}
-      
-      The script should:
-      - Start with a compelling hook
-      - Clearly communicate the main benefit
-      - Include a call-to-action
-      - Be exactly 30-40 words
-      
-      Return ONLY the script text, nothing else.`;
-    
-    const response = await anthropic.messages.create({
-      model: 'claude-3-7-sonnet-20250219',
-      system: systemPrompt,
-      max_tokens: 1024,
-      messages: [{ role: 'user', content: userPrompt }],
-    });
-
-    // Get the response text
-    const content = response.content[0];
-    if (content.type === 'text') {
-      const script = content.text.trim();
-      console.log('Generated script:', script);
-      return script;
-    } else {
-      throw new Error('Unexpected response format from Claude');
-    }
+    // Try GPT-4o first (primary option)
+    console.log('Generating script with GPT-4o...');
+    return await generateAdScript(options);
   } catch (error) {
-    console.error('Error generating script with Claude:', error);
+    console.error('Error with GPT-4o, falling back to Claude 3.7:', error);
     
-    // Create a basic script if API fails
-    const basicScript = `Introducing ${options.productName}! ${options.productDescription || 'The perfect solution for your needs.'} ${options.targetAudience ? 'Perfect for ' + options.targetAudience + '.' : ''} Order now!`;
-    
-    console.log('Using basic script:', basicScript);
-    return basicScript;
+    // Fallback to Claude 3.7
+    try {
+      console.log('Generating script with Claude 3.7 (fallback)...');
+      
+      const systemPrompt = `You are an expert marketing copywriter. Create short, compelling ad copy for video advertisements.`;
+      
+      const userPrompt = `Write a concise, engaging 8-second advertisement script (about 30-40 words) for:
+        
+        Product: ${options.productName}
+        ${options.productDescription ? `Description: ${options.productDescription}` : ''}
+        ${options.targetAudience ? `Target Audience: ${options.targetAudience}` : ''}
+        
+        The script should:
+        - Start with a compelling hook
+        - Clearly communicate the main benefit
+        - Include a call-to-action
+        - Be exactly 30-40 words
+        
+        Return ONLY the script text, nothing else.`;
+      
+      const response = await anthropic.messages.create({
+        model: 'claude-3-7-sonnet-20250219',
+        system: systemPrompt,
+        max_tokens: 1024,
+        messages: [{ role: 'user', content: userPrompt }],
+      });
+  
+      // Get the response text
+      const content = response.content[0];
+      if (content.type === 'text') {
+        const script = content.text.trim();
+        console.log('Generated script with Claude 3.7:', script);
+        return script;
+      } else {
+        throw new Error('Unexpected response format from Claude');
+      }
+    } catch (claudeError) {
+      console.error('Error generating script with Claude:', claudeError);
+      
+      // Ultimate fallback: create a basic script if both APIs fail
+      const basicScript = `Introducing ${options.productName}! ${options.productDescription || 'The perfect solution for your needs.'} ${options.targetAudience ? 'Perfect for ' + options.targetAudience + '.' : ''} Order now!`;
+      
+      console.log('Using basic script fallback:', basicScript);
+      return basicScript;
+    }
   }
 }
 
@@ -114,10 +132,17 @@ function saveUploadedFiles(files: Express.Multer.File[]): string[] {
 
 /**
  * Process AdBurst Factory request
+ * Follows the complete workflow:
+ * 1. Upload images
+ * 2. Generate video from primary image (Veo 2)
+ * 3. Generate script (GPT-4o/Claude)
+ * 4. Generate voiceover (ElevenLabs)
+ * 5. Combine video and audio (FFmpeg)
+ * 6. Upload to social media (Buffer)
  */
 export async function processAdBurstRequest(req: Request, res: Response) {
   try {
-    // Extract form data
+    // Step 1: Extract form data
     const { productName, productDescription, targetAudience } = req.body;
     
     console.log('AdBurst request data:', { productName, productDescription, targetAudience });
@@ -155,26 +180,80 @@ export async function processAdBurstRequest(req: Request, res: Response) {
     
     console.log(`Processing AdBurst for ${productName} with ${imageFiles.length} images`);
     
-    // Save images for reference (in a real implementation, we would process these)
+    // Save images to temporary storage
     const imagePaths = saveUploadedFiles(imageFiles);
     console.log('Images saved to:', imagePaths);
     
-    // Generate script with Claude
-    const script = await generateScript({
+    // PARALLEL PROCESSING: Start multiple tasks simultaneously for efficiency
+    
+    // Step 2: Generate video from primary image using Veo 2
+    console.log('Starting video generation with Veo 2...');
+    const videoPromise = imageToVideo(imagePaths[0]); // Use the first image for video generation
+    
+    // Step 3: Generate script using GPT-4o with Claude fallback
+    console.log('Starting script generation...');
+    const scriptPromise = generateScript({
       productName,
       productDescription,
       targetAudience
     });
     
-    // For a demo, return a sample video URL
-    // In a real implementation, we would generate a video and return its URL
-    const videoUrl = "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4";
+    // Wait for both tasks to complete
+    const [rawVideoPath, script] = await Promise.all([videoPromise, scriptPromise]);
+    console.log('Video generation complete:', rawVideoPath);
+    console.log('Script generation complete:', script);
     
+    // Step 4: Generate voiceover from script using ElevenLabs
+    console.log('Starting voiceover generation with ElevenLabs...');
+    const audioPath = await textToSpeech(script);
+    console.log('Voiceover generation complete:', audioPath);
+    
+    // Step 5: Combine video with voiceover using FFmpeg
+    // Optional: Add a watermark if available
+    console.log('Combining video and audio...');
+    const watermarkPath = path.join(process.cwd(), 'temp', 'watermark.png');
+    const hasWatermark = fs.existsSync(watermarkPath);
+    
+    const outputFileName = await combineVideoAudio(
+      rawVideoPath, 
+      audioPath, 
+      hasWatermark ? watermarkPath : undefined
+    );
+    console.log('Video processing complete:', outputFileName);
+    
+    // Step 6: Upload to Buffer for social media distribution (optional)
+    let bufferData = null;
+    try {
+      console.log('Uploading to Buffer for social media...');
+      bufferData = await uploadToBuffer(
+        path.join(process.cwd(), 'temp', outputFileName),
+        `${productName} - ${script.split('.')[0]}.`, // Use first sentence as caption
+        ['instagram', 'tiktok']
+      );
+      console.log('Buffer upload complete:', bufferData);
+    } catch (bufferError) {
+      console.error('Buffer upload failed (optional step):', bufferError);
+      // Continue without Buffer - it's optional
+    }
+    
+    // Provide a video URL pointing to our API
+    const videoUrl = `/api/adburst/video/${outputFileName}`;
+    
+    // Step 7: Return success response with all data
     return res.status(200).json({
       success: true,
       videoUrl,
       script,
-      message: 'Ad generated successfully with Claude AI'
+      message: 'Ad generated successfully with full AdBurst Factory workflow',
+      processingTime: '~90 seconds', // Approximate time taken
+      socialMedia: bufferData || 'Not available',
+      // Include metadata for front-end display
+      metadata: {
+        productName,
+        generatedAt: new Date().toISOString(),
+        videoLength: '8 seconds',
+        aspectRatio: '9:16 (vertical)',
+      }
     });
   } catch (error) {
     console.error('Error processing AdBurst request:', error);
@@ -183,6 +262,40 @@ export async function processAdBurstRequest(req: Request, res: Response) {
       message: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
     });
   }
+}
+
+/**
+ * Serve a generated video file
+ */
+export function serveGeneratedVideo(req: Request, res: Response) {
+  const { videoId } = req.params;
+  
+  if (!videoId) {
+    return res.status(400).json({ 
+      success: false,
+      message: 'Video ID is required' 
+    });
+  }
+  
+  // Video path based on filename
+  const videoPath = path.join(process.cwd(), 'temp', videoId);
+  
+  // Check if file exists
+  if (!fs.existsSync(videoPath)) {
+    console.error(`Video file not found: ${videoPath}`);
+    return res.status(404).json({ 
+      success: false,
+      message: 'Video not found' 
+    });
+  }
+  
+  // Set appropriate headers for video
+  res.setHeader('Content-Type', 'video/mp4');
+  res.setHeader('Content-Disposition', `attachment; filename="adburst-ad.mp4"`);
+  
+  // Stream the video file to the response
+  const fileStream = fs.createReadStream(videoPath);
+  fileStream.pipe(res);
 }
 
 /**
@@ -221,6 +334,9 @@ export function registerAdBurstApiRoutes(app: any) {
       });
     });
   });
+  
+  // Serve video files
+  app.get('/api/adburst/video/:videoId', serveGeneratedVideo);
   
   console.log('AdBurst Factory API routes registered');
 }

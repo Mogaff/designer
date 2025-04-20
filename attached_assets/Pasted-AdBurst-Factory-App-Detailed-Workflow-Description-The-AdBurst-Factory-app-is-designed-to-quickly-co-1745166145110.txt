@@ -1,0 +1,87 @@
+AdBurst Factory App: Detailed Workflow Description
+The AdBurst Factory app is designed to quickly convert 3 uploaded product images into a professional-quality, 8-second vertical video advertisement, ready for TikTok, Instagram Reels, or similar platforms. It leverages a powerful chain of APIs and automated processes, ensuring the entire creation takes about 90 seconds from upload to finished video.
+
+⚙️ Step-by-Step Workflow:
+Step 1: User Image Upload
+User selects exactly 3 product images from their device or drive.
+
+Images are uploaded to your backend endpoint (/api/adburst) via:
+
+A simple HTML/Tailwind frontend form (optional).
+
+An API request from any frontend or backend client.
+
+Step 2: Automatic Video Creation (Google Veo 2 API)
+The backend immediately sends the first image to Google's Veo 2 API.
+
+Veo 2 converts this static image into a dynamic 8-second vertical video (aspect ratio 9:16).
+
+The video output showcases the product with gentle, dynamic camera movements or subtle zoom effects.
+
+Step 3: Voiceover Text Generation (OpenAI GPT-4o)
+Simultaneously, the backend calls OpenAI's GPT-4o API.
+
+GPT-4o generates a short, catchy script for the ad—typically one or two sentences, highlighting the product’s key benefits and including a clear call-to-action.
+
+Step 4: Voiceover Audio Creation (ElevenLabs TTS API)
+The GPT-generated text is sent immediately to ElevenLabs' TTS (Text-to-Speech) API.
+
+ElevenLabs produces a high-quality, natural-sounding audio voiceover in MP3 format.
+
+You may pre-select a specific voice style or allow future customization.
+
+Step 5: Video & Audio Merging with Watermark (FFmpeg)
+The backend downloads the generated video and voiceover audio.
+
+Using FFmpeg (installed on your Replit backend), it merges:
+
+The Veo 2 video file (visual)
+
+The ElevenLabs audio file (audio)
+
+A watermark/logo (watermark.png) added in the bottom-right corner
+
+Result: a polished, final .mp4 file, ready for distribution.
+
+Step 6: Automatic Upload & Scheduling (Buffer API)
+After creating the final video, the backend automatically uploads it to Buffer:
+
+Buffer handles scheduling/posting directly to TikTok, Instagram, etc.
+
+This eliminates manual uploading and scheduling by the user.
+
+Step 7: Final Output to User
+Backend returns a clear success message and direct link to the uploaded Buffer video.
+
+User can preview, download, or further manage via Buffer's interface.
+
+📚 Technical Stack & APIs:
+Frontend (optional HTML/Tailwind upload form)
+
+Backend (Replit):
+
+Google Gemini Veo 2 API (image-to-video, 8 sec, vertical)
+
+OpenAI GPT-4o (ad script generation)
+
+ElevenLabs TTS (voiceover audio synthesis)
+
+FFmpeg (video/audio merging, watermarking)
+
+Buffer API (automatic video upload and scheduling)
+
+💶 Monetization & Costs:
+Charge customers €25 per individual video or €149 for 10 videos/month.
+
+API and GPU costs per generated ad remain extremely low (< $0.15 per 8-second video from Veo 2).
+
+🚨 Important for Agent:
+All new code files related to this feature are isolated in the dedicated folder /adburst_factory/.
+
+Existing app code or functionality must never be modified or deleted.
+
+Agent must always:
+
+Clearly comment and document the new code.
+
+Follow robust error handling and logging.
