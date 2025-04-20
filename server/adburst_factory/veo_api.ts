@@ -35,31 +35,33 @@ export async function imageToVideo(imagePath: string): Promise<string> {
       systemInstruction: "You are a video generation expert that creates high-quality video content from images. Create ONLY videos, never still images or text."
     });
     
-    // Define parameters for video generation with specific instructions for Veo 2
-    // We need to include all video parameters directly in the prompt since the Veo 2 API
-    // doesn't directly support a videoConfig parameter structure yet
-    const prompt = `Generate a vertical video for a product advertisement with these exact specifications:
+    // Define parameters for video generation with specific instructions
+    // The prompt is CRITICAL - it needs to clearly instruct the model to generate actual video
+    const prompt = `GENERATE VIDEO: Create a MOVING VIDEO ANIMATION (not a static image) of this product.
+
+                   CRITICAL INSTRUCTIONS - YOU MUST:
+                   1. Output VIDEO format only (MP4)
+                   2. Do NOT respond with text or explanations - ONLY output video
+                   3. Create MOTION in the video - with camera movement and animation effects
+                   4. Generate a ${VIDEO_DURATION_SECONDS}-second video clip
+                   5. Use ${VIDEO_ASPECT_RATIO} vertical/portrait aspect ratio (1080x1920)
                    
-                   TECHNICAL REQUIREMENTS (CRITICAL - MUST FOLLOW EXACTLY):
-                   * Generate VIDEO output, not an image
-                   * Video duration: ${VIDEO_DURATION_SECONDS} seconds exactly
-                   * Aspect ratio: ${VIDEO_ASPECT_RATIO} (vertical/portrait orientation)
-                   * Frame rate: 30fps
-                   * Resolution: 1080x1920 pixels
+                   VIDEO STYLE:
+                   - Create smooth, professional-looking animation with the product centered
+                   - Include gentle camera movements (slow zoom in/out, subtle panning)
+                   - Add soft transitions between camera angles
+                   - Use elegant lighting effects that highlight product features
+                   - Maintain premium/luxury aesthetic throughout
+                   - Keep background clean and minimalist
                    
-                   STYLE REQUIREMENTS:
-                   * Professional product showcase with elegant camera movements
-                   * Luxury/premium aesthetic with soft lighting
-                   * Gentle zoom effects that highlight product features
-                   * Subtle transitions and movement (slow, controlled camera)
-                   * Clean background that emphasizes the product
+                   TECHNICAL SPECIFICATIONS:
+                   - Resolution: 1080x1920 (vertical)
+                   - Frame rate: 30fps
+                   - Duration: ${VIDEO_DURATION_SECONDS} seconds
+                   - Format: MP4 video
                    
-                   PURPOSE:
-                   * Social media advertisement for TikTok and Instagram
-                   * Designed to showcase product quality and features
-                   * Optimized for mobile viewing in vertical format
-                   
-                   This is for a real client campaign, so please create an actual video animation, not still frames.`;
+                   This is for a critical business application where actual video generation is required.
+                   IMPORTANT: The output MUST be a video file (MP4), not a static image or text description.`;
     
     // Make the actual Veo 2 API call
     console.log(`Calling Veo 2 API with prompt: ${prompt}`);
@@ -116,45 +118,96 @@ export async function imageToVideo(imagePath: string): Promise<string> {
     console.log('Received response from Gemini/Veo 2:', 
       JSON.stringify(response, null, 2).substring(0, 500) + '...');
     
-    // Try to extract video data using multiple possible response structures
-    let videoData;
+    // Gemini's video response can come in different formats
+    // We need to check multiple possible locations for video data
+    let videoData = null;
+    let videoMimeType = 'video/mp4'; // Default mime type
     
-    if (response.candidates && response.candidates[0]) {
+    // Log the full response for debugging
+    console.log('Examining response structure:', JSON.stringify(response, null, 2));
+    
+    // Try various paths in the response structure
+    if (response.candidates && response.candidates.length > 0) {
       const candidate = response.candidates[0];
       
-      // Try to find video part in different possible locations
-      const parts = candidate.content?.parts || [];
-      
-      // Look through all parts for a video property
-      for (const part of parts) {
-        if (part.video) {
-          videoData = part.video.data;
-          break;
-        }
-        
-        // Check for inline_data which might contain video
-        if (part.inlineData && part.inlineData.mimeType?.startsWith('video/')) {
-          videoData = part.inlineData.data;
-          break;
-        }
-        
-        // Check for various formats that might exist
-        if (part.videoData) {
-          videoData = part.videoData;
-          break;
+      if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
+        // Examine each part in the response
+        for (const part of candidate.content.parts) {
+          console.log('Examining part:', JSON.stringify(part, null, 2));
+          
+          // Option 1: Check for direct video object (newer API structure)
+          try {
+            if (part.video && part.video.data) {
+              console.log('Found video data in part.video');
+              videoData = part.video.data;
+              if (part.video.mimeType) videoMimeType = part.video.mimeType;
+              break;
+            }
+          } catch (e) {
+            console.log('Error checking video field:', e);
+          }
+          
+          // Option 2: Check for inline data with video mime type
+          try {
+            if (part.inlineData && 
+                part.inlineData.mimeType && 
+                part.inlineData.mimeType.startsWith('video/') && 
+                part.inlineData.data) {
+              console.log('Found video in inlineData');
+              videoData = part.inlineData.data;
+              videoMimeType = part.inlineData.mimeType;
+              break;
+            }
+          } catch (e) {
+            console.log('Error checking inlineData field:', e);
+          }
+          
+          // Option 3: Check for text that might be base64 video
+          try {
+            if (part.text && part.text.startsWith('data:video/')) {
+              console.log('Found video in data URL format');
+              const dataUrlParts = part.text.split(',');
+              if (dataUrlParts.length === 2) {
+                videoData = dataUrlParts[1];
+                const mimeMatch = part.text.match(/data:(video\/[^;]+);/);
+                if (mimeMatch && mimeMatch[1]) {
+                  videoMimeType = mimeMatch[1];
+                }
+                break;
+              }
+            }
+          } catch (e) {
+            console.log('Error checking text field:', e);
+          }
         }
       }
       
-      // In case video is directly in the content
-      if (!videoData && candidate.content?.video?.data) {
-        videoData = candidate.content.video.data;
-      }
-      
-      // In case video is in a different format
-      if (!videoData && candidate.videoContent) {
-        videoData = candidate.videoContent;
+      // Fallback: Look for specific Gemini formats at candidate level
+      if (!videoData) {
+        try {
+          if (candidate.videoContent) {
+            console.log('Found videoContent at candidate level');
+            videoData = candidate.videoContent;
+          }
+        } catch (e) {
+          console.log('Error checking candidate.videoContent:', e);
+        }
+        
+        try {
+          if (candidate.content && candidate.content.video && candidate.content.video.data) {
+            console.log('Found video at content level');
+            videoData = candidate.content.video.data;
+            if (candidate.content.video.mimeType) {
+              videoMimeType = candidate.content.video.mimeType;
+            }
+          }
+        } catch (e) {
+          console.log('Error checking candidate.content.video:', e);
+        }
       }
     }
+    
+    console.log(`Video data found: ${videoData ? 'YES' : 'NO'}, MIME type: ${videoMimeType}`);
     
     // If we still don't have video data, log what we received and throw an error
     if (!videoData) {
