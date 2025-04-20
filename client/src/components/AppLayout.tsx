@@ -20,7 +20,8 @@ import {
   CreditCard,
   PaintBucket,
   LogOut,
-  PanelLeft
+  PanelLeft,
+  Video
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -83,6 +84,17 @@ export default function AppLayout({ children }: AppLayoutProps) {
                     <Button variant="ghost" className={`w-full justify-start ${location === '/gallery' ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white hover:bg-white/10'}`}>
                       <Grid className="h-5 w-5" />
                       <span className="sidebar-text ml-2">Gallery</span>
+                    </Button>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href="/adburst">
+                    <Button variant="ghost" className={`w-full justify-start ${location === '/adburst' ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white hover:bg-white/10'}`}>
+                      <Video className="h-5 w-5" />
+                      <span className="sidebar-text ml-2">AdBurst</span>
                     </Button>
                   </Link>
                 </SidebarMenuButton>

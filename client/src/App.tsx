@@ -8,6 +8,7 @@ import Login from "@/pages/Login";
 import Pricing from "@/pages/Pricing";
 import Gallery from "@/pages/Gallery";
 import Settings from "@/pages/Settings";
+import AdBurst from "@/pages/AdBurst";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { UserSettingsProvider } from "@/contexts/UserSettingsContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -48,6 +49,14 @@ function Router() {
         <ProtectedRoute>
           <AppLayout>
             <Settings />
+          </AppLayout>
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/adburst">
+        <ProtectedRoute>
+          <AppLayout>
+            <AdBurst />
           </AppLayout>
         </ProtectedRoute>
       </Route>
