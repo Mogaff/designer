@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AdBurst Factory - Upload Form</title>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      line-height: 1.5;
+      color: #f8f9fa;
+      background-color: #0f172a;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: rgba(15, 23, 42, 0.8);
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+    }
+    h1 {
+      color: #ffffff;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    input[type="text"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #2d3748;
+      border-radius: 4px;
+      background-color: #1e293b;
+      color: #f8f9fa;
+      font-size: 16px;
+    }
+    input[type="file"] {
+      padding: 10px;
+      border: 2px dashed #4338ca;
+      border-radius: 4px;
+      background-color: rgba(67, 56, 202, 0.1);
+      width: 100%;
+      cursor: pointer;
+    }
+    button {
+      background-color: #4f46e5;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+      font-weight: 600;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #4338ca;
+    }
+    .info-box {
+      background-color: rgba(79, 70, 229, 0.1);
+      border-left: 4px solid #4f46e5;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+    .error {
+      color: #ef4444;
+      margin-top: 5px;
+    }
+    .progress-container {
+      width: 100%;
+      height: 20px;
+      background-color: #1e293b;
+      border-radius: 10px;
+      margin-top: 20px;
+      overflow: hidden;
+      display: none;
+    }
+    .progress-bar {
+      height: 100%;
+      background-color: #4f46e5;
+      border-radius: 10px;
+      width: 0%;
+      transition: width 0.3s;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>AdBurst Factory</h1>
+    
+    <div class="info-box">
+      <p>Upload exactly 3 product images to generate an 8-second vertical ad with AI voiceover.</p>
+    </div>
+    
+    <form id="adburstForm" enctype="multipart/form-data">
+      <div class="form-group">
+        <label for="images">Product Images (exactly 3)</label>
+        <input type="file" id="images" name="images" accept="image/*" multiple required>
+        <div id="imageError" class="error"></div>
+        <div id="imagePreview" style="display: flex; flex-wrap: wrap; margin-top: 10px;"></div>
+      </div>
+      
+      <div class="form-group">
+        <label for="prompt">Product Description (optional)</label>
+        <textarea id="prompt" name="prompt" rows="3" placeholder="Describe your product and target audience..."></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="callToAction">Call to Action (optional)</label>
+        <input type="text" id="callToAction" name="callToAction" placeholder="e.g., 'Shop Now', 'Learn More'">
+      </div>
+      
+      <div class="form-group">
+        <label for="aspectRatio">Aspect Ratio</label>
+        <select id="aspectRatio" name="aspectRatio">
+          <option value="vertical" selected>Vertical (9:16) - Recommended for Stories/Reels</option>
+          <option value="square">Square (1:1) - For Instagram Feed</option>
+          <option value="horizontal">Horizontal (16:9) - For YouTube</option>
+        </select>
+      </div>
+      
+      <button type="submit" id="submitButton">Generate Ad Video</button>
+      
+      <div class="progress-container" id="progressContainer">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+    </form>
+    
+    <div id="result" style="margin-top: 20px; display: none;">
+      <h2>Your Ad Video Is Ready!</h2>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <a id="downloadLink" href="#" class="button" style="text-align: center; background-color: #4f46e5; color: white; padding: 12px; border-radius: 4px; text-decoration: none;">Download Video</a>
+        <a id="bufferLink" href="#" class="button" style="text-align: center; background-color: #3b82f6; color: white; padding: 12px; border-radius: 4px; text-decoration: none;">View on Buffer</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('adburstForm');
+      const imageInput = document.getElementById('images');
+      const imageError = document.getElementById('imageError');
+      const imagePreview = document.getElementById('imagePreview');
+      const submitButton = document.getElementById('submitButton');
+      const progressContainer = document.getElementById('progressContainer');
+      const progressBar = document.getElementById('progressBar');
+      const resultDiv = document.getElementById('result');
+      const downloadLink = document.getElementById('downloadLink');
+      const bufferLink = document.getElementById('bufferLink');
+      
+      // Image preview functionality
+      imageInput.addEventListener('change', function() {
+        imagePreview.innerHTML = '';
+        imageError.textContent = '';
+        
+        if (this.files.length !== 3) {
+          imageError.textContent = 'Please select exactly 3 images.';
+          return;
+        }
+        
+        for (let i = 0; i < this.files.length; i++) {
+          const file = this.files[i];
+          
+          if (!file.type.startsWith('image/')) {
+            imageError.textContent = 'Please upload only image files.';
+            return;
+          }
+          
+          const reader = new FileReader();
+          
+          reader.onload = function(e) {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.style.width = '100px';
+            img.style.height = '100px';
+            img.style.objectFit = 'cover';
+            img.style.margin = '5px';
+            img.style.borderRadius = '4px';
+            imagePreview.appendChild(img);
+          };
+          
+          reader.readAsDataURL(file);
+        }
+      });
+      
+      // Form submission
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(form);
+        
+        if (imageInput.files.length !== 3) {
+          imageError.textContent = 'Please select exactly 3 images.';
+          return;
+        }
+        
+        submitButton.disabled = true;
+        submitButton.textContent = 'Generating...';
+        progressContainer.style.display = 'block';
+        
+        // Simulate progress for demo purposes
+        // In a real implementation, this would be based on actual progress updates
+        let progress = 0;
+        const interval = setInterval(function() {
+          progress += 5;
+          progressBar.style.width = progress + '%';
+          
+          if (progress >= 100) {
+            clearInterval(interval);
+            
+            // Mock API response for demo
+            // In production, this would be a real API call
+            setTimeout(function() {
+              showResult({
+                success: true,
+                message: 'Ad video successfully generated',
+                data: {
+                  downloadUrl: '/adburst/download/example_video.mp4',
+                  bufferUrl: 'https://buffer.com/example'
+                }
+              });
+            }, 1000);
+          }
+        }, 500);
+        
+        // In a real implementation, you would make an API call here:
+        /*
+        fetch('/api/adburst', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          showResult(data);
+        })
+        .catch(error => {
+          imageError.textContent = 'Error generating video: ' + error.message;
+          submitButton.disabled = false;
+          submitButton.textContent = 'Generate Ad Video';
+          progressContainer.style.display = 'none';
+        });
+        */
+      });
+      
+      function showResult(data) {
+        if (data.success) {
+          resultDiv.style.display = 'block';
+          downloadLink.href = data.data.downloadUrl;
+          bufferLink.href = data.data.bufferUrl;
+          bufferLink.target = '_blank';
+        } else {
+          imageError.textContent = 'Error: ' + data.message;
+        }
+        
+        submitButton.disabled = false;
+        submitButton.textContent = 'Generate Ad Video';
+      }
+    });
+  </script>
+</body>
+</html>

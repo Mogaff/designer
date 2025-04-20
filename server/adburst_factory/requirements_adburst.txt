@@ -1,0 +1,40 @@
+# AdBurst Factory Requirements
+
+## Required Dependencies
+- multer: For handling file uploads (already installed)
+- fs: For file system operations (Node.js built-in)
+- path: For path handling (Node.js built-in)
+- axios: For making HTTP requests (already installed)
+
+## External API Keys Required
+- GEMINI_API_KEY: Google Gemini Veo 2 API key for video generation
+- OPENAI_API_KEY: OpenAI GPT-4o API key for voice-over text generation
+- ELEVENLABS_API_KEY: ElevenLabs API key for text-to-speech
+- BUFFER_API_KEY: Buffer API key for social media scheduling
+
+## System Dependencies
+- ffmpeg: For video and audio processing
+
+## Installation Instructions
+1. If not already installed, run:
+   ```
+   npm install multer axios
+   ```
+
+2. Install ffmpeg (server-side dependency):
+   This will be installed automatically when using the packager_tool
+
+3. Set up environment variables for API keys:
+   - Add the required API keys to your environment variables
+   - Or set them in your .env file
+
+## API Endpoints
+- POST /api/adburst: Main endpoint for generating ad videos
+- GET /adburst/download/:filename: Endpoint for downloading generated videos
+- GET /adburst/health: Health check endpoint
+
+## Usage Notes
+- The API requires exactly 3 product images
+- Only authenticated users can access the API
+- Each generation uses credits from the user's account
+- Videos are temporarily stored and automatically cleaned up
