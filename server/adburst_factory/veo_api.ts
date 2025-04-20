@@ -13,7 +13,38 @@ import { v4 as uuidv4 } from 'uuid';
 import { execSync } from 'child_process';
 
 // Initialize the Generative AI API
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+const apiKey = process.env.GEMINI_API_KEY || '';
+if (!apiKey) {
+  console.error('GEMINI_API_KEY environment variable is not set');
+}
+const genAI = new GoogleGenerativeAI(apiKey);
+
+// Log API key information (safely)
+console.log(`Using Gemini API key: ${apiKey ? apiKey.substring(0, 4) + '...' + apiKey.substring(apiKey.length - 4) : 'not set'}`);
+
+// Function to check API key status
+async function checkApiKeyStatus() {
+  try {
+    // Try a simple operation to check API key validity
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+    const result = await model.generateContent("Check API key status");
+    const response = await result.response;
+    console.log('Gemini API key appears to be valid. Model access confirmed.');
+    return true;
+  } catch (error) {
+    console.error('Error checking Gemini API key status:', error);
+    return false;
+  }
+}
+
+// Check API key on startup
+checkApiKeyStatus().then(isValid => {
+  if (isValid) {
+    console.log('Gemini API key validation successful');
+  } else {
+    console.error('Gemini API key may not be valid or may have insufficient permissions');
+  }
+});
 
 // Vertical 9:16 aspect ratio settings for video output
 const VIDEO_ASPECT_RATIO = "9:16";

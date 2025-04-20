@@ -49,6 +49,62 @@ import { combineVideoAudio } from './ffmpeg_utils';
 import { uploadToBuffer } from './buffer_api';
 
 /**
+ * Check API keys for all services
+ * This is important to diagnose potential issues early
+ */
+export async function checkAllApiKeys() {
+  const results = {
+    gemini: false,
+    claude: false,
+    openai: false,
+    elevenlabs: false
+  };
+  
+  try {
+    // Check Gemini API key
+    if (process.env.GEMINI_API_KEY) {
+      const keyLength = process.env.GEMINI_API_KEY.length;
+      console.log(`✓ Gemini API key found (${keyLength} chars): ${process.env.GEMINI_API_KEY.substring(0, 4)}...${process.env.GEMINI_API_KEY.substring(keyLength - 4)}`);
+      results.gemini = true;
+    } else {
+      console.error('✗ Gemini API key is not set');
+    }
+    
+    // Check Claude API key
+    if (process.env.ANTHROPIC_API_KEY) {
+      const keyLength = process.env.ANTHROPIC_API_KEY.length;
+      console.log(`✓ Claude API key found (${keyLength} chars): ${process.env.ANTHROPIC_API_KEY.substring(0, 4)}...${process.env.ANTHROPIC_API_KEY.substring(keyLength - 4)}`);
+      results.claude = true;
+    } else {
+      console.error('✗ Claude API key is not set');
+    }
+    
+    // Check OpenAI API key
+    if (process.env.OPENAI_API_KEY) {
+      const keyLength = process.env.OPENAI_API_KEY.length;
+      console.log(`✓ OpenAI API key found (${keyLength} chars): ${process.env.OPENAI_API_KEY.substring(0, 4)}...${process.env.OPENAI_API_KEY.substring(keyLength - 4)}`);
+      results.openai = true;
+    } else {
+      console.error('✗ OpenAI API key is not set');
+    }
+    
+    // Check ElevenLabs API key
+    if (process.env.ELEVENLABS_API_KEY) {
+      const keyLength = process.env.ELEVENLABS_API_KEY.length;
+      console.log(`✓ ElevenLabs API key found (${keyLength} chars): ${process.env.ELEVENLABS_API_KEY.substring(0, 4)}...${process.env.ELEVENLABS_API_KEY.substring(keyLength - 4)}`);
+      results.elevenlabs = true;
+    } else {
+      console.error('✗ ElevenLabs API key is not set');
+    }
+    
+    return results;
+  } catch (error) {
+    console.error('Error checking API keys:', error);
+    return results;
+  }
+}
+
+/**
  * Generate script using Claude 3.7
  * Direct implementation without fallbacks as per requirements
  */
@@ -141,6 +197,11 @@ function saveUploadedFiles(files: Express.Multer.File[]): string[] {
  */
 export async function processAdBurstRequest(req: Request, res: Response) {
   try {
+    // Check API keys first
+    console.log('Checking API keys before processing request...');
+    const apiKeyStatus = await checkAllApiKeys();
+    console.log('API key status:', apiKeyStatus);
+    
     // Step 1: Extract form data
     const { productName, productDescription, targetAudience } = req.body;
     
@@ -338,6 +399,23 @@ export function serveGeneratedVideo(req: Request, res: Response) {
  * Register AdBurst API routes
  */
 export function registerAdBurstApiRoutes(app: any) {
+  // Check API keys on startup
+  console.log('Checking API keys for AdBurst Factory...');
+  checkAllApiKeys().then(results => {
+    console.log('API key check results:', results);
+  });
+  
+  // Add a diagnostic endpoint to check API key status
+  app.get('/api/adburst/status', async (req: Request, res: Response) => {
+    const apiStatus = await checkAllApiKeys();
+    return res.status(200).json({
+      success: true,
+      apiStatus,
+      message: 'API key status check completed',
+      timestamp: new Date().toISOString()
+    });
+  });
+  
   // Process form submission
   app.post('/api/adburst', (req: Request, res: Response, next: NextFunction) => {
     uploadMiddleware(req, res, (err: any) => {
