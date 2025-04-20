@@ -3,222 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AdBurst Factory</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>AdBurst Factory - 8-second Vertical Ad Generator</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
     <style>
-        .drop-zone {
+        .drag-drop-area {
             border: 2px dashed #ccc;
             border-radius: 8px;
-            padding: 20px;
+            padding: 2rem;
             text-align: center;
-            margin: 20px 0;
-            background-color: #f8fafc;
             transition: all 0.3s ease;
         }
-        
-        .drop-zone.active {
-            border-color: #3b82f6;
-            background-color: #eff6ff;
+        .drag-drop-area.highlight {
+            border-color: #6366f1;
+            background-color: rgba(99, 102, 241, 0.1);
         }
-        
         .preview-container {
             display: flex;
+            justify-content: space-around;
             flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 15px;
+            margin-top: 1rem;
         }
-        
         .preview-item {
             position: relative;
-            width: 150px;
-            height: 150px;
-            border-radius: 8px;
+            width: 120px;
+            height: 120px;
+            margin: 0.5rem;
             overflow: hidden;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        
         .preview-item img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-        
         .preview-item .remove-btn {
             position: absolute;
-            top: 5px;
-            right: 5px;
-            background: rgba(0, 0, 0, 0.5);
+            top: 0;
+            right: 0;
+            background: rgba(0,0,0,0.5);
             color: white;
             border: none;
-            border-radius: 50%;
-            width: 25px;
-            height: 25px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 0 0 0 4px;
             cursor: pointer;
         }
-        
         .loading-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: none;
+            background-color: rgba(0,0,0,0.7);
+            display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            color: white;
+            display: none;
         }
-        
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #3b82f6;
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
             border-radius: 50%;
+            border-top: 4px solid white;
+            width: 40px;
+            height: 40px;
             animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
         }
-        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        .result-container {
+            display: none;
+            margin-top: 2rem;
+            padding: 1rem;
+            border-radius: 8px;
+            background-color: #f3f4f6;
+        }
+        .error-message {
+            color: #ef4444;
+            margin-top: 0.5rem;
+            display: none;
+        }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="bg-white p-8 rounded-lg shadow-md text-center">
-            <div class="loading-spinner mx-auto mb-4"></div>
-            <h3 class="text-xl font-bold mb-2">Generating Your Ad</h3>
-            <p class="text-gray-600 mb-2" id="statusText">Uploading images...</p>
-            <div class="w-full bg-gray-200 rounded-full h-2.5">
-                <div class="bg-blue-600 h-2.5 rounded-full" id="progressBar" style="width: 10%"></div>
-            </div>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6 mb-8">
+            <h1 class="text-3xl font-bold text-indigo-600 mb-2">AdBurst Factory</h1>
+            <p class="text-gray-600 mb-6">Generate 8-second vertical video ads from your product images using AI</p>
+            
+            <form id="adburst-form" class="space-y-6">
+                <div>
+                    <label for="productName" class="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
+                    <input type="text" id="productName" name="productName" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                
+                <div>
+                    <label for="productDescription" class="block text-sm font-medium text-gray-700 mb-1">Product Description</label>
+                    <textarea id="productDescription" name="productDescription" rows="3"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder="Describe your product's features and benefits"></textarea>
+                </div>
+                
+                <div>
+                    <label for="targetAudience" class="block text-sm font-medium text-gray-700 mb-1">Target Audience</label>
+                    <input type="text" id="targetAudience" name="targetAudience"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder="E.g., Women 25-34, Fitness enthusiasts, etc.">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Product Images *</label>
+                    <p class="text-sm text-gray-500 mb-2">Upload exactly 3 product images (JPEG or PNG, max 10MB each)</p>
+                    
+                    <div id="drag-drop-area" class="drag-drop-area">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        <p class="text-gray-500">Drag and drop images here, or <button type="button" id="browse-btn" class="text-indigo-600 font-medium">browse</button></p>
+                        <input type="file" id="file-input" multiple accept="image/jpeg,image/png" class="hidden">
+                    </div>
+                    
+                    <div id="preview-container" class="preview-container"></div>
+                    <div id="file-error" class="error-message"></div>
+                </div>
+                
+                <div class="flex justify-end">
+                    <button type="submit" id="generate-btn" class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50">
+                        Generate Ad
+                    </button>
+                </div>
+            </form>
         </div>
-    </div>
-
-    <header class="bg-white shadow-md">
-        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center">
-                <h1 class="text-3xl font-bold text-gray-900">AdBurst Factory</h1>
-                <a href="/" class="text-blue-600 hover:text-blue-800">Back to Dashboard</a>
-            </div>
-        </div>
-    </header>
-
-    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div class="px-4 py-6 sm:px-0">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-2xl font-semibold mb-6">Create 8-Second Video Ad</h2>
-
-                <form id="adburstForm" action="/api/adburst" method="post" enctype="multipart/form-data">
-                    <div class="mb-6">
-                        <label for="productName" class="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
-                        <input type="text" id="productName" name="productName" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="Enter product name">
+        
+        <div id="result-container" class="result-container max-w-4xl mx-auto">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Your Ad is Ready!</h2>
+            
+            <div class="flex flex-col md:flex-row gap-6">
+                <div class="w-full md:w-1/2">
+                    <div class="bg-black rounded-lg overflow-hidden">
+                        <video id="result-video" class="w-full" controls playsinline>
+                            Your browser does not support the video tag.
+                        </video>
                     </div>
-
-                    <div class="mb-6">
-                        <label for="productDescription" class="block text-sm font-medium text-gray-700 mb-1">Product Description</label>
-                        <textarea id="productDescription" name="productDescription" rows="3"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="Describe your product (optional)"></textarea>
-                    </div>
-
-                    <div class="mb-6">
-                        <label for="targetAudience" class="block text-sm font-medium text-gray-700 mb-1">Target Audience</label>
-                        <input type="text" id="targetAudience" name="targetAudience"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="Who is your target audience? (optional)">
-                    </div>
-
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Product Images (3 required) *</label>
-                        <div class="drop-zone" id="dropZone">
-                            <div class="flex flex-col items-center justify-center">
-                                <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
-                                <p class="mt-2 text-sm text-gray-600">Drag and drop image files here or click to browse</p>
-                                <p class="mt-1 text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
-                            </div>
-                            <input type="file" id="fileInput" name="images" multiple accept="image/*" class="hidden">
-                        </div>
-                        <div class="preview-container" id="previewContainer"></div>
-                        <div id="fileError" class="text-red-500 text-sm mt-1 hidden">Please upload exactly 3 image files.</div>
-                    </div>
-
-                    <div class="flex items-center justify-end">
-                        <button type="submit" id="submitBtn" disabled
-                            class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                            Generate Video Ad
+                    <div class="mt-4 flex justify-between">
+                        <a id="download-btn" href="#" download class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm">
+                            Download Video
+                        </a>
+                        <button id="create-new-btn" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm">
+                            Create New Ad
                         </button>
                     </div>
-                </form>
-            </div>
-
-            <div id="resultSection" class="bg-white rounded-lg shadow-md p-6 mt-6 hidden">
-                <h2 class="text-2xl font-semibold mb-6">Your Generated Ad</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <h3 class="text-lg font-medium mb-3">Preview</h3>
-                        <div class="bg-black aspect-[9/16] rounded-lg overflow-hidden flex items-center justify-center">
-                            <video id="videoPreview" controls class="max-w-full max-h-full">
-                                Your browser does not support the video tag.
-                            </video>
-                        </div>
+                </div>
+                
+                <div class="w-full md:w-1/2">
+                    <div class="bg-gray-100 p-4 rounded-lg">
+                        <h3 class="font-medium text-gray-700 mb-2">Ad Script</h3>
+                        <p id="result-script" class="text-gray-600 italic"></p>
                     </div>
-                    <div>
-                        <h3 class="text-lg font-medium mb-3">Details</h3>
-                        <div class="space-y-4">
-                            <div>
-                                <p class="text-sm font-medium text-gray-500">Product</p>
-                                <p id="resultProductName" class="text-gray-900"></p>
-                            </div>
-                            <div>
-                                <p class="text-sm font-medium text-gray-500">Script</p>
-                                <p id="resultScript" class="text-gray-900"></p>
-                            </div>
-                            <div class="pt-4">
-                                <a id="downloadLink" href="#" download class="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors inline-block">
-                                    Download Video
-                                </a>
-                                <button id="shareBtn" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors ml-3">
-                                    Share
-                                </button>
-                            </div>
+                    
+                    <div class="mt-6">
+                        <h3 class="font-medium text-gray-700 mb-2">Share your ad</h3>
+                        <div class="flex gap-2">
+                            <button class="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="mr-1" viewBox="0 0 16 16">
+                                    <path d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z"/>
+                                </svg>
+                                Twitter
+                            </button>
+                            <button class="p-2 bg-blue-800 text-white rounded-md hover:bg-blue-900 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="mr-1" viewBox="0 0 16 16">
+                                    <path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951z"/>
+                                </svg>
+                                Facebook
+                            </button>
+                            <button class="p-2 bg-pink-600 text-white rounded-md hover:bg-pink-700 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="mr-1" viewBox="0 0 16 16">
+                                    <path d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.917 3.917 0 0 0-1.417.923A3.927 3.927 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.916 3.916 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.926 3.926 0 0 0-.923-1.417A3.911 3.911 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0h.003zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599.28.28.453.546.598.92.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.47 2.47 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.478 2.478 0 0 1-.92-.598 2.48 2.48 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233 0-2.136.008-2.388.046-3.231.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92.28-.28.546-.453.92-.598.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045v.002zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92zm-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217zm0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334z"/>
+                                </svg>
+                                Instagram
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </main>
+    </div>
+    
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p class="mb-2 text-xl">Generating your ad...</p>
+        <p class="text-sm text-gray-300">This may take up to 2 minutes</p>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const dropZone = document.getElementById('dropZone');
-            const fileInput = document.getElementById('fileInput');
-            const previewContainer = document.getElementById('previewContainer');
-            const fileError = document.getElementById('fileError');
-            const submitBtn = document.getElementById('submitBtn');
-            const adburstForm = document.getElementById('adburstForm');
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            const statusText = document.getElementById('statusText');
-            const progressBar = document.getElementById('progressBar');
-            const resultSection = document.getElementById('resultSection');
-            const videoPreview = document.getElementById('videoPreview');
-            const resultProductName = document.getElementById('resultProductName');
-            const resultScript = document.getElementById('resultScript');
-            const downloadLink = document.getElementById('downloadLink');
+            const form = document.getElementById('adburst-form');
+            const dragDropArea = document.getElementById('drag-drop-area');
+            const fileInput = document.getElementById('file-input');
+            const browseBtn = document.getElementById('browse-btn');
+            const previewContainer = document.getElementById('preview-container');
+            const generateBtn = document.getElementById('generate-btn');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const resultContainer = document.getElementById('result-container');
+            const resultVideo = document.getElementById('result-video');
+            const resultScript = document.getElementById('result-script');
+            const downloadBtn = document.getElementById('download-btn');
+            const createNewBtn = document.getElementById('create-new-btn');
+            const fileError = document.getElementById('file-error');
             
-            let files = [];
+            let uploadedFiles = [];
             
-            // Initialize drag and drop
+            // Handle drag and drop events
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                dropZone.addEventListener(eventName, preventDefaults, false);
+                dragDropArea.addEventListener(eventName, preventDefaults, false);
             });
             
             function preventDefaults(e) {
@@ -227,209 +231,173 @@
             }
             
             ['dragenter', 'dragover'].forEach(eventName => {
-                dropZone.addEventListener(eventName, highlight, false);
+                dragDropArea.addEventListener(eventName, highlight, false);
             });
             
             ['dragleave', 'drop'].forEach(eventName => {
-                dropZone.addEventListener(eventName, unhighlight, false);
+                dragDropArea.addEventListener(eventName, unhighlight, false);
             });
             
             function highlight() {
-                dropZone.classList.add('active');
+                dragDropArea.classList.add('highlight');
             }
             
             function unhighlight() {
-                dropZone.classList.remove('active');
+                dragDropArea.classList.remove('highlight');
             }
             
-            dropZone.addEventListener('drop', handleDrop, false);
+            dragDropArea.addEventListener('drop', handleDrop, false);
             
             function handleDrop(e) {
                 const dt = e.dataTransfer;
-                const newFiles = [...dt.files];
-                handleFiles(newFiles);
+                const files = dt.files;
+                handleFiles(files);
             }
             
-            dropZone.addEventListener('click', () => {
+            browseBtn.addEventListener('click', () => {
                 fileInput.click();
             });
             
             fileInput.addEventListener('change', () => {
-                handleFiles([...fileInput.files]);
+                handleFiles(fileInput.files);
             });
             
-            function handleFiles(newFiles) {
-                const imageFiles = newFiles.filter(file => file.type.startsWith('image/'));
-                
-                // Check if adding these files would exceed 3
-                if (files.length + imageFiles.length > 3) {
-                    files = imageFiles.slice(0, 3); // Take only first 3 images
-                } else {
-                    files = [...files, ...imageFiles];
-                    if (files.length > 3) {
-                        files = files.slice(0, 3);
-                    }
+            function handleFiles(files) {
+                if (files.length + uploadedFiles.length > 3) {
+                    showError('Maximum 3 images allowed');
+                    return;
                 }
                 
+                Array.from(files).forEach(file => {
+                    if (!file.type.match('image.*')) {
+                        showError('Only image files are allowed');
+                        return;
+                    }
+                    
+                    if (file.size > 10 * 1024 * 1024) {
+                        showError('File size should not exceed 10MB');
+                        return;
+                    }
+                    
+                    uploadedFiles.push(file);
+                    addPreview(file);
+                });
+                
                 validateFiles();
-                updatePreviews();
+            }
+            
+            function addPreview(file) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'preview-item';
+                    
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'remove-btn';
+                    removeBtn.innerHTML = '&times;';
+                    removeBtn.addEventListener('click', () => {
+                        const index = uploadedFiles.indexOf(file);
+                        if (index > -1) {
+                            uploadedFiles.splice(index, 1);
+                            previewContainer.removeChild(previewItem);
+                            validateFiles();
+                        }
+                    });
+                    
+                    previewItem.appendChild(img);
+                    previewItem.appendChild(removeBtn);
+                    previewContainer.appendChild(previewItem);
+                };
+                
+                reader.readAsDataURL(file);
             }
             
             function validateFiles() {
-                if (files.length === 3) {
-                    fileError.classList.add('hidden');
-                    submitBtn.disabled = false;
+                hideError();
+                
+                if (uploadedFiles.length !== 3) {
+                    generateBtn.disabled = true;
+                    if (uploadedFiles.length > 0) {
+                        showError('Please upload exactly 3 images');
+                    }
                 } else {
-                    fileError.classList.remove('hidden');
-                    fileError.textContent = `Please upload exactly 3 image files. Currently have ${files.length}.`;
-                    submitBtn.disabled = true;
+                    generateBtn.disabled = false;
                 }
             }
             
-            function updatePreviews() {
-                previewContainer.innerHTML = '';
-                
-                files.forEach((file, index) => {
-                    const reader = new FileReader();
-                    
-                    reader.onload = function(e) {
-                        const preview = document.createElement('div');
-                        preview.className = 'preview-item';
-                        
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        
-                        const removeBtn = document.createElement('button');
-                        removeBtn.className = 'remove-btn';
-                        removeBtn.innerHTML = '×';
-                        removeBtn.addEventListener('click', () => {
-                            files.splice(index, 1);
-                            updatePreviews();
-                            validateFiles();
-                        });
-                        
-                        preview.appendChild(img);
-                        preview.appendChild(removeBtn);
-                        previewContainer.appendChild(preview);
-                    };
-                    
-                    reader.readAsDataURL(file);
-                });
+            function showError(message) {
+                fileError.textContent = message;
+                fileError.style.display = 'block';
             }
             
-            adburstForm.addEventListener('submit', async function(e) {
+            function hideError() {
+                fileError.style.display = 'none';
+            }
+            
+            form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 
-                if (files.length !== 3) {
-                    fileError.classList.remove('hidden');
+                if (uploadedFiles.length !== 3) {
+                    showError('Please upload exactly 3 images');
                     return;
                 }
                 
                 const formData = new FormData();
                 formData.append('productName', document.getElementById('productName').value);
+                formData.append('productDescription', document.getElementById('productDescription').value);
+                formData.append('targetAudience', document.getElementById('targetAudience').value);
                 
-                const productDescription = document.getElementById('productDescription').value;
-                if (productDescription) {
-                    formData.append('productDescription', productDescription);
-                }
+                // Add each file with a unique field name
+                formData.append('image1', uploadedFiles[0]);
+                formData.append('image2', uploadedFiles[1]);
+                formData.append('image3', uploadedFiles[2]);
                 
-                const targetAudience = document.getElementById('targetAudience').value;
-                if (targetAudience) {
-                    formData.append('targetAudience', targetAudience);
-                }
-                
-                files.forEach((file, i) => {
-                    formData.append(`image${i+1}`, file);
-                });
-                
-                // Show loading overlay
                 loadingOverlay.style.display = 'flex';
-                updateProgress(10, 'Uploading images...');
                 
-                try {
-                    // Simulate progress updates
-                    const progressUpdates = [
-                        { progress: 30, message: 'Generating video with Gemini Veo 2...' },
-                        { progress: 50, message: 'Creating script with GPT-4o...' },
-                        { progress: 70, message: 'Converting script to audio with ElevenLabs...' },
-                        { progress: 85, message: 'Combining video and audio...' },
-                        { progress: 95, message: 'Adding final touches...' }
-                    ];
-                    
-                    let currentUpdate = 0;
-                    const progressInterval = setInterval(() => {
-                        if (currentUpdate < progressUpdates.length) {
-                            updateProgress(
-                                progressUpdates[currentUpdate].progress,
-                                progressUpdates[currentUpdate].message
-                            );
-                            currentUpdate++;
-                        } else {
-                            clearInterval(progressInterval);
-                        }
-                    }, 2000);
-                    
-                    const response = await fetch('/api/adburst', {
-                        method: 'POST',
-                        body: formData
-                    });
-                    
-                    clearInterval(progressInterval);
-                    
+                fetch('/api/adburst', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
                     if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.message || 'Failed to generate ad');
-                    }
-                    
-                    updateProgress(100, 'Complete!');
-                    
-                    const data = await response.json();
-                    
-                    // Update results section
-                    videoPreview.src = data.videoUrl;
-                    resultProductName.textContent = document.getElementById('productName').value;
-                    resultScript.textContent = data.script || 'No script available';
-                    downloadLink.href = data.videoUrl;
-                    downloadLink.download = `${document.getElementById('productName').value.replace(/\s+/g, '-')}-ad.mp4`;
-                    
-                    // Show results
-                    setTimeout(() => {
-                        loadingOverlay.style.display = 'none';
-                        resultSection.classList.remove('hidden');
-                        window.scrollTo({
-                            top: resultSection.offsetTop - 20,
-                            behavior: 'smooth'
+                        return response.json().then(data => {
+                            throw new Error(data.message || 'Failed to generate ad');
                         });
-                    }, 500);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    loadingOverlay.style.display = 'none';
                     
-                } catch (error) {
-                    console.error('Error generating ad:', error);
-                    updateProgress(0, `Error: ${error.message}`);
-                    setTimeout(() => {
-                        loadingOverlay.style.display = 'none';
-                        alert(`Failed to generate ad: ${error.message}`);
-                    }, 1000);
-                }
+                    // Display the result
+                    resultVideo.src = data.videoUrl;
+                    resultScript.textContent = data.script;
+                    downloadBtn.href = data.videoUrl;
+                    
+                    // Show the result container
+                    form.parentElement.style.display = 'none';
+                    resultContainer.style.display = 'block';
+                })
+                .catch(error => {
+                    loadingOverlay.style.display = 'none';
+                    showError(error.message);
+                });
             });
             
-            function updateProgress(percent, message) {
-                progressBar.style.width = `${percent}%`;
-                statusText.textContent = message;
-            }
-            
-            // Share button functionality
-            document.getElementById('shareBtn').addEventListener('click', function() {
-                // This is a simplified implementation
-                if (navigator.share) {
-                    navigator.share({
-                        title: `Ad for ${document.getElementById('productName').value}`,
-                        text: 'Check out this ad I created with AdBurst Factory!',
-                        url: window.location.href
-                    })
-                    .catch(error => console.error('Error sharing:', error));
-                } else {
-                    alert('Sharing is not supported on this browser. You can copy the video link instead.');
-                }
+            createNewBtn.addEventListener('click', () => {
+                // Reset the form
+                form.reset();
+                uploadedFiles = [];
+                previewContainer.innerHTML = '';
+                validateFiles();
+                
+                // Hide result container and show form
+                resultContainer.style.display = 'none';
+                form.parentElement.style.display = 'block';
             });
         });
     </script>

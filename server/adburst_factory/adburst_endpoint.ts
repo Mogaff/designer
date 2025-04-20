@@ -5,7 +5,7 @@
  * which processes uploaded images and generates video ads using AI services.
  */
 
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import fs from 'fs';
 import multer from 'multer';
