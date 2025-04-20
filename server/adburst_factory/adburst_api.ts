@@ -186,21 +186,45 @@ export async function processAdBurstRequest(req: Request, res: Response) {
     // PARALLEL PROCESSING: Start multiple tasks simultaneously for efficiency
     
     // Step 2: Generate video from primary image using Veo 2
-    console.log('Starting video generation with Veo 2...');
-    const videoPromise = imageToVideo(imagePaths[0]); // Use the first image for video generation
+    // Run these processes separately to better handle errors
     
-    // Step 3: Generate script using Claude 3.7
+    // Step 3: Generate script using Claude 3.7 first - this is more reliable
     console.log('Starting script generation...');
-    const scriptPromise = generateScript({
-      productName,
-      productDescription,
-      targetAudience
-    });
+    let script;
+    try {
+      script = await generateScript({
+        productName,
+        productDescription,
+        targetAudience
+      });
+      console.log('Script generation complete:', script);
+    } catch (scriptError) {
+      console.error('Error generating script:', scriptError);
+      return res.status(500).json({
+        success: false,
+        message: `Error generating ad script: ${scriptError instanceof Error ? scriptError.message : 'Unknown error'}`
+      });
+    }
     
-    // Wait for both tasks to complete
-    const [rawVideoPath, script] = await Promise.all([videoPromise, scriptPromise]);
-    console.log('Video generation complete:', rawVideoPath);
-    console.log('Script generation complete:', script);
+    // Step 2: Generate video from primary image using Veo 2
+    console.log('Starting video generation with Veo 2...');
+    let rawVideoPath;
+    try {
+      rawVideoPath = await imageToVideo(imagePaths[0]); // Use the first image for video generation
+      console.log('Video generation complete:', rawVideoPath);
+    } catch (videoError) {
+      console.error('Error generating video:', videoError);
+      
+      // Return a more useful response with both the script and the error
+      return res.status(500).json({
+        success: false,
+        message: `Error generating video: ${videoError instanceof Error ? videoError.message : 'Unknown error'}`,
+        partialResults: {
+          script,
+          generatedAt: new Date().toISOString(),
+        }
+      });
+    }
     
     // Step 4: Generate voiceover from script using ElevenLabs
     console.log('Starting voiceover generation with ElevenLabs...');

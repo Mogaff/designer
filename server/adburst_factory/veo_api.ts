@@ -1,12 +1,16 @@
 /**
  * Google Veo 2 API Integration for AdBurst Factory
  * Handles image-to-video conversion using Google's Veo 2 API
+ * 
+ * Note: This implementation is updated to handle the current limitations of the API
+ * where actual video generation might not be available in all environments.
  */
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { execSync } from 'child_process';
 
 // Initialize the Generative AI API
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
@@ -191,10 +195,27 @@ export async function imageToVideo(imagePath: string): Promise<string> {
     
     console.log(`Video data found: ${videoData ? 'YES' : 'NO'}, MIME type: ${videoMimeType}`);
     
-    // If we still don't have video data, log what we received and throw an error
+    // If we still don't have video data, check for specific error messages
     if (!videoData) {
       console.error('Response structure:', JSON.stringify(response, null, 2));
-      throw new Error('No video data found in Veo 2 API response');
+      
+      // Check if the response contains the specific "Video output is not possible" message
+      let errorMessage = 'No video data found in Veo 2 API response';
+      
+      // Look for specific error text in the response
+      if (response.candidates && 
+          response.candidates[0]?.content?.parts?.length > 0 &&
+          response.candidates[0].content.parts[0].text) {
+        
+        const responseText = response.candidates[0].content.parts[0].text;
+        
+        if (responseText.includes('Video output is not possible in this environment')) {
+          errorMessage = 'Video generation is not available in the current environment. The Gemini API has limited video capabilities in this deployment.';
+          console.error('API LIMITATION DETECTED:', errorMessage);
+        }
+      }
+      
+      throw new Error(errorMessage);
     }
     
     // Save the video to a file
