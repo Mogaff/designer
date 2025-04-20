@@ -1,275 +1,437 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AdBurst Factory - Upload Form</title>
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      line-height: 1.5;
-      color: #f8f9fa;
-      background-color: #0f172a;
-      margin: 0;
-      padding: 20px;
-    }
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-      background-color: rgba(15, 23, 42, 0.8);
-      border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      backdrop-filter: blur(10px);
-    }
-    h1 {
-      color: #ffffff;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    .form-group {
-      margin-bottom: 20px;
-    }
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: 500;
-    }
-    input[type="text"],
-    textarea,
-    select {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #2d3748;
-      border-radius: 4px;
-      background-color: #1e293b;
-      color: #f8f9fa;
-      font-size: 16px;
-    }
-    input[type="file"] {
-      padding: 10px;
-      border: 2px dashed #4338ca;
-      border-radius: 4px;
-      background-color: rgba(67, 56, 202, 0.1);
-      width: 100%;
-      cursor: pointer;
-    }
-    button {
-      background-color: #4f46e5;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      font-size: 16px;
-      border-radius: 4px;
-      cursor: pointer;
-      width: 100%;
-      font-weight: 600;
-      transition: background-color 0.3s;
-    }
-    button:hover {
-      background-color: #4338ca;
-    }
-    .info-box {
-      background-color: rgba(79, 70, 229, 0.1);
-      border-left: 4px solid #4f46e5;
-      padding: 15px;
-      margin-bottom: 20px;
-      border-radius: 4px;
-    }
-    .error {
-      color: #ef4444;
-      margin-top: 5px;
-    }
-    .progress-container {
-      width: 100%;
-      height: 20px;
-      background-color: #1e293b;
-      border-radius: 10px;
-      margin-top: 20px;
-      overflow: hidden;
-      display: none;
-    }
-    .progress-bar {
-      height: 100%;
-      background-color: #4f46e5;
-      border-radius: 10px;
-      width: 0%;
-      transition: width 0.3s;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdBurst Factory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .drop-zone {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+            background-color: #f8fafc;
+            transition: all 0.3s ease;
+        }
+        
+        .drop-zone.active {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        
+        .preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .preview-item {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .preview-item .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
-<body>
-  <div class="container">
-    <h1>AdBurst Factory</h1>
-    
-    <div class="info-box">
-      <p>Upload exactly 3 product images to generate an 8-second vertical ad with AI voiceover.</p>
+<body class="bg-gray-100 min-h-screen">
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="bg-white p-8 rounded-lg shadow-md text-center">
+            <div class="loading-spinner mx-auto mb-4"></div>
+            <h3 class="text-xl font-bold mb-2">Generating Your Ad</h3>
+            <p class="text-gray-600 mb-2" id="statusText">Uploading images...</p>
+            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div class="bg-blue-600 h-2.5 rounded-full" id="progressBar" style="width: 10%"></div>
+            </div>
+        </div>
     </div>
-    
-    <form id="adburstForm" enctype="multipart/form-data">
-      <div class="form-group">
-        <label for="images">Product Images (exactly 3)</label>
-        <input type="file" id="images" name="images" accept="image/*" multiple required>
-        <div id="imageError" class="error"></div>
-        <div id="imagePreview" style="display: flex; flex-wrap: wrap; margin-top: 10px;"></div>
-      </div>
-      
-      <div class="form-group">
-        <label for="prompt">Product Description (optional)</label>
-        <textarea id="prompt" name="prompt" rows="3" placeholder="Describe your product and target audience..."></textarea>
-      </div>
-      
-      <div class="form-group">
-        <label for="callToAction">Call to Action (optional)</label>
-        <input type="text" id="callToAction" name="callToAction" placeholder="e.g., 'Shop Now', 'Learn More'">
-      </div>
-      
-      <div class="form-group">
-        <label for="aspectRatio">Aspect Ratio</label>
-        <select id="aspectRatio" name="aspectRatio">
-          <option value="vertical" selected>Vertical (9:16) - Recommended for Stories/Reels</option>
-          <option value="square">Square (1:1) - For Instagram Feed</option>
-          <option value="horizontal">Horizontal (16:9) - For YouTube</option>
-        </select>
-      </div>
-      
-      <button type="submit" id="submitButton">Generate Ad Video</button>
-      
-      <div class="progress-container" id="progressContainer">
-        <div class="progress-bar" id="progressBar"></div>
-      </div>
-    </form>
-    
-    <div id="result" style="margin-top: 20px; display: none;">
-      <h2>Your Ad Video Is Ready!</h2>
-      <div style="display: flex; flex-direction: column; gap: 10px;">
-        <a id="downloadLink" href="#" class="button" style="text-align: center; background-color: #4f46e5; color: white; padding: 12px; border-radius: 4px; text-decoration: none;">Download Video</a>
-        <a id="bufferLink" href="#" class="button" style="text-align: center; background-color: #3b82f6; color: white; padding: 12px; border-radius: 4px; text-decoration: none;">View on Buffer</a>
-      </div>
-    </div>
-  </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const form = document.getElementById('adburstForm');
-      const imageInput = document.getElementById('images');
-      const imageError = document.getElementById('imageError');
-      const imagePreview = document.getElementById('imagePreview');
-      const submitButton = document.getElementById('submitButton');
-      const progressContainer = document.getElementById('progressContainer');
-      const progressBar = document.getElementById('progressBar');
-      const resultDiv = document.getElementById('result');
-      const downloadLink = document.getElementById('downloadLink');
-      const bufferLink = document.getElementById('bufferLink');
-      
-      // Image preview functionality
-      imageInput.addEventListener('change', function() {
-        imagePreview.innerHTML = '';
-        imageError.textContent = '';
-        
-        if (this.files.length !== 3) {
-          imageError.textContent = 'Please select exactly 3 images.';
-          return;
-        }
-        
-        for (let i = 0; i < this.files.length; i++) {
-          const file = this.files[i];
-          
-          if (!file.type.startsWith('image/')) {
-            imageError.textContent = 'Please upload only image files.';
-            return;
-          }
-          
-          const reader = new FileReader();
-          
-          reader.onload = function(e) {
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.style.width = '100px';
-            img.style.height = '100px';
-            img.style.objectFit = 'cover';
-            img.style.margin = '5px';
-            img.style.borderRadius = '4px';
-            imagePreview.appendChild(img);
-          };
-          
-          reader.readAsDataURL(file);
-        }
-      });
-      
-      // Form submission
-      form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(form);
-        
-        if (imageInput.files.length !== 3) {
-          imageError.textContent = 'Please select exactly 3 images.';
-          return;
-        }
-        
-        submitButton.disabled = true;
-        submitButton.textContent = 'Generating...';
-        progressContainer.style.display = 'block';
-        
-        // Simulate progress for demo purposes
-        // In a real implementation, this would be based on actual progress updates
-        let progress = 0;
-        const interval = setInterval(function() {
-          progress += 5;
-          progressBar.style.width = progress + '%';
-          
-          if (progress >= 100) {
-            clearInterval(interval);
+    <header class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center">
+                <h1 class="text-3xl font-bold text-gray-900">AdBurst Factory</h1>
+                <a href="/" class="text-blue-600 hover:text-blue-800">Back to Dashboard</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="px-4 py-6 sm:px-0">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-semibold mb-6">Create 8-Second Video Ad</h2>
+
+                <form id="adburstForm" action="/api/adburst" method="post" enctype="multipart/form-data">
+                    <div class="mb-6">
+                        <label for="productName" class="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
+                        <input type="text" id="productName" name="productName" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Enter product name">
+                    </div>
+
+                    <div class="mb-6">
+                        <label for="productDescription" class="block text-sm font-medium text-gray-700 mb-1">Product Description</label>
+                        <textarea id="productDescription" name="productDescription" rows="3"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Describe your product (optional)"></textarea>
+                    </div>
+
+                    <div class="mb-6">
+                        <label for="targetAudience" class="block text-sm font-medium text-gray-700 mb-1">Target Audience</label>
+                        <input type="text" id="targetAudience" name="targetAudience"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Who is your target audience? (optional)">
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Product Images (3 required) *</label>
+                        <div class="drop-zone" id="dropZone">
+                            <div class="flex flex-col items-center justify-center">
+                                <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                <p class="mt-2 text-sm text-gray-600">Drag and drop image files here or click to browse</p>
+                                <p class="mt-1 text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                            </div>
+                            <input type="file" id="fileInput" name="images" multiple accept="image/*" class="hidden">
+                        </div>
+                        <div class="preview-container" id="previewContainer"></div>
+                        <div id="fileError" class="text-red-500 text-sm mt-1 hidden">Please upload exactly 3 image files.</div>
+                    </div>
+
+                    <div class="flex items-center justify-end">
+                        <button type="submit" id="submitBtn" disabled
+                            class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            Generate Video Ad
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="resultSection" class="bg-white rounded-lg shadow-md p-6 mt-6 hidden">
+                <h2 class="text-2xl font-semibold mb-6">Your Generated Ad</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-lg font-medium mb-3">Preview</h3>
+                        <div class="bg-black aspect-[9/16] rounded-lg overflow-hidden flex items-center justify-center">
+                            <video id="videoPreview" controls class="max-w-full max-h-full">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-medium mb-3">Details</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Product</p>
+                                <p id="resultProductName" class="text-gray-900"></p>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Script</p>
+                                <p id="resultScript" class="text-gray-900"></p>
+                            </div>
+                            <div class="pt-4">
+                                <a id="downloadLink" href="#" download class="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors inline-block">
+                                    Download Video
+                                </a>
+                                <button id="shareBtn" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors ml-3">
+                                    Share
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+            const previewContainer = document.getElementById('previewContainer');
+            const fileError = document.getElementById('fileError');
+            const submitBtn = document.getElementById('submitBtn');
+            const adburstForm = document.getElementById('adburstForm');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const statusText = document.getElementById('statusText');
+            const progressBar = document.getElementById('progressBar');
+            const resultSection = document.getElementById('resultSection');
+            const videoPreview = document.getElementById('videoPreview');
+            const resultProductName = document.getElementById('resultProductName');
+            const resultScript = document.getElementById('resultScript');
+            const downloadLink = document.getElementById('downloadLink');
             
-            // Mock API response for demo
-            // In production, this would be a real API call
-            setTimeout(function() {
-              showResult({
-                success: true,
-                message: 'Ad video successfully generated',
-                data: {
-                  downloadUrl: '/adburst/download/example_video.mp4',
-                  bufferUrl: 'https://buffer.com/example'
+            let files = [];
+            
+            // Initialize drag and drop
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                dropZone.classList.add('active');
+            }
+            
+            function unhighlight() {
+                dropZone.classList.remove('active');
+            }
+            
+            dropZone.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const newFiles = [...dt.files];
+                handleFiles(newFiles);
+            }
+            
+            dropZone.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            fileInput.addEventListener('change', () => {
+                handleFiles([...fileInput.files]);
+            });
+            
+            function handleFiles(newFiles) {
+                const imageFiles = newFiles.filter(file => file.type.startsWith('image/'));
+                
+                // Check if adding these files would exceed 3
+                if (files.length + imageFiles.length > 3) {
+                    files = imageFiles.slice(0, 3); // Take only first 3 images
+                } else {
+                    files = [...files, ...imageFiles];
+                    if (files.length > 3) {
+                        files = files.slice(0, 3);
+                    }
                 }
-              });
-            }, 1000);
-          }
-        }, 500);
-        
-        // In a real implementation, you would make an API call here:
-        /*
-        fetch('/api/adburst', {
-          method: 'POST',
-          body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-          showResult(data);
-        })
-        .catch(error => {
-          imageError.textContent = 'Error generating video: ' + error.message;
-          submitButton.disabled = false;
-          submitButton.textContent = 'Generate Ad Video';
-          progressContainer.style.display = 'none';
+                
+                validateFiles();
+                updatePreviews();
+            }
+            
+            function validateFiles() {
+                if (files.length === 3) {
+                    fileError.classList.add('hidden');
+                    submitBtn.disabled = false;
+                } else {
+                    fileError.classList.remove('hidden');
+                    fileError.textContent = `Please upload exactly 3 image files. Currently have ${files.length}.`;
+                    submitBtn.disabled = true;
+                }
+            }
+            
+            function updatePreviews() {
+                previewContainer.innerHTML = '';
+                
+                files.forEach((file, index) => {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        const preview = document.createElement('div');
+                        preview.className = 'preview-item';
+                        
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        
+                        const removeBtn = document.createElement('button');
+                        removeBtn.className = 'remove-btn';
+                        removeBtn.innerHTML = '×';
+                        removeBtn.addEventListener('click', () => {
+                            files.splice(index, 1);
+                            updatePreviews();
+                            validateFiles();
+                        });
+                        
+                        preview.appendChild(img);
+                        preview.appendChild(removeBtn);
+                        previewContainer.appendChild(preview);
+                    };
+                    
+                    reader.readAsDataURL(file);
+                });
+            }
+            
+            adburstForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                if (files.length !== 3) {
+                    fileError.classList.remove('hidden');
+                    return;
+                }
+                
+                const formData = new FormData();
+                formData.append('productName', document.getElementById('productName').value);
+                
+                const productDescription = document.getElementById('productDescription').value;
+                if (productDescription) {
+                    formData.append('productDescription', productDescription);
+                }
+                
+                const targetAudience = document.getElementById('targetAudience').value;
+                if (targetAudience) {
+                    formData.append('targetAudience', targetAudience);
+                }
+                
+                files.forEach((file, i) => {
+                    formData.append(`image${i+1}`, file);
+                });
+                
+                // Show loading overlay
+                loadingOverlay.style.display = 'flex';
+                updateProgress(10, 'Uploading images...');
+                
+                try {
+                    // Simulate progress updates
+                    const progressUpdates = [
+                        { progress: 30, message: 'Generating video with Gemini Veo 2...' },
+                        { progress: 50, message: 'Creating script with GPT-4o...' },
+                        { progress: 70, message: 'Converting script to audio with ElevenLabs...' },
+                        { progress: 85, message: 'Combining video and audio...' },
+                        { progress: 95, message: 'Adding final touches...' }
+                    ];
+                    
+                    let currentUpdate = 0;
+                    const progressInterval = setInterval(() => {
+                        if (currentUpdate < progressUpdates.length) {
+                            updateProgress(
+                                progressUpdates[currentUpdate].progress,
+                                progressUpdates[currentUpdate].message
+                            );
+                            currentUpdate++;
+                        } else {
+                            clearInterval(progressInterval);
+                        }
+                    }, 2000);
+                    
+                    const response = await fetch('/api/adburst', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    clearInterval(progressInterval);
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'Failed to generate ad');
+                    }
+                    
+                    updateProgress(100, 'Complete!');
+                    
+                    const data = await response.json();
+                    
+                    // Update results section
+                    videoPreview.src = data.videoUrl;
+                    resultProductName.textContent = document.getElementById('productName').value;
+                    resultScript.textContent = data.script || 'No script available';
+                    downloadLink.href = data.videoUrl;
+                    downloadLink.download = `${document.getElementById('productName').value.replace(/\s+/g, '-')}-ad.mp4`;
+                    
+                    // Show results
+                    setTimeout(() => {
+                        loadingOverlay.style.display = 'none';
+                        resultSection.classList.remove('hidden');
+                        window.scrollTo({
+                            top: resultSection.offsetTop - 20,
+                            behavior: 'smooth'
+                        });
+                    }, 500);
+                    
+                } catch (error) {
+                    console.error('Error generating ad:', error);
+                    updateProgress(0, `Error: ${error.message}`);
+                    setTimeout(() => {
+                        loadingOverlay.style.display = 'none';
+                        alert(`Failed to generate ad: ${error.message}`);
+                    }, 1000);
+                }
+            });
+            
+            function updateProgress(percent, message) {
+                progressBar.style.width = `${percent}%`;
+                statusText.textContent = message;
+            }
+            
+            // Share button functionality
+            document.getElementById('shareBtn').addEventListener('click', function() {
+                // This is a simplified implementation
+                if (navigator.share) {
+                    navigator.share({
+                        title: `Ad for ${document.getElementById('productName').value}`,
+                        text: 'Check out this ad I created with AdBurst Factory!',
+                        url: window.location.href
+                    })
+                    .catch(error => console.error('Error sharing:', error));
+                } else {
+                    alert('Sharing is not supported on this browser. You can copy the video link instead.');
+                }
+            });
         });
-        */
-      });
-      
-      function showResult(data) {
-        if (data.success) {
-          resultDiv.style.display = 'block';
-          downloadLink.href = data.data.downloadUrl;
-          bufferLink.href = data.data.bufferUrl;
-          bufferLink.target = '_blank';
-        } else {
-          imageError.textContent = 'Error: ' + data.message;
-        }
-        
-        submitButton.disabled = false;
-        submitButton.textContent = 'Generate Ad Video';
-      }
-    });
-  </script>
+    </script>
 </body>
 </html>

@@ -493,20 +493,11 @@ export class DatabaseStorage implements IStorage {
         insertUser.password = '';
       }
       
-      // Generate next available ID to avoid the null ID issue with SERIAL
-      const result = await db.execute(sql`SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM users`);
-      const nextId = result[0]?.next_id || 2; // Start from 2 if no results
-      
-      // Insert the user with explicit ID
-      const [user] = await db.execute(sql`
-        INSERT INTO users 
-        (id, username, password, firebase_uid, email, display_name, photo_url)
-        VALUES 
-        (${nextId}, ${insertUser.username}, ${insertUser.password}, 
-         ${insertUser.firebase_uid || null}, ${insertUser.email || null}, 
-         ${insertUser.display_name || null}, ${insertUser.photo_url || null})
-        RETURNING *
-      `);
+      // Let the database handle ID generation with SERIAL
+      const [user] = await db
+        .insert(users)
+        .values(insertUser)
+        .returning();
       
       return user;
     } catch (error) {

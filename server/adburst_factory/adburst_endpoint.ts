@@ -1,157 +1,220 @@
-import { Request, Response, Router } from 'express';
+/**
+ * AdBurst Factory Endpoint
+ * 
+ * This file contains the Express endpoint for the AdBurst Factory feature,
+ * which processes uploaded images and generates video ads using AI services.
+ */
+
+import { Request, Response } from 'express';
+import path from 'path';
+import fs from 'fs';
 import multer from 'multer';
-import { isAuthenticated } from '../auth';
-import { log } from '../vite';
 import {
-  handleImageUploads,
-  generateVideoWithGemini,
-  generateVoiceOverText,
-  generateVoiceOver,
+  generateAd,
+  generateVideo,
+  generateScript,
+  generateAudio,
   combineVideoAndAudio,
-  uploadToBuffer,
-  cleanupTempFiles,
-  APIResponse
+  addWatermark,
+  saveUploadedFiles
 } from './adburst_utils';
 
-// Configure multer storage for file uploads
+// Configure multer for file uploads
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB file size limit
+    fileSize: 10 * 1024 * 1024, // 10MB limit
     files: 3 // Maximum 3 files
+  },
+  fileFilter: (req, file, cb) => {
+    // Accept only image files
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
+    }
   }
 });
 
-// Create express router
-const adburstRouter = Router();
+// Middleware to handle file uploads
+const uploadMiddleware = upload.fields([
+  { name: 'image1', maxCount: 1 },
+  { name: 'image2', maxCount: 1 },
+  { name: 'image3', maxCount: 1 }
+]);
 
 /**
- * AdBurst Factory API Endpoint
- * Processes up to 3 product images to create an 8-second vertical video ad
- * with AI-generated voice-over
+ * Render the AdBurst Factory form page
  */
-adburstRouter.post('/api/adburst', isAuthenticated, upload.array('images', 3), async (req: Request, res: Response) => {
-  // Track files to clean up later
-  const filesToCleanup: string[] = [];
+export function renderAdBurstForm(req: Request, res: Response) {
+  const formPath = path.join(__dirname, 'templates', 'adburst_form.html');
   
-  try {
-    log('AdBurst Factory API endpoint called', 'adburst');
-    
-    // Check if exactly 3 images were uploaded
-    if (!req.files || (req.files as Express.Multer.File[]).length !== 3) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please upload exactly 3 product images'
-      } as APIResponse);
+  fs.readFile(formPath, 'utf8', (err, data) => {
+    if (err) {
+      console.error('Error reading AdBurst form template:', err);
+      return res.status(500).send('Error loading form');
     }
     
-    // Extract request parameters
-    const { prompt, callToAction, aspectRatio } = req.body;
+    res.send(data);
+  });
+}
+
+/**
+ * Process AdBurst Factory form submission
+ */
+export async function processAdBurst(req: Request, res: Response) {
+  try {
+    // Extract form data
+    const { productName, productDescription, targetAudience } = req.body;
     
-    // Step 1: Save uploaded images to temporary directory
-    const imagePaths = handleImageUploads(req);
-    filesToCleanup.push(...imagePaths);
+    if (!productName) {
+      return res.status(400).json({ message: 'Product name is required' });
+    }
     
-    // Step 2: Generate video from images using Gemini Veo 2
-    log('Generating video using Gemini Veo 2...', 'adburst');
-    const videoPath = await generateVideoWithGemini(imagePaths, { 
-      prompt, 
-      aspectRatio: aspectRatio || 'vertical' 
+    // Get uploaded files from multer
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+    
+    if (!files || !files.image1 || !files.image2 || !files.image3) {
+      return res.status(400).json({ message: 'Please upload exactly 3 image files' });
+    }
+    
+    // Combine all images into a single array
+    const imageFiles = [
+      ...files.image1,
+      ...files.image2,
+      ...files.image3
+    ];
+    
+    if (imageFiles.length !== 3) {
+      return res.status(400).json({ message: 'Please upload exactly 3 image files' });
+    }
+    
+    console.log(`Processing AdBurst request for product: ${productName}`);
+    
+    // Generate ad using our utility functions
+    const options = {
+      imageFiles,
+      productName,
+      productDescription,
+      targetAudience
+    };
+    
+    // For a real implementation, we would use the generateAd function
+    // that orchestrates the entire process
+    
+    // Step 1: Generate script with GPT-4o
+    const script = await generateScript({
+      productName,
+      productDescription,
+      targetAudience
     });
-    filesToCleanup.push(videoPath);
     
-    // Step 3: Generate voice-over text using GPT-4o
-    log('Generating voice-over text using GPT-4o...', 'adburst');
-    const voiceOverText = await generateVoiceOverText(prompt);
+    // Step 2: Generate audio from script using ElevenLabs
+    const audioPath = await generateAudio({ script });
     
-    // Step 4: Convert voice-over text to speech using ElevenLabs
-    log('Converting text to speech using ElevenLabs...', 'adburst');
-    const audioPath = await generateVoiceOver(voiceOverText);
-    filesToCleanup.push(audioPath);
+    // Step 3: Generate video from images using Gemini Veo 2
+    const videoPath = await generateVideo(options);
     
-    // Step 5: Combine video and audio using FFmpeg
-    log('Combining video and audio using FFmpeg...', 'adburst');
-    const finalVideoPath = await combineVideoAndAudio(videoPath, audioPath);
-    filesToCleanup.push(finalVideoPath);
+    // Step 4: Combine video and audio
+    const combinedVideoPath = await combineVideoAndAudio(videoPath, audioPath);
     
-    // Step 6: Upload to Buffer
-    log('Uploading to Buffer...', 'adburst');
-    const bufferUrl = await uploadToBuffer(finalVideoPath);
+    // Step 5: Add watermark
+    const finalVideoPath = await addWatermark(combinedVideoPath);
     
-    // Return success response with download link
+    // In a real implementation, we would store the video in a CDN or file storage
+    // and return the URL. For this prototype, we'll create a route to serve the video.
+    
+    // Create a unique video ID (using the filename)
+    const videoId = path.basename(finalVideoPath, '.mp4');
+    
+    // Return the response with video info
     return res.status(200).json({
       success: true,
-      message: 'Ad video successfully generated',
-      data: {
-        downloadUrl: `/adburst/download/${finalVideoPath.split('/').pop()}`,
-        bufferUrl
+      videoUrl: `/api/adburst/video/${videoId}`,
+      script: script,
+      message: 'Ad generated successfully'
+    });
+  } catch (error) {
+    console.error('Error processing AdBurst request:', error);
+    return res.status(500).json({
+      success: false,
+      message: `Ad generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+    });
+  }
+}
+
+/**
+ * Serve a generated video file
+ */
+export function serveGeneratedVideo(req: Request, res: Response) {
+  const { videoId } = req.params;
+  
+  if (!videoId) {
+    return res.status(400).json({ message: 'Video ID is required' });
+  }
+  
+  // In a real implementation, we would look up the video in a database
+  // or verify its existence in a storage service
+  
+  // For this prototype, we'll assume the video ID is the filename
+  const videoPath = path.join(process.cwd(), 'temp', `${videoId}.mp4`);
+  
+  // Check if the file exists
+  if (!fs.existsSync(videoPath)) {
+    return res.status(404).json({ message: 'Video not found' });
+  }
+  
+  // Set appropriate headers
+  res.setHeader('Content-Type', 'video/mp4');
+  res.setHeader('Content-Disposition', `attachment; filename="ad-${videoId}.mp4"`);
+  
+  // Stream the file to the response
+  const fileStream = fs.createReadStream(videoPath);
+  fileStream.pipe(res);
+}
+
+/**
+ * Register AdBurst routes with Express
+ */
+export function registerAdBurstRoutes(app: any) {
+  // Serve the AdBurst form page
+  app.get('/adburst', renderAdBurstForm);
+  
+  // Process form submission
+  app.post('/api/adburst', (req: Request, res: Response, next: NextFunction) => {
+    uploadMiddleware(req, res, (err: any) => {
+      if (err) {
+        if (err instanceof multer.MulterError) {
+          if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ message: 'File too large. Maximum size is 10MB' });
+          }
+          if (err.code === 'LIMIT_FILE_COUNT') {
+            return res.status(400).json({ message: 'Too many files. Maximum is 3 images' });
+          }
+        }
+        return res.status(400).json({ message: err.message });
       }
-    } as APIResponse);
-    
-  } catch (error) {
-    log(`Error in AdBurst API: ${error}`, 'adburst');
-    // Return error response
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to generate ad video',
-      error: error instanceof Error ? error.message : String(error)
-    } as APIResponse);
-  } finally {
-    // Clean up temporary files
-    cleanupTempFiles(filesToCleanup);
-  }
-});
+      
+      // Continue with request processing
+      processAdBurst(req, res).catch((error) => next(error));
+    });
+  });
+  
+  // Serve generated videos
+  app.get('/api/adburst/video/:videoId', serveGeneratedVideo);
+  
+  console.log('AdBurst Factory routes registered');
+}
 
 /**
- * Endpoint to download the generated video
+ * Create required directories
  */
-adburstRouter.get('/adburst/download/:filename', isAuthenticated, (req: Request, res: Response) => {
-  try {
-    const { filename } = req.params;
-    const filePath = `${__dirname}/../../temp/${filename}`;
-    
-    if (!filename || !filename.endsWith('.mp4')) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid file request'
-      } as APIResponse);
-    }
-    
-    // Check if file exists
-    if (!require('fs').existsSync(filePath)) {
-      return res.status(404).json({
-        success: false,
-        message: 'File not found'
-      } as APIResponse);
-    }
-    
-    // Set headers for file download
-    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
-    res.setHeader('Content-Type', 'video/mp4');
-    
-    // Stream the file to the client
-    const fileStream = require('fs').createReadStream(filePath);
-    fileStream.pipe(res);
-    
-  } catch (error) {
-    log(`Error in download endpoint: ${error}`, 'adburst');
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to download file',
-      error: error instanceof Error ? error.message : String(error)
-    } as APIResponse);
+export function initAdBurstFactory() {
+  const tempDir = path.join(process.cwd(), 'temp');
+  
+  if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir, { recursive: true });
+    console.log('Created temp directory for AdBurst Factory');
   }
-});
-
-/**
- * Simple health check endpoint for the AdBurst Factory
- */
-adburstRouter.get('/adburst/health', (req: Request, res: Response) => {
-  res.status(200).json({
-    success: true,
-    message: 'AdBurst Factory is running'
-  } as APIResponse);
-});
-
-export default adburstRouter;
+}
