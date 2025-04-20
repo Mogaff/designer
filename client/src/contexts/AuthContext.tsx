@@ -3,13 +3,9 @@ import { useToast } from '@/hooks/use-toast';
 import { 
   auth, 
   signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
   googleProvider,
   signOut,
-  onAuthStateChanged,
-  signInWithDevelopmentAccount,
-  isDevelopment
+  onAuthStateChanged
 } from '@/lib/firebase';
 import type { User as FirebaseUser } from 'firebase/auth';
 
@@ -71,118 +67,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, [toast]);
 
-  // Check for redirect result on component mount
-  useEffect(() => {
-    async function checkRedirectResult() {
-      try {
-        setIsLoading(true);
-        // Get redirect result
-        const result = await getRedirectResult(auth);
-        
-        // If we have a result, the user has been redirected back from Google
-        if (result && result.user) {
-          console.log('Redirect login successful:', result.user.email);
-          
-          // Get the Firebase token to send to our backend
-          const idToken = await result.user.getIdToken();
-          
-          // Check if user exists in our backend, and create if needed
-          try {
-            const response = await fetch('/api/auth/user', {
-              headers: {
-                'Authorization': `Bearer ${idToken}`
-              }
-            });
-            
-            if (response.ok) {
-              const userData = await response.json();
-              console.log('User data from backend:', userData);
-              
-              toast({
-                title: 'Login successful',
-                description: 'You are now logged in with Google.',
-              });
-            }
-          } catch (backendError) {
-            console.error('Error communicating with backend:', backendError);
-          }
-        }
-      } catch (error: any) {
-        if (error.code) {
-          let errorMessage = 'Authentication error';
-          console.error('Google sign-in redirect error:', error);
-          
-          if (error.code === 'auth/unauthorized-domain') {
-            errorMessage = 'Authentication problem: This domain must be authorized in the Firebase console.';
-            console.error('Domain not authorized:', window.location.origin, 'Please add to Firebase console');
-          } else {
-            errorMessage = `Authentication error: ${error.code}`;
-          }
-          
-          toast({
-            title: 'Login failed',
-            description: errorMessage,
-            variant: 'destructive',
-          });
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    
-    checkRedirectResult();
-  }, [toast]);
-
-  // Google sign-in function with fallback for development
+  // Einfache Google Sign-in Funktion mit Popup
   const signInWithGoogle = async () => {
     try {
       setIsLoading(true);
+      console.log('Starting Google sign-in with popup...');
       
-      // Check if we're in development environment (Replit)
-      if (isDevelopment) {
-        console.log('Development environment detected, using anonymous auth...');
-        
-        // Use anonymous authentication for development
-        const result = await signInWithDevelopmentAccount();
-        console.log('Development login successful');
-        
-        // Set a simulated user in development mode
-        setUser({
-          uid: result.user.uid,
-          email: 'dev@example.com',
-          displayName: 'Development User',
-          photoURL: null
-        });
-        
-        toast({
-          title: 'Development Login',
-          description: 'You are now logged in with a development account',
-        });
-      } else {
-        // Regular environment - use Google authentication
-        console.log('Starting Google sign-in with redirect...');
-        await signInWithRedirect(auth, googleProvider);
-        // The page will redirect to Google and then back to our app
-        // The redirect result will be processed in the useEffect above
-      }
+      const result = await signInWithPopup(auth, googleProvider);
+      console.log('Popup login successful:', result.user.email);
+      
+      toast({
+        title: 'Login erfolgreich',
+        description: 'Sie sind jetzt mit Google angemeldet.',
+      });
     } catch (error: any) {
-      let errorMessage = 'Authentication failed';
-      console.error('Sign-in error:', error);
+      let errorMessage = 'Anmeldung mit Google fehlgeschlagen';
+      console.error('Google sign-in error:', error);
       
-      // Error handling
-      if (error.code === 'auth/unauthorized-domain') {
-        errorMessage = 'Authentication problem: This domain must be authorized in the Firebase console.';
-        console.error('Domain not authorized:', window.location.origin, 'Please add to Firebase console');
+      // Bessere Fehlermeldungen für häufige Fehler
+      if (error.code === 'auth/popup-closed-by-user') {
+        errorMessage = 'Anmeldung abgebrochen. Bitte versuchen Sie es erneut.';
+      } else if (error.code === 'auth/popup-blocked') {
+        errorMessage = 'Anmelde-Popup wurde blockiert. Bitte aktivieren Sie Popups für diese Seite.';
+      } else if (error.code === 'auth/unauthorized-domain') {
+        errorMessage = 'Authentifizierungsproblem: Diese Domain muss in der Firebase-Konsole autorisiert werden.';
+        console.error('Domain nicht autorisiert:', window.location.origin, 'Bitte in Firebase-Konsole hinzufügen');
       } else if (error.code) {
-        errorMessage = `Authentication error: ${error.code}`;
+        errorMessage = `Authentifizierungsfehler: ${error.code}`;
       }
       
       toast({
-        title: 'Login failed',
+        title: 'Anmeldung fehlgeschlagen',
         description: errorMessage,
         variant: 'destructive',
       });
-      
+    } finally {
       setIsLoading(false);
     }
   };

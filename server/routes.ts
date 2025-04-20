@@ -550,19 +550,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Check authenticated user
-  app.get("/api/auth/user", isAuthenticated, (req: Request, res: Response) => {
-    if (req.user) {
+  app.get("/api/auth/user", (req: Request, res: Response) => {
+    if (req.isAuthenticated() && req.user) {
       const user = req.user as any;
-      // Return user info without sensitive data
       return res.json({
         id: user.id,
-        username: user.username,
-        firebase_uid: user.firebase_uid,
-        email: user.email,
-        display_name: user.display_name,
-        photo_url: user.photo_url,
-        credits_balance: user.credits_balance,
-        is_premium: user.is_premium
+        username: user.username
       });
     }
     res.status(401).json({ message: "Not authenticated" });
