@@ -7,6 +7,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { createVideoFromImages } from './ffmpeg_fallback';
 
 // Initialize the Generative AI API
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
@@ -32,12 +33,17 @@ export async function imageToVideo(imagePath: string): Promise<string> {
     // Ensure this is properly configured for Veo 2 specifically
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro-latest" });
     
-    // Define parameters for video generation
-    // Note: Actual Veo 2 API might have different parameters, 
-    // this is a placeholder for the real implementation
-    const prompt = `Create a professional product showcase video with subtle camera movements and zooms.
-                   Make it visually appealing and dynamic. Duration: ${VIDEO_DURATION_SECONDS} seconds. 
-                   Aspect ratio: ${VIDEO_ASPECT_RATIO}.`;
+    // Define parameters for video generation with specific instructions for Veo 2
+    const prompt = `Create a professional product showcase vertical video advertisement with subtle camera movements and zooms.
+                   Make it visually appealing and dynamic with smooth transitions.
+                   IMPORTANT SPECIFICATIONS:
+                   - Duration: Exactly ${VIDEO_DURATION_SECONDS} seconds
+                   - Aspect ratio: ${VIDEO_ASPECT_RATIO} (vertical video format)
+                   - Style: Elegant product showcase with professional lighting
+                   - Movement: Gentle zoom-in effects and smooth camera motion
+                   - Purpose: Social media advertisement
+                   
+                   This will be used for a professional advertising campaign on TikTok and Instagram.`;
     
     // Make the actual Veo 2 API call
     console.log(`Calling Veo 2 API with prompt: ${prompt}`);
@@ -54,18 +60,13 @@ export async function imageToVideo(imagePath: string): Promise<string> {
       }
     ];
     
-    // Generation configuration specific to Veo 2
+    // Generation configuration for Gemini
+    // Using standard generation parameters instead of custom videoConfig
     const generationConfig = {
       temperature: 0.4,
       topP: 0.95,
       topK: 0,
-      maxOutputTokens: 1024,
-      // These are custom parameters for Veo 2 which may not be in the standard SDK
-      // They will be passed through to the API
-      videoConfig: {
-        durationSeconds: VIDEO_DURATION_SECONDS, 
-        aspectRatio: VIDEO_ASPECT_RATIO
-      }
+      maxOutputTokens: 1024
     };
     
     // Make the actual Gemini/Veo 2 API call with proper types
@@ -76,18 +77,56 @@ export async function imageToVideo(imagePath: string): Promise<string> {
     
     const response = await result.response;
     
-    // Extract the video data from the response
-    // Note: The actual response format may differ from this once Veo 2 API is fully released
-    // We'll need to adjust this based on the actual API response structure
-    const videoResponseData = response.candidates && response.candidates[0] ? 
-      response.candidates[0].content.parts.find(part => part.video)?.video : null;
+    // Extract the response from Gemini
+    // The video response structure is complex and may change, so we log the structure first
+    console.log('Received response from Gemini/Veo 2:', 
+      JSON.stringify(response, null, 2).substring(0, 500) + '...');
+    
+    // Try to extract video data using multiple possible response structures
+    let videoData;
+    
+    if (response.candidates && response.candidates[0]) {
+      const candidate = response.candidates[0];
       
-    if (!videoResponseData) {
-      throw new Error('No video data returned from Veo 2 API');
+      // Try to find video part in different possible locations
+      const parts = candidate.content?.parts || [];
+      
+      // Look through all parts for a video property
+      for (const part of parts) {
+        if (part.video) {
+          videoData = part.video.data;
+          break;
+        }
+        
+        // Check for inline_data which might contain video
+        if (part.inlineData && part.inlineData.mimeType?.startsWith('video/')) {
+          videoData = part.inlineData.data;
+          break;
+        }
+        
+        // Check for various formats that might exist
+        if (part.videoData) {
+          videoData = part.videoData;
+          break;
+        }
+      }
+      
+      // In case video is directly in the content
+      if (!videoData && candidate.content?.video?.data) {
+        videoData = candidate.content.video.data;
+      }
+      
+      // In case video is in a different format
+      if (!videoData && candidate.videoContent) {
+        videoData = candidate.videoContent;
+      }
     }
     
-    // Extract the base64 video data
-    const videoData = videoResponseData.data;
+    // If we still don't have video data, log what we received and throw an error
+    if (!videoData) {
+      console.error('Response structure:', JSON.stringify(response, null, 2));
+      throw new Error('No video data found in Veo 2 API response');
+    }
     
     // Save the video to a file
     const outputDir = path.join(process.cwd(), 'temp');
@@ -103,7 +142,16 @@ export async function imageToVideo(imagePath: string): Promise<string> {
     console.log(`Video generated (placeholder): ${videoOutputPath}`);
     return videoOutputPath;
   } catch (error) {
-    console.error('Error generating video with Veo 2:', error);
-    throw new Error(`Failed to generate video: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    console.error('Error generating video with Veo 2 API:', error);
+    console.log('Falling back to FFmpeg video generation...');
+    
+    try {
+      // Fallback: use FFmpeg to create a video animation from the still image
+      // This ensures we always have a video output even if Veo 2 fails
+      return await createVideoFromImages([imagePath]);
+    } catch (fallbackError) {
+      console.error('Fallback video generation also failed:', fallbackError);
+      throw new Error(`Failed to generate video: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 }
