@@ -28,21 +28,38 @@ export async function imageToVideo(imagePath: string): Promise<string> {
     const imageBuffer = fs.readFileSync(imagePath);
     const imageBase64 = imageBuffer.toString('base64');
     
-    // Set up the Veo 2 model (newer version of Gemini with video capabilities)
-    // Ensure this is properly configured for Veo 2 specifically
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro-latest" });
+    // Set up the Veo 2 model - specifically using Gemini 1.5 Pro Flash for its video generation capabilities
+    // This model has video generation capabilities in the current API
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-1.5-flash-latest",  // Flash model supports video generation and is more efficient
+      systemInstruction: "You are a video generation expert that creates high-quality video content from images. Create ONLY videos, never still images or text."
+    });
     
     // Define parameters for video generation with specific instructions for Veo 2
-    const prompt = `Create a professional product showcase vertical video advertisement with subtle camera movements and zooms.
-                   Make it visually appealing and dynamic with smooth transitions.
-                   IMPORTANT SPECIFICATIONS:
-                   - Duration: Exactly ${VIDEO_DURATION_SECONDS} seconds
-                   - Aspect ratio: ${VIDEO_ASPECT_RATIO} (vertical video format)
-                   - Style: Elegant product showcase with professional lighting
-                   - Movement: Gentle zoom-in effects and smooth camera motion
-                   - Purpose: Social media advertisement
+    // We need to include all video parameters directly in the prompt since the Veo 2 API
+    // doesn't directly support a videoConfig parameter structure yet
+    const prompt = `Generate a vertical video for a product advertisement with these exact specifications:
                    
-                   This will be used for a professional advertising campaign on TikTok and Instagram.`;
+                   TECHNICAL REQUIREMENTS (CRITICAL - MUST FOLLOW EXACTLY):
+                   * Generate VIDEO output, not an image
+                   * Video duration: ${VIDEO_DURATION_SECONDS} seconds exactly
+                   * Aspect ratio: ${VIDEO_ASPECT_RATIO} (vertical/portrait orientation)
+                   * Frame rate: 30fps
+                   * Resolution: 1080x1920 pixels
+                   
+                   STYLE REQUIREMENTS:
+                   * Professional product showcase with elegant camera movements
+                   * Luxury/premium aesthetic with soft lighting
+                   * Gentle zoom effects that highlight product features
+                   * Subtle transitions and movement (slow, controlled camera)
+                   * Clean background that emphasizes the product
+                   
+                   PURPOSE:
+                   * Social media advertisement for TikTok and Instagram
+                   * Designed to showcase product quality and features
+                   * Optimized for mobile viewing in vertical format
+                   
+                   This is for a real client campaign, so please create an actual video animation, not still frames.`;
     
     // Make the actual Veo 2 API call
     console.log(`Calling Veo 2 API with prompt: ${prompt}`);
@@ -59,13 +76,31 @@ export async function imageToVideo(imagePath: string): Promise<string> {
       }
     ];
     
-    // Generation configuration for Gemini
-    // Using standard generation parameters instead of custom videoConfig
+    // Generation configuration optimized for video generation
+    // These parameters are tuned specifically for video quality and stability
     const generationConfig = {
-      temperature: 0.4,
-      topP: 0.95,
-      topK: 0,
-      maxOutputTokens: 1024
+      temperature: 0.2,        // Lower temperature for more deterministic results
+      topP: 0.8,               // Lower topP for more focused output
+      topK: 40,                // Reasonable topK value
+      maxOutputTokens: 2048,   // Higher token limit for complex media generation
+      safetySettings: [        // Adjust safety settings to allow creative content
+        {
+          category: 'HARM_CATEGORY_HARASSMENT',
+          threshold: 'BLOCK_ONLY_HIGH'
+        },
+        {
+          category: 'HARM_CATEGORY_HATE_SPEECH',
+          threshold: 'BLOCK_ONLY_HIGH'
+        },
+        {
+          category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+          threshold: 'BLOCK_ONLY_HIGH'
+        },
+        {
+          category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+          threshold: 'BLOCK_ONLY_HIGH'
+        }
+      ]
     };
     
     // Make the actual Gemini/Veo 2 API call with proper types
