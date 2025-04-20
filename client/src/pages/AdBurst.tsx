@@ -16,10 +16,8 @@ import { useAuth } from "@/contexts/AuthContext";
 interface AdBurstResponse {
   success: boolean;
   message: string;
-  data?: {
-    downloadUrl: string;
-    bufferUrl: string;
-  };
+  videoUrl?: string;
+  script?: string;
   error?: string;
 }
 
@@ -94,13 +92,18 @@ export default function AdBurst() {
     try {
       // Create FormData object
       const formData = new FormData();
-      files.forEach(file => {
-        formData.append('images', file);
-      });
       
-      if (prompt) formData.append('prompt', prompt);
-      if (callToAction) formData.append('callToAction', callToAction);
-      formData.append('aspectRatio', aspectRatio);
+      // Append the three image files with specific keys as expected by the server
+      formData.append('image1', files[0]);
+      formData.append('image2', files[1]);
+      formData.append('image3', files[2]);
+      
+      // Product name is required - using prompt as product description 
+      formData.append('productName', prompt || 'Product');
+      
+      // Additional optional fields
+      if (prompt) formData.append('productDescription', prompt);
+      if (callToAction) formData.append('targetAudience', callToAction);
       
       // Simulate progress for better UX
       const progressInterval = setInterval(() => {
@@ -354,9 +357,29 @@ export default function AdBurst() {
                     <CardTitle>Your Ad Is Ready!</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    {result.videoUrl && (
+                      <div className="mb-4">
+                        <video 
+                          src={result.videoUrl} 
+                          controls 
+                          className="w-full rounded-md bg-black"
+                        >
+                          Your browser does not support the video tag.
+                        </video>
+                      </div>
+                    )}
+                    
+                    {result.script && (
+                      <div className="p-3 bg-slate-800 rounded-md mb-4">
+                        <h3 className="text-sm font-medium text-slate-300 mb-1">Ad Script:</h3>
+                        <p className="text-sm text-white/70 italic">"{result.script}"</p>
+                      </div>
+                    )}
+                    
                     <Button
                       className="w-full"
-                      onClick={() => window.open(result.data?.downloadUrl, '_blank')}
+                      onClick={() => window.open(result.videoUrl, '_blank')}
+                      disabled={!result.videoUrl}
                     >
                       <Download className="h-4 w-4 mr-2" />
                       Download Video
@@ -365,10 +388,19 @@ export default function AdBurst() {
                     <Button
                       variant="outline"
                       className="w-full"
-                      onClick={() => window.open(result.data?.bufferUrl, '_blank')}
+                      onClick={() => {
+                        // Reset the form and result
+                        setResult(null);
+                        setFiles([]);
+                        setPrompt('');
+                        setCallToAction('');
+                        if (fileInputRef.current) {
+                          fileInputRef.current.value = '';
+                        }
+                      }}
                     >
-                      <Share2 className="h-4 w-4 mr-2" />
-                      View on Buffer
+                      <Upload className="h-4 w-4 mr-2" />
+                      Create New Ad
                     </Button>
                   </CardContent>
                 </Card>
