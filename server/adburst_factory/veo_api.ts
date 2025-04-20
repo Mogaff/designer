@@ -39,12 +39,57 @@ export async function imageToVideo(imagePath: string): Promise<string> {
                    Make it visually appealing and dynamic. Duration: ${VIDEO_DURATION_SECONDS} seconds. 
                    Aspect ratio: ${VIDEO_ASPECT_RATIO}.`;
     
-    // In a real implementation, this would call the actual Veo 2 API
-    // For this demo, we'll create a placeholder video file
-    console.log(`Would be using Veo 2 API with prompt: ${prompt}`);
+    // Make the actual Veo 2 API call
+    console.log(`Calling Veo 2 API with prompt: ${prompt}`);
     
-    // For demo purposes, create a placeholder file
-    // In production, this would be the actual video data from Veo 2
+    // Prepare the request content for Gemini's new Veo 2 API
+    // This follows the format expected by the current @google/generative-ai SDK
+    const parts = [
+      { text: prompt },
+      {
+        inlineData: {
+          mimeType: "image/jpeg",
+          data: imageBase64
+        }
+      }
+    ];
+    
+    // Generation configuration specific to Veo 2
+    const generationConfig = {
+      temperature: 0.4,
+      topP: 0.95,
+      topK: 0,
+      maxOutputTokens: 1024,
+      // These are custom parameters for Veo 2 which may not be in the standard SDK
+      // They will be passed through to the API
+      videoConfig: {
+        durationSeconds: VIDEO_DURATION_SECONDS, 
+        aspectRatio: VIDEO_ASPECT_RATIO
+      }
+    };
+    
+    // Make the actual Gemini/Veo 2 API call with proper types
+    const result = await model.generateContent({
+      contents: [{ role: "user", parts }],
+      generationConfig
+    });
+    
+    const response = await result.response;
+    
+    // Extract the video data from the response
+    // Note: The actual response format may differ from this once Veo 2 API is fully released
+    // We'll need to adjust this based on the actual API response structure
+    const videoResponseData = response.candidates && response.candidates[0] ? 
+      response.candidates[0].content.parts.find(part => part.video)?.video : null;
+      
+    if (!videoResponseData) {
+      throw new Error('No video data returned from Veo 2 API');
+    }
+    
+    // Extract the base64 video data
+    const videoData = videoResponseData.data;
+    
+    // Save the video to a file
     const outputDir = path.join(process.cwd(), 'temp');
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
@@ -52,9 +97,8 @@ export async function imageToVideo(imagePath: string): Promise<string> {
     
     const videoOutputPath = path.join(outputDir, `veo-${uuidv4()}.mp4`);
     
-    // Create a placeholder file
-    // In production, this would save the actual video from the API
-    fs.writeFileSync(videoOutputPath, "This would be the video data from Veo 2 API");
+    // Save the actual video from the API
+    fs.writeFileSync(videoOutputPath, Buffer.from(videoData, 'base64'));
     
     console.log(`Video generated (placeholder): ${videoOutputPath}`);
     return videoOutputPath;

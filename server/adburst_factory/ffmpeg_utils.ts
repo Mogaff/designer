@@ -40,8 +40,7 @@ export async function combineVideoAudio(
     const outputFilename = `adburst-${Date.now()}.mp4`;
     const outputPath = path.join(outputDir, outputFilename);
     
-    // In a real implementation, this would execute FFmpeg commands
-    // For this demo, we'll create a placeholder video file
+    // Execute the actual FFmpeg command
     
     // Build the FFmpeg command
     let ffmpegCommand = '';
@@ -57,14 +56,26 @@ export async function combineVideoAudio(
                     `-c:v copy -c:a aac -shortest "${outputPath}"`;
     }
     
-    // Log what would be executed
-    console.log(`Would execute FFmpeg command: ${ffmpegCommand}`);
+    // Log the command we're executing
+    console.log(`Executing FFmpeg command: ${ffmpegCommand}`);
     
-    // For demo purposes, create a placeholder file
-    fs.writeFileSync(outputPath, "This would be the combined video from FFmpeg");
-    
-    console.log(`Combined video created (placeholder): ${outputPath}`);
-    return outputFilename; // Return just the filename, not the full path
+    // Execute the command
+    return new Promise<string>((resolve, reject) => {
+      exec(ffmpegCommand, (error, stdout, stderr) => {
+        if (error) {
+          console.error(`FFmpeg error: ${error.message}`);
+          reject(new Error(`FFmpeg failed: ${error.message}`));
+          return;
+        }
+        
+        if (stderr) {
+          console.log(`FFmpeg stderr: ${stderr}`);
+        }
+        
+        console.log(`FFmpeg completed successfully: ${outputPath}`);
+        resolve(outputFilename);
+      });
+    });
   } catch (error) {
     console.error('Error combining video and audio:', error);
     throw new Error(`Failed to combine video and audio: ${error instanceof Error ? error.message : 'Unknown error'}`);

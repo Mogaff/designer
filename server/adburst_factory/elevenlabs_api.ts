@@ -34,8 +34,7 @@ export async function textToSpeech(text: string): Promise<string> {
     
     const outputPath = path.join(outputDir, `voice-${uuidv4()}.mp3`);
     
-    // In a real implementation, this would call the actual ElevenLabs API
-    // For this demo, we'll create a placeholder audio file
+    // Make a real API call to ElevenLabs
     
     // API request configuration
     const requestConfig = {
@@ -59,12 +58,14 @@ export async function textToSpeech(text: string): Promise<string> {
       responseType: 'arraybuffer' as 'arraybuffer'
     };
     
-    // Execute API call to ElevenLabs
-    // In a real implementation, this would receive and save actual audio data
-    console.log('Would be calling ElevenLabs API with:', { text, voiceId: DEFAULT_VOICE_ID });
+    // Execute actual API call to ElevenLabs
+    console.log('Calling ElevenLabs API with:', { text, voiceId: DEFAULT_VOICE_ID });
     
-    // For demo purposes, create a placeholder file
-    fs.writeFileSync(outputPath, "This would be the audio data from ElevenLabs API");
+    // Make the real API call
+    const response = await axios(requestConfig);
+    
+    // Save the actual audio data
+    fs.writeFileSync(outputPath, response.data);
     
     console.log(`Audio generated (placeholder): ${outputPath}`);
     return outputPath;

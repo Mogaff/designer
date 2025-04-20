@@ -33,30 +33,50 @@ export async function uploadToBuffer(
   console.log(`Platforms: ${platforms.join(', ')}`);
   
   try {
-    // In a real implementation, this would call the actual Buffer API
-    // For this demo, we'll simulate the response
+    // Make the actual Buffer API call
+    // Read the video file as a binary stream
+    const videoBuffer = fs.readFileSync(videoPath);
     
-    // Mock successful upload response
-    const mockUploadResponse = {
-      success: true,
-      scheduleId: `buffer-${Date.now()}`,
-      platforms: platforms.map(platform => ({
-        platform,
-        status: 'scheduled',
-        scheduledTime: new Date(Date.now() + 3600000).toISOString(), // 1 hour from now
-        previewUrl: `https://buffer.com/app/profile/${platform}/buffer/preview`
-      })),
-      videoUrl: `https://buffer.com/app/content/scheduled/${Date.now()}`
+    // Create data for the Buffer API using standard form encoding
+    const scheduleTime = new Date(Date.now() + 3600000); // 1 hour from now
+    const formData = {
+      access_token: BUFFER_ACCESS_TOKEN,
+      media: videoBuffer.toString('base64'),
+      media_type: 'video/mp4',
+      text: caption,
+      scheduled_at: scheduleTime.toISOString(),
+      profile_ids: platforms.join(',')
     };
     
-    console.log('Would be uploading to Buffer with:', { 
-      video: videoPath,
+    // Make the API request to Buffer
+    console.log('Uploading to Buffer API with:', { 
       caption,
-      platforms
+      platforms,
+      scheduledAt: scheduleTime.toISOString()
     });
     
-    console.log('Buffer upload simulation response:', mockUploadResponse);
-    return mockUploadResponse;
+    try {
+      // Make the actual API call
+      const response = await axios.post(
+        `${BUFFER_API_BASE_URL}/updates/create.json`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${BUFFER_ACCESS_TOKEN}`
+          }
+        }
+      );
+      
+      // Return the actual Buffer API response
+      console.log('Buffer upload response:', response.data);
+      return response.data;
+    } catch (apiError: any) {
+      console.error('Error from Buffer API:', apiError.response?.data || apiError.message);
+      
+      // If API call fails, return an error response to be handled by the caller
+      throw new Error(`Buffer API error: ${apiError.response?.data?.message || apiError.message}`);
+    }
   } catch (error) {
     console.error('Error uploading to Buffer:', error);
     throw new Error(`Failed to upload to Buffer: ${error instanceof Error ? error.message : 'Unknown error'}`);
