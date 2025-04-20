@@ -167,21 +167,52 @@ export async function processAdBurst(req: Request, res: Response) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error processing AdBurst request:', error);
     
-    // For this prototype, instead of actually generating videos, we'll return
-    // a simulated success response with sample data
+    // Extract product details from the request.body for fallback response
+    const { productName, productDescription, targetAudience } = req.body;
     
-    // This approach allows testing of the UI without requiring the actual AI services to work
-    console.log('Returning sample data for demonstration purposes');
-    
-    // Create a random video ID
-    const randomId = Math.random().toString(36).substring(2, 15);
-    
-    return res.status(200).json({
-      success: true,
-      videoUrl: `https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4`,
-      script: `Introducing ${productName}! ${productDescription || 'The perfect solution for your needs.'} Try it today and experience the difference. ${targetAudience ? 'Perfect for ' + targetAudience + '.' : ''} Order now!`,
-      message: 'Ad generated successfully (sample for demonstration)'
-    });
+    try {
+      // Check if we have Anthropic API key
+      if (process.env.ANTHROPIC_API_KEY) {
+        // Import Anthropic utilities dynamically to avoid circular dependencies
+        const { generateMarketingCopy } = await import('./anthropic_utils');
+        
+        // Try to at least generate script with Claude
+        const script = await generateMarketingCopy({
+          productName: productName || 'Product',
+          productDescription,
+          targetAudience
+        });
+        
+        // Create a random video ID
+        const randomId = Math.random().toString(36).substring(2, 15);
+        
+        console.log('Generated script with Claude:', script);
+        
+        return res.status(200).json({
+          success: true,
+          videoUrl: `https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4`,
+          script: script,
+          message: 'Ad script generated with Claude AI. Video is a demo placeholder.'
+        });
+      } else {
+        throw new Error('ANTHROPIC_API_KEY not available');
+      }
+    } catch (claudeError) {
+      console.error('Error using Claude for fallback:', claudeError);
+      
+      // Ultimate fallback - synthetic response
+      console.log('Using synthetic fallback response');
+      
+      // Build a sample script with the product information
+      const sampleScript = `Introducing ${productName || 'our product'}! ${productDescription || 'The perfect solution for your needs.'} Try it today and experience the difference. ${targetAudience ? 'Perfect for ' + targetAudience + '.' : ''} Order now!`;
+      
+      return res.status(200).json({
+        success: true,
+        videoUrl: `https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4`,
+        script: sampleScript,
+        message: 'Ad generated successfully (sample for demonstration)'
+      });
+    }
     
     // In a production environment, we would return the actual error:
     /*

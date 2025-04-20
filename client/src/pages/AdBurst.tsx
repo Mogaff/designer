@@ -93,17 +93,29 @@ export default function AdBurst() {
       // Create FormData object
       const formData = new FormData();
       
+      console.log('Preparing form data for submission...');
+      
       // Append the three image files with specific keys as expected by the server
       formData.append('image1', files[0]);
       formData.append('image2', files[1]);
       formData.append('image3', files[2]);
       
-      // Product name is required - using prompt as product description 
-      formData.append('productName', prompt || 'Product');
+      console.log('Files attached:', files.map(f => f.name).join(', '));
+      
+      // Extract product name from prompt (first few words)
+      const productName = prompt.split(' ').slice(0, 3).join(' ') || 'Product';
+      formData.append('productName', productName);
+      
+      console.log('Product name set to:', productName);
       
       // Additional optional fields
-      if (prompt) formData.append('productDescription', prompt);
-      if (callToAction) formData.append('targetAudience', callToAction);
+      formData.append('productDescription', prompt || '');
+      console.log('Product description:', prompt || '(none)');
+      
+      if (callToAction) {
+        formData.append('targetAudience', callToAction);
+        console.log('Target audience:', callToAction);
+      }
       
       // Simulate progress for better UX
       const progressInterval = setInterval(() => {
