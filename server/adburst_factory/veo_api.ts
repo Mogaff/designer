@@ -7,7 +7,6 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { createVideoFromImages } from './ffmpeg_fallback';
 
 // Initialize the Generative AI API
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
@@ -139,19 +138,10 @@ export async function imageToVideo(imagePath: string): Promise<string> {
     // Save the actual video from the API
     fs.writeFileSync(videoOutputPath, Buffer.from(videoData, 'base64'));
     
-    console.log(`Video generated (placeholder): ${videoOutputPath}`);
+    console.log(`Video generated: ${videoOutputPath}`);
     return videoOutputPath;
   } catch (error) {
     console.error('Error generating video with Veo 2 API:', error);
-    console.log('Falling back to FFmpeg video generation...');
-    
-    try {
-      // Fallback: use FFmpeg to create a video animation from the still image
-      // This ensures we always have a video output even if Veo 2 fails
-      return await createVideoFromImages([imagePath]);
-    } catch (fallbackError) {
-      console.error('Fallback video generation also failed:', fallbackError);
-      throw new Error(`Failed to generate video: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    throw new Error(`Failed to generate video: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }

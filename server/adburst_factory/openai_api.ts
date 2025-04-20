@@ -47,7 +47,7 @@ export async function generateAdScript(options: {
     
     // Call GPT-4o to generate the script
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-2024-05-13", // Using the most capable GPT-4o model
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt }

@@ -104,11 +104,8 @@ async function generateScript(options: {
     } catch (claudeError) {
       console.error('Error generating script with Claude:', claudeError);
       
-      // Ultimate fallback: create a basic script if both APIs fail
-      const basicScript = `Introducing ${options.productName}! ${options.productDescription || 'The perfect solution for your needs.'} ${options.targetAudience ? 'Perfect for ' + options.targetAudience + '.' : ''} Order now!`;
-      
-      console.log('Using basic script fallback:', basicScript);
-      return basicScript;
+      // No fallback, just throw the error to stop the process
+      throw new Error('Both GPT-4o and Claude 3.7 failed to generate a script. Check API keys and try again.');
     }
   }
 }
