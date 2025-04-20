@@ -114,7 +114,7 @@ export default function AdBurst() {
       }, 1000);
       
       // Make the API request
-      const response = await apiRequest('/api/adburst', {
+      const response = await fetch('/api/adburst', {
         method: 'POST',
         body: formData
       });
@@ -122,15 +122,17 @@ export default function AdBurst() {
       clearInterval(progressInterval);
       setProgress(100);
       
-      if (response && 'success' in response && response.success) {
-        setResult(response as AdBurstResponse);
+      const responseData = await response.json();
+      
+      if (responseData && responseData.success) {
+        setResult(responseData as AdBurstResponse);
         toast({
           title: "Success!",
           description: "Your ad video has been generated successfully.",
         });
       } else {
-        throw new Error(response && 'message' in response ? 
-          (response.message as string) : 'Failed to generate ad video');
+        throw new Error(responseData && responseData.message ? 
+          responseData.message : 'Failed to generate ad video');
       }
     } catch (error) {
       toast({
