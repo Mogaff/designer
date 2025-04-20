@@ -101,8 +101,10 @@ export async function analyzeProductImages(options: {
     options.imageBase64Array.forEach((base64, index) => {
       content.push({
         type: 'image',
-        image_url: {
-          url: `data:image/jpeg;base64,${base64}`
+        source: {
+          type: 'base64',
+          media_type: 'image/jpeg',
+          data: base64
         }
       });
     });

@@ -49,27 +49,19 @@ import { combineVideoAudio } from './ffmpeg_utils';
 import { uploadToBuffer } from './buffer_api';
 
 /**
- * Generate script using GPT-4o or Claude 3.7
- * Primary: GPT-4o for script generation
- * Fallback: Claude 3.7 if OpenAI fails
+ * Generate script using Claude 3.7
+ * Direct implementation without fallbacks as per requirements
  */
 async function generateScript(options: {
   productName: string;
   productDescription?: string;
   targetAudience?: string;
 }): Promise<string> {
+  // Use Claude 3.7 directly without fallbacks
+  console.log('Generating script with Claude 3.7...');
+  
   try {
-    // Try GPT-4o first (primary option)
-    console.log('Generating script with GPT-4o...');
-    return await generateAdScript(options);
-  } catch (error) {
-    console.error('Error with GPT-4o, falling back to Claude 3.7:', error);
-    
-    // Fallback to Claude 3.7
-    try {
-      console.log('Generating script with Claude 3.7 (fallback)...');
-      
-      const systemPrompt = `You are an expert marketing copywriter specializing in premium, emotionally engaging social media video scripts.
+    const systemPrompt = `You are an expert marketing copywriter specializing in premium, emotionally engaging social media video scripts.
       
 Your specialty is creating concise, high-impact scripts for short-form vertical video advertisements.
       
@@ -80,44 +72,43 @@ Craft scripts that are:
 - Ending with a compelling call-to-action
 - Perfect for reading aloud in exactly 8 seconds (30-40 words max)`;
       
-      const userPrompt = `Create a premium 8-second vertical video ad script for:
+    const userPrompt = `Create a premium 8-second vertical video ad script for:
         
-        PRODUCT: ${options.productName}
-        ${options.productDescription ? `DESCRIPTION: ${options.productDescription}` : ''}
-        ${options.targetAudience ? `TARGET AUDIENCE: ${options.targetAudience}` : ''}
-        
-        CRITICAL REQUIREMENTS:
-        - Must be exactly 30-40 words (for an 8-second video)
-        - Start with an emotional hook or surprising statement
-        - Include aspirational language that conveys premium quality
-        - End with a clear, specific call-to-action
-        - Use natural, conversational language that flows well when spoken
-        - Maintain a sophisticated, luxury tone
-        
-        RETURN ONLY THE SCRIPT TEXT WITH NO ADDITIONAL COMMENTARY.`;
+      PRODUCT: ${options.productName}
+      ${options.productDescription ? `DESCRIPTION: ${options.productDescription}` : ''}
+      ${options.targetAudience ? `TARGET AUDIENCE: ${options.targetAudience}` : ''}
       
-      const response = await anthropic.messages.create({
-        model: 'claude-3-7-sonnet-20250219',
-        system: systemPrompt,
-        max_tokens: 1024,
-        messages: [{ role: 'user', content: userPrompt }],
-      });
-  
-      // Get the response text
-      const content = response.content[0];
-      if (content.type === 'text') {
-        const script = content.text.trim();
-        console.log('Generated script with Claude 3.7:', script);
-        return script;
-      } else {
-        throw new Error('Unexpected response format from Claude');
-      }
-    } catch (claudeError) {
-      console.error('Error generating script with Claude:', claudeError);
+      CRITICAL REQUIREMENTS:
+      - Must be exactly 30-40 words (for an 8-second video)
+      - Start with an emotional hook or surprising statement
+      - Include aspirational language that conveys premium quality
+      - End with a clear, specific call-to-action
+      - Use natural, conversational language that flows well when spoken
+      - Maintain a sophisticated, luxury tone
       
-      // No fallback, just throw the error to stop the process
-      throw new Error('Both GPT-4o and Claude 3.7 failed to generate a script. Check API keys and try again.');
+      RETURN ONLY THE SCRIPT TEXT WITH NO ADDITIONAL COMMENTARY.`;
+    
+    const response = await anthropic.messages.create({
+      model: 'claude-3-7-sonnet-20250219',
+      system: systemPrompt,
+      max_tokens: 1024,
+      messages: [{ role: 'user', content: userPrompt }],
+    });
+
+    // Get the response text
+    const content = response.content[0];
+    if (content.type === 'text') {
+      const script = content.text.trim();
+      console.log('Generated script with Claude 3.7:', script);
+      return script;
+    } else {
+      throw new Error('Unexpected response format from Claude');
     }
+  } catch (claudeError) {
+    console.error('Error generating script with Claude:', claudeError);
+    
+    // No fallback, just throw the error to stop the process
+    throw new Error('Claude 3.7 failed to generate a script. Check the ANTHROPIC_API_KEY and try again.');
   }
 }
 
@@ -143,7 +134,7 @@ function saveUploadedFiles(files: Express.Multer.File[]): string[] {
  * Follows the complete workflow:
  * 1. Upload images
  * 2. Generate video from primary image (Veo 2)
- * 3. Generate script (GPT-4o/Claude)
+ * 3. Generate script (Claude 3.7)
  * 4. Generate voiceover (ElevenLabs)
  * 5. Combine video and audio (FFmpeg)
  * 6. Upload to social media (Buffer)
@@ -198,7 +189,7 @@ export async function processAdBurstRequest(req: Request, res: Response) {
     console.log('Starting video generation with Veo 2...');
     const videoPromise = imageToVideo(imagePaths[0]); // Use the first image for video generation
     
-    // Step 3: Generate script using GPT-4o with Claude fallback
+    // Step 3: Generate script using Claude 3.7
     console.log('Starting script generation...');
     const scriptPromise = generateScript({
       productName,
