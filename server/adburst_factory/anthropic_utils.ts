@@ -57,9 +57,11 @@ export async function generateMarketingCopy(options: {
     // Check if content is available and is of text type
     if (message.content && message.content[0] && 'text' in message.content[0]) {
       const copy = message.content[0].text.trim();
-    console.log('Generated marketing copy:', copy);
-    
-    return copy;
+      console.log('Generated marketing copy:', copy);
+      return copy;
+    } else {
+      throw new Error('Unexpected response format from Claude');
+    }
   } catch (error) {
     console.error('Error generating marketing copy with Claude:', error);
     throw new Error(`Failed to generate marketing copy: ${error instanceof Error ? error.message : String(error)}`);
@@ -99,10 +101,8 @@ export async function analyzeProductImages(options: {
     options.imageBase64Array.forEach((base64, index) => {
       content.push({
         type: 'image',
-        source: {
-          type: 'base64',
-          media_type: 'image/jpeg',
-          data: base64
+        image_url: {
+          url: `data:image/jpeg;base64,${base64}`
         }
       });
     });

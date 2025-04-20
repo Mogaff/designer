@@ -79,30 +79,12 @@ export async function imageToVideo(imagePath: string): Promise<string> {
     ];
     
     // Generation configuration optimized for video generation
-    // These parameters are tuned specifically for video quality and stability
+    // Keeping only parameters supported by the Gemini API
     const generationConfig = {
       temperature: 0.2,        // Lower temperature for more deterministic results
       topP: 0.8,               // Lower topP for more focused output
       topK: 40,                // Reasonable topK value
-      maxOutputTokens: 2048,   // Higher token limit for complex media generation
-      safetySettings: [        // Adjust safety settings to allow creative content
-        {
-          category: 'HARM_CATEGORY_HARASSMENT',
-          threshold: 'BLOCK_ONLY_HIGH'
-        },
-        {
-          category: 'HARM_CATEGORY_HATE_SPEECH',
-          threshold: 'BLOCK_ONLY_HIGH'
-        },
-        {
-          category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-          threshold: 'BLOCK_ONLY_HIGH'
-        },
-        {
-          category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-          threshold: 'BLOCK_ONLY_HIGH'
-        }
-      ]
+      maxOutputTokens: 2048    // Higher token limit for complex media generation
     };
     
     // Make the actual Gemini/Veo 2 API call with proper types

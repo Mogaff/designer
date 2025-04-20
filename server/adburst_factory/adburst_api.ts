@@ -69,21 +69,32 @@ async function generateScript(options: {
     try {
       console.log('Generating script with Claude 3.7 (fallback)...');
       
-      const systemPrompt = `You are an expert marketing copywriter. Create short, compelling ad copy for video advertisements.`;
+      const systemPrompt = `You are an expert marketing copywriter specializing in premium, emotionally engaging social media video scripts.
       
-      const userPrompt = `Write a concise, engaging 8-second advertisement script (about 30-40 words) for:
+Your specialty is creating concise, high-impact scripts for short-form vertical video advertisements.
+      
+Craft scripts that are:
+- Attention-grabbing from the first line
+- Emotionally resonant and premium in tone
+- Clear with a specific benefit focus
+- Ending with a compelling call-to-action
+- Perfect for reading aloud in exactly 8 seconds (30-40 words max)`;
+      
+      const userPrompt = `Create a premium 8-second vertical video ad script for:
         
-        Product: ${options.productName}
-        ${options.productDescription ? `Description: ${options.productDescription}` : ''}
-        ${options.targetAudience ? `Target Audience: ${options.targetAudience}` : ''}
+        PRODUCT: ${options.productName}
+        ${options.productDescription ? `DESCRIPTION: ${options.productDescription}` : ''}
+        ${options.targetAudience ? `TARGET AUDIENCE: ${options.targetAudience}` : ''}
         
-        The script should:
-        - Start with a compelling hook
-        - Clearly communicate the main benefit
-        - Include a call-to-action
-        - Be exactly 30-40 words
+        CRITICAL REQUIREMENTS:
+        - Must be exactly 30-40 words (for an 8-second video)
+        - Start with an emotional hook or surprising statement
+        - Include aspirational language that conveys premium quality
+        - End with a clear, specific call-to-action
+        - Use natural, conversational language that flows well when spoken
+        - Maintain a sophisticated, luxury tone
         
-        Return ONLY the script text, nothing else.`;
+        RETURN ONLY THE SCRIPT TEXT WITH NO ADDITIONAL COMMENTARY.`;
       
       const response = await anthropic.messages.create({
         model: 'claude-3-7-sonnet-20250219',
