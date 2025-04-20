@@ -11,7 +11,7 @@ import passport from "./auth";
 import { hashPassword, isAuthenticated } from "./auth";
 import { insertUserSchema, insertDesignConfigSchema, insertUserCreditsSchema, insertUserCreationSchema, insertBrandKitSchema } from "@shared/schema";
 import { createCheckoutSession, verifyCheckoutSession, handleStripeWebhook, CREDIT_PACKAGES } from "./stripe";
-import { registerAdBurstRoutes, initAdBurstFactory } from "./adburst_factory/adburst_endpoint";
+import { registerAdBurstApiRoutes } from "./adburst_factory/adburst_api";
 
 // Using the built-in type definitions from @types/multer
 
@@ -31,8 +31,7 @@ const uploadFields = upload.fields([
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize and register the AdBurst Factory routes
-  initAdBurstFactory();
-  registerAdBurstRoutes(app);
+  registerAdBurstApiRoutes(app);
   
   // Serve the credits admin page
   app.get("/admin/credits", (req: Request, res: Response) => {
