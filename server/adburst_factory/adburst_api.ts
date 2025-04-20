@@ -222,6 +222,12 @@ export async function processAdBurstRequest(req: Request, res: Response) {
         partialResults: {
           script,
           generatedAt: new Date().toISOString(),
+          productName,
+          apiStatus: {
+            claude: "Success", // Script was generated 
+            geminiVeo: "Unavailable", // Video generation API limitation
+            errorDetails: videoError instanceof Error ? videoError.message : 'Unknown error'
+          }
         }
       });
     }
