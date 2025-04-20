@@ -473,6 +473,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Authentication Routes
+
+  // Firebase Authentication - create or update user from Firebase
+  app.post("/api/auth/firebase", async (req: Request, res: Response) => {
+    try {
+      const { uid, email, displayName } = req.body;
+      
+      if (!uid) {
+        return res.status(400).json({ message: "Firebase UID is required" });
+      }
+      
+      // Check if user already exists by firebase_uid
+      let user = await storage.getUserByFirebaseUid(uid);
+      
+      if (user) {
+        // User exists, login
+        req.login(user, (loginErr) => {
+          if (loginErr) {
+            return res.status(500).json({ message: "Login failed" });
+          }
+          return res.json({
+            id: user!.id,
+            username: user!.username,
+            email: user!.email
+          });
+        });
+      } else {
+        // User doesn't exist, create new user
+        const username = email ? email.split('@')[0] : `user_${Date.now()}`;
+        
+        const newUser = await storage.createUser({
+          username,
+          email: email || null,
+          password: '', // No password for Firebase users
+          firebase_uid: uid,
+          display_name: displayName || username
+        });
+        
+        // Log in the new user
+        req.login(newUser, (loginErr) => {
+          if (loginErr) {
+            return res.status(500).json({ message: "Login failed after user creation" });
+          }
+          return res.status(201).json({
+            id: newUser.id,
+            username: newUser.username,
+            email: newUser.email
+          });
+        });
+      }
+    } catch (error) {
+      console.error("Firebase auth error:", error);
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Firebase authentication failed: ${errorMessage}` });
+    }
+  });
   
   // Register a new user
   app.post("/api/auth/register", async (req: Request, res: Response) => {

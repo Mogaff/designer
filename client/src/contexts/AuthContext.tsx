@@ -43,24 +43,79 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
+  // Function to sync Firebase user with our backend
+  const syncUserWithBackend = async (fbUser: FirebaseUser) => {
+    try {
+      // Send Firebase user data to our backend
+      const response = await fetch('/api/auth/firebase', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          uid: fbUser.uid,
+          email: fbUser.email,
+          displayName: fbUser.displayName,
+        }),
+        credentials: 'include', // Important for cookies/session
+      });
+      
+      if (!response.ok) {
+        console.error('Failed to sync user with backend:', await response.text());
+      } else {
+        console.log('User synced with backend successfully');
+      }
+    } catch (error) {
+      console.error('Error syncing user with backend:', error);
+    }
+  };
+
   // Watch auth state changes
   useEffect(() => {
     
     // Watch Firebase auth state
-    const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
-      setIsLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      setIsLoading(true);
+      
       if (fbUser) {
-        // User is signed in
-        setUser({
-          uid: fbUser.uid,
-          email: fbUser.email,
-          displayName: fbUser.displayName,
-          photoURL: fbUser.photoURL
-        });
+        // User is signed in with Firebase
+        try {
+          // Sync with our backend (this creates/updates the user in our database)
+          await syncUserWithBackend(fbUser);
+          
+          // Set user in state
+          setUser({
+            uid: fbUser.uid,
+            email: fbUser.email,
+            displayName: fbUser.displayName,
+            photoURL: fbUser.photoURL
+          });
+        } catch (error) {
+          console.error('Error processing authenticated user:', error);
+          // Even if backend sync fails, we still consider the user logged in with Firebase
+          setUser({
+            uid: fbUser.uid,
+            email: fbUser.email,
+            displayName: fbUser.displayName,
+            photoURL: fbUser.photoURL
+          });
+        }
       } else {
         // User is signed out
         setUser(null);
+        
+        // Also logout from backend
+        try {
+          await fetch('/api/auth/logout', {
+            method: 'POST',
+            credentials: 'include',
+          });
+        } catch (error) {
+          console.error('Error logging out from backend:', error);
+        }
       }
+      
+      setIsLoading(false);
     });
 
     // Cleanup subscription
