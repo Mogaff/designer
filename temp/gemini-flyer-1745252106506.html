@@ -1,0 +1,82 @@
+
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Gemini Generated Flyer</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+          tailwind.config = {
+            theme: {
+              extend: {
+                animation: {
+                  'gradient': 'gradient 8s ease infinite',
+                  'float': 'float 6s ease-in-out infinite',
+                  'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                },
+                keyframes: {
+                  gradient: {
+                    '0%, 100%': { backgroundPosition: '0% 50%' },
+                    '50%': { backgroundPosition: '100% 50%' },
+                  },
+                  float: {
+                    '0%, 100%': { transform: 'translateY(0)' },
+                    '50%': { transform: 'translateY(-10px)' },
+                  }
+                }
+              }
+            }
+          }
+        </script>
+        <style>
+          
+          body {
+            margin: 0;
+            padding: 0;
+            background-image: url('data:image/jpeg;base64,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');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+          }
+        
+          
+          
+          /* Advanced effects */
+          .gradient-text {
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            background-image: linear-gradient(to right, var(--tw-gradient-stops));
+          }
+          .gradient-bg {
+            background-size: 200% 200%;
+            animation: gradient 15s ease infinite;
+          }
+          
+          /* Ensure no rotated text (enforce horizontal-only text) */
+          h1, h2, h3, h4, h5, h6, p, span, div, li, a, strong, em, label, blockquote, caption, button, text {
+            transform: none !important;
+            rotate: 0deg !important;
+            transform-origin: center !important;
+          }
+          
+        </style>
+      </head>
+      <body>
+        <div class="flyer-container" style="width: 820px; height: 312px; overflow: hidden; background-image: url('boy.jpg'); background-size: cover; background-position: center;">
+  <div class="relative h-full w-full flex items-center justify-center">
+    <div class="absolute inset-0 bg-gradient-to-r from-gray-900/70 to-transparent"></div>  
+    <div class="z-10 text-white text-center">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 120" class="w-48 mx-auto mb-4 fill-current text-white">
+          <path d="M101.3,10.9c-27.6-2.5-51,14.7-58.6,42.3H0l3.3,35.3h21.1v23.1H34.4V10.9H101.3z M157.6,89.5c-14.1,14.1-37,2.1-37-16V10.9h34.5v25.6c0,16,11.1,17.9,19.1,13.1C175.7,42.3,171.7,75.4,157.6,89.5z M194.9,10.9v78.6h25.8V10.9H194.9z M245.2,71.6c-12.1,14.7-34.5,17.9-48.6,8.9c-14.1-9.1-17.3-28.3-8.2-42.4s32.3-15.5,46.4-6.5c14.1,8.9,16,29.2,6.5,43.3C260.7,67.2,257.3,56.9,245.2,71.6z M293.8,10.9V46c0,18-12.9,20-21.1,14.1c-8.2-5.8-9.9-19.8-2.1-27.6c7.8-7.8,22.5-5,29.2,3.3V10.9H293.8z M366.4,10.9l-27.6,78.6h23.1l8.2-23.1h33.2l8.2,23.1H404L366.4,10.9z"/>
+      </svg>
+      <h1 class="text-4xl md:text-6xl font-extrabold leading-tight mb-2 font-serif">THE BOY</h1>
+      <p class="text-lg md:text-2xl italic font-light mb-6">Soon in Cinema</p>
+    </div>
+  </div>
+</div>
+      </body>
+      </html>
+    
