@@ -637,38 +637,31 @@ export default function AiFlyerForm({
         
         {/* Second row with Aspect Ratio */}
         <div className="mb-3">
-          {/* Aspect Ratio Selector */}
+          {/* Aspect Ratio Selector as Dropdown */}
           <div className="space-y-1">
             <Label htmlFor="aspectRatio" className="text-xs font-medium text-white/70">
               Aspect Ratio
             </Label>
             
-            <div className="overflow-y-auto max-h-56 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent pr-1">
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
-                {aspectRatioOptions.map((option) => (
-                  <button
-                    key={option.id}
-                    type="button"
-                    onClick={() => setAspectRatio(option.id)}
-                    className={`
-                      h-9 px-2 rounded-md flex flex-col items-center justify-center transition-all duration-200
-                      ${aspectRatio === option.id
-                        ? 'bg-indigo-500/50 border-indigo-400/70 text-white backdrop-blur-md' 
-                        : 'bg-white/10 border-gray-800/50 text-white/80 hover:bg-indigo-500/30 backdrop-blur-sm'}
-                      border hover:border-indigo-500/40 focus:outline-none
-                      active:scale-95 w-full
-                    `}
-                  >
-                    <span className={`text-[10px] font-medium ${aspectRatio === option.id ? 'text-white' : 'text-white/90'}`}>
-                      {option.label.split(' ')[0]}
-                    </span>
-                    <span className={`text-[8px] ${aspectRatio === option.id ? 'text-white/90' : 'text-white/60'}`}>
-                      {option.label.split('(')[1]?.split(')')[0] || ''}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
+            <Select
+              value={aspectRatio}
+              onValueChange={setAspectRatio}
+            >
+              <SelectTrigger className="h-9 text-xs bg-white/10 border-white/10 text-white">
+                <SelectValue placeholder="Select Aspect Ratio">
+                  {aspectRatioOptions.find(option => option.id === aspectRatio)?.label || 'Select Aspect Ratio'}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="max-h-60">
+                <div className="max-h-60 overflow-y-auto">
+                  {aspectRatioOptions.map((option) => (
+                    <SelectItem key={option.id} value={option.id}>
+                      <span className="text-sm">{option.label}</span>
+                    </SelectItem>
+                  ))}
+                </div>
+              </SelectContent>
+            </Select>
           </div>
         </div>
         
