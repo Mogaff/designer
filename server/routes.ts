@@ -5,6 +5,7 @@ import path from "path";
 import fs from "fs";
 import { generateFlyer } from "./flyerGenerator";
 import { renderFlyerFromGemini } from "./geminiFlyer";
+import { generateBackgroundImageHandler } from "./fluxImageService";
 import multer from "multer";
 import { log } from "./vite";
 import passport from "./auth";
@@ -32,6 +33,9 @@ const uploadFields = upload.fields([
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize and register the AdBurst Factory routes
   registerAdBurstApiRoutes(app);
+  
+  // Add route for generating background images with Flux AI
+  app.post("/api/generate-background", isAuthenticated, generateBackgroundImageHandler);
   
   // Serve the credits admin page
   app.get("/admin/credits", (req: Request, res: Response) => {

@@ -48,6 +48,7 @@ export default function AiFlyerForm({
   const [logo, setLogo] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [designCount, setDesignCount] = useState<string>("4"); // Default to 4 designs
+  const [generateAiBackground, setGenerateAiBackground] = useState<boolean>(false); // AI background generation toggle
   const [isPremiumDialogOpen, setIsPremiumDialogOpen] = useState(false);
   const [selectedPremiumOption, setSelectedPremiumOption] = useState<string | null>(null);
   const { fontSettings } = useUserSettings(); // Get font settings from context
