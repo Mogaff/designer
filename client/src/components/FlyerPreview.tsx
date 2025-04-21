@@ -325,7 +325,7 @@ export default function FlyerPreview({
         {!generatedFlyer && !isGenerating ? (
           <div className="w-full h-full flex items-center justify-center p-4">
             <div 
-              className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-900/20 to-teal-800/30 border border-blue-500/20 mx-auto"
+              className="relative flex items-center justify-center overflow-hidden backdrop-blur-md bg-white/5 border border-white/10 mx-auto"
               style={{
                 maxWidth: '80%',
                 maxHeight: '80%',
@@ -349,7 +349,7 @@ export default function FlyerPreview({
           <div className="w-full h-full flex flex-col">
             <div className="flex-grow flex items-center justify-center">
               <div 
-                className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-900/20 to-teal-800/30 border border-blue-500/20 mx-auto"
+                className="relative flex items-center justify-center overflow-hidden backdrop-blur-md bg-white/5 border border-white/10 mx-auto"
                 style={{
                   maxWidth: '80%',
                   maxHeight: '80%',
@@ -391,7 +391,7 @@ export default function FlyerPreview({
                       {/* Progress bar */}
                       <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
                         <div 
-                          className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-300" 
+                          className="h-full bg-gradient-to-r from-white/70 to-white/40 transition-all duration-300" 
                           style={{ width: `${progressPercent}%` }}
                         ></div>
                       </div>
@@ -429,7 +429,7 @@ export default function FlyerPreview({
                       className={`flex flex-col items-center ${Math.floor(progressPercent / 20) >= index ? 'text-white/90' : 'text-white/40'}`}
                     >
                       <div 
-                        className={`w-3 h-3 rounded-full mb-1 ${Math.floor(progressPercent / 20) >= index ? 'bg-green-500' : 'bg-gray-600'}`}
+                        className={`w-3 h-3 rounded-full mb-1 ${Math.floor(progressPercent / 20) >= index ? 'bg-white' : 'bg-gray-600'}`}
                       ></div>
                       <span className="text-[10px] text-center max-w-[80px]">{step.split("...")[0]}</span>
                     </div>
