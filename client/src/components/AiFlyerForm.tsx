@@ -30,6 +30,7 @@ type AiFlyerFormProps = {
   setDesignSuggestions: (suggestions: DesignVariation[] | null) => void;
   aspectRatio: string;
   setAspectRatio: (aspectRatio: string) => void;
+  onOpenBrandKitPanel?: () => void;
 };
 
 export default function AiFlyerForm({ 
@@ -38,7 +39,8 @@ export default function AiFlyerForm({
   setIsGenerating,
   setDesignSuggestions,
   aspectRatio,
-  setAspectRatio
+  setAspectRatio,
+  onOpenBrandKitPanel
 }: AiFlyerFormProps) {
   const [prompt, setPrompt] = useState("");
   const [backgroundImage, setBackgroundImage] = useState<File | null>(null);
@@ -489,6 +491,15 @@ export default function AiFlyerForm({
                     )}
                   </div>
                   <p className="text-sm text-white/80">Using logo from Brand Kit: <span className="font-medium">{activeBrandKit.name}</span></p>
+                  <Button 
+                    type="button"
+                    variant="outline" 
+                    size="sm"
+                    className="mt-2 text-xs bg-white/10"
+                    onClick={() => onOpenBrandKitPanel && onOpenBrandKitPanel()}
+                  >
+                    Edit Brand Kit
+                  </Button>
                 </div>
               </div>
             )}

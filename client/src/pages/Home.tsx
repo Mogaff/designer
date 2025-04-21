@@ -5,6 +5,7 @@ import FlyerPreview from "@/components/FlyerPreview";
 import DesignSuggestions from "@/components/DesignSuggestions";
 import RecentCreations from "@/components/RecentCreations";
 import CanvasEditor from "@/components/CanvasEditor";
+import { BrandKitPanel } from "@/components/BrandKitPanel";
 import { useState } from "react";
 import { GeneratedFlyer, DesignVariation } from "@/lib/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,6 +16,7 @@ export default function Home() {
   const [designSuggestions, setDesignSuggestions] = useState<DesignVariation[] | null>(null);
   const [aspectRatio, setAspectRatio] = useState<string>("original");
   const [activeTab, setActiveTab] = useState<string>("preview");
+  const [isBrandKitPanelOpen, setIsBrandKitPanelOpen] = useState(false);
 
   return (
     <div className="flex flex-col min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 to-slate-800">
@@ -24,8 +26,12 @@ export default function Home() {
         {/* Main Content Area - Full Browser Width */}
         <div className="flex flex-col lg:flex-row w-full h-[calc(100vh-80px)] gap-3 mt-10">
           {/* Left Sidebar - Contains Design Creation and Tabs */}
-          <div className="w-full lg:w-[400px] backdrop-blur-md bg-white/5 border border-white/10 overflow-hidden flex flex-col rounded-lg">
-            
+          <div className="w-full lg:w-[400px] backdrop-blur-md bg-white/5 border border-white/10 overflow-hidden flex flex-col rounded-lg relative">
+            {/* Brand Kit Panel as a child of the Create Design panel */}
+            <BrandKitPanel 
+              isOpen={isBrandKitPanelOpen} 
+              onClose={() => setIsBrandKitPanelOpen(false)} 
+            />
             
             <div className="flex-grow overflow-auto p-3">
               {designSuggestions ? (
@@ -43,6 +49,7 @@ export default function Home() {
                   setDesignSuggestions={setDesignSuggestions}
                   aspectRatio={aspectRatio}
                   setAspectRatio={setAspectRatio}
+                  onOpenBrandKitPanel={() => setIsBrandKitPanelOpen(true)}
                 />
               )}
             </div>

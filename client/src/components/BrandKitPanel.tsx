@@ -55,6 +55,20 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
   const [selectedKit, setSelectedKit] = useState<BrandKit | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>('');
   
+  // Animation style for sliding from right
+  const slideInStyle = {
+    position: 'absolute',
+    top: 0,
+    right: isOpen ? 0 : '-100%',
+    width: '100%',
+    height: '100%',
+    zIndex: 50,
+    transition: 'right 0.3s ease-in-out',
+    background: 'rgba(0, 0, 0, 0.5)',
+    backdropFilter: 'blur(10px)',
+    borderLeft: '1px solid rgba(255, 255, 255, 0.1)'
+  } as React.CSSProperties;
+  
   // Form setup
   const form = useForm<BrandKitFormValues>({
     resolver: zodResolver(brandKitSchema),
@@ -264,10 +278,7 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
 
   return (
     <div 
-      className={cn(
-        "fixed top-16 left-[calc(var(--sidebar-collapsed-width)+2px)] w-72 max-h-[80vh] overflow-hidden rounded-lg bg-black/60 backdrop-blur-md z-40 border border-white/10 transform transition-all duration-300 ease-in-out shadow-xl",
-        isOpen ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0 pointer-events-none"
-      )}
+      style={slideInStyle}
       ref={panelRef}
     >
       <div className="flex flex-col max-h-[80vh]">
