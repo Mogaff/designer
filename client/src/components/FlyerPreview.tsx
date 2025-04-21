@@ -282,39 +282,39 @@ export default function FlyerPreview({
 
   return (
     <div className="h-full flex flex-col">
-      <div className="absolute top-2 right-4 z-30 flex gap-2">
+      <div className="absolute top-2 right-4 z-30 flex gap-1">
         <Button
-          className="bg-green-600/70 backdrop-blur-sm border-none text-white h-8 px-3 py-1 text-xs hover:bg-green-600/90"
+          className="bg-white/10 backdrop-blur-sm border-none text-white h-7 px-2 py-0 text-[10px] hover:bg-white/20"
           size="sm"
           onClick={saveDesignToGallery}
           disabled={!generatedFlyer || isSaving}
+          title="Save to Gallery"
         >
           {isSaving ? (
-            <span className="h-3 w-3 mr-1 animate-spin">⏳</span>
+            <span className="h-3 w-3 animate-spin">⏳</span>
           ) : (
-            <Check className="h-3 w-3 mr-1" />
+            <Check className="h-3 w-3" />
           )}
-          Save to Gallery
         </Button>
         
         <Button
-          className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-8 px-3 py-1 text-xs hover:bg-indigo-500/30"
+          className="bg-white/10 backdrop-blur-sm border-none text-white h-7 px-2 py-0 text-[10px] hover:bg-white/20"
           size="sm"
           onClick={handleDownload}
           disabled={!generatedFlyer}
+          title="Download"
         >
-          <Download className="h-3 w-3 mr-1" />
-          Download
+          <Download className="h-3 w-3" />
         </Button>
         
         <Button
-          className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-8 px-3 py-1 text-xs hover:bg-indigo-500/30"
+          className="bg-white/10 backdrop-blur-sm border-none text-white h-7 px-2 py-0 text-[10px] hover:bg-white/20"
           size="sm"
           onClick={handleShare}
           disabled={!generatedFlyer}
+          title="Share"
         >
-          <Share2 className="h-3 w-3 mr-1" />
-          Share
+          <Share2 className="h-3 w-3" />
         </Button>
       </div>
       
