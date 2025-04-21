@@ -1,0 +1,83 @@
+
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Gemini Generated Flyer</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+          tailwind.config = {
+            theme: {
+              extend: {
+                animation: {
+                  'gradient': 'gradient 8s ease infinite',
+                  'float': 'float 6s ease-in-out infinite',
+                  'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                },
+                keyframes: {
+                  gradient: {
+                    '0%, 100%': { backgroundPosition: '0% 50%' },
+                    '50%': { backgroundPosition: '100% 50%' },
+                  },
+                  float: {
+                    '0%, 100%': { transform: 'translateY(0)' },
+                    '50%': { transform: 'translateY(-10px)' },
+                  }
+                }
+              }
+            }
+          }
+        </script>
+        <style>
+          
+          body {
+            margin: 0;
+            padding: 0;
+          }
+        
+          
+          
+          /* Advanced effects */
+          .gradient-text {
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            background-image: linear-gradient(to right, var(--tw-gradient-stops));
+          }
+          .gradient-bg {
+            background-size: 200% 200%;
+            animation: gradient 15s ease infinite;
+          }
+          
+          /* Ensure no rotated text (enforce horizontal-only text) */
+          h1, h2, h3, h4, h5, h6, p, span, div, li, a, strong, em, label, blockquote, caption, button, text {
+            transform: none !important;
+            rotate: 0deg !important;
+            transform-origin: center !important;
+          }
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;300&family=Playfair+Display:wght@700;900&display=swap');
+        </style>
+      </head>
+      <body>
+        <div class="flyer-container" style="width: 1200px; height: 1200px; overflow: hidden; background: linear-gradient(to bottom right, #4f46e5, #3b348f);">
+  <div class="relative w-full h-full flex flex-col justify-center items-center">
+    <div class="text-white text-center px-10">
+      <h1 class="text-6xl md:text-8xl font-extrabold leading-tight tracking-tighter mb-4 font-serif" style="font-family: 'Playfair Display', serif;">haitugen.ai</h1>
+      <div class="w-2/3 mx-auto border-t border-b border-[#a5b4fc] py-4 mb-6"></div>
+      <p class="text-2xl md:text-3xl font-light leading-relaxed mb-8 font-sans" style="font-family: 'Inter', sans-serif;">Generative AI</p>
+      <div class="flex justify-center">
+        <div class="w-24 h-24 rounded-full bg-[#f59e0b] flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#ffffff" class="w-12 h-12">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+          </svg>
+
+        </div>
+      </div>
+    </div>
+    <div class="absolute bottom-10 left-10 text-[#a5b4fc] text-sm font-light uppercase tracking-widest" style="font-family: 'Inter', sans-serif;">© 2024 haitugen.ai</div>
+  </div>
+</div>
+      </body>
+      </html>
+    

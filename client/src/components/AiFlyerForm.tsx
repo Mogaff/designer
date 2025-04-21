@@ -626,7 +626,7 @@ export default function AiFlyerForm({
               onClick={() => setIsPremiumDialogOpen(true)}
             >
               <Sparkles className="h-4 w-4 mr-2 text-amber-400" />
-              {selectedPremiumOption ? `${selectedPremiumOption} Selected` : 'Select Design Options'}
+              {selectedPremiumOption ? `${selectedPremiumOption} Selected` : 'Choose Style'}
             </Button>
           </div>
           
