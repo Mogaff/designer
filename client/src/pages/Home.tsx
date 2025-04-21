@@ -17,15 +17,15 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<string>("preview");
 
   return (
-    <div className="flex flex-col min-h-screen overflow-hidden bg-gradient-to-br from-slate-900 to-blue-900">
+    <div className="flex flex-col min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 to-slate-800">
       <Header />
       
       <main className="w-full flex-grow flex">
         {/* Main Content Area - Full Browser Width */}
         <div className="flex flex-col lg:flex-row w-full h-[calc(100vh-60px)]">
           {/* Left Sidebar - Contains Design Creation and Tabs */}
-          <div className="w-full lg:w-[350px] bg-black/20 backdrop-blur-md border-r border-white/10 overflow-hidden flex flex-col">
-            <div className="p-3 bg-black/40 border-b border-white/10">
+          <div className="w-full lg:w-[350px] backdrop-blur-md bg-white/5 border-r border-white/10 overflow-hidden flex flex-col">
+            <div className="p-3 backdrop-blur-md bg-white/5 border-b border-white/10">
               <h2 className="text-white font-bold text-md">Create Design</h2>
             </div>
             
@@ -60,11 +60,11 @@ export default function Home() {
             >
               {/* Tab Controls */}
               <div className="absolute top-2 left-4 z-20">
-                <TabsList className="bg-black/50 backdrop-blur-md border border-white/10">
-                  <TabsTrigger value="preview" className="text-white data-[state=active]:bg-indigo-600/70">
+                <TabsList className="backdrop-blur-md bg-white/5 border border-white/10">
+                  <TabsTrigger value="preview" className="text-white data-[state=active]:bg-white/20">
                     Preview
                   </TabsTrigger>
-                  <TabsTrigger value="canvas" className="text-white data-[state=active]:bg-indigo-600/70">
+                  <TabsTrigger value="canvas" className="text-white data-[state=active]:bg-white/20">
                     Canvas Editor
                   </TabsTrigger>
                 </TabsList>
@@ -94,8 +94,8 @@ export default function Home() {
           </div>
           
           {/* Right Sidebar - Gallery */}
-          <div className="hidden lg:block w-[240px] bg-black/20 backdrop-blur-md border-l border-white/10 overflow-hidden">
-            <div className="p-2 bg-black/40 border-b border-white/10">
+          <div className="hidden lg:block w-[240px] backdrop-blur-md bg-white/5 border-l border-white/10 overflow-hidden">
+            <div className="p-2 backdrop-blur-md bg-white/5 border-b border-white/10">
               <h2 className="text-white font-bold text-sm">Gallery</h2>
             </div>
             <div className="h-full overflow-auto p-2">
@@ -104,8 +104,6 @@ export default function Home() {
           </div>
         </div>
       </main>
-      
-      <Footer />
     </div>
   );
 }
