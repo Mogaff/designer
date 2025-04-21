@@ -4,8 +4,10 @@ import AiFlyerForm from "@/components/AiFlyerForm";
 import FlyerPreview from "@/components/FlyerPreview";
 import DesignSuggestions from "@/components/DesignSuggestions";
 import RecentCreations from "@/components/RecentCreations";
+import CanvasEditor from "@/components/CanvasEditor";
 import { useState } from "react";
 import { GeneratedFlyer, DesignVariation } from "@/lib/types";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Home() {
   const [generatedFlyer, setGeneratedFlyer] = useState<GeneratedFlyer | null>(null);
@@ -56,11 +58,31 @@ export default function Home() {
                 </div>
                 
                 <div className="h-full flex flex-col lg:col-span-3">
-                  <FlyerPreview 
-                    generatedFlyer={generatedFlyer} 
-                    isGenerating={isGenerating}
-                    aspectRatio={aspectRatio}
-                  />
+                  <Tabs defaultValue="preview" className="h-full flex flex-col">
+                    <div className="flex justify-between items-center mb-2">
+                      <TabsList className="bg-black/30 backdrop-blur-sm">
+                        <TabsTrigger value="preview" className="text-white data-[state=active]:bg-indigo-600/70">Preview</TabsTrigger>
+                        <TabsTrigger value="canvas" className="text-white data-[state=active]:bg-indigo-600/70">Canvas Editor</TabsTrigger>
+                      </TabsList>
+                    </div>
+                    
+                    <div className="flex-grow overflow-hidden">
+                      <TabsContent value="preview" className="h-full m-0 p-0">
+                        <FlyerPreview 
+                          generatedFlyer={generatedFlyer} 
+                          isGenerating={isGenerating}
+                          aspectRatio={aspectRatio}
+                        />
+                      </TabsContent>
+                      
+                      <TabsContent value="canvas" className="h-full m-0 p-0">
+                        <CanvasEditor 
+                          generatedFlyer={generatedFlyer}
+                          isGenerating={isGenerating}
+                        />
+                      </TabsContent>
+                    </div>
+                  </Tabs>
                 </div>
               </div>
             </div>

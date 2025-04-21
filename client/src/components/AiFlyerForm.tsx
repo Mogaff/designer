@@ -456,11 +456,15 @@ export default function AiFlyerForm({
             ) : (
               <div className="relative w-full h-28 overflow-hidden rounded-xl group transition-all duration-300 border border-gray-800/50 bg-black/20">
                 <div className="flex flex-col items-center justify-center h-full w-full text-center p-3">
-                  {activeBrandKit.logo_url && (
-                    <div className="w-12 h-12 rounded-md flex items-center justify-center overflow-hidden mb-2">
+                  <div className="w-12 h-12 rounded-md flex items-center justify-center overflow-hidden mb-2">
+                    {activeBrandKit.logo_url ? (
                       <img src={activeBrandKit.logo_url} alt="Brand Logo" className="max-h-full max-w-full object-contain" />
-                    </div>
-                  )}
+                    ) : (
+                      <div className="w-full h-full bg-indigo-500/30 flex items-center justify-center">
+                        <PaintBucket className="h-6 w-6 text-indigo-300/80" />
+                      </div>
+                    )}
+                  </div>
                   <p className="text-sm text-white/80">Using logo from Brand Kit: <span className="font-medium">{activeBrandKit.name}</span></p>
                 </div>
               </div>
