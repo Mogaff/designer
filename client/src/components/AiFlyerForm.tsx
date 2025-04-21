@@ -8,12 +8,13 @@ import { Button } from "@/components/ui/button";
 import { GeneratedFlyer, AiFlyerGenerationRequest, DesignSuggestions, DesignVariation, FontSettings, GoogleFont, BrandKit } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { ImageIcon, Upload, TypeIcon, Check, PaintBucket } from "lucide-react";
+import { ImageIcon, Upload, TypeIcon, Check, PaintBucket, Crown, Sparkles } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import backgroundGradient from "../assets/background-gradient.png";
 import backgroundGradient2 from "../assets/backgroundd-gradient.png";
 import { useUserSettings } from "@/contexts/UserSettingsContext";
 import { loadGoogleFonts, loadFont } from '@/lib/fontService';
+import PremiumDesignPanel from "./PremiumDesignPanel";
 import { 
   Select,
   SelectContent,
@@ -45,6 +46,8 @@ export default function AiFlyerForm({
   const [logo, setLogo] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [designCount, setDesignCount] = useState<string>("4"); // Default to 4 designs
+  const [isPremiumDialogOpen, setIsPremiumDialogOpen] = useState(false);
+  const [selectedPremiumOption, setSelectedPremiumOption] = useState<string | null>(null);
   const { fontSettings } = useUserSettings(); // Get font settings from context
   
   // Get active brand kit
@@ -257,6 +260,12 @@ export default function AiFlyerForm({
       return;
     }
 
+    // If no premium option is selected, show the dialog
+    if (!selectedPremiumOption) {
+      setIsPremiumDialogOpen(true);
+      return;
+    }
+    
     setIsGenerating(true);
     
     // Use brand kit fonts if available, otherwise use user settings
@@ -269,6 +278,20 @@ export default function AiFlyerForm({
       
     // If using brand kit, add the brand colors to the prompt
     let enhancedPrompt = prompt;
+    
+    // Add quality instructions based on the premium option
+    switch(selectedPremiumOption) {
+      case 'premium':
+        enhancedPrompt += " Create a high quality professional design with attention to detail.";
+        break;
+      case 'elite':
+        enhancedPrompt += " Create a premium quality design with sophisticated styling and perfect proportions.";
+        break;
+      case 'ultimate':
+        enhancedPrompt += " Create an ultra-high quality design with immaculate attention to detail, sophisticated styling and perfect balance.";
+        break;
+    }
+    
     if (activeBrandKit) {
       enhancedPrompt += ` Use these brand colors: primary color ${activeBrandKit.primary_color}, secondary color ${activeBrandKit.secondary_color}, accent color ${activeBrandKit.accent_color}.`;
       
@@ -472,34 +495,50 @@ export default function AiFlyerForm({
           </div>
         </div>
         
-        {/* Design Settings - Count, Aspect Ratio and Fonts */}
+        {/* Design Settings - Aspect Ratio and Fonts */}
         <div className="grid grid-cols-2 gap-4 mb-3">
-          {/* Design Count Selector */}
+          {/* Premium Design Options Button */}
           <div className="space-y-1">
-            <Label htmlFor="designCount" className="text-xs font-medium text-white/70">
-              Number of Designs
+            <Label className="text-xs font-medium text-white/70 flex items-center gap-1">
+              <Crown className="h-3 w-3 text-amber-400" />
+              Design Quality
             </Label>
-            
-            <div className="flex gap-2">
-              {[1, 2, 3, 4].map((num) => (
-                <button
-                  key={num}
-                  type="button"
-                  onClick={() => setDesignCount(num.toString())}
-                  className={`
-                    h-8 w-8 rounded-md flex items-center justify-center transition-all duration-200
-                    ${parseInt(designCount) === num 
-                      ? 'bg-indigo-500/50 border-indigo-400/70 text-white backdrop-blur-md' 
-                      : 'bg-white/10 border-gray-800/50 text-white/80 hover:bg-indigo-500/30 backdrop-blur-sm'}
-                    border hover:border-indigo-500/40 focus:outline-none
-                    active:scale-95
-                  `}
-                >
-                  <span className={`text-sm font-medium ${parseInt(designCount) === num ? 'text-white' : 'text-white/90'}`}>{num}</span>
-                </button>
-              ))}
-            </div>
+            <Button
+              type="button"
+              className="w-full bg-gradient-to-r from-indigo-500/40 to-purple-500/40 hover:from-indigo-500/60 hover:to-purple-500/60 backdrop-blur-sm border border-indigo-500/30 text-white"
+              onClick={() => setIsPremiumDialogOpen(true)}
+            >
+              <Sparkles className="h-4 w-4 mr-2 text-amber-400" />
+              {selectedPremiumOption ? `${selectedPremiumOption} Selected` : 'Select Design Options'}
+            </Button>
           </div>
+          
+          {/* Premium Design Options Dialog */}
+          <PremiumDesignPanel
+            isOpen={isPremiumDialogOpen}
+            onClose={() => setIsPremiumDialogOpen(false)}
+            onSelectOption={(optionId) => {
+              setSelectedPremiumOption(optionId);
+              // Set the design count based on the option selected
+              switch(optionId) {
+                case 'basic':
+                  setDesignCount('1');
+                  break;
+                case 'premium':
+                  setDesignCount('4');
+                  break;
+                case 'elite':
+                  setDesignCount('8');
+                  break;
+                case 'ultimate':
+                  setDesignCount('12');
+                  break;
+                default:
+                  setDesignCount('4');
+              }
+            }}
+            isGenerating={isGenerating}
+          />
           
           {/* Font Selection - Only shown if no active Brand Kit */}
           {!activeBrandKit && (

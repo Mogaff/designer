@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, useDragControls } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { GeneratedFlyer } from '@/lib/types';
 import { Loader, Save, Download, Plus, Trash, MoveHorizontal, Share2, Eye, EyeOff } from 'lucide-react';
@@ -345,7 +345,6 @@ export default function CanvasEditor({ generatedFlyer, isGenerating, onSave }: C
               <motion.div
                 key={element.id}
                 drag
-                dragControls={useDragControls()}
                 dragMomentum={false}
                 initial={{ x: element.x, y: element.y, rotate: element.rotation }}
                 style={{ 
