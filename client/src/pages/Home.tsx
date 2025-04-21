@@ -22,9 +22,9 @@ export default function Home() {
       
       <main className="w-full flex-grow flex p-3">
         {/* Main Content Area - Full Browser Width */}
-        <div className="flex flex-col lg:flex-row w-full h-[calc(100vh-80px)] gap-3">
+        <div className="flex flex-col lg:flex-row w-full h-[calc(100vh-80px)] gap-3 mt-10">
           {/* Left Sidebar - Contains Design Creation and Tabs */}
-          <div className="w-full lg:w-[350px] backdrop-blur-md bg-white/5 border border-white/10 overflow-hidden flex flex-col rounded-lg">
+          <div className="w-full lg:w-[400px] backdrop-blur-md bg-white/5 border border-white/10 overflow-hidden flex flex-col rounded-lg">
             
             
             <div className="flex-grow overflow-auto p-3">
