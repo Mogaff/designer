@@ -344,12 +344,12 @@ export default function CanvasEditor({ generatedFlyer, isGenerating, onSave }: C
         <div className="absolute inset-0 flex items-center justify-center">
           <div 
             ref={canvasRef}
-            className="relative bg-gradient-to-br from-indigo-900/20 to-purple-900/30 border border-indigo-500/20"
+            className="relative bg-gradient-to-br from-blue-900/20 to-teal-800/30 border border-blue-500/20"
             style={{ 
-              width: '80%', 
-              height: '80%',
-              maxWidth: '1000px',
-              maxHeight: '800px'
+              width: '90%', 
+              height: '90%',
+              maxWidth: '1200px',
+              maxHeight: '900px'
             }}
           >
             {canvasElements.map((element) => (
@@ -366,7 +366,7 @@ export default function CanvasEditor({ generatedFlyer, isGenerating, onSave }: C
                 }}
                 whileDrag={{ scale: 1.02 }}
                 onClick={() => handleSelectElement(element.id)}
-                className={`${selectedElement === element.id ? 'ring-2 ring-indigo-500' : ''}`}
+                className={`${selectedElement === element.id ? 'ring-2 ring-blue-500' : ''}`}
               >
                 {element.type === 'text' && (
                   <div 
@@ -411,9 +411,9 @@ export default function CanvasEditor({ generatedFlyer, isGenerating, onSave }: C
                 {/* Resize and rotate handles */}
                 {selectedElement === element.id && element.id !== 'background' && (
                   <>
-                    <div className="absolute -right-1 -bottom-1 w-4 h-4 bg-indigo-500 rounded-full cursor-se-resize"></div>
-                    <div className="absolute top-1/2 -right-1 transform -translate-y-1/2 w-4 h-4 bg-indigo-500 rounded-full cursor-e-resize"></div>
-                    <div className="absolute left-1/2 -bottom-1 transform -translate-x-1/2 w-4 h-4 bg-indigo-500 rounded-full cursor-s-resize"></div>
+                    <div className="absolute -right-1 -bottom-1 w-4 h-4 bg-blue-500 rounded-full cursor-se-resize"></div>
+                    <div className="absolute top-1/2 -right-1 transform -translate-y-1/2 w-4 h-4 bg-blue-500 rounded-full cursor-e-resize"></div>
+                    <div className="absolute left-1/2 -bottom-1 transform -translate-x-1/2 w-4 h-4 bg-blue-500 rounded-full cursor-s-resize"></div>
                   </>
                 )}
               </motion.div>

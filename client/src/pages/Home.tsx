@@ -17,16 +17,16 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<string>("preview");
 
   return (
-    <div className="flex flex-col min-h-screen overflow-hidden bg-gradient-to-br from-slate-900 to-purple-900">
+    <div className="flex flex-col min-h-screen overflow-hidden bg-gradient-to-br from-slate-900 to-blue-900">
       <Header />
       
       <main className="w-full flex-grow flex">
         {/* Main Content Area - Full Browser Width */}
         <div className="flex flex-col lg:flex-row w-full h-[calc(100vh-60px)]">
           {/* Left Sidebar - Contains Design Creation and Tabs */}
-          <div className="w-full lg:w-[280px] bg-black/20 backdrop-blur-md border-r border-white/10 overflow-hidden flex flex-col">
-            <div className="p-2 bg-black/40 border-b border-white/10">
-              <h2 className="text-white font-bold text-sm">Create Design</h2>
+          <div className="w-full lg:w-[350px] bg-black/20 backdrop-blur-md border-r border-white/10 overflow-hidden flex flex-col">
+            <div className="p-3 bg-black/40 border-b border-white/10">
+              <h2 className="text-white font-bold text-md">Create Design</h2>
             </div>
             
             <div className="flex-grow overflow-auto p-3">

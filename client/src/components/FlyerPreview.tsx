@@ -325,7 +325,7 @@ export default function FlyerPreview({
         {!generatedFlyer && !isGenerating ? (
           <div className="w-full h-full flex items-center justify-center p-4">
             <div 
-              className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-900/20 to-purple-900/30 border border-indigo-500/20 mx-auto"
+              className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-900/20 to-teal-800/30 border border-blue-500/20 mx-auto"
               style={{
                 maxWidth: '80%',
                 maxHeight: '80%',
@@ -349,7 +349,7 @@ export default function FlyerPreview({
           <div className="w-full h-full flex flex-col">
             <div className="flex-grow flex items-center justify-center">
               <div 
-                className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-900/20 to-purple-900/30 border border-indigo-500/20 mx-auto"
+                className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-900/20 to-teal-800/30 border border-blue-500/20 mx-auto"
                 style={{
                   maxWidth: '80%',
                   maxHeight: '80%',
