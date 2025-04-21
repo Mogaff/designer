@@ -14,104 +14,95 @@ export default function Home() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [designSuggestions, setDesignSuggestions] = useState<DesignVariation[] | null>(null);
   const [aspectRatio, setAspectRatio] = useState<string>("original");
+  const [activeTab, setActiveTab] = useState<string>("preview");
 
   return (
-    <div className="flex flex-col h-screen overflow-auto">
+    <div className="flex flex-col min-h-screen overflow-hidden bg-gradient-to-br from-slate-900 to-purple-900">
       <Header />
       
-      <main className="max-w-7xl mx-auto pt-12 px-4 lg:px-6 flex-grow flex flex-col">
-        <section className="flex-grow flex flex-col">
-          {/* Mobile Options & Gallery View - Only visible on mobile */}
-          <div className="lg:hidden w-full mb-4">
-            <RecentCreations vertical={false} />
+      <main className="w-full flex-grow flex">
+        {/* Main Content Area - Full Browser Width */}
+        <div className="flex flex-col lg:flex-row w-full h-[calc(100vh-60px)]">
+          {/* Left Sidebar - Contains Design Creation and Tabs */}
+          <div className="w-full lg:w-[280px] bg-black/20 backdrop-blur-md border-r border-white/10 overflow-hidden flex flex-col">
+            <div className="p-2 bg-black/40 border-b border-white/10">
+              <h2 className="text-white font-bold text-sm">Create Design</h2>
+            </div>
+            
+            <div className="flex-grow overflow-auto p-3">
+              {designSuggestions ? (
+                <DesignSuggestions 
+                  designs={designSuggestions}
+                  isGenerating={isGenerating}
+                  setGeneratedFlyer={setGeneratedFlyer}
+                  setDesignSuggestions={setDesignSuggestions}
+                />
+              ) : (
+                <AiFlyerForm
+                  setGeneratedFlyer={setGeneratedFlyer}
+                  isGenerating={isGenerating}
+                  setIsGenerating={setIsGenerating}
+                  setDesignSuggestions={setDesignSuggestions}
+                  aspectRatio={aspectRatio}
+                  setAspectRatio={setAspectRatio}
+                />
+              )}
+            </div>
           </div>
-
-          <div className="flex flex-col lg:flex-row h-full">
-            {/* Left Sidebar - Design Creation Form */}
-            <div className="fixed top-[60px] left-0 bottom-0 h-screen w-[25%] z-10 hidden lg:block pl-2 pr-2 py-2 overflow-auto">
-              <div className="glass-panel p-3 overflow-auto h-full flex flex-col backdrop-blur-md">
-                {designSuggestions ? (
-                  <DesignSuggestions 
-                    designs={designSuggestions}
-                    isGenerating={isGenerating}
-                    setGeneratedFlyer={setGeneratedFlyer}
-                    setDesignSuggestions={setDesignSuggestions}
-                  />
-                ) : (
-                  <AiFlyerForm
-                    setGeneratedFlyer={setGeneratedFlyer}
-                    isGenerating={isGenerating}
-                    setIsGenerating={setIsGenerating}
-                    setDesignSuggestions={setDesignSuggestions}
-                    aspectRatio={aspectRatio}
-                    setAspectRatio={setAspectRatio}
-                  />
-                )}
-              </div>
-            </div>
-            
-            {/* Right Sidebar - Gallery */}
-            <div className="fixed top-[60px] right-0 bottom-0 h-screen w-[15%] z-10 hidden lg:block pr-2 pl-2 py-2 overflow-hidden">
-              <div className="glass-panel p-3 overflow-hidden h-full flex flex-col backdrop-blur-md">
-                <RecentCreations vertical={true} />
-              </div>
-            </div>
-            
-            {/* Main Content Area - Preview and Canvas Editor */}
-            <div className="glass-panel p-4 flex-grow overflow-hidden flex flex-col lg:ml-[25%] lg:mr-[15%]">
-              {/* Mobile Design Form - Only visible on mobile */}
-              <div className="lg:hidden mb-4">
-                {designSuggestions ? (
-                  <DesignSuggestions 
-                    designs={designSuggestions}
-                    isGenerating={isGenerating}
-                    setGeneratedFlyer={setGeneratedFlyer}
-                    setDesignSuggestions={setDesignSuggestions}
-                  />
-                ) : (
-                  <AiFlyerForm
-                    setGeneratedFlyer={setGeneratedFlyer}
-                    isGenerating={isGenerating}
-                    setIsGenerating={setIsGenerating}
-                    setDesignSuggestions={setDesignSuggestions}
-                    aspectRatio={aspectRatio}
-                    setAspectRatio={setAspectRatio}
-                  />
-                )}
+          
+          {/* Main Content Area - Workspace/Canvas */}
+          <div className="flex-grow relative overflow-hidden flex flex-col">
+            {/* We'll use Tabs component here for proper setup */}
+            <Tabs 
+              value={activeTab} 
+              onValueChange={setActiveTab}
+              className="h-full relative"
+            >
+              {/* Tab Controls */}
+              <div className="absolute top-2 left-4 z-20">
+                <TabsList className="bg-black/50 backdrop-blur-md border border-white/10">
+                  <TabsTrigger value="preview" className="text-white data-[state=active]:bg-indigo-600/70">
+                    Preview
+                  </TabsTrigger>
+                  <TabsTrigger value="canvas" className="text-white data-[state=active]:bg-indigo-600/70">
+                    Canvas Editor
+                  </TabsTrigger>
+                </TabsList>
               </div>
               
-              {/* Preview and Canvas Editor Tabs */}
+              {/* Workspace - Full Screen Canvas */}
               <div className="h-full">
-                <Tabs defaultValue="preview" className="h-full flex flex-col">
-                  <div className="flex justify-between items-center mb-2">
-                    <TabsList className="bg-black/30 backdrop-blur-sm">
-                      <TabsTrigger value="preview" className="text-white data-[state=active]:bg-indigo-600/70">Preview</TabsTrigger>
-                      <TabsTrigger value="canvas" className="text-white data-[state=active]:bg-indigo-600/70">Canvas Editor</TabsTrigger>
-                    </TabsList>
-                  </div>
-                  
-                  <div className="flex-grow overflow-hidden">
-                    <TabsContent value="preview" className="h-full m-0 p-0">
-                      <FlyerPreview 
-                        generatedFlyer={generatedFlyer} 
-                        isGenerating={isGenerating}
-                        aspectRatio={aspectRatio}
-                        showProgress={true} // Enable progress visualization
-                      />
-                    </TabsContent>
-                    
-                    <TabsContent value="canvas" className="h-full m-0 p-0">
-                      <CanvasEditor 
-                        generatedFlyer={generatedFlyer}
-                        isGenerating={isGenerating}
-                      />
-                    </TabsContent>
-                  </div>
-                </Tabs>
+                {/* Preview Area */}
+                <TabsContent value="preview" className="h-full m-0 p-0 data-[state=inactive]:hidden data-[state=active]:block">
+                  <FlyerPreview 
+                    generatedFlyer={generatedFlyer} 
+                    isGenerating={isGenerating}
+                    aspectRatio={aspectRatio}
+                    showProgress={true}
+                  />
+                </TabsContent>
+                
+                {/* Canvas Editor Area */}
+                <TabsContent value="canvas" className="h-full m-0 p-0 data-[state=inactive]:hidden data-[state=active]:block">
+                  <CanvasEditor 
+                    generatedFlyer={generatedFlyer}
+                    isGenerating={isGenerating}
+                  />
+                </TabsContent>
               </div>
+            </Tabs>
+          </div>
+          
+          {/* Right Sidebar - Gallery */}
+          <div className="hidden lg:block w-[240px] bg-black/20 backdrop-blur-md border-l border-white/10 overflow-hidden">
+            <div className="p-2 bg-black/40 border-b border-white/10">
+              <h2 className="text-white font-bold text-sm">Gallery</h2>
+            </div>
+            <div className="h-full overflow-auto p-2">
+              <RecentCreations vertical={true} />
             </div>
           </div>
-        </section>
+        </div>
       </main>
       
       <Footer />

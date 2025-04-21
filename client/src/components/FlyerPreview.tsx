@@ -282,58 +282,53 @@ export default function FlyerPreview({
 
   return (
     <div className="h-full flex flex-col">
-      <div className="mb-2 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <h2 className="text-base font-semibold text-white">Preview</h2>
-        </div>
+      <div className="absolute top-2 right-4 z-30 flex gap-2">
+        <Button
+          className="bg-green-600/70 backdrop-blur-sm border-none text-white h-8 px-3 py-1 text-xs hover:bg-green-600/90"
+          size="sm"
+          onClick={saveDesignToGallery}
+          disabled={!generatedFlyer || isSaving}
+        >
+          {isSaving ? (
+            <span className="h-3 w-3 mr-1 animate-spin">⏳</span>
+          ) : (
+            <Check className="h-3 w-3 mr-1" />
+          )}
+          Save to Gallery
+        </Button>
         
-        <div className="flex space-x-2">
-          <Button
-            className="bg-green-600/70 backdrop-blur-sm border-none text-white h-7 px-3 py-1 text-xs hover:bg-green-600/90"
-            size="sm"
-            onClick={saveDesignToGallery}
-            disabled={!generatedFlyer || isSaving}
-          >
-            {isSaving ? (
-              <span className="h-3 w-3 mr-1 animate-spin">⏳</span>
-            ) : (
-              <Check className="h-3 w-3 mr-1" />
-            )}
-            Save to Gallery
-          </Button>
-          
-          <Button
-            className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-7 px-3 py-1 text-xs hover:bg-indigo-500/30"
-            size="sm"
-            onClick={handleDownload}
-            disabled={!generatedFlyer}
-          >
-            <Download className="h-3 w-3 mr-1" />
-            Download
-          </Button>
-          
-          <Button
-            className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-7 px-3 py-1 text-xs hover:bg-indigo-500/30"
-            size="sm"
-            onClick={handleShare}
-            disabled={!generatedFlyer}
-          >
-            <Share2 className="h-3 w-3 mr-1" />
-            Share
-          </Button>
-        </div>
+        <Button
+          className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-8 px-3 py-1 text-xs hover:bg-indigo-500/30"
+          size="sm"
+          onClick={handleDownload}
+          disabled={!generatedFlyer}
+        >
+          <Download className="h-3 w-3 mr-1" />
+          Download
+        </Button>
+        
+        <Button
+          className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-8 px-3 py-1 text-xs hover:bg-indigo-500/30"
+          size="sm"
+          onClick={handleShare}
+          disabled={!generatedFlyer}
+        >
+          <Share2 className="h-3 w-3 mr-1" />
+          Share
+        </Button>
       </div>
       
-      <div className="bg-black/40 backdrop-blur-md border border-white/10 flex-grow flex flex-col items-center justify-center relative w-full">
-        {/* Dezentes Rastermuster als Hintergrund */}
+      <div className="bg-slate-900/70 backdrop-blur-md h-full w-full flex flex-col items-center justify-center relative">
+        {/* Background grid pattern */}
         <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none"></div>
+        
         {!generatedFlyer && !isGenerating ? (
           <div className="w-full h-full flex items-center justify-center p-4">
             <div 
               className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-900/20 to-purple-900/30 border border-indigo-500/20 mx-auto"
               style={{
-                maxWidth: '90%',
-                maxHeight: '90%',
+                maxWidth: '80%',
+                maxHeight: '80%',
                 padding: '2rem',
                 width: getContainerWidth(aspectRatio),
                 height: getContainerHeight(aspectRatio),
@@ -352,12 +347,12 @@ export default function FlyerPreview({
           </div>
         ) : (
           <div className="w-full h-full flex flex-col">
-            <div className="flex-grow p-4 flex items-center justify-center">
+            <div className="flex-grow flex items-center justify-center">
               <div 
                 className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-900/20 to-purple-900/30 border border-indigo-500/20 mx-auto"
                 style={{
-                  maxWidth: '90%',
-                  maxHeight: '90%',
+                  maxWidth: '80%',
+                  maxHeight: '80%',
                   padding: '2rem',
                   width: getContainerWidth(aspectRatio), 
                   height: getContainerHeight(aspectRatio)
@@ -370,17 +365,17 @@ export default function FlyerPreview({
                     alignItems: 'center', 
                     width: '100%', 
                     height: '100%',
-                    // Das Seitenverhältnis wird direkt über das Container-Element gesteuert
                   }}>
                     <img 
                       ref={imageRef}
                       src={generatedFlyer.imageUrl} 
                       alt="Generated design" 
                       className="max-w-full max-h-full object-contain"
-                      style={{ maxHeight: '65vh' }}
+                      style={{ maxHeight: '75vh' }}
                     />
                   </div>
                 )}
+                
                 {isGenerating && !showGenerationProgress && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <MultiColorLoading className="w-full h-full" />
@@ -423,29 +418,28 @@ export default function FlyerPreview({
               </div>
             </div>
             
-            {/* Additional info section below the preview */}
+            {/* Progress steps at the bottom */}
             {isGenerating && showGenerationProgress && (
-              <div className="p-4 bg-black/30 backdrop-blur-md rounded-md mt-2 mx-4 mb-4">
+              <div className="p-4 bg-black/30 backdrop-blur-md rounded-md mx-auto mb-4 max-w-2xl">
                 <h4 className="text-xs font-medium text-white/90 mb-2">Design Generation Process</h4>
-                <ul className="space-y-1 text-xs text-white/70">
+                <div className="flex justify-between gap-2">
                   {progressSteps.map((step, index) => (
-                    <li 
-                      key={index} 
-                      className={`flex items-center gap-2 ${Math.floor(progressPercent / 20) >= index ? 'text-white/90' : 'text-white/40'}`}
+                    <div
+                      key={index}
+                      className={`flex flex-col items-center ${Math.floor(progressPercent / 20) >= index ? 'text-white/90' : 'text-white/40'}`}
                     >
                       <div 
-                        className={`w-2 h-2 rounded-full ${Math.floor(progressPercent / 20) >= index ? 'bg-green-500' : 'bg-gray-600'}`}
+                        className={`w-3 h-3 rounded-full mb-1 ${Math.floor(progressPercent / 20) >= index ? 'bg-green-500' : 'bg-gray-600'}`}
                       ></div>
-                      {step}
-                    </li>
+                      <span className="text-[10px] text-center max-w-[80px]">{step.split("...")[0]}</span>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
             )}
           </div>
         )}
       </div>
-
     </div>
   );
 }
