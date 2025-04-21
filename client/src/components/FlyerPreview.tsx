@@ -21,12 +21,14 @@ type FlyerPreviewProps = {
   generatedFlyer: GeneratedFlyer | null;
   isGenerating: boolean;
   aspectRatio?: string;
+  showProgress?: boolean;
 };
 
 export default function FlyerPreview({ 
   generatedFlyer, 
   isGenerating,
-  aspectRatio: initialAspectRatio
+  aspectRatio: initialAspectRatio,
+  showProgress = false
 }: FlyerPreviewProps) {
   const imageRef = useRef<HTMLImageElement>(null);
   const { toast } = useToast();
@@ -35,6 +37,11 @@ export default function FlyerPreview({
   const [aspectRatio, setAspectRatio] = useState<string>(initialAspectRatio || "profile");
   const [promptCopied, setPromptCopied] = useState(false);
   const [autoSaveAttempted, setAutoSaveAttempted] = useState(false);
+  
+  // Generation progress visualization state
+  const [progressSteps, setProgressSteps] = useState<string[]>([]);
+  const [progressPercent, setProgressPercent] = useState(0);
+  const [showGenerationProgress, setShowGenerationProgress] = useState(false);
   
   type AspectRatioOption = {
     id: string;
@@ -121,6 +128,44 @@ export default function FlyerPreview({
       setAspectRatio(initialAspectRatio);
     }
   }, [initialAspectRatio]);
+
+  // Set up generation progress visualization
+  useEffect(() => {
+    if (showProgress && isGenerating) {
+      setShowGenerationProgress(true);
+      setProgressSteps([
+        "Analyzing request...",
+        "Planning design layout...",
+        "Generating visual elements...",
+        "Applying style adjustments...",
+        "Finalizing design..."
+      ]);
+      
+      // Simulate progress steps
+      let step = 0;
+      const interval = setInterval(() => {
+        setProgressPercent((prev) => {
+          const newValue = Math.min(prev + 5, 100);
+          return newValue;
+        });
+        
+        if (step < 4 && progressPercent > step * 25) {
+          step++;
+        }
+        
+        if (progressPercent >= 100) {
+          clearInterval(interval);
+        }
+      }, 200);
+      
+      return () => {
+        clearInterval(interval);
+      };
+    } else {
+      setShowGenerationProgress(false);
+      setProgressPercent(0);
+    }
+  }, [showProgress, isGenerating]);
   
   // Speichern wir die letzte Bild-URL, um doppelte Speicherungen zu vermeiden
   const lastSavedImageUrlRef = useRef<string | null>(null);
@@ -336,9 +381,36 @@ export default function FlyerPreview({
                     />
                   </div>
                 )}
-                {isGenerating && (
+                {isGenerating && !showGenerationProgress && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <MultiColorLoading className="w-full h-full" />
+                  </div>
+                )}
+                
+                {/* Generation progress visualization */}
+                {isGenerating && showGenerationProgress && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="w-4/5 max-w-md space-y-4">
+                      <h3 className="text-lg font-semibold text-white text-center mb-4">Generating Your Design</h3>
+                      
+                      {/* Progress bar */}
+                      <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-300" 
+                          style={{ width: `${progressPercent}%` }}
+                        ></div>
+                      </div>
+                      
+                      {/* Current step text */}
+                      <div className="text-center text-white/90 text-sm">
+                        {progressSteps[Math.min(Math.floor(progressPercent / 20), 4)]}
+                      </div>
+                      
+                      {/* Progress percentage */}
+                      <div className="text-center text-white/80 text-xs">
+                        {progressPercent}% Complete
+                      </div>
+                    </div>
                   </div>
                 )}
                 
@@ -351,7 +423,25 @@ export default function FlyerPreview({
               </div>
             </div>
             
-
+            {/* Additional info section below the preview */}
+            {isGenerating && showGenerationProgress && (
+              <div className="p-4 bg-black/30 backdrop-blur-md rounded-md mt-2 mx-4 mb-4">
+                <h4 className="text-xs font-medium text-white/90 mb-2">Design Generation Process</h4>
+                <ul className="space-y-1 text-xs text-white/70">
+                  {progressSteps.map((step, index) => (
+                    <li 
+                      key={index} 
+                      className={`flex items-center gap-2 ${Math.floor(progressPercent / 20) >= index ? 'text-white/90' : 'text-white/40'}`}
+                    >
+                      <div 
+                        className={`w-2 h-2 rounded-full ${Math.floor(progressPercent / 20) >= index ? 'bg-green-500' : 'bg-gray-600'}`}
+                      ></div>
+                      {step}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         )}
       </div>

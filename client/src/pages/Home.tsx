@@ -21,69 +21,93 @@ export default function Home() {
       
       <main className="max-w-7xl mx-auto pt-12 px-4 lg:px-6 flex-grow flex flex-col">
         <section className="flex-grow flex flex-col">
-          {/* Mobile Gallery View */}
+          {/* Mobile Options & Gallery View - Only visible on mobile */}
           <div className="lg:hidden w-full mb-4">
             <RecentCreations vertical={false} />
           </div>
 
-          <div className="flex flex-col h-full">
+          <div className="flex flex-col lg:flex-row h-full">
+            {/* Left Sidebar - Design Creation Form */}
+            <div className="fixed top-[60px] left-0 bottom-0 h-screen w-[25%] z-10 hidden lg:block pl-2 pr-2 py-2 overflow-auto">
+              <div className="glass-panel p-3 overflow-auto h-full flex flex-col backdrop-blur-md">
+                {designSuggestions ? (
+                  <DesignSuggestions 
+                    designs={designSuggestions}
+                    isGenerating={isGenerating}
+                    setGeneratedFlyer={setGeneratedFlyer}
+                    setDesignSuggestions={setDesignSuggestions}
+                  />
+                ) : (
+                  <AiFlyerForm
+                    setGeneratedFlyer={setGeneratedFlyer}
+                    isGenerating={isGenerating}
+                    setIsGenerating={setIsGenerating}
+                    setDesignSuggestions={setDesignSuggestions}
+                    aspectRatio={aspectRatio}
+                    setAspectRatio={setAspectRatio}
+                  />
+                )}
+              </div>
+            </div>
+            
+            {/* Right Sidebar - Gallery */}
             <div className="fixed top-[60px] right-0 bottom-0 h-screen w-[15%] z-10 hidden lg:block pr-2 pl-2 py-2 overflow-hidden">
-              {/* Erweiterte und breitere Galerie-Seitenleiste - ganz rechts positioniert */}
               <div className="glass-panel p-3 overflow-hidden h-full flex flex-col backdrop-blur-md">
                 <RecentCreations vertical={true} />
               </div>
             </div>
             
-            {/* Main Generator + Preview - nimmt den restlichen Platz ein */}
-            <div className="glass-panel p-4 flex-grow overflow-hidden flex flex-col lg:mr-[15%]">
-              <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 h-full">
-                <div className="lg:col-span-2">
-                  {designSuggestions ? (
-                    <DesignSuggestions 
-                      designs={designSuggestions}
-                      isGenerating={isGenerating}
-                      setGeneratedFlyer={setGeneratedFlyer}
-                      setDesignSuggestions={setDesignSuggestions}
-                    />
-                  ) : (
-                    <AiFlyerForm
-                      setGeneratedFlyer={setGeneratedFlyer}
-                      isGenerating={isGenerating}
-                      setIsGenerating={setIsGenerating}
-                      setDesignSuggestions={setDesignSuggestions}
-                      aspectRatio={aspectRatio}
-                      setAspectRatio={setAspectRatio}
-                    />
-                  )}
-                </div>
-                
-                <div className="h-full flex flex-col lg:col-span-3">
-                  <Tabs defaultValue="preview" className="h-full flex flex-col">
-                    <div className="flex justify-between items-center mb-2">
-                      <TabsList className="bg-black/30 backdrop-blur-sm">
-                        <TabsTrigger value="preview" className="text-white data-[state=active]:bg-indigo-600/70">Preview</TabsTrigger>
-                        <TabsTrigger value="canvas" className="text-white data-[state=active]:bg-indigo-600/70">Canvas Editor</TabsTrigger>
-                      </TabsList>
-                    </div>
+            {/* Main Content Area - Preview and Canvas Editor */}
+            <div className="glass-panel p-4 flex-grow overflow-hidden flex flex-col lg:ml-[25%] lg:mr-[15%]">
+              {/* Mobile Design Form - Only visible on mobile */}
+              <div className="lg:hidden mb-4">
+                {designSuggestions ? (
+                  <DesignSuggestions 
+                    designs={designSuggestions}
+                    isGenerating={isGenerating}
+                    setGeneratedFlyer={setGeneratedFlyer}
+                    setDesignSuggestions={setDesignSuggestions}
+                  />
+                ) : (
+                  <AiFlyerForm
+                    setGeneratedFlyer={setGeneratedFlyer}
+                    isGenerating={isGenerating}
+                    setIsGenerating={setIsGenerating}
+                    setDesignSuggestions={setDesignSuggestions}
+                    aspectRatio={aspectRatio}
+                    setAspectRatio={setAspectRatio}
+                  />
+                )}
+              </div>
+              
+              {/* Preview and Canvas Editor Tabs */}
+              <div className="h-full">
+                <Tabs defaultValue="preview" className="h-full flex flex-col">
+                  <div className="flex justify-between items-center mb-2">
+                    <TabsList className="bg-black/30 backdrop-blur-sm">
+                      <TabsTrigger value="preview" className="text-white data-[state=active]:bg-indigo-600/70">Preview</TabsTrigger>
+                      <TabsTrigger value="canvas" className="text-white data-[state=active]:bg-indigo-600/70">Canvas Editor</TabsTrigger>
+                    </TabsList>
+                  </div>
+                  
+                  <div className="flex-grow overflow-hidden">
+                    <TabsContent value="preview" className="h-full m-0 p-0">
+                      <FlyerPreview 
+                        generatedFlyer={generatedFlyer} 
+                        isGenerating={isGenerating}
+                        aspectRatio={aspectRatio}
+                        showProgress={true} // Enable progress visualization
+                      />
+                    </TabsContent>
                     
-                    <div className="flex-grow overflow-hidden">
-                      <TabsContent value="preview" className="h-full m-0 p-0">
-                        <FlyerPreview 
-                          generatedFlyer={generatedFlyer} 
-                          isGenerating={isGenerating}
-                          aspectRatio={aspectRatio}
-                        />
-                      </TabsContent>
-                      
-                      <TabsContent value="canvas" className="h-full m-0 p-0">
-                        <CanvasEditor 
-                          generatedFlyer={generatedFlyer}
-                          isGenerating={isGenerating}
-                        />
-                      </TabsContent>
-                    </div>
-                  </Tabs>
-                </div>
+                    <TabsContent value="canvas" className="h-full m-0 p-0">
+                      <CanvasEditor 
+                        generatedFlyer={generatedFlyer}
+                        isGenerating={isGenerating}
+                      />
+                    </TabsContent>
+                  </div>
+                </Tabs>
               </div>
             </div>
           </div>
