@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { GeneratedFlyer, AiFlyerGenerationRequest, DesignSuggestions, DesignVariation, FontSettings, GoogleFont, BrandKit } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { ImageIcon, Upload, TypeIcon, Check, PaintBucket, Crown, Sparkles } from "lucide-react";
+import { ImageIcon, Upload, TypeIcon, Check, PaintBucket, Crown, Sparkles, WandSparkles } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import backgroundGradient from "../assets/background-gradient.png";
 import backgroundGradient2 from "../assets/backgroundd-gradient.png";
@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type AiFlyerFormProps = {
   setGeneratedFlyer: (flyer: GeneratedFlyer | null) => void;
@@ -90,13 +91,51 @@ export default function AiFlyerForm({
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
+  // Generate AI background image
+  const generateAiBackgroundMutation = useMutation({
+    mutationFn: async (prompt: string) => {
+      const response = await apiRequest("POST", "/api/generate-background", {
+        prompt,
+        imageSize: aspectRatio === "9/16" || aspectRatio === "2/3" ? "portrait_4_3" : 
+                   aspectRatio === "1/1" ? "square" : "landscape_4_3"
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Set the background image preview with the generated image URL
+      setBackgroundImagePreview(data.imageUrl);
+      setBackgroundImage(null); // Clear any uploaded file
+      
+      toast({
+        title: "Background Generated",
+        description: "AI background image created successfully! (1 credit used)",
+      });
+    },
+    onError: (error) => {
+      console.error("Error generating AI background:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to generate AI background";
+      
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Generate AI flyer designs
   const generateAiFlyerMutation = useMutation({
     mutationFn: async (data: AiFlyerGenerationRequest) => {
       const formData = new FormData();
       formData.append("prompt", data.prompt);
       
+      // If we have a background image file, use it
       if (data.backgroundImage) {
         formData.append("backgroundImage", data.backgroundImage);
+      } 
+      // If we have a background image preview URL from AI generation, include it
+      else if (backgroundImagePreview && generateAiBackground) {
+        formData.append("backgroundImageUrl", backgroundImagePreview);
       }
       
       if (data.logo) {
@@ -116,6 +155,9 @@ export default function AiFlyerForm({
         formData.append("headingFont", data.fontSettings.headingFont);
         formData.append("bodyFont", data.fontSettings.bodyFont);
       }
+      
+      // Add flag for AI background generation
+      formData.append("generateAiBackground", generateAiBackground.toString());
       
       const response = await apiRequest("POST", "/api/generate-ai", formData);
       return response.json();
@@ -269,8 +311,6 @@ export default function AiFlyerForm({
       return;
     }
     
-    setIsGenerating(true);
-    
     // Use brand kit fonts if available, otherwise use user settings
     const fontsToUse: FontSettings = activeBrandKit 
       ? {
@@ -304,14 +344,60 @@ export default function AiFlyerForm({
       }
     }
     
-    generateAiFlyerMutation.mutate({ 
-      prompt: enhancedPrompt, 
-      backgroundImage: backgroundImage || undefined,
-      logo: logo || undefined,
-      designCount: parseInt(designCount),
-      aspectRatio,
-      fontSettings: fontsToUse // Use brand kit fonts if active
-    });
+    setIsGenerating(true);
+    
+    // Check if we need to generate a background image first
+    if (generateAiBackground && !backgroundImagePreview) {
+      // Generate a background image using the prompt
+      const bgGenPrompt = `High quality background image for a flyer with the theme: ${prompt}`;
+      
+      toast({
+        title: "Generating Background",
+        description: "Creating AI background image first. This will use 1 additional credit.",
+      });
+      
+      // First generate the background image, then the flyer
+      generateAiBackgroundMutation.mutate(bgGenPrompt, {
+        onSuccess: (data) => {
+          // Once the background is generated, generate the flyer
+          generateAiFlyerMutation.mutate({ 
+            prompt: enhancedPrompt, 
+            backgroundImage: backgroundImage || undefined,
+            logo: logo || undefined,
+            designCount: parseInt(designCount),
+            aspectRatio,
+            fontSettings: fontsToUse // Use brand kit fonts if active
+          });
+        },
+        onError: (error) => {
+          // If background generation fails, still try to generate the flyer without background
+          toast({
+            title: "Background generation failed",
+            description: "Continuing with flyer generation without AI background.",
+            variant: "destructive",
+          });
+          
+          generateAiFlyerMutation.mutate({ 
+            prompt: enhancedPrompt, 
+            backgroundImage: backgroundImage || undefined,
+            logo: logo || undefined,
+            designCount: parseInt(designCount),
+            aspectRatio,
+            fontSettings: fontsToUse
+          });
+        }
+      });
+    } else {
+      // No need to generate background image, directly generate the flyer
+      generateAiFlyerMutation.mutate({ 
+        prompt: enhancedPrompt, 
+        backgroundImage: backgroundImage || undefined,
+        logo: logo || undefined,
+        designCount: parseInt(designCount),
+        aspectRatio,
+        fontSettings: fontsToUse // Use brand kit fonts if active
+      });
+    }
   };
 
   const clearBackgroundImage = () => {
@@ -416,6 +502,25 @@ export default function AiFlyerForm({
                       <span className="px-4">Select Image</span>
                     )}
                   </Button>
+                  
+                  {/* AI Background Generation Option */}
+                  <div className="absolute bottom-0 left-0 right-0 z-20 bg-black/50 backdrop-blur-sm p-1">
+                    <div className="flex items-center gap-1">
+                      <Checkbox 
+                        id="generate-ai-bg" 
+                        checked={generateAiBackground}
+                        onCheckedChange={(checked) => setGenerateAiBackground(checked === true)}
+                        className="w-3 h-3 rounded-sm data-[state=checked]:bg-indigo-500"
+                      />
+                      <label 
+                        htmlFor="generate-ai-bg" 
+                        className="text-[8px] text-white leading-tight cursor-pointer flex items-center"
+                      >
+                        <WandSparkles className="h-2 w-2 mr-0.5 text-indigo-300" />
+                        GENERATE WITH AI (1 CREDIT)
+                      </label>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
