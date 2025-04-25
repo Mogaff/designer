@@ -18,7 +18,12 @@ const DESIGN_TEMPLATES: DesignTemplate[] = [
     isPremium: false,
     isNew: true,
     isTrending: true,
-    description: "Clean design with neomorphic glass elements and soft shadows"
+    description: "Clean design with neomorphic glass elements and soft shadows",
+    styleData: {
+      glassMorphism: true,
+      effectLevel: "medium",
+      specialShapes: ["rounded", "blur", "shadow"],
+    }
   },
   {
     id: "gradient-flow-1",

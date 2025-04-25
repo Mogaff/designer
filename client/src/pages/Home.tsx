@@ -6,9 +6,10 @@ import DesignSuggestions from "@/components/DesignSuggestions";
 import RecentCreations from "@/components/RecentCreations";
 import CanvasEditor from "@/components/CanvasEditor";
 import { BrandKitPanel } from "@/components/BrandKitPanel";
-import { useState } from "react";
-import { GeneratedFlyer, DesignVariation } from "@/lib/types";
+import { useState, useEffect } from "react";
+import { GeneratedFlyer, DesignVariation, DesignTemplate } from "@/lib/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
   const [generatedFlyer, setGeneratedFlyer] = useState<GeneratedFlyer | null>(null);
@@ -17,6 +18,52 @@ export default function Home() {
   const [aspectRatio, setAspectRatio] = useState<string>("original");
   const [activeTab, setActiveTab] = useState<string>("preview");
   const [isBrandKitPanelOpen, setIsBrandKitPanelOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<DesignTemplate | null>(null);
+  const { toast } = useToast();
+  
+  // Listen for template selection events from sidebar
+  useEffect(() => {
+    const handleTemplateSelected = (event: any) => {
+      const template = event.detail?.template as DesignTemplate;
+      if (template) {
+        setSelectedTemplate(template);
+        toast({
+          title: `Template Selected: ${template.name}`,
+          description: `Using design style: ${template.category} - ${template.description}`,
+        });
+        
+        // Generate a prompt based on the template style
+        const templatePrompt = `Create a professional design in the style of ${template.name} (${template.category}). 
+Key features: ${template.tags.join(', ')}. 
+Style description: ${template.description}.
+Use ${template.glassMorphism ? 'glass morphism effects with transparency and blur' : 'modern design elements'}.
+${template.neonEffects ? 'Include subtle neon glowing elements where appropriate.' : ''}
+Create this as an advertisement design, NOT as a website or HTML.`;
+
+        // Set a relevant aspect ratio for the template if needed
+        if (template.category === "Social Media" || template.tags.includes("social")) {
+          setAspectRatio("post"); // 1:1 for social posts
+        } else if (template.category === "Banner" || template.tags.includes("banner")) {
+          setAspectRatio("fb_cover"); // Wide format for banners
+        }
+        
+        // Set active tab to canvas editor
+        setActiveTab("canvas");
+      }
+    };
+    
+    window.addEventListener('template-selected', handleTemplateSelected);
+    
+    // Handle direct navigation with template in state
+    const state = window.history.state;
+    if (state?.template) {
+      handleTemplateSelected({ detail: { template: state.template } });
+    }
+    
+    return () => {
+      window.removeEventListener('template-selected', handleTemplateSelected);
+    };
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 to-slate-800">
