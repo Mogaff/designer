@@ -529,7 +529,7 @@ export default function AiFlyerForm({
               />
               <Label
                 htmlFor="background-image"
-                className="cursor-pointer flex justify-center items-center h-16 rounded-md border border-dashed border-white/30 bg-white/5 hover:bg-white/10"
+                className="cursor-pointer flex justify-center items-center h-16 rounded-md border border-white/20 bg-white/5 hover:bg-white/10 backdrop-blur-sm"
               >
                 <div className="text-center">
                   <Upload className="mx-auto h-4 w-4 text-white/50" />
@@ -568,7 +568,7 @@ export default function AiFlyerForm({
             
             {/* AI Background Generation Toggle */}
             <div className={`flex flex-col ${backgroundImage || backgroundImagePreview ? 'opacity-50 pointer-events-none' : ''}`}>
-              <Label className="p-2 cursor-pointer flex items-center h-16 rounded-md border border-dashed border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20">
+              <Label className="p-2 cursor-pointer flex items-center h-16 rounded-md border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 backdrop-blur-sm">
                 <div className="flex-1 flex items-center gap-2">
                   <span className="mr-2">
                     <Checkbox 
@@ -608,7 +608,7 @@ export default function AiFlyerForm({
               />
               <Label
                 htmlFor="logo-upload"
-                className="cursor-pointer flex justify-center items-center h-16 rounded-md border border-dashed border-white/30 bg-white/5 hover:bg-white/10"
+                className="cursor-pointer flex justify-center items-center h-16 rounded-md border border-white/20 bg-white/5 hover:bg-white/10 backdrop-blur-sm"
               >
                 <div className="text-center">
                   <Upload className="mx-auto h-4 w-4 text-white/50" />
@@ -654,7 +654,7 @@ export default function AiFlyerForm({
                     setLogoPreview(activeBrandKit.logo_url || "");
                     setLogo(null); // Clear any uploaded file
                   }}
-                  className="cursor-pointer flex items-center h-16 rounded-md border border-dashed border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 p-2"
+                  className="cursor-pointer flex items-center h-16 rounded-md border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 backdrop-blur-sm p-2"
                 >
                   <div className="flex-shrink-0 h-8 w-8 rounded bg-white/10 p-1 flex items-center justify-center overflow-hidden mr-2">
                     {activeBrandKit.logo_url ? (

@@ -108,6 +108,34 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
   // Mutations for creating and updating brand kits
   const queryClient = useQueryClient();
   
+  // Mutation to deactivate brand kit
+  const deactivateBrandKitMutation = useMutation<any, Error>({
+    mutationFn: async () => {
+      const response = await fetch('/api/brand-kits/deactivate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to deactivate brand kit');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/brand-kits'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/brand-kits/active'] });
+      setView('list');
+      setSelectedKit(null);
+    },
+    onError: (error) => {
+      console.error('Failed to deactivate brand kit:', error);
+    },
+  });
+  
   // Set active brand kit mutation
   const setActiveBrandKitMutation = useMutation<any, Error, number>({
     mutationFn: async (id: number) => {
@@ -349,10 +377,23 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
                           </div>
                           <span className="ml-2 font-medium text-white text-sm">{brandKit.name}</span>
                           {brandKit.is_active && (
-                            <div className="ml-2 bg-green-600/20 p-0.5 px-1.5 rounded text-xs text-green-500 flex items-center">
-                              <Check className="h-2.5 w-2.5 mr-0.5" />
-                              Active
-                            </div>
+                            <>
+                              <div className="ml-2 bg-green-600/20 p-0.5 px-1.5 rounded text-xs text-green-500 flex items-center">
+                                <Check className="h-2.5 w-2.5 mr-0.5" />
+                                Active
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deactivateBrandKitMutation.mutate();
+                                }}
+                                className="ml-2 bg-red-600/10 hover:bg-red-600/20 text-xs text-red-400 h-5 rounded-sm px-1.5"
+                              >
+                                Deactivate
+                              </Button>
+                            </>
                           )}
                         </div>
                         <div className="flex space-x-1">
