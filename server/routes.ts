@@ -812,6 +812,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Deactivate the current brand kit
+  app.post("/api/brand-kits/deactivate", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const activeBrandKit = await storage.getActiveBrandKit(userId);
+      
+      if (!activeBrandKit) {
+        return res.status(404).json({ message: "No active brand kit found" });
+      }
+      
+      // Update the brand kit to be inactive
+      const updatedBrandKit = await storage.updateBrandKit(
+        activeBrandKit.id, 
+        { is_active: false },
+        userId
+      );
+      
+      res.json({ success: true, brandKit: updatedBrandKit });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to deactivate brand kit: ${errorMessage}` });
+    }
+  });
+  
   // Get a specific brand kit by ID
   app.get("/api/brand-kits/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
