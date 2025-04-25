@@ -46,8 +46,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       log("AI Flyer generation started", "generator");
       
-      const { prompt, configId, designCount, aspectRatio } = req.body;
+      const { prompt, configId, designCount, aspectRatio, templateInfo } = req.body;
       const userId = (req.user as any).id;
+      
+      // Parse template information if provided
+      let parsedTemplateInfo;
+      if (templateInfo) {
+        try {
+          parsedTemplateInfo = JSON.parse(templateInfo);
+          log(`Using template: ${parsedTemplateInfo.name}`, "generator");
+        } catch (error) {
+          log(`Error parsing template info: ${error}`, "generator");
+        }
+      }
       
       // Parse designCount (default to 4 if not specified or invalid)
       const numDesigns = parseInt(designCount) || 4;
@@ -156,7 +167,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const variantOptions = {
             ...generationOptions,
             prompt: `${generationOptions.prompt} ${styleVariation}`,
-            aspectRatio: aspectRatio
+            aspectRatio: aspectRatio,
+            templateInfo: parsedTemplateInfo // Pass the template info to the render function
           };
           
           log(`Generating design variation ${index + 1}: ${styleVariation}`, "generator");

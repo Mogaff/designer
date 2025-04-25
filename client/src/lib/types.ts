@@ -37,6 +37,15 @@ export type FlyerGenerationRequest = {
   fontSettings?: FontSettings;
 };
 
+export interface TemplateInfo {
+  name: string;
+  category: string;
+  tags: string;
+  description: string;
+  glassMorphism: boolean;
+  neonEffects: boolean;
+}
+
 export type AiFlyerGenerationRequest = {
   prompt: string;
   backgroundImage?: File;
@@ -44,6 +53,7 @@ export type AiFlyerGenerationRequest = {
   designCount?: number;
   aspectRatio?: string;
   fontSettings?: FontSettings;
+  templateInfo?: TemplateInfo;
 };
 
 export interface BrandKit {

@@ -17,11 +17,21 @@ type GeminiResponse = {
   cssStyles: string;
 };
 
+interface TemplateInfo {
+  name: string;
+  category: string;
+  tags: string;
+  description: string;
+  glassMorphism: boolean;
+  neonEffects: boolean;
+}
+
 interface GenerationOptions {
   prompt: string;
   backgroundImageBase64?: string;
   logoBase64?: string;
   aspectRatio?: string;
+  templateInfo?: TemplateInfo;
 }
 
 /**
@@ -72,6 +82,15 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
 
     // Create a comprehensive prompt for the AI with enhanced design instructions
     const systemPrompt = `You are an award-winning professional GRAPHIC DESIGNER creating high-end visual designs for luxury brands and advertising agencies. You have won multiple design awards for your innovative, eye-catching designs. You specialize in creating VISUALLY STUNNING PRINT-QUALITY DESIGNS with sophisticated typography, masterful composition, and artful use of color.
+    
+    ${options.templateInfo 
+      ? `SELECTED TEMPLATE: ${options.templateInfo.name} (${options.templateInfo.category})
+       Template description: ${options.templateInfo.description}
+       Key features: ${options.templateInfo.tags}
+       ${options.templateInfo.glassMorphism ? 'IMPORTANT: Use glass morphism effects with transparency and blur in your design.' : ''}
+       ${options.templateInfo.neonEffects ? 'IMPORTANT: Include subtle neon glowing elements where appropriate in your design.' : ''}
+       Design this as an advertisement or visual content, NOT as a website or HTML.`
+      : ''}
     
     Create an EXCEPTIONAL, PROFESSIONAL-GRADE GRAPHIC DESIGN using Tailwind CSS and advanced design techniques based on the following prompt:
     "${options.prompt}"

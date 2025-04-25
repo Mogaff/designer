@@ -180,6 +180,11 @@ export default function AiFlyerForm({
       // Add flag for AI background generation
       formData.append("generateAiBackground", generateAiBackground.toString());
       
+      // Add template information if provided
+      if (data.templateInfo) {
+        formData.append("templateInfo", JSON.stringify(data.templateInfo));
+      }
+      
       const response = await apiRequest("POST", "/api/generate-ai", formData);
       return response.json();
     },
@@ -410,14 +415,27 @@ export default function AiFlyerForm({
       });
     } else {
       // No need to generate background image, directly generate the flyer
-      generateAiFlyerMutation.mutate({ 
+      // Prepare the request with template information if a template is selected
+      const mutationData = { 
         prompt: enhancedPrompt, 
         backgroundImage: backgroundImage || undefined,
         logo: logo || undefined,
         designCount: parseInt(designCount),
         aspectRatio,
-        fontSettings: fontsToUse // Use brand kit fonts if active
-      });
+        fontSettings: fontsToUse, // Use brand kit fonts if active
+        
+        // Add template information if a template is selected
+        templateInfo: selectedTemplate ? {
+          name: selectedTemplate.name,
+          category: selectedTemplate.category,
+          tags: selectedTemplate.tags.join(', '),
+          description: selectedTemplate.description,
+          glassMorphism: selectedTemplate.styleData?.glassMorphism || false,
+          neonEffects: selectedTemplate.styleData?.neonEffects || false
+        } : undefined
+      };
+      
+      generateAiFlyerMutation.mutate(mutationData);
     }
   };
 
