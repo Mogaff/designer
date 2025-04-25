@@ -78,8 +78,11 @@ export interface DesignTemplate {
     glassEffects?: boolean;
     glassMorphism?: boolean;
     neonEffects?: boolean;
+    specialEffects?: string[];
+    glitchEffects?: boolean;
+    duotone?: boolean;
     gradientType?: string;
     specialShapes?: string[];
-    effectLevel?: "minimal" | "medium" | "heavy";
+    effectLevel?: "minimal" | "medium" | "heavy" | "light";
   };
 }

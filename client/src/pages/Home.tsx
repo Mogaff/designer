@@ -1,6 +1,6 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import AiFlyerForm from "@/components/AiFlyerForm";
+import AiFlyerFormWithTemplates from "@/components/AiFlyerFormWithTemplates";
 import FlyerPreview from "@/components/FlyerPreview";
 import DesignSuggestions from "@/components/DesignSuggestions";
 import RecentCreations from "@/components/RecentCreations";
@@ -10,6 +10,7 @@ import { useState, useEffect } from "react";
 import { GeneratedFlyer, DesignVariation, DesignTemplate } from "@/lib/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { Star } from "lucide-react";
 
 export default function Home() {
   const [generatedFlyer, setGeneratedFlyer] = useState<GeneratedFlyer | null>(null);
