@@ -47,9 +47,9 @@ export default function AiFlyerForm({
 }: AiFlyerFormProps) {
   const [prompt, setPrompt] = useState("");
   const [backgroundImage, setBackgroundImage] = useState<File | null>(null);
-  const [backgroundImagePreview, setBackgroundImagePreview] = useState<string | null>(null);
+  const [backgroundImagePreview, setBackgroundImagePreview] = useState<string>("");
   const [logo, setLogo] = useState<File | null>(null);
-  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string>("");
   const [designCount, setDesignCount] = useState<string>("4"); // Default to 4 designs
   const [generateAiBackground, setGenerateAiBackground] = useState<boolean>(false); // AI background generation toggle
   const [isPremiumDialogOpen, setIsPremiumDialogOpen] = useState(false);
@@ -433,12 +433,12 @@ Create this as an advertisement design, NOT as a website or HTML.`;
 
   const clearBackgroundImage = () => {
     setBackgroundImage(null);
-    setBackgroundImagePreview(null);
+    setBackgroundImagePreview("");
   };
   
   const clearLogo = () => {
     setLogo(null);
-    setLogoPreview(null);
+    setLogoPreview("");
   };
 
   // When a premium option is selected
@@ -643,7 +643,7 @@ Create this as an advertisement design, NOT as a website or HTML.`;
                 <div 
                   onClick={() => {
                     // Set the logo from brand kit
-                    setLogoPreview(activeBrandKit.logo_url || null);
+                    setLogoPreview(activeBrandKit.logo_url || "");
                     setLogo(null); // Clear any uploaded file
                   }}
                   className="cursor-pointer flex items-center h-16 rounded-md border border-dashed border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 p-2"
