@@ -178,9 +178,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             style: styleVariation
           });
           
-          // Add a slight delay between requests to avoid hitting rate limits
+          // Minimal delay between requests to avoid hitting rate limits
           if (index < styleVariations.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 200));
+            await new Promise(resolve => setTimeout(resolve, 50)); // Reduced delay from 200ms to 50ms
           }
         } catch (error) {
           log(`Error generating design variation ${index + 1}: ${error}`, "generator");

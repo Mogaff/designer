@@ -441,8 +441,8 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
         deviceScaleFactor: 2,
       });
       
-      // Load the HTML file
-      await page.goto(`file://${htmlPath}`, { waitUntil: 'networkidle0' });
+      // Load the HTML file - using 'load' instead of 'networkidle0' for faster generation
+      await page.goto(`file://${htmlPath}`, { waitUntil: 'load' });
       
       // Take screenshot
       log("Taking screenshot of the Gemini-generated flyer", "gemini");

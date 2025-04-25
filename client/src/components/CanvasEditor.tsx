@@ -42,15 +42,65 @@ export default function CanvasEditor({ generatedFlyer, isGenerating, onSave }: C
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
 
-  // Setup dummy generation progress for demo
+  // Setup generation progress visualization
   useEffect(() => {
     if (isGenerating && !showGenerationProgress) {
       setShowGenerationProgress(true);
-      simulateGenerationProgress();
+      
+      // Initialize with meaningful steps
+      setGenerationProgressSteps([
+        "Analyzing request...",
+        "Planning design layout...",
+        "Generating visual elements...",
+        "Applying style adjustments...",
+        "Finalizing design..."
+      ]);
+      
+      // Start at 25% immediately to give a feeling of faster progress
+      setGenerationProgressPercent(25);
+      
+      // Accelerated progress simulation - faster initial progress
+      const simulateProgress = () => {
+        // Move quickly to 90% then slow down for the final steps
+        const interval = setInterval(() => {
+          setGenerationProgressPercent(prevPercent => {
+            if (prevPercent < 50) {
+              // Move quickly to 50%
+              return prevPercent + 5;
+            } else if (prevPercent < 80) {
+              // Slightly slower to 80%
+              return prevPercent + 3;
+            } else if (prevPercent < 90) {
+              // Even slower to 90%
+              return prevPercent + 1;
+            }
+            // Hold at 90% until generation completes
+            return 90;
+          });
+        }, 100); // Faster interval
+        
+        return interval;
+      };
+      
+      const progressInterval = simulateProgress();
+      
+      return () => {
+        clearInterval(progressInterval);
+      };
     } else if (!isGenerating) {
-      setShowGenerationProgress(false);
-      setGenerationProgressSteps([]);
-      setGenerationProgressPercent(0);
+      // When generation completes, quickly show 100%
+      setGenerationProgressPercent(100);
+      
+      // After a brief delay, hide the progress indicator
+      const hideTimeout = setTimeout(() => {
+        setShowGenerationProgress(false);
+        setGenerationProgressSteps([]);
+        setGenerationProgressPercent(0);
+      }, 800);
+      
+      return () => {
+        clearTimeout(hideTimeout);
+      };
     }
   }, [isGenerating]);
 

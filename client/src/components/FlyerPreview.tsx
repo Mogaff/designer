@@ -141,27 +141,51 @@ export default function FlyerPreview({
         "Finalizing design..."
       ]);
       
-      // Simulate progress steps
-      let step = 0;
-      const interval = setInterval(() => {
-        setProgressPercent((prev) => {
-          const newValue = Math.min(prev + 5, 100);
-          return newValue;
-        });
+      // Start at 25% immediately to give a feeling of faster progress
+      setProgressPercent(25);
+      
+      // Accelerated progress simulation - faster initial progress
+      const simulateProgress = () => {
+        // Move quickly to 90% then slow down for the final steps
+        const interval = setInterval(() => {
+          setProgressPercent(prevPercent => {
+            if (prevPercent < 50) {
+              // Move quickly to 50%
+              return prevPercent + 5;
+            } else if (prevPercent < 80) {
+              // Slightly slower to 80%
+              return prevPercent + 3;
+            } else if (prevPercent < 90) {
+              // Even slower to 90%
+              return prevPercent + 1;
+            }
+            // Hold at 90% until generation completes
+            return 90;
+          });
+        }, 100); // Faster interval
         
-        if (step < 4 && progressPercent > step * 25) {
-          step++;
-        }
-        
-        if (progressPercent >= 100) {
-          clearInterval(interval);
-        }
-      }, 200);
+        return interval;
+      };
+      
+      const progressInterval = simulateProgress();
       
       return () => {
-        clearInterval(interval);
+        clearInterval(progressInterval);
       };
-    } else {
+    } else if (!isGenerating && showGenerationProgress) {
+      // When generation completes, quickly show 100%
+      setProgressPercent(100);
+      
+      // After a brief delay, hide the progress indicator
+      const hideTimeout = setTimeout(() => {
+        setShowGenerationProgress(false);
+        setProgressPercent(0);
+      }, 800);
+      
+      return () => {
+        clearTimeout(hideTimeout);
+      };
+    } else if (!showProgress) {
       setShowGenerationProgress(false);
       setProgressPercent(0);
     }
