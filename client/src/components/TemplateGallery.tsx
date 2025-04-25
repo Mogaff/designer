@@ -336,15 +336,70 @@ export default function TemplateGallery({ onSelectTemplate, onClose }: TemplateG
                   alt={template.name}
                   className="w-full h-full object-cover transition-transform group-hover:scale-105"
                 />
+                
+                {/* Style-based overlay for better style representation */}
+                <div 
+                  className={`absolute inset-0 pointer-events-none ${
+                    // Base styling
+                    "after:content-[''] after:absolute after:inset-0"
+                  } ${
+                    // Glass morphism effect
+                    template.styleData?.glassMorphism 
+                      ? "after:backdrop-blur-md after:bg-white/10 after:border after:border-white/20 after:rounded-md" 
+                      : ""
+                  } ${
+                    // Neon effects
+                    template.styleData?.neonEffects 
+                      ? "after:shadow-[0_0_15px_rgba(140,100,255,0.5)] after:box-shadow-xl" 
+                      : ""
+                  } ${
+                    // Duotone effect
+                    template.styleData?.duotone
+                      ? "after:bg-gradient-to-br after:from-indigo-500/30 after:to-purple-500/30 after:mix-blend-color-burn"
+                      : ""
+                  } ${
+                    // Effect intensity levels
+                    template.styleData?.effectLevel === "light"
+                      ? "opacity-30"
+                      : template.styleData?.effectLevel === "medium"
+                      ? "opacity-60"
+                      : template.styleData?.effectLevel === "heavy"
+                      ? "opacity-80"
+                      : ""
+                  } ${
+                    // Glitch effects
+                    template.styleData?.glitchEffects
+                      ? "after:animate-pulse after:bg-gradient-to-r after:from-transparent after:via-cyan-500/20 after:to-transparent"
+                      : ""
+                  }`}
+                >
+                  {/* Inset shape elements to demonstrate style */}
+                  {template.styleData?.specialShapes?.includes("geometric") && (
+                    <div className="absolute left-[15%] top-[30%] w-16 h-16 bg-purple-500/40 rotate-45 backdrop-blur-sm"></div>
+                  )}
+                  
+                  {template.styleData?.specialShapes?.includes("fluid") && (
+                    <div className="absolute right-[20%] bottom-[20%] w-20 h-14 bg-blue-500/30 rounded-[60%] blur-md transform rotate-12"></div>
+                  )}
+                  
+                  {template.styleData?.neonEffects && (
+                    <div className="absolute left-[25%] bottom-[25%] w-12 h-1 bg-cyan-400 blur-sm shadow-[0_0_10px_#22d3ee]"></div>
+                  )}
+
+                  {template.styleData?.specialShapes?.includes("3d") && (
+                    <div className="absolute right-[25%] top-[20%] w-10 h-10 bg-indigo-600/40 transform rotate-[30deg] skew-y-[20deg] backdrop-blur-sm"></div>
+                  )}
+                </div>
+                
                 {template.isPremium && (
-                  <div className="absolute top-2 right-2">
+                  <div className="absolute top-2 right-2 z-10">
                     <Badge className="bg-amber-500 hover:bg-amber-500 text-white rounded-md font-semibold py-0.5 px-2">
                       <Star className="h-3 w-3 mr-1" /> Premium
                     </Badge>
                   </div>
                 )}
                 {template.isNew && (
-                  <div className="absolute top-2 left-2">
+                  <div className="absolute top-2 left-2 z-10">
                     <Badge className="bg-green-500 hover:bg-green-500 text-white rounded-md font-semibold py-0.5 px-2">
                       New
                     </Badge>
