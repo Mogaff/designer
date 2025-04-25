@@ -76,12 +76,79 @@ Create this as an advertisement design, NOT as a website or HTML.`;
           <div className="w-full lg:w-[400px] backdrop-blur-md bg-white/5 border border-white/10 overflow-hidden flex flex-col rounded-lg relative">
             {/* Brand Kit Panel as a child of the Create Design panel */}
             <BrandKitPanel 
-              isOpen={isBrandKitPanelOpen} 
+              isOpen={isBrandKitPanelOpen && !selectedTemplate} 
               onClose={() => setIsBrandKitPanelOpen(false)} 
             />
             
             <div className="flex-grow overflow-auto p-3">
-              {designSuggestions ? (
+              {selectedTemplate ? (
+                <div className="flex flex-col space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-semibold text-white">Template: {selectedTemplate.name}</h2>
+                    <button 
+                      onClick={() => setSelectedTemplate(null)}
+                      className="text-white/70 hover:text-white text-sm py-1 px-2 rounded bg-white/10 hover:bg-white/20"
+                    >
+                      Change Template
+                    </button>
+                  </div>
+                  
+                  <div className="aspect-[4/3] relative rounded-lg overflow-hidden border border-white/20">
+                    <img 
+                      src={selectedTemplate.previewUrl} 
+                      alt={selectedTemplate.name}
+                      className="w-full h-full object-cover"
+                    />
+                    {selectedTemplate.isPremium && (
+                      <div className="absolute top-2 right-2">
+                        <span className="bg-amber-500 text-white text-xs py-0.5 px-2 rounded-md font-semibold flex items-center">
+                          <Star className="h-3 w-3 mr-1" /> Premium
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="bg-white/5 p-3 rounded-lg border border-white/10">
+                    <h3 className="text-white font-medium text-sm mb-2">Template Style</h3>
+                    <p className="text-white/70 text-sm">{selectedTemplate.description}</p>
+                    
+                    <div className="flex flex-wrap gap-1 mt-3">
+                      {selectedTemplate.tags.map(tag => (
+                        <span key={tag} className="text-[10px] py-0.5 px-1.5 bg-white/10 text-white/70 rounded">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <h3 className="text-white font-medium text-sm">Design Options</h3>
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="bg-white/5 p-2 rounded border border-white/10 flex items-center">
+                        <input type="checkbox" checked={selectedTemplate.styleData?.glassMorphism} readOnly className="mr-2" />
+                        <span className="text-white/80 text-xs">Glass Effects</span>
+                      </div>
+                      
+                      <div className="bg-white/5 p-2 rounded border border-white/10 flex items-center">
+                        <input type="checkbox" checked={selectedTemplate.styleData?.neonEffects} readOnly className="mr-2" />
+                        <span className="text-white/80 text-xs">Neon Effects</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <AiFlyerForm
+                    setGeneratedFlyer={setGeneratedFlyer}
+                    isGenerating={isGenerating}
+                    setIsGenerating={setIsGenerating}
+                    setDesignSuggestions={setDesignSuggestions}
+                    aspectRatio={aspectRatio}
+                    setAspectRatio={setAspectRatio}
+                    onOpenBrandKitPanel={() => setIsBrandKitPanelOpen(true)}
+                    selectedTemplate={selectedTemplate}
+                  />
+                </div>
+              ) : designSuggestions ? (
                 <DesignSuggestions 
                   designs={designSuggestions}
                   isGenerating={isGenerating}

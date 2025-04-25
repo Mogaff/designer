@@ -5,10 +5,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { GeneratedFlyer, AiFlyerGenerationRequest, DesignSuggestions, DesignVariation, FontSettings, GoogleFont, BrandKit } from "@/lib/types";
+import { GeneratedFlyer, AiFlyerGenerationRequest, DesignSuggestions, DesignVariation, FontSettings, GoogleFont, BrandKit, DesignTemplate } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { ImageIcon, Upload, TypeIcon, Check, PaintBucket, Crown, Sparkles, WandSparkles } from "lucide-react";
+import { ImageIcon, Upload, TypeIcon, Check, PaintBucket, Crown, Sparkles, WandSparkles, Star } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import backgroundGradient from "../assets/background-gradient.png";
 import backgroundGradient2 from "../assets/backgroundd-gradient.png";
@@ -32,6 +32,7 @@ type AiFlyerFormProps = {
   aspectRatio: string;
   setAspectRatio: (aspectRatio: string) => void;
   onOpenBrandKitPanel?: () => void;
+  selectedTemplate?: DesignTemplate;
 };
 
 export default function AiFlyerForm({ 
@@ -41,7 +42,8 @@ export default function AiFlyerForm({
   setDesignSuggestions,
   aspectRatio,
   setAspectRatio,
-  onOpenBrandKitPanel
+  onOpenBrandKitPanel,
+  selectedTemplate
 }: AiFlyerFormProps) {
   const [prompt, setPrompt] = useState("");
   const [backgroundImage, setBackgroundImage] = useState<File | null>(null);
