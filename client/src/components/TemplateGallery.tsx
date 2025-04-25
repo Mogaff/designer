@@ -34,7 +34,12 @@ const DESIGN_TEMPLATES: DesignTemplate[] = [
     isPremium: false,
     isNew: false,
     isTrending: true,
-    description: "Colorful flowing gradients with smooth transitions"
+    description: "Colorful flowing gradients with smooth transitions",
+    styleData: {
+      gradientType: "flowing",
+      effectLevel: "medium",
+      specialShapes: ["rounded", "fluid"]
+    }
   },
   {
     id: "brutalist-1",
@@ -45,7 +50,11 @@ const DESIGN_TEMPLATES: DesignTemplate[] = [
     isPremium: true,
     isNew: true,
     isTrending: false,
-    description: "Bold brutalist design with strong contrasts and geometric shapes"
+    description: "Bold brutalist design with strong contrasts and geometric shapes",
+    styleData: {
+      effectLevel: "heavy",
+      specialShapes: ["geometric", "angular", "bold"]
+    }
   },
   {
     id: "3d-morph-1",
@@ -56,7 +65,12 @@ const DESIGN_TEMPLATES: DesignTemplate[] = [
     isPremium: true,
     isNew: false,
     isTrending: true,
-    description: "Three-dimensional morphing elements with depth and perspective"
+    description: "Three-dimensional morphing elements with depth and perspective",
+    styleData: {
+      effectLevel: "heavy",
+      specialShapes: ["3d", "depth", "shadow"],
+      glassMorphism: false
+    }
   },
   {
     id: "liquid-1",
@@ -89,7 +103,12 @@ const DESIGN_TEMPLATES: DesignTemplate[] = [
     isPremium: false,
     isNew: false,
     isTrending: true,
-    description: "Vibrant neon elements with glowing effects on dark backgrounds"
+    description: "Vibrant neon elements with glowing effects on dark backgrounds",
+    styleData: {
+      neonEffects: true,
+      effectLevel: "medium",
+      specialShapes: ["glow", "neon", "vibrant"]
+    }
   },
   {
     id: "cyberpunk-1",
@@ -111,7 +130,12 @@ const DESIGN_TEMPLATES: DesignTemplate[] = [
     isPremium: false,
     isNew: false,
     isTrending: true,
-    description: "Modern design with frosted glass effects and background blur"
+    description: "Modern design with frosted glass effects and background blur",
+    styleData: {
+      glassMorphism: true,
+      effectLevel: "medium",
+      specialShapes: ["rounded", "blur", "translucent"]
+    }
   },
   {
     id: "abstract-shapes-1",

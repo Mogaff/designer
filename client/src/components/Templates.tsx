@@ -45,7 +45,13 @@ export default function Templates({ onSelectTemplate }: TemplatesProps) {
                 <Plus className="h-3.5 w-3.5" />
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-5xl max-h-[calc(100vh-80px)] p-0 bg-transparent border-none overflow-hidden">
+            <DialogContent 
+              className="sm:max-w-5xl max-h-[calc(100vh-80px)] p-0 bg-transparent border-none overflow-hidden"
+              aria-describedby="gallery-desc"
+            >
+              <div id="gallery-desc" className="sr-only">
+                Select a design template to start your project with predefined styles and layouts
+              </div>
               <TemplateGallery 
                 onSelectTemplate={handleTemplateSelect} 
                 onClose={() => setIsGalleryOpen(false)} 

@@ -36,8 +36,8 @@ export default function Home() {
         const templatePrompt = `Create a professional design in the style of ${template.name} (${template.category}). 
 Key features: ${template.tags.join(', ')}. 
 Style description: ${template.description}.
-Use ${template.glassMorphism ? 'glass morphism effects with transparency and blur' : 'modern design elements'}.
-${template.neonEffects ? 'Include subtle neon glowing elements where appropriate.' : ''}
+Use ${template.styleData?.glassMorphism ? 'glass morphism effects with transparency and blur' : 'modern design elements'}.
+${template.styleData?.neonEffects ? 'Include subtle neon glowing elements where appropriate.' : ''}
 Create this as an advertisement design, NOT as a website or HTML.`;
 
         // Set a relevant aspect ratio for the template if needed
