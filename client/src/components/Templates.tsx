@@ -47,6 +47,7 @@ export default function Templates({ onSelectTemplate }: TemplatesProps) {
             </DialogTrigger>
             <DialogContent 
               className="sm:max-w-5xl max-h-[calc(100vh-80px)] p-0 bg-transparent border-none overflow-hidden"
+              aria-label="Design Templates Gallery" 
               aria-describedby="gallery-desc"
             >
               <div id="gallery-desc" className="sr-only">

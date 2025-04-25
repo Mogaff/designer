@@ -2,17 +2,27 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, Star, Sparkles, Clock, TrendingUp, Filter, Check } from "lucide-react";
+import { Search, Star, Sparkles, Clock, TrendingUp, Filter, Check, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DesignTemplate } from "@/lib/types";
 
 // Sample template data
+// Import local assets
+import gradientBg from "@assets/background-gradient.png";
+import meshGradient11 from "@assets/image-mesh-gradient (11).png";
+import meshGradient13 from "@assets/image-mesh-gradient (13).png";
+import meshGradient18 from "@assets/image-mesh-gradient (18).png";
+import meshGradient20 from "@assets/image-mesh-gradient (20).png";
+import designExample1 from "@assets/design-1743547737777.png";
+import designExample2 from "@assets/design-1743547911385.png";
+import fashionFlyer from "@assets/Fashion-Week-Flyer-by-muhamadiqbalhidayat.jpg";
+
 const DESIGN_TEMPLATES: DesignTemplate[] = [
   {
     id: "neomorphic-1",
     name: "Neomorphic Glass",
-    previewUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2064&auto=format&fit=crop",
+    previewUrl: meshGradient13,
     category: "Modern",
     tags: ["glass", "blur", "morphic", "abstract"],
     isPremium: false,
@@ -28,7 +38,7 @@ const DESIGN_TEMPLATES: DesignTemplate[] = [
   {
     id: "gradient-flow-1",
     name: "Gradient Flow",
-    previewUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2064&auto=format&fit=crop",
+    previewUrl: gradientBg,
     category: "Abstract",
     tags: ["gradients", "flow", "vibrant", "colorful"],
     isPremium: false,
@@ -44,7 +54,7 @@ const DESIGN_TEMPLATES: DesignTemplate[] = [
   {
     id: "brutalist-1",
     name: "Neo Brutalist",
-    previewUrl: "https://images.unsplash.com/photo-1614850523459-c2f4c699c32a?q=80&w=2070&auto=format&fit=crop",
+    previewUrl: designExample1,
     category: "Creative",
     tags: ["brutalist", "bold", "contrast", "minimal"],
     isPremium: true,
@@ -59,7 +69,7 @@ const DESIGN_TEMPLATES: DesignTemplate[] = [
   {
     id: "3d-morph-1",
     name: "3D Morphic",
-    previewUrl: "https://images.unsplash.com/photo-1633280966435-eb8be57ea565?q=80&w=2072&auto=format&fit=crop",
+    previewUrl: meshGradient18,
     category: "3D",
     tags: ["3d", "depth", "morph", "futuristic"],
     isPremium: true,
@@ -75,29 +85,37 @@ const DESIGN_TEMPLATES: DesignTemplate[] = [
   {
     id: "liquid-1",
     name: "Liquid Flow",
-    previewUrl: "https://images.unsplash.com/photo-1604871000636-074fa5117945?q=80&w=1974&auto=format&fit=crop",
+    previewUrl: meshGradient11,
     category: "Abstract",
     tags: ["liquid", "flow", "fluid", "organic"],
     isPremium: false,
     isNew: false,
     isTrending: false,
-    description: "Fluid, organic shapes with liquid-like flowing aesthetics"
+    description: "Fluid, organic shapes with liquid-like flowing aesthetics",
+    styleData: {
+      effectLevel: "medium",
+      specialShapes: ["fluid", "organic", "flow"]
+    }
   },
   {
     id: "kinetic-1",
     name: "Kinetic Typography",
-    previewUrl: "https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?q=80&w=1935&auto=format&fit=crop",
+    previewUrl: designExample2,
     category: "Typography",
     tags: ["typography", "dynamic", "motion", "text"],
     isPremium: true,
     isNew: true,
     isTrending: true,
-    description: "Dynamic typography layouts with kinetic energy and movement"
+    description: "Dynamic typography layouts with kinetic energy and movement",
+    styleData: {
+      specialEffects: ["text-motion", "kinetic"],
+      effectLevel: "medium"
+    }
   },
   {
     id: "neon-glow-1",
     name: "Neon Glow",
-    previewUrl: "https://images.unsplash.com/photo-1637611331620-51149c7ceb94?q=80&w=2070&auto=format&fit=crop",
+    previewUrl: meshGradient20,
     category: "Vibrant",
     tags: ["neon", "glow", "vibrant", "dark"],
     isPremium: false,
@@ -113,18 +131,23 @@ const DESIGN_TEMPLATES: DesignTemplate[] = [
   {
     id: "cyberpunk-1",
     name: "Cyberpunk Tech",
-    previewUrl: "https://images.unsplash.com/photo-1621075160523-b936ad96132a?q=80&w=2070&auto=format&fit=crop", 
+    previewUrl: fashionFlyer, 
     category: "Futuristic",
     tags: ["cyberpunk", "tech", "futuristic", "glitch"],
     isPremium: true,
     isNew: true,
     isTrending: false,
-    description: "Futuristic cyberpunk aesthetics with tech elements and glitch effects"
+    description: "Futuristic cyberpunk aesthetics with tech elements and glitch effects",
+    styleData: {
+      glitchEffects: true,
+      neonEffects: true,
+      effectLevel: "heavy"
+    }
   },
   {
     id: "glassmorphism-1",
     name: "Glassmorphism",
-    previewUrl: "https://images.unsplash.com/photo-1545153996-e01b50d6ec0f?q=80&w=1974&auto=format&fit=crop",
+    previewUrl: gradientBg,
     category: "Modern",
     tags: ["glass", "transparency", "blur", "minimal"],
     isPremium: false,
@@ -140,35 +163,48 @@ const DESIGN_TEMPLATES: DesignTemplate[] = [
   {
     id: "abstract-shapes-1",
     name: "Abstract Shapes",
-    previewUrl: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1940&auto=format&fit=crop",
+    previewUrl: designExample2,
     category: "Abstract",
     tags: ["abstract", "shapes", "geometric", "colorful"],
     isPremium: false,
     isNew: true,
     isTrending: false,
-    description: "Colorful abstract geometric shapes with dynamic compositions"
+    description: "Colorful abstract geometric shapes with dynamic compositions",
+    styleData: {
+      effectLevel: "medium",
+      specialShapes: ["geometric", "abstract"]
+    }
   },
   {
     id: "isometric-1",
     name: "Isometric World",
-    previewUrl: "https://images.unsplash.com/photo-1550684376-efcbd6e3f031?q=80&w=1940&auto=format&fit=crop",
+    previewUrl: meshGradient11,
     category: "3D",
     tags: ["isometric", "3d", "geometric", "perspective"],
     isPremium: true,
     isNew: false,
     isTrending: true,
-    description: "Isometric design with 3D perspective and geometric elements"
+    description: "Isometric design with 3D perspective and geometric elements",
+    styleData: {
+      effectLevel: "heavy",
+      specialShapes: ["3d", "isometric", "perspective"]
+    }
   },
   {
     id: "duotone-1",
     name: "Duotone Style",
-    previewUrl: "https://images.unsplash.com/photo-1557672172-298e090bd0f1?q=80&w=1974&auto=format&fit=crop",
+    previewUrl: designExample1,
     category: "Minimalist",
     tags: ["duotone", "two-color", "contrast", "clean"],
     isPremium: false,
     isNew: false,
     isTrending: false,
-    description: "Clean duotone visual style with two-color gradient effects"
+    description: "Clean duotone visual style with two-color gradient effects",
+    styleData: {
+      effectLevel: "light",
+      specialShapes: ["minimal", "clean"],
+      duotone: true
+    }
   }
 ];
 
@@ -210,8 +246,10 @@ export default function TemplateGallery({ onSelectTemplate, onClose }: TemplateG
           variant="ghost" 
           size="sm" 
           onClick={onClose}
-          className="text-white/70 hover:text-white hover:bg-white/10"
+          className="text-white/70 hover:text-white hover:bg-white/10 flex items-center gap-1"
+          type="button"
         >
+          <X className="h-4 w-4" />
           Close
         </Button>
       </div>
