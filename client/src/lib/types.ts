@@ -61,3 +61,25 @@ export interface BrandKit {
   updated_at: string;
   is_active: boolean;
 }
+
+export interface DesignTemplate {
+  id: string;
+  name: string;
+  previewUrl: string;
+  category: string;
+  tags: string[];
+  isPremium: boolean;
+  isNew: boolean;
+  isTrending: boolean;
+  description: string;
+  styleData?: {
+    cssCode?: string;
+    htmlTemplate?: string;
+    glassEffects?: boolean;
+    glassMorphism?: boolean;
+    neonEffects?: boolean;
+    gradientType?: string;
+    specialShapes?: string[];
+    effectLevel?: "minimal" | "medium" | "heavy";
+  };
+}
