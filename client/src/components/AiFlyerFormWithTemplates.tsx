@@ -93,19 +93,9 @@ export default function AiFlyerForm({
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
-  // Use template details in the prompt when a template is selected
+  // Set appropriate options when a template is selected
   useEffect(() => {
-    if (selectedTemplate && prompt.trim() === "") {
-      // Generate a prompt based on the template style
-      const templatePrompt = `Create a professional design in the style of ${selectedTemplate.name} (${selectedTemplate.category}). 
-Key features: ${selectedTemplate.tags.join(', ')}. 
-Style description: ${selectedTemplate.description}.
-${selectedTemplate.styleData?.glassMorphism ? 'Use glass morphism effects with transparency and blur.' : 'Use modern design elements.'}
-${selectedTemplate.styleData?.neonEffects ? 'Include subtle neon glowing elements where appropriate.' : ''}
-Create this as an advertisement design, NOT as a website or HTML.`;
-      
-      setPrompt(templatePrompt);
-      
+    if (selectedTemplate) {
       // Set a relevant aspect ratio for the template if needed
       if (selectedTemplate.category === "Social Media" || selectedTemplate.tags.includes("social")) {
         setAspectRatio("post"); // 1:1 for social posts
@@ -120,7 +110,7 @@ Create this as an advertisement design, NOT as a website or HTML.`;
         setSelectedPremiumOption('basic');
       }
     }
-  }, [selectedTemplate, prompt]);
+  }, [selectedTemplate]);
 
   // Generate AI background image
   const generateAiBackgroundMutation = useMutation({
