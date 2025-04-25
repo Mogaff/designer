@@ -387,7 +387,9 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
                                 size="sm"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  deactivateBrandKitMutation.mutate();
+                                  if (brandKit.is_active) {
+                                    deactivateBrandKitMutation.mutate();
+                                  }
                                 }}
                                 className="ml-2 bg-red-600/10 hover:bg-red-600/20 text-xs text-red-400 h-5 rounded-sm px-1.5"
                               >
