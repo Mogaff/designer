@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 interface PremiumDesignOptionsProps {
   onSelect: (optionId: string) => void;
   currentBalance: number;
-  isGenerating: boolean;
+  isGenerating?: boolean;
 }
 
 interface DesignOption {

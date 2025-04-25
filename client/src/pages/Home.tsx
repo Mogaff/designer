@@ -138,7 +138,7 @@ Create this as an advertisement design, NOT as a website or HTML.`;
                     </div>
                   </div>
                   
-                  <AiFlyerForm
+                  <AiFlyerFormWithTemplates
                     setGeneratedFlyer={setGeneratedFlyer}
                     isGenerating={isGenerating}
                     setIsGenerating={setIsGenerating}
@@ -157,7 +157,7 @@ Create this as an advertisement design, NOT as a website or HTML.`;
                   setDesignSuggestions={setDesignSuggestions}
                 />
               ) : (
-                <AiFlyerForm
+                <AiFlyerFormWithTemplates
                   setGeneratedFlyer={setGeneratedFlyer}
                   isGenerating={isGenerating}
                   setIsGenerating={setIsGenerating}

@@ -166,7 +166,7 @@ Create this as an advertisement design, NOT as a website or HTML.`;
       } 
       // If we have a background image preview URL from AI generation, include it
       else if (backgroundImagePreview && generateAiBackground) {
-        formData.append("backgroundImageUrl", backgroundImagePreview);
+        formData.append("backgroundImageUrl", backgroundImagePreview || "");
       }
       
       if (data.logo) {
@@ -712,7 +712,6 @@ Create this as an advertisement design, NOT as a website or HTML.`;
               }
               setIsPremiumDialogOpen(false);
             }}
-            selectedOption={selectedPremiumOption}
           />
           
           {/* Aspect Ratio Selector */}
