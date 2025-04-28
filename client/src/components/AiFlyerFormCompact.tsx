@@ -292,8 +292,8 @@ export default function AiFlyerFormCompact({
           />
         </div>
 
-        {/* Image Upload Row */}
-        <div className="grid grid-cols-2 gap-1.5">
+        {/* Image Upload Row - 3 elements in a row */}
+        <div className="grid grid-cols-3 gap-1">
           {/* Background Image */}
           <div>
             <Label htmlFor="background-image" className="text-[9px] text-white/70 flex items-center gap-1 mb-0.5">
@@ -309,12 +309,9 @@ export default function AiFlyerFormCompact({
               />
               <Label
                 htmlFor="background-image"
-                className="cursor-pointer flex justify-center items-center h-8 rounded-md border border-slate-700 bg-slate-800"
+                className="cursor-pointer flex justify-center items-center aspect-square w-full rounded-md border border-slate-700 bg-slate-800/60 backdrop-blur-md"
               >
-                <div className="text-center">
-                  <Upload className="mx-auto h-2 w-2 text-white/70 mb-0.5" />
-                  <span className="text-[8px] text-white/90">Upload Image</span>
-                </div>
+                <Upload className="h-3 w-3 text-white/80" />
               </Label>
               
               {(backgroundImagePreview || backgroundImage) && (
@@ -353,16 +350,13 @@ export default function AiFlyerFormCompact({
               />
               <Label
                 htmlFor="logo-upload"
-                className="cursor-pointer flex justify-center items-center h-8 rounded-md border border-slate-700 bg-slate-800"
+                className="cursor-pointer flex justify-center items-center aspect-square w-full rounded-md border border-slate-700 bg-slate-800/60 backdrop-blur-md"
               >
-                <div className="text-center">
-                  <Upload className="mx-auto h-2 w-2 text-white/70 mb-0.5" />
-                  <span className="text-[8px] text-white/90">Upload Logo</span>
-                </div>
+                <Upload className="h-3 w-3 text-white/80" />
               </Label>
               
               {(logoPreview || logo) && (
-                <div className="absolute inset-0 rounded-md overflow-hidden bg-slate-800/80 flex items-center justify-center">
+                <div className="absolute inset-0 rounded-md overflow-hidden bg-slate-800/80 backdrop-blur-sm flex items-center justify-center">
                   <img 
                     src={logoPreview} 
                     alt="Logo" 
@@ -381,48 +375,28 @@ export default function AiFlyerFormCompact({
               )}
             </div>
           </div>
-        </div>
-        
-        {/* Options Row */}
-        <div className="grid grid-cols-2 gap-1.5">
+          
           {/* AI Background Option */}
           <div className={`${backgroundImage || backgroundImagePreview ? 'opacity-50 pointer-events-none' : ''}`}>
-            <Label className="flex items-center h-6 rounded-md border border-slate-700 bg-slate-800 p-1 cursor-pointer">
-              <div className="flex items-center gap-1">
-                <Checkbox 
-                  id="generateAiBackground" 
-                  checked={generateAiBackground}
-                  onCheckedChange={(checked) => setGenerateAiBackground(!!checked)}
-                  className="h-2.5 w-2.5 border-slate-600"
-                  disabled={!!(backgroundImage || backgroundImagePreview)}
-                />
-                <div className="flex items-center gap-1">
-                  <WandSparkles className="h-2 w-2 text-white/70" />
-                  <span className="text-[8px] text-white/90">AI Background</span>
-                </div>
+            <Label className="text-[9px] text-white/70 flex items-center gap-1 mb-0.5">
+              <WandSparkles className="h-2 w-2" />
+              AI Background
+            </Label>
+            <Label 
+              className="flex items-center justify-center cursor-pointer aspect-square w-full rounded-md border border-slate-700 bg-slate-800/60 backdrop-blur-md"
+              onClick={() => setGenerateAiBackground(!generateAiBackground)}
+            >
+              <div className="relative">
+                <WandSparkles className="h-3 w-3 text-white/80" />
+                {generateAiBackground && (
+                  <div className="absolute -top-1 -right-1 h-2 w-2 bg-emerald-500 rounded-full border border-white/20"></div>
+                )}
               </div>
             </Label>
           </div>
           
-          {/* Brand Kit Logo Option */}
-          {activeBrandKit && activeBrandKit.logo_url && (
-            <div 
-              onClick={() => {
-                setLogoPreview(activeBrandKit.logo_url || "");
-                setLogo(null);
-              }}
-              className="cursor-pointer flex items-center h-6 rounded-md border border-slate-700 bg-slate-800 p-1"
-            >
-              <div className="flex items-center gap-1">
-                <div className="h-2.5 w-2.5 rounded bg-slate-700 flex items-center justify-center">
-                  {activeBrandKit.logo_url && (
-                    <img src={activeBrandKit.logo_url} alt="Brand Logo" className="max-h-full max-w-full object-contain" />
-                  )}
-                </div>
-                <span className="text-[8px] text-white/90">Use brand logo</span>
-              </div>
-            </div>
-          )}
+          {/* Brand Kit Logo Option - Moved to quality/format row */}
+          {/* Will be handled in the Settings Row */}
         </div>
         
         {/* Settings Row */}

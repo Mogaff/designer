@@ -4,7 +4,7 @@ import AiFlyerFormWithTemplates from "@/components/AiFlyerFormWithTemplates";
 import AiFlyerFormCompact from "@/components/AiFlyerFormCompact";
 import FlyerPreview from "@/components/FlyerPreview";
 import DesignSuggestions from "@/components/DesignSuggestions";
-import RecentCreations from "@/components/RecentCreations";
+import SimpleGallery from "@/components/SimpleGallery";
 import CanvasEditor from "@/components/CanvasEditor";
 import { BrandKitPanel } from "@/components/BrandKitPanel";
 import { useState, useEffect } from "react";
@@ -186,14 +186,20 @@ Create this as an advertisement design, NOT as a website or HTML.`;
               onValueChange={setActiveTab}
               className="h-full relative"
             >
-              {/* Tab Controls */}
-              <div className="absolute top-2 left-4 z-20">
-                <TabsList className="backdrop-blur-md bg-white/5 border border-white/10">
-                  <TabsTrigger value="preview" className="text-white data-[state=active]:bg-white/20">
+              {/* Tab Controls - Thinner */}
+              <div className="absolute top-1 left-2 z-20">
+                <TabsList className="backdrop-blur-md bg-white/5 border border-white/10 p-0.5">
+                  <TabsTrigger 
+                    value="preview" 
+                    className="text-[10px] py-0.5 px-2 h-5 text-white data-[state=active]:bg-white/20"
+                  >
                     Preview
                   </TabsTrigger>
-                  <TabsTrigger value="canvas" className="text-white data-[state=active]:bg-white/20">
-                    Canvas Editor
+                  <TabsTrigger 
+                    value="canvas" 
+                    className="text-[10px] py-0.5 px-2 h-5 text-white data-[state=active]:bg-white/20"
+                  >
+                    Editor
                   </TabsTrigger>
                 </TabsList>
               </div>
@@ -221,11 +227,9 @@ Create this as an advertisement design, NOT as a website or HTML.`;
             </Tabs>
           </div>
           
-          {/* Right Sidebar - Gallery */}
-          <div className="hidden lg:block w-[180px] backdrop-blur-md bg-white/5 border border-white/10 overflow-hidden rounded-lg h-[calc(100vh-80px)]">
-            <div className="overflow-auto p-1">
-              <RecentCreations vertical={true} />
-            </div>
+          {/* Right Sidebar - Gallery - Simplified */}
+          <div className="hidden lg:block w-[120px] backdrop-blur-md bg-white/5 border border-white/10 overflow-hidden rounded-lg h-[calc(100vh-80px)]">
+            <SimpleGallery />
           </div>
         </div>
       </main>
