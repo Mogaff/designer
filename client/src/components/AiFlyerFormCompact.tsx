@@ -1,20 +1,13 @@
 import { useState, FormEvent, ChangeEvent, useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { GeneratedFlyer, AiFlyerGenerationRequest, DesignSuggestions, DesignVariation, FontSettings, GoogleFont, BrandKit, DesignTemplate } from "@/lib/types";
+import { GeneratedFlyer, AiFlyerGenerationRequest, DesignVariation, BrandKit, DesignTemplate } from "@/lib/types";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { ImageIcon, Upload, TypeIcon, Check, PaintBucket, Crown, Sparkles, WandSparkles, Star } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
-import backgroundGradient from "@assets/image-mesh-gradient (11).png";
-import backgroundGradient2 from "@assets/image-mesh-gradient (13).png";
-import { useUserSettings } from "@/contexts/UserSettingsContext";
-import { loadGoogleFonts, loadFont } from '@/lib/fontService';
-import PremiumDesignPanel from "./PremiumDesignPanel";
+import { ImageIcon, Upload, TypeIcon, Check, PaintBucket, Crown, WandSparkles } from "lucide-react";
 import { 
   Select,
   SelectContent,
@@ -23,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import PremiumDesignPanel from "./PremiumDesignPanel";
 
 type AiFlyerFormProps = {
   setGeneratedFlyer: (flyer: GeneratedFlyer | null) => void;
@@ -35,7 +29,7 @@ type AiFlyerFormProps = {
   selectedTemplate?: DesignTemplate;
 };
 
-export default function AiFlyerForm({ 
+export default function AiFlyerFormCompact({ 
   setGeneratedFlyer,
   isGenerating,
   setIsGenerating,
@@ -46,8 +40,6 @@ export default function AiFlyerForm({
   selectedTemplate,
 }: AiFlyerFormProps) {
   const { toast } = useToast();
-  const isMobile = useIsMobile();
-  const { userSettings } = useUserSettings();
   
   // State for form inputs
   const [prompt, setPrompt] = useState<string>("");
@@ -64,13 +56,13 @@ export default function AiFlyerForm({
   
   // Aspect ratio options for the dropdown
   const aspectRatioOptions = [
-    { id: "square", label: "Square - 1:1 (Instagram, Facebook)", value: "1:1" },
-    { id: "portrait", label: "Portrait - 4:5 (Instagram)", value: "4:5" },
-    { id: "landscape", label: "Landscape - 16:9 (YouTube, Twitter)", value: "16:9" },
-    { id: "story", label: "Story - 9:16 (Instagram, TikTok)", value: "9:16" },
-    { id: "facebook", label: "Facebook Cover - 851:315", value: "851:315" },
-    { id: "a4portrait", label: "A4 Portrait - 210:297", value: "210:297" },
-    { id: "a4landscape", label: "A4 Landscape - 297:210", value: "297:210" }
+    { id: "square", label: "Square (1:1)", value: "1:1" },
+    { id: "portrait", label: "Portrait (4:5)", value: "4:5" },
+    { id: "landscape", label: "Landscape (16:9)", value: "16:9" },
+    { id: "story", label: "Story (9:16)", value: "9:16" },
+    { id: "facebook", label: "FB Cover", value: "851:315" },
+    { id: "a4portrait", label: "A4 Portrait", value: "210:297" },
+    { id: "a4landscape", label: "A4 Landscape", value: "297:210" }
   ];
   
   // Query for active brand kit
@@ -83,10 +75,10 @@ export default function AiFlyerForm({
   
   // Mutation for generating AI flyer
   const aiGenerationMutation = useMutation({
-    mutationFn: async (data: AiFlyerGenerationRequest) => {
+    mutationFn: async (data: FormData) => {
       return await apiRequest('/api/generate-ai', 'POST', data, true);
     },
-    onSuccess: (data: DesignSuggestions) => {
+    onSuccess: (data: any) => {
       setIsGenerating(false);
       if (data.suggestions && data.suggestions.length > 0) {
         setDesignSuggestions(data.suggestions);
@@ -99,7 +91,7 @@ export default function AiFlyerForm({
             backgroundImageUrl: data.suggestions[0].backgroundImageUrl || "",
             logoUrl: logoPreview || (activeBrandKit?.logo_url || ""),
             prompt: prompt,
-          });
+          } as GeneratedFlyer);
         }
       } else {
         toast({
@@ -202,42 +194,28 @@ export default function AiFlyerForm({
       formData.append("brand_kit_id", activeBrandKit.id.toString());
       
       // Include fonts from brand kit
-      const fontsToUse: FontSettings = activeBrandKit 
-        ? {
-            headingFont: activeBrandKit.heading_font as GoogleFont,
-            bodyFont: activeBrandKit.body_font as GoogleFont,
-            accentFont: activeBrandKit.accent_font as GoogleFont,
-          }
-        : {
-            headingFont: "Inter" as GoogleFont,
-            bodyFont: "Inter" as GoogleFont,
-            accentFont: "Inter" as GoogleFont,
-          };
-      
-      formData.append("fonts", JSON.stringify(fontsToUse));
+      if (activeBrandKit.heading_font && activeBrandKit.body_font) {
+        const fontsToUse = {
+          headingFont: activeBrandKit.heading_font,
+          bodyFont: activeBrandKit.body_font,
+        };
+        
+        formData.append("fonts", JSON.stringify(fontsToUse));
+      }
       
       // Include colors from brand kit
-      const colorsToUse = activeBrandKit
-        ? {
-            primary: activeBrandKit.primary_color || "#3B82F6",
-            secondary: activeBrandKit.secondary_color || "#10B981",
-            accent: activeBrandKit.accent_color || "#8B5CF6",
-            background: activeBrandKit.background_color || "#1F2937",
-            text: activeBrandKit.text_color || "#F9FAFB",
-          }
-        : {
-            primary: "#3B82F6",
-            secondary: "#10B981",
-            accent: "#8B5CF6",
-            background: "#1F2937",
-            text: "#F9FAFB",
-          };
-      
-      formData.append("colors", JSON.stringify(colorsToUse));
+      if (activeBrandKit.primary_color && activeBrandKit.secondary_color) {
+        const colorsToUse = {
+          primary: activeBrandKit.primary_color || "#3B82F6",
+          secondary: activeBrandKit.secondary_color || "#10B981",
+        };
+        
+        formData.append("colors", JSON.stringify(colorsToUse));
+      }
     }
     
     // Submit the form data
-    aiGenerationMutation.mutate(formData as any);
+    aiGenerationMutation.mutate(formData);
   };
   
   // Use keyboard shortcut (Ctrl/Cmd + Enter) to submit the form
@@ -252,26 +230,19 @@ export default function AiFlyerForm({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [prompt, backgroundImage, logo, aspectRatio, generateAiBackground, activeBrandKit]);
-  
-  // Function to handle keyboard shortcuts
-  const handleCommandK = (e: KeyboardEvent) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-      e.preventDefault();
-      handleSubmit(new Event('submit') as any);
-    }
-  };
 
   return (
     <div className="h-full flex flex-col">
-      <div className="mb-2">
-        <div className="bg-slate-800 rounded-md overflow-hidden p-1.5">
-          <div className="flex items-center gap-1.5">
+      {/* Header - Compact */}
+      <div className="mb-1.5">
+        <div className="bg-slate-800 rounded-md p-1">
+          <div className="flex items-center gap-1">
             <div className="bg-slate-700 p-0.5 rounded">
               <WandSparkles className="h-3 w-3 text-white" />
             </div>
             <div>
-              <h2 className="text-xs font-medium text-white">AI Design Studio</h2>
-              <p className="text-[9px] text-white/70">Create professional designs</p>
+              <h2 className="text-xs text-white">AI Design Studio</h2>
+              <p className="text-[8px] text-white/70">Create designs</p>
             </div>
           </div>
         </div>
@@ -279,50 +250,44 @@ export default function AiFlyerForm({
       
       {/* Brand Kit Badge - Compact */}
       {activeBrandKit && !selectedTemplate && (
-        <div className="mb-2 rounded-md overflow-hidden">
-          <div className="bg-slate-800 border border-slate-700 p-1 relative z-10">
-            <div className="flex items-center gap-1.5">
-              <div className="flex-shrink-0 h-4 w-4 rounded bg-slate-700 p-0.5 flex items-center justify-center overflow-hidden">
+        <div className="mb-1.5">
+          <div className="bg-slate-800 border border-slate-700 p-1 rounded-md">
+            <div className="flex items-center gap-1">
+              <div className="h-4 w-4 rounded bg-slate-700 p-0.5 flex items-center justify-center">
                 {activeBrandKit.logo_url ? (
-                  <img src={activeBrandKit.logo_url} alt="Brand Logo" className="max-h-full max-w-full object-contain" />
+                  <img src={activeBrandKit.logo_url} alt="Brand" className="max-h-full max-w-full object-contain" />
                 ) : (
                   <PaintBucket className="h-2.5 w-2.5 text-slate-400" />
                 )}
               </div>
-              <div className="flex-1 min-w-0">
+              <div>
                 <div className="flex items-center gap-1">
-                  <h3 className="text-[10px] text-white truncate">{activeBrandKit.name}</h3>
-                  <span className="inline-flex items-center px-1 py-px rounded-full text-[8px] bg-green-900/30 text-green-400">
-                    <Check className="mr-0.5 h-2 w-2" />
+                  <h3 className="text-[9px] text-white">{activeBrandKit.name}</h3>
+                  <span className="inline-flex items-center px-0.5 rounded-sm text-[7px] bg-green-900/30 text-green-400">
+                    <Check className="mr-0.5 h-1.5 w-1.5" />
                     Active
                   </span>
                 </div>
-                <p className="text-[8px] text-white/60 truncate">Using brand colors</p>
+                <p className="text-[7px] text-white/60">Using brand colors</p>
               </div>
             </div>
           </div>
         </div>
       )}
       
-      <p className="text-[9px] text-white/70 mb-1">
-        {selectedTemplate 
-          ? "Using template with style. Add custom details in prompt."
-          : "Create a prompt below and upload images for your design."}
-      </p>
-      
       <form onSubmit={handleSubmit} className="space-y-1.5 flex-grow flex flex-col">
-        {/* Design prompt - Simplified */}
-        <div className="space-y-1">
-          <Label htmlFor="prompt" className="text-[10px] font-medium text-white/70 flex items-center gap-1">
+        {/* Creative Brief */}
+        <div>
+          <Label htmlFor="prompt" className="text-[9px] text-white/70 flex items-center gap-1 mb-0.5">
             <TypeIcon className="h-2 w-2" />
             Creative Brief
           </Label>
           <Textarea
             id="prompt"
-            placeholder="Describe your design... (e.g., A modern social media post for a coffee shop with a warm color palette)"
+            placeholder="Describe your design..."
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            className="h-16 resize-none bg-slate-800 border-slate-700 text-white placeholder:text-white/40 rounded-md text-[10px]"
+            className="h-12 resize-none bg-slate-800 border-slate-700 text-white placeholder:text-white/40 rounded-md text-[9px]"
             required
           />
         </div>
@@ -331,7 +296,7 @@ export default function AiFlyerForm({
         <div className="grid grid-cols-2 gap-1.5">
           {/* Background Image */}
           <div>
-            <Label htmlFor="background-image" className="text-[10px] text-white/70 flex items-center gap-1 mb-0.5">
+            <Label htmlFor="background-image" className="text-[9px] text-white/70 flex items-center gap-1 mb-0.5">
               <ImageIcon className="h-2 w-2" />
               Background
             </Label>
@@ -344,22 +309,19 @@ export default function AiFlyerForm({
               />
               <Label
                 htmlFor="background-image"
-                className="cursor-pointer flex justify-center items-center h-10 rounded-md border border-slate-700 bg-slate-800 relative overflow-hidden"
+                className="cursor-pointer flex justify-center items-center h-8 rounded-md border border-slate-700 bg-slate-800"
               >
                 <div className="text-center">
-                  <Upload className="mx-auto h-2.5 w-2.5 text-white/70 mb-0.5" />
-                  <span className="text-[9px] font-medium text-white/90">
-                    Upload Image
-                  </span>
+                  <Upload className="mx-auto h-2 w-2 text-white/70 mb-0.5" />
+                  <span className="text-[8px] text-white/90">Upload Image</span>
                 </div>
               </Label>
               
-              {/* Show background image preview */}
               {(backgroundImagePreview || backgroundImage) && (
                 <div className="absolute inset-0 rounded-md overflow-hidden">
                   <img 
                     src={backgroundImagePreview} 
-                    alt="Background preview" 
+                    alt="Background" 
                     className="w-full h-full object-cover"
                   />
                   <button
@@ -367,14 +329,8 @@ export default function AiFlyerForm({
                     onClick={clearBackgroundImage}
                     className="absolute top-0.5 right-0.5 bg-black/70 text-white p-0.5 rounded-full"
                   >
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      className="h-2 w-2" 
-                      fill="none" 
-                      viewBox="0 0 24 24" 
-                      stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <svg width="6" height="6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M6 18L18 6M6 6l12 12" stroke="white" strokeWidth="2" />
                     </svg>
                   </button>
                 </div>
@@ -384,7 +340,7 @@ export default function AiFlyerForm({
           
           {/* Logo Upload */}
           <div>
-            <Label htmlFor="logo-upload" className="text-[10px] text-white/70 flex items-center gap-1 mb-0.5">
+            <Label htmlFor="logo-upload" className="text-[9px] text-white/70 flex items-center gap-1 mb-0.5">
               <TypeIcon className="h-2 w-2" />
               Logo
             </Label>
@@ -397,22 +353,19 @@ export default function AiFlyerForm({
               />
               <Label
                 htmlFor="logo-upload"
-                className="cursor-pointer flex justify-center items-center h-10 rounded-md border border-slate-700 bg-slate-800 relative overflow-hidden"
+                className="cursor-pointer flex justify-center items-center h-8 rounded-md border border-slate-700 bg-slate-800"
               >
                 <div className="text-center">
-                  <Upload className="mx-auto h-2.5 w-2.5 text-white/70 mb-0.5" />
-                  <span className="text-[9px] font-medium text-white/90">
-                    Upload Logo
-                  </span>
+                  <Upload className="mx-auto h-2 w-2 text-white/70 mb-0.5" />
+                  <span className="text-[8px] text-white/90">Upload Logo</span>
                 </div>
               </Label>
               
-              {/* Show logo preview */}
               {(logoPreview || logo) && (
                 <div className="absolute inset-0 rounded-md overflow-hidden bg-slate-800/80 flex items-center justify-center">
                   <img 
                     src={logoPreview} 
-                    alt="Logo preview" 
+                    alt="Logo" 
                     className="max-w-[70%] max-h-[70%] object-contain"
                   />
                   <button
@@ -420,14 +373,8 @@ export default function AiFlyerForm({
                     onClick={clearLogo}
                     className="absolute top-0.5 right-0.5 bg-black/70 text-white p-0.5 rounded-full"
                   >
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      className="h-2 w-2" 
-                      fill="none" 
-                      viewBox="0 0 24 24" 
-                      stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <svg width="6" height="6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M6 18L18 6M6 6l12 12" stroke="white" strokeWidth="2" />
                     </svg>
                   </button>
                 </div>
@@ -441,7 +388,7 @@ export default function AiFlyerForm({
           {/* AI Background Option */}
           <div className={`${backgroundImage || backgroundImagePreview ? 'opacity-50 pointer-events-none' : ''}`}>
             <Label className="flex items-center h-6 rounded-md border border-slate-700 bg-slate-800 p-1 cursor-pointer">
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1">
                 <Checkbox 
                   id="generateAiBackground" 
                   checked={generateAiBackground}
@@ -450,8 +397,8 @@ export default function AiFlyerForm({
                   disabled={!!(backgroundImage || backgroundImagePreview)}
                 />
                 <div className="flex items-center gap-1">
-                  <WandSparkles className="h-2.5 w-2.5 text-white/70" />
-                  <span className="text-[9px] text-white/90">AI Background</span>
+                  <WandSparkles className="h-2 w-2 text-white/70" />
+                  <span className="text-[8px] text-white/90">AI Background</span>
                 </div>
               </div>
             </Label>
@@ -466,13 +413,13 @@ export default function AiFlyerForm({
               }}
               className="cursor-pointer flex items-center h-6 rounded-md border border-slate-700 bg-slate-800 p-1"
             >
-              <div className="flex items-center gap-1.5">
-                <div className="h-3 w-3 rounded bg-slate-700 flex items-center justify-center overflow-hidden">
+              <div className="flex items-center gap-1">
+                <div className="h-2.5 w-2.5 rounded bg-slate-700 flex items-center justify-center">
                   {activeBrandKit.logo_url && (
                     <img src={activeBrandKit.logo_url} alt="Brand Logo" className="max-h-full max-w-full object-contain" />
                   )}
                 </div>
-                <span className="text-[9px] text-white/90">Use brand logo</span>
+                <span className="text-[8px] text-white/90">Use brand logo</span>
               </div>
             </div>
           )}
@@ -482,17 +429,17 @@ export default function AiFlyerForm({
         <div className="grid grid-cols-2 gap-1.5">
           {/* Quality Tier */}
           <div>
-            <Label className="text-[10px] text-white/70 flex items-center gap-1 mb-0.5">
+            <Label className="text-[9px] text-white/70 flex items-center gap-1 mb-0.5">
               <Crown className="h-2 w-2" />
               Quality
             </Label>
             <Button
               type="button"
-              className="w-full h-6 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white rounded-md px-2 text-[9px] justify-between"
+              className="w-full h-6 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white rounded-md px-1.5 text-[8px] justify-between"
               onClick={() => setIsPremiumDialogOpen(true)}
             >
               <span>{selectedPremiumOption || 'Choose Quality'}</span>
-              <svg width="8" height="8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg width="6" height="6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </Button>
@@ -500,17 +447,17 @@ export default function AiFlyerForm({
           
           {/* Format */}
           <div>
-            <Label className="text-[10px] text-white/70 flex items-center gap-1 mb-0.5">
+            <Label className="text-[9px] text-white/70 flex items-center gap-1 mb-0.5">
               <ImageIcon className="h-2 w-2" />
               Format
             </Label>
             <Select value={aspectRatio} onValueChange={setAspectRatio}>
-              <SelectTrigger className="h-6 bg-slate-800 border-slate-700 text-white text-[9px] rounded-md">
+              <SelectTrigger className="h-6 bg-slate-800 border-slate-700 text-white text-[8px] rounded-md">
                 <SelectValue placeholder="Select format" />
               </SelectTrigger>
               <SelectContent className="bg-slate-900 border-slate-700 text-white rounded-md max-h-[200px]">
                 {aspectRatioOptions.map((option) => (
-                  <SelectItem key={option.id} value={option.id} className="text-[9px]">
+                  <SelectItem key={option.id} value={option.id} className="text-[8px]">
                     {option.label}
                   </SelectItem>
                 ))}
@@ -549,13 +496,13 @@ export default function AiFlyerForm({
         <div className="mt-auto mb-0">
           <Button
             type="submit"
-            className="w-full h-8 bg-slate-800 hover:bg-slate-700 text-white rounded-md text-[10px] font-medium"
+            className="w-full h-6 bg-slate-800 hover:bg-slate-700 text-white rounded-md text-[9px] font-medium"
             disabled={isGenerating || (!prompt && !selectedTemplate)}
           >
             {isGenerating ? (
               <>
                 <svg
-                  className="animate-spin -ml-1 mr-2 h-3 w-3 text-white"
+                  className="animate-spin -ml-1 mr-1.5 h-2.5 w-2.5 text-white"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -578,7 +525,7 @@ export default function AiFlyerForm({
               </>
             ) : (
               <>
-                <WandSparkles className="mr-1.5 h-2.5 w-2.5" />
+                <WandSparkles className="mr-1 h-2 w-2" />
                 <span>Generate AI Designs</span>
               </>
             )}

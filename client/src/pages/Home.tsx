@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AiFlyerFormWithTemplates from "@/components/AiFlyerFormWithTemplates";
+import AiFlyerFormCompact from "@/components/AiFlyerFormCompact";
 import FlyerPreview from "@/components/FlyerPreview";
 import DesignSuggestions from "@/components/DesignSuggestions";
 import RecentCreations from "@/components/RecentCreations";
