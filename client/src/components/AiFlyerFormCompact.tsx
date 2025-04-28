@@ -292,14 +292,10 @@ export default function AiFlyerFormCompact({
           />
         </div>
 
-        {/* Image Upload Row - 3 elements in a row */}
+        {/* Image Upload Row - 3 glass-blurry cube elements in a row */}
         <div className="grid grid-cols-3 gap-1">
           {/* Background Image */}
           <div>
-            <Label htmlFor="background-image" className="text-[9px] text-white/70 flex items-center gap-1 mb-0.5">
-              <ImageIcon className="h-2 w-2" />
-              Background
-            </Label>
             <div className="relative">
               <Input
                 type="file"
@@ -309,9 +305,9 @@ export default function AiFlyerFormCompact({
               />
               <Label
                 htmlFor="background-image"
-                className="cursor-pointer flex justify-center items-center aspect-square w-full rounded-md border border-slate-700 bg-slate-800/60 backdrop-blur-md"
+                className="cursor-pointer flex justify-center items-center aspect-square w-full rounded-md border border-slate-700 bg-black/30 backdrop-blur-lg hover:bg-black/40 transition-colors"
               >
-                <Upload className="h-3 w-3 text-white/80" />
+                <Upload className="h-4 w-4 text-white/80" />
               </Label>
               
               {(backgroundImagePreview || backgroundImage) && (
@@ -337,10 +333,6 @@ export default function AiFlyerFormCompact({
           
           {/* Logo Upload */}
           <div>
-            <Label htmlFor="logo-upload" className="text-[9px] text-white/70 flex items-center gap-1 mb-0.5">
-              <TypeIcon className="h-2 w-2" />
-              Logo
-            </Label>
             <div className="relative">
               <Input
                 type="file"
@@ -350,9 +342,9 @@ export default function AiFlyerFormCompact({
               />
               <Label
                 htmlFor="logo-upload"
-                className="cursor-pointer flex justify-center items-center aspect-square w-full rounded-md border border-slate-700 bg-slate-800/60 backdrop-blur-md"
+                className="cursor-pointer flex justify-center items-center aspect-square w-full rounded-md border border-slate-700 bg-black/30 backdrop-blur-lg hover:bg-black/40 transition-colors"
               >
-                <Upload className="h-3 w-3 text-white/80" />
+                <Upload className="h-4 w-4 text-white/80" />
               </Label>
               
               {(logoPreview || logo) && (
@@ -378,21 +370,19 @@ export default function AiFlyerFormCompact({
           
           {/* AI Background Option */}
           <div className={`${backgroundImage || backgroundImagePreview ? 'opacity-50 pointer-events-none' : ''}`}>
-            <Label className="text-[9px] text-white/70 flex items-center gap-1 mb-0.5">
-              <WandSparkles className="h-2 w-2" />
-              AI Background
-            </Label>
-            <Label 
-              className="flex items-center justify-center cursor-pointer aspect-square w-full rounded-md border border-slate-700 bg-slate-800/60 backdrop-blur-md"
-              onClick={() => setGenerateAiBackground(!generateAiBackground)}
-            >
-              <div className="relative">
-                <WandSparkles className="h-3 w-3 text-white/80" />
-                {generateAiBackground && (
-                  <div className="absolute -top-1 -right-1 h-2 w-2 bg-emerald-500 rounded-full border border-white/20"></div>
-                )}
-              </div>
-            </Label>
+            <div className="relative">
+              <Label 
+                className="flex items-center justify-center cursor-pointer aspect-square w-full rounded-md border border-slate-700 bg-black/30 backdrop-blur-lg hover:bg-black/40 transition-colors"
+                onClick={() => setGenerateAiBackground(!generateAiBackground)}
+              >
+                <div className="relative">
+                  <WandSparkles className="h-4 w-4 text-white/80" />
+                  {generateAiBackground && (
+                    <div className="absolute -top-1 -right-1 h-2 w-2 bg-emerald-500 rounded-full border border-white/20"></div>
+                  )}
+                </div>
+              </Label>
+            </div>
           </div>
           
           {/* Brand Kit Logo Option - Moved to quality/format row */}

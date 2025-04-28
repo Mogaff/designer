@@ -55,15 +55,13 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
   const [selectedKit, setSelectedKit] = useState<BrandKit | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>('');
   
-  // Animation style for sliding from right
+  // Animation style for sliding from right - pushing content instead of overlaying
   const slideInStyle = {
-    position: 'absolute',
-    top: 0,
-    right: isOpen ? 0 : '-100%',
+    position: 'relative',
+    transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
     width: '100%',
     height: '100%',
-    zIndex: 50,
-    transition: 'right 0.3s ease-in-out',
+    transition: 'transform 0.3s ease-in-out',
     background: 'rgba(15, 23, 42, 0.8)',
     backdropFilter: 'blur(8px)',
     borderLeft: '1px solid rgba(255, 255, 255, 0.1)',

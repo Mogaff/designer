@@ -83,11 +83,21 @@ Create this as an advertisement design, NOT as a website or HTML.`;
         <div className="flex flex-col lg:flex-row w-full h-[calc(100vh-80px)] gap-3 mt-10">
           {/* Left Sidebar - Contains Design Creation and Tabs */}
           <div className="w-full lg:w-[250px] backdrop-blur-md bg-white/5 border border-white/10 overflow-hidden flex flex-col rounded-lg relative">
-            {/* Brand Kit Panel as a child of the Create Design panel */}
-            <BrandKitPanel 
-              isOpen={isBrandKitPanelOpen && !selectedTemplate} 
-              onClose={() => setIsBrandKitPanelOpen(false)} 
-            />
+            {/* Home uses a different structure for the BrandKit panel */}
+            <div className={`absolute inset-0 w-full h-full overflow-hidden flex transition-transform duration-300 ${isBrandKitPanelOpen && !selectedTemplate ? 'translate-x-[-100%]' : 'translate-x-0'}`}>
+              <div className="flex-shrink-0 min-w-full">
+                {/* Main content container */}
+                <div className="relative w-full h-full"></div>
+              </div>
+              
+              <div className="flex-shrink-0 min-w-full">
+                {/* BrandKit panel container */}
+                <BrandKitPanel 
+                  isOpen={isBrandKitPanelOpen && !selectedTemplate} 
+                  onClose={() => setIsBrandKitPanelOpen(false)} 
+                />
+              </div>
+            </div>
             
             <div className="flex-grow overflow-auto p-2">
               {selectedTemplate ? (
