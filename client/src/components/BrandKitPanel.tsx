@@ -55,21 +55,21 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
   const [selectedKit, setSelectedKit] = useState<BrandKit | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>('');
   
-  // Animation style for sliding panel from left sidebar - tight positioning
+  // Animation style with glass effect that stays on the left
   const slideInStyle = {
     position: 'absolute',
     top: 0,
-    left: isOpen ? '252px' : '-300px', // Position tight to the left sidebar (250px width + 2px gap)
-    width: '280px',
+    left: 0,
+    width: '250px',
     height: '100%',
-    zIndex: 40,
-    transition: 'left 0.3s ease-in-out',
-    background: 'rgba(15, 23, 42, 0.95)',
-    backdropFilter: 'blur(8px)',
+    zIndex: 50,
+    opacity: isOpen ? 1 : 0,
+    visibility: isOpen ? 'visible' : 'hidden',
+    transition: 'opacity 0.3s ease-in-out, visibility 0.3s ease-in-out',
+    background: 'rgba(15, 23, 42, 0.4)',
+    backdropFilter: 'blur(12px)',
     border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderLeft: '2px solid rgba(255, 255, 255, 0.15)',
-    borderRadius: '0.5rem',
-    boxShadow: '0 4px 12px -2px rgba(0, 0, 0, 0.3)'
+    borderRadius: 'inherit'
   } as React.CSSProperties;
   
   // Form setup
