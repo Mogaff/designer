@@ -12,6 +12,8 @@ import { ImageIcon, Upload, TypeIcon, Check, PaintBucket, Crown, Sparkles, WandS
 import { useIsMobile } from "@/hooks/use-mobile";
 import backgroundGradient from "../assets/background-gradient.png";
 import backgroundGradient2 from "../assets/backgroundd-gradient.png";
+import iconUpload from "../assets/iconupload.png";
+import meshGradient from "../assets/image-mesh-gradient (18).png";
 import { useUserSettings } from "@/contexts/UserSettingsContext";
 import { loadGoogleFonts, loadFont } from '@/lib/fontService';
 import PremiumDesignPanel from "./PremiumDesignPanel";
@@ -161,16 +163,41 @@ export default function AiFlyerForm({
       // Add flag for AI background generation
       formData.append("generateAiBackground", generateAiBackground.toString());
       
-      const response = await apiRequest("POST", "/api/generate-ai", formData);
-      return response.json();
+      try {
+        const response = await apiRequest("POST", "/api/generate-ai", formData);
+        const data = await response.json();
+        console.log("JSON data received:", JSON.stringify(data).substring(0, 200) + "...");
+        
+        // Workaround to check for empty object
+        if (Object.keys(data).length === 0) {
+          console.error("Empty response object received");
+          throw new Error("Empty response received from server");
+        }
+        
+        // Ensure designs property exists
+        if (!data.designs || !Array.isArray(data.designs)) {
+          console.error("No designs array in response:", data);
+          throw new Error("Server response missing designs array");
+        }
+        
+        return data;
+      } catch (error) {
+        console.error("Error parsing JSON response:", error);
+        throw error;
+      }
     },
     onSuccess: (data: DesignSuggestions) => {
+      // Add debug logging to see what's coming back from the server
+      console.log("Server response:", data);
+      
       // Store all designs in state for display
       setDesignSuggestions(data.designs);
       
       // Automatically select and display the first design
       if (data.designs && data.designs.length > 0) {
         const firstDesign = data.designs[0];
+        console.log("First design:", firstDesign);
+        
         setGeneratedFlyer({
           imageUrl: firstDesign.imageBase64,
           headline: "AI Generated Design",
@@ -180,6 +207,7 @@ export default function AiFlyerForm({
         });
       } else {
         // Clear any existing design if no designs were generated
+        console.log("No designs returned from server");
         setGeneratedFlyer(null);
       }
       
@@ -455,11 +483,11 @@ export default function AiFlyerForm({
             {/* Background Image Upload - Fixed size container */}
             <div className="relative w-full h-28 overflow-hidden rounded-xl group transition-all duration-300 border border-gray-800/50 hover:border-indigo-500/50 hover:shadow-md hover:shadow-indigo-500/20">
               {/* Background Gradient Image */}
-              <div className="absolute inset-0 z-0">
+              <div className="absolute inset-0 z-0" style={{ overflow: 'hidden' }}>
                 <img 
                   src={backgroundGradient} 
                   alt="" 
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
               </div>
               
@@ -485,7 +513,15 @@ export default function AiFlyerForm({
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-center h-full w-full relative z-10 rounded-xl backdrop-blur-md">
+                <div 
+                  className="flex items-center justify-center h-full w-full relative z-10 rounded-lg overflow-hidden"
+                  style={{
+                    backgroundImage: `url(${backgroundGradient})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
+                  }}
+                >
+                  <div className="absolute inset-0 bg-black/20 z-0" />
                   <Input
                     id="background-image-upload"
                     type="file"
@@ -493,21 +529,24 @@ export default function AiFlyerForm({
                     onChange={handleBackgroundImageChange}
                     className="hidden"
                   />
-                  <Button 
-                    type="button" 
-                    className="bg-indigo-500/30 backdrop-blur-md text-white rounded-full hover:bg-indigo-500/50 transition-all border border-indigo-500/40 shadow-lg"
-                    onClick={() => document.getElementById('background-image-upload')?.click()}
-                  >
-                    {isMobile ? (
-                      <Upload className="h-4 w-4" />
-                    ) : (
-                      <span className="px-4">Select Image</span>
-                    )}
-                  </Button>
+                  
+                  <div className="z-10 flex flex-col items-center gap-1">
+                    <Upload
+                      className="h-6 w-6 mb-1 text-white opacity-80" 
+                    />
+                    <Button 
+                      type="button" 
+                      variant="ghost"
+                      className="h-8 text-white hover:bg-white/10 rounded-md transition-all"
+                      onClick={() => document.getElementById('background-image-upload')?.click()}
+                    >
+                      Upload Image
+                    </Button>
+                  </div>
                   
                   {/* AI Background Generation Option */}
-                  <div className="absolute bottom-0 left-0 right-0 z-20 bg-black/50 backdrop-blur-sm p-1">
-                    <div className="flex items-center gap-1">
+                  <div className="absolute bottom-0 left-0 right-0 z-20 bg-black/60 backdrop-blur-sm p-2">
+                    <div className="flex items-center gap-1 justify-center">
                       <Checkbox 
                         id="generate-ai-bg" 
                         checked={generateAiBackground}
@@ -516,9 +555,9 @@ export default function AiFlyerForm({
                       />
                       <label 
                         htmlFor="generate-ai-bg" 
-                        className="text-[8px] text-white leading-tight cursor-pointer flex items-center"
+                        className="text-[10px] text-white leading-tight cursor-pointer flex items-center"
                       >
-                        <WandSparkles className="h-2 w-2 mr-0.5 text-indigo-300" />
+                        <WandSparkles className="h-3 w-3 mr-0.5 text-indigo-300" />
                         GENERATE WITH AI (1 CREDIT)
                       </label>
                     </div>
@@ -534,11 +573,11 @@ export default function AiFlyerForm({
             {!activeBrandKit ? (
               <div className="relative w-full h-28 overflow-hidden rounded-xl group transition-all duration-300 border border-gray-800/50 hover:border-indigo-500/50 hover:shadow-md hover:shadow-indigo-500/20">
                 {/* Background Gradient Image */}
-                <div className="absolute inset-0 z-0">
+                <div className="absolute inset-0 z-0" style={{ overflow: 'hidden' }}>
                   <img 
                     src={backgroundGradient2} 
                     alt="" 
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                 </div>
                 
@@ -564,7 +603,15 @@ export default function AiFlyerForm({
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center h-full w-full relative z-10 rounded-xl backdrop-blur-md">
+                  <div 
+                    className="flex items-center justify-center h-full w-full relative z-10 rounded-lg overflow-hidden"
+                    style={{
+                      backgroundImage: `url(${backgroundGradient})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center'
+                    }}
+                  >
+                    <div className="absolute inset-0 bg-black/20 z-0" />
                     <Input
                       id="logo-upload"
                       type="file"
@@ -572,22 +619,25 @@ export default function AiFlyerForm({
                       onChange={handleLogoChange}
                       className="hidden"
                     />
-                    <Button 
-                      type="button" 
-                      className="bg-indigo-500/30 backdrop-blur-md text-white rounded-full hover:bg-indigo-500/50 transition-all border border-indigo-500/40 shadow-lg"
-                      onClick={() => document.getElementById('logo-upload')?.click()}
-                    >
-                      {isMobile ? (
-                        <Upload className="h-4 w-4" />
-                      ) : (
-                        <span className="px-4">Select Logo</span>
-                      )}
-                    </Button>
+                    
+                    <div className="z-10 flex flex-col items-center gap-1">
+                      <Upload
+                        className="h-6 w-6 mb-1 text-white opacity-80" 
+                      />
+                      <Button 
+                        type="button" 
+                        variant="ghost"
+                        className="h-8 text-white hover:bg-white/10 rounded-md transition-all"
+                        onClick={() => document.getElementById('logo-upload')?.click()}
+                      >
+                        Upload Logo
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>
             ) : (
-              <div className="relative w-full h-28 overflow-hidden rounded-xl group transition-all duration-300 border border-gray-800/50 bg-black/20">
+              <div className="relative w-full h-28 overflow-hidden rounded-xl group transition-all duration-300 border border-gray-800/50 bg-black/20" style={{ background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%)' }}>
                 <div className="flex flex-col items-center justify-center h-full w-full text-center p-3">
                   <div className="w-12 h-12 rounded-md flex items-center justify-center overflow-hidden mb-2">
                     {activeBrandKit.logo_url ? (

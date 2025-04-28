@@ -242,16 +242,7 @@ export default function TemplateGallery({ onSelectTemplate, onClose }: TemplateG
     <div className="flex flex-col h-full bg-black/5 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden">
       <div className="flex items-center justify-between p-4 border-b border-white/10">
         <h2 className="text-lg font-semibold text-white">Design Templates</h2>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={onClose}
-          className="text-white/70 hover:text-white hover:bg-white/10 flex items-center gap-1"
-          type="button"
-        >
-          <X className="h-4 w-4" />
-          Close
-        </Button>
+        {/* Der X-Button wird nun automatisch von der DialogContent-Komponente bereitgestellt */}
       </div>
       
       <div className="p-4 border-b border-white/10 space-y-3">
