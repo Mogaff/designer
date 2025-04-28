@@ -389,6 +389,7 @@ export default function FlyerPreview({
                     alignItems: 'center', 
                     width: '100%', 
                     height: '100%',
+                    position: 'relative',
                   }}>
                     <img 
                       ref={imageRef}
@@ -396,7 +397,35 @@ export default function FlyerPreview({
                       alt="Generated design" 
                       className="max-w-full max-h-full object-contain"
                       style={{ maxHeight: '75vh' }}
+                      onError={(e) => {
+                        console.error("Error loading image:", e);
+                        // Display an error message in the UI
+                        e.currentTarget.style.display = 'none';
+                        const errorDiv = document.createElement('div');
+                        errorDiv.textContent = 'Error loading image. Try regenerating.';
+                        errorDiv.style.color = 'red';
+                        e.currentTarget.parentNode?.appendChild(errorDiv);
+                      }}
                     />
+
+                    {/* Show image URL for debugging */}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        bottom: '-20px',
+                        left: 0,
+                        right: 0,
+                        fontSize: '10px',
+                        color: 'rgba(255,255,255,0.5)',
+                        textAlign: 'center',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        padding: '0 5px'
+                      }}
+                    >
+                      {generatedFlyer.imageUrl.substring(0, 30)}...
+                    </div>
                   </div>
                 )}
                 

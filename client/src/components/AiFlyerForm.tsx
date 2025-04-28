@@ -167,12 +167,17 @@ export default function AiFlyerForm({
       return response.json();
     },
     onSuccess: (data: DesignSuggestions) => {
+      // Add debug logging to see what's coming back from the server
+      console.log("Server response:", data);
+      
       // Store all designs in state for display
       setDesignSuggestions(data.designs);
       
       // Automatically select and display the first design
       if (data.designs && data.designs.length > 0) {
         const firstDesign = data.designs[0];
+        console.log("First design:", firstDesign);
+        
         setGeneratedFlyer({
           imageUrl: firstDesign.imageBase64,
           headline: "AI Generated Design",
@@ -182,6 +187,7 @@ export default function AiFlyerForm({
         });
       } else {
         // Clear any existing design if no designs were generated
+        console.log("No designs returned from server");
         setGeneratedFlyer(null);
       }
       
