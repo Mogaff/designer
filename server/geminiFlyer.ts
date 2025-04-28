@@ -131,9 +131,9 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
         }
       });
       
-      // Add explicit instructions to use the image as background
+      // Add explicit instructions for creative integration of the image
       parts.push({
-        text: "IMPORTANT: Use the above image as the BACKGROUND of your flyer design. Do not try to reference it with an img tag - I will handle embedding it for you. Instead, directly create HTML that assumes the image is already the background. Use appropriate text colors that contrast well with the image's colors. Add overlays or semi-transparent elements as needed to maintain text readability over the background image."
+        text: "IMPORTANT: The above image has been provided as a design element for your flyer. Rather than simply using it as a full background, creatively integrate it into your design in one of the following ways:\n\n1. Use it as a featured visual element alongside other design components\n2. Apply artistic treatments like frames, shadows, or transformations\n3. Create a composition where the image becomes part of a larger design story\n4. Extract colors from the image to inform your color palette while using the image itself as a focal point\n\nYour design should feel professionally composed with the image as an important visual component, not just a background layer. Create visual interest through layering, contrast, and thoughtful placement."
       });
     }
     
@@ -205,25 +205,20 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
     const { htmlContent, cssStyles } = await generateFlyerContent(options);
     
     // Create a complete HTML document with the generated content
-    // Add background image styling if an image was provided
-    const backgroundStyle = options.backgroundImageBase64 
-      ? `
-          body {
-            margin: 0;
-            padding: 0;
-            background-image: url('data:image/jpeg;base64,${options.backgroundImageBase64}');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            min-height: 100vh;
-          }
-        `
-      : `
-          body {
-            margin: 0;
-            padding: 0;
-          }
-        `;
+    // Basic body styling without directly adding background image
+    const backgroundStyle = `
+      body {
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+      }
+      
+      /* Make uploaded images available as resources */
+      .user-bg-image {
+        content: url('data:image/jpeg;base64,${options.backgroundImageBase64 || ''}');
+        display: none;
+      }
+    `;
         
     // Add logo styling if a logo was provided
     const logoStyle = options.logoBase64
