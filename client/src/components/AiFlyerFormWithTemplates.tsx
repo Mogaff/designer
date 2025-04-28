@@ -84,43 +84,25 @@ export default function AiFlyerForm({
   // Mutation for generating AI flyer
   const aiGenerationMutation = useMutation({
     mutationFn: async (data: AiFlyerGenerationRequest) => {
-      const response = await apiRequest('POST', '/api/generate-ai', data, {}, true);
-      console.log("Raw response:", response);
-      
-      try {
-        // Parse the JSON response
-        const jsonData = await response.json();
-        console.log("Parsed JSON data:", jsonData);
-        return jsonData;
-      } catch (e) {
-        console.error("Failed to parse JSON response:", e);
-        throw new Error("Failed to parse server response");
-      }
+      return await apiRequest('POST', '/api/generate-ai', data, {}, true);
     },
-    onSuccess: (data: DesignSuggestions) => {
+    onSuccess: (data: any) => {
       setIsGenerating(false);
-      console.log("Server response (success):", data);
-      
-      if (data && data.designs && data.designs.length > 0) {
+      console.log("Server response:", data);
+      if (data.designs && data.designs.length > 0) {
         setDesignSuggestions(data.designs);
-        console.log(`Setting ${data.designs.length} design suggestions`);
-        
         // If we have the first design, set it immediately
         if (data.designs[0]) {
-          const firstDesign = data.designs[0];
-          console.log("First design:", firstDesign);
-          
           setGeneratedFlyer({
-            imageUrl: firstDesign.imageBase64,
+            imageUrl: data.designs[0].imageBase64 || "",
             headline: "AI Generated Design",
-            content: `Design style: ${firstDesign.style || "Custom"}`,
-            stylePrompt: firstDesign.style || prompt,
+            content: `Design style: ${data.designs[0].style || "Custom"}`,
+            stylePrompt: data.designs[0].style || prompt,
             template: "ai",
             prompt: prompt,
           });
         }
       } else {
-        console.error("No designs received in response:", data);
         toast({
           title: "Error",
           description: "Failed to generate design suggestions. Please try again.",
