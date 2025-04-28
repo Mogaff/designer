@@ -11,6 +11,7 @@ import { GeneratedFlyer, DesignVariation, DesignTemplate } from "@/lib/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Star } from "lucide-react";
+import meshGradient from "@assets/image-mesh-gradient (18).png";
 
 export default function Home() {
   const [generatedFlyer, setGeneratedFlyer] = useState<GeneratedFlyer | null>(null);
@@ -67,10 +68,16 @@ Create this as an advertisement design, NOT as a website or HTML.`;
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 to-slate-800">
+    <div className="flex flex-col min-h-screen overflow-hidden relative">
+      {/* Background gradient image */}
+      <div className="absolute inset-0 z-0">
+        <img src={meshGradient} alt="" className="w-full h-full object-cover opacity-80" />
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+      </div>
+      
       <Header />
       
-      <main className="w-full flex-grow flex p-3">
+      <main className="w-full flex-grow flex p-3 relative z-10">
         {/* Main Content Area - Full Browser Width */}
         <div className="flex flex-col lg:flex-row w-full h-[calc(100vh-80px)] gap-3 mt-10">
           {/* Left Sidebar - Contains Design Creation and Tabs */}

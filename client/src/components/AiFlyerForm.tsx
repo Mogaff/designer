@@ -488,8 +488,14 @@ export default function AiFlyerForm({
                 </div>
               ) : (
                 <div 
-                  className="flex items-center justify-center h-full w-full relative z-10 rounded-lg overflow-hidden bg-[#1c1e25]"
+                  className="flex items-center justify-center h-full w-full relative z-10 rounded-lg overflow-hidden"
+                  style={{
+                    backgroundImage: `url(${backgroundGradient})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
+                  }}
                 >
+                  <div className="absolute inset-0 bg-black/20 z-0" />
                   <Input
                     id="background-image-upload"
                     type="file"
@@ -498,7 +504,7 @@ export default function AiFlyerForm({
                     className="hidden"
                   />
                   
-                  <div className="flex flex-col items-center gap-1">
+                  <div className="z-10 flex flex-col items-center gap-1">
                     <Upload
                       className="h-6 w-6 mb-1 text-white opacity-80" 
                     />
@@ -572,8 +578,14 @@ export default function AiFlyerForm({
                   </div>
                 ) : (
                   <div 
-                    className="flex items-center justify-center h-full w-full relative z-10 rounded-lg overflow-hidden bg-[#1c1e25]"
+                    className="flex items-center justify-center h-full w-full relative z-10 rounded-lg overflow-hidden"
+                    style={{
+                      backgroundImage: `url(${backgroundGradient})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center'
+                    }}
                   >
+                    <div className="absolute inset-0 bg-black/20 z-0" />
                     <Input
                       id="logo-upload"
                       type="file"
@@ -582,7 +594,7 @@ export default function AiFlyerForm({
                       className="hidden"
                     />
                     
-                    <div className="flex flex-col items-center gap-1">
+                    <div className="z-10 flex flex-col items-center gap-1">
                       <Upload
                         className="h-6 w-6 mb-1 text-white opacity-80" 
                       />
