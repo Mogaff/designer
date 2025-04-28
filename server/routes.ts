@@ -136,10 +136,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Add images to options if provided (using type assertion for files)
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
       
+      // Check for uploaded background image file
       if (files && files.background_image && files.background_image[0]) {
-        log("Background image received for AI generation", "generator");
+        log("Background image file received for AI generation", "generator");
         const backgroundImageBase64 = files.background_image[0].buffer.toString('base64');
         generationOptions.backgroundImageBase64 = backgroundImageBase64;
+      } 
+      // Check for background image URL from AI generation
+      else if (req.body.backgroundImageUrl) {
+        log("Background image URL received for AI generation", "generator");
+        try {
+          // Fetch the image from the URL
+          const axios = require('axios');
+          const imageResponse = await axios.get(req.body.backgroundImageUrl, { responseType: 'arraybuffer' });
+          const imageBuffer = Buffer.from(imageResponse.data, 'binary');
+          const backgroundImageBase64 = imageBuffer.toString('base64');
+          generationOptions.backgroundImageBase64 = backgroundImageBase64;
+        } catch (error) {
+          log(`Error fetching background image from URL: ${error}`, "generator");
+          // Continue without background image if there's an error
+        }
       }
       
       if (files && files.logo && files.logo[0]) {
