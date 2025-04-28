@@ -26,7 +26,7 @@ const upload = multer({
 
 // Create a multer middleware that can handle multiple files
 const uploadFields = upload.fields([
-  { name: 'backgroundImage', maxCount: 1 },
+  { name: 'background_image', maxCount: 1 },
   { name: 'logo', maxCount: 1 }
 ]);
 
@@ -136,9 +136,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Add images to options if provided (using type assertion for files)
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
       
-      if (files && files.backgroundImage && files.backgroundImage[0]) {
+      if (files && files.background_image && files.background_image[0]) {
         log("Background image received for AI generation", "generator");
-        const backgroundImageBase64 = files.backgroundImage[0].buffer.toString('base64');
+        const backgroundImageBase64 = files.background_image[0].buffer.toString('base64');
         generationOptions.backgroundImageBase64 = backgroundImageBase64;
       }
       
