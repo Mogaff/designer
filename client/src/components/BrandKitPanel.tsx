@@ -55,20 +55,21 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
   const [selectedKit, setSelectedKit] = useState<BrandKit | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>('');
   
-  // Animation style for sliding panel from left sidebar
+  // Animation style for sliding panel from left sidebar - tight positioning
   const slideInStyle = {
     position: 'absolute',
     top: 0,
-    left: isOpen ? '250px' : '-320px', // Position relative to the left sidebar (250px width)
-    width: '300px',
+    left: isOpen ? '252px' : '-300px', // Position tight to the left sidebar (250px width + 2px gap)
+    width: '280px',
     height: '100%',
     zIndex: 40,
     transition: 'left 0.3s ease-in-out',
-    background: 'rgba(15, 23, 42, 0.9)',
+    background: 'rgba(15, 23, 42, 0.95)',
     backdropFilter: 'blur(8px)',
     border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderLeft: '2px solid rgba(255, 255, 255, 0.15)',
     borderRadius: '0.5rem',
-    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)'
+    boxShadow: '0 4px 12px -2px rgba(0, 0, 0, 0.3)'
   } as React.CSSProperties;
   
   // Form setup
