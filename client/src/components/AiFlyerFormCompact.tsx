@@ -76,7 +76,7 @@ export default function AiFlyerFormCompact({
   // Mutation for generating AI flyer
   const aiGenerationMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      return await apiRequest('/api/generate-ai', 'POST', data, true);
+      return await apiRequest('/api/generate-ai', 'POST', data as any, true);
     },
     onSuccess: (data: any) => {
       setIsGenerating(false);
@@ -84,6 +84,7 @@ export default function AiFlyerFormCompact({
         setDesignSuggestions(data.suggestions);
         // If we have a suggested HTML, set it immediately
         if (data.suggestions[0].html) {
+          // Create a GeneratedFlyer object with all required properties
           setGeneratedFlyer({
             html: data.suggestions[0].html,
             css: data.suggestions[0].css || "",
@@ -91,7 +92,11 @@ export default function AiFlyerFormCompact({
             backgroundImageUrl: data.suggestions[0].backgroundImageUrl || "",
             logoUrl: logoPreview || (activeBrandKit?.logo_url || ""),
             prompt: prompt,
-          } as GeneratedFlyer);
+            headline: data.suggestions[0].headline || "",
+            content: data.suggestions[0].content || "",
+            stylePrompt: data.suggestions[0].stylePrompt || "",
+            template: data.suggestions[0].template || ""
+          });
         }
       } else {
         toast({
