@@ -83,20 +83,15 @@ export default function AiFlyerFormCompact({
       setIsGenerating(false);
       if (data.suggestions && data.suggestions.length > 0) {
         setDesignSuggestions(data.suggestions);
-        // If we have a suggested HTML, set it immediately
-        if (data.suggestions[0].html) {
+        // Show the first design suggestion immediately
+        if (data.suggestions[0]) {
           // Create a GeneratedFlyer object with all required properties
           setGeneratedFlyer({
-            html: data.suggestions[0].html,
-            css: data.suggestions[0].css || "",
-            imageUrl: data.suggestions[0].imageUrl || "",
-            backgroundImageUrl: data.suggestions[0].backgroundImageUrl || "",
-            logoUrl: logoPreview || (activeBrandKit?.logo_url || ""),
-            prompt: prompt,
-            headline: data.suggestions[0].headline || "",
-            content: data.suggestions[0].content || "",
-            stylePrompt: data.suggestions[0].stylePrompt || "",
-            template: data.suggestions[0].template || ""
+            imageUrl: data.suggestions[0].imageBase64 || "",
+            headline: "AI Generated Design",
+            content: `Design style: ${data.suggestions[0].style || "Custom"}`,
+            stylePrompt: data.suggestions[0].style || prompt,
+            template: "ai"
           });
         }
       } else {
