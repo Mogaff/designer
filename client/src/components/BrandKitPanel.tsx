@@ -55,20 +55,18 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
   const [selectedKit, setSelectedKit] = useState<BrandKit | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>('');
   
-  // Animation style with glass effect that stays on the left
+  // Animation style for sliding from right
   const slideInStyle = {
     position: 'absolute',
     top: 0,
-    left: 0,
-    width: '250px',
+    right: isOpen ? 0 : '-100%',
+    width: '100%',
     height: '100%',
     zIndex: 50,
-    opacity: isOpen ? 1 : 0,
-    visibility: isOpen ? 'visible' : 'hidden',
-    transition: 'opacity 0.3s ease-in-out, visibility 0.3s ease-in-out',
-    background: 'rgba(15, 23, 42, 0.4)',
-    backdropFilter: 'blur(12px)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
+    transition: 'right 0.3s ease-in-out',
+    background: 'rgba(15, 23, 42, 0.8)',
+    backdropFilter: 'blur(8px)',
+    borderLeft: '1px solid rgba(255, 255, 255, 0.1)',
     borderRadius: 'inherit'
   } as React.CSSProperties;
   

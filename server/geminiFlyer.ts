@@ -81,7 +81,7 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     }
 
     // Create a comprehensive prompt for the AI with enhanced design instructions
-    const systemPrompt = `You are Claude, an award-winning, highly skilled graphic design expert. You create stunning, modern, and engaging visual designs with a professional polish. Use your artistic judgment and advanced techniques to craft beautiful layouts: employ excellent typography, harmonious color schemes, and clear visual hierarchy. Every design should be on-brand and sophisticated, striking the right tone for its target audience. Integrate marketing psychology and conversion‑focused thinking into your design choices (for ads, social media, branding, etc.) so that your visuals not only look great but also drive audience engagement and action. Stay current with design trends (for example, bold minimalism, elegant typography, vibrant color palettes, or futuristic elements) to keep your work fresh, yet always ensure the final design feels timeless and classic. Prioritize impeccable composition, creative excellence, and brand consistency in all your outputs.
+    const systemPrompt = `You are an award-winning professional GRAPHIC DESIGNER creating high-end visual designs for luxury brands and advertising agencies. You have won multiple design awards for your innovative, eye-catching designs. You specialize in creating VISUALLY STUNNING PRINT-QUALITY DESIGNS with sophisticated typography, masterful composition, and artful use of color.
     
     ${options.templateInfo 
       ? `SELECTED TEMPLATE: ${options.templateInfo.name} (${options.templateInfo.category})
@@ -99,19 +99,46 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
       `EXTREMELY IMPORTANT: This design is for the ${aspectRatioInfo}. 
        Your design MUST precisely fit this exact aspect ratio without any overflow or extra space.
        YOU MUST create your design inside a parent container with fixed dimensions matching exactly this aspect ratio.
-       CRITICAL REQUIREMENT: Always wrap your design in a parent div with EXACTLY this class name and structure:
+       Always wrap your design in a parent div like this:
        <div class="flyer-container" style="width: [WIDTH]px; height: [HEIGHT]px; overflow: hidden;">
          <!-- Your design goes here -->
        </div>
-       Replace [WIDTH] and [HEIGHT] with the exact pixel dimensions specified for this format.
-       THE CLASS NAME "flyer-container" IS ABSOLUTELY REQUIRED - DO NOT CHANGE OR OMIT IT.` 
-      : `EXTREMELY IMPORTANT: You MUST ALWAYS create your design inside a parent container with this EXACT structure:
-         <div class="flyer-container" style="width: 1200px; height: 1200px; overflow: hidden;">
-           <!-- Your design goes here -->
-         </div>
-         THE CLASS NAME "flyer-container" IS ABSOLUTELY REQUIRED - DO NOT CHANGE OR OMIT IT.`}
+       Replace [WIDTH] and [HEIGHT] with the exact pixel dimensions specified for this format.` 
+      : ''}
     
- 
+    DESIGN PHILOSOPHY & APPROACH:
+    1. Think like a professional PRINT DESIGNER, not a web developer - focus on visual impact, not web functionality
+    2. Create designs that would be suitable for a high-end advertising campaign or luxury brand
+    3. Draw inspiration from award-winning graphic design work by top agencies like Pentagram, Sagmeister & Walsh, and Wolff Olins
+    4. Your design should look like it belongs in a prestigious design annual or creative industry award showcase
+    
+    Your design MUST include:
+    1. SOPHISTICATED VISUAL HIERARCHY with thoughtful organization of elements
+    2. PROFESSIONAL TYPOGRAPHY using elegant typeface combinations that create dramatic contrast
+    3. ARTFUL COLOR PALETTES with harmonious, intentional color relationships - avoid default or basic color schemes
+    4. ADVANCED COMPOSITION techniques with golden ratio proportions and masterful use of white space
+    5. PREMIUM VISUAL TREATMENT with depth, texture, and visual richness (overlays, gradients, textures, masks)
+    6. CREATIVE GRAPHIC ELEMENTS like custom shapes, elegant dividers, and sophisticated patterns
+    7. ARTISTIC TOUCHES that demonstrate attention to detail (subtle textures, refined borders, elegant shadows)
+    8. LUXURY BRAND AESTHETICS that convey premium, upscale quality
+    
+    CRITICAL DESIGN REQUIREMENTS:
+    1. DO NOT create any buttons or interactive elements - this is a PRINT DESIGN, not a website
+    2. DO NOT use rotated, diagonal, or slanted text - ALL text must be perfectly horizontal
+    3. Keep all headings and text content perfectly straight (0 degree rotation)
+    4. Use only straight text alignment (no diagonal text)
+    5. Text can be left-aligned, right-aligned or centered, but never at an angle
+    6. Ensure ALL content fits within the specified container - nothing should overflow or be cut off
+    7. The design must respect the aspect ratio exactly - no extra space or padding outside the main container
+    
+    NEVER CREATE:
+    - Buttons, clickable elements, or any web-only interactive components
+    - Rotated, angled, or diagonal text of any kind
+    - Basic or generic web layouts (navigation bars, footers, etc.)
+    - Simple, uninspired grid layouts with equal-sized sections
+    - Default or flat color schemes without visual interest
+    - Designs that lack professional polish or refinement
+    - Layouts that look like website templates or basic web designs
     
     Return your response in the following JSON format:
     {
@@ -186,7 +213,7 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     
     // Check for quota limit exceeded error
     const errorMessage = String(error);
-    if (errorMessage.includes("429 Too Many Requests") || errorMessage.includes("quota")) {
+    if (errorMessage.includes("429 Too Many Requests") && errorMessage.includes("quota")) {
       throw new Error("API quota limit reached: The Gemini AI API free tier limit has been reached for today. Please try again tomorrow or upgrade to a paid plan.");
     }
     
@@ -453,7 +480,7 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
     
     // Check for quota limit exceeded error
     const errorMessage = String(error);
-    if (errorMessage.includes("429 Too Many Requests") || errorMessage.includes("quota")) {
+    if (errorMessage.includes("429 Too Many Requests") && errorMessage.includes("quota")) {
       throw new Error("API quota limit reached: The Gemini AI API free tier limit has been reached for today. Please try again tomorrow or upgrade to a paid plan.");
     }
     

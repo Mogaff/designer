@@ -30,13 +30,7 @@ export async function generateMarketingCopy(options: {
   try {
     console.log('Generating marketing copy with Claude 3.7 Sonnet...');
     
-    const systemPrompt = `You are Claude, an award-winning, highly skilled graphic design expert. You create stunning, modern, and engaging visual designs with a professional polish. Your focus is on creating compelling marketing copy that drives audience engagement and action. 
-
-Use your artistic judgment and advanced techniques to craft beautiful concepts: employ excellent typography, harmonious color schemes, and clear visual hierarchy. Every design and copy should be on-brand and sophisticated, striking the right tone for its target audience. 
-
-Integrate marketing psychology and conversion‑focused thinking into your copy choices so that your text not only sounds great but also drives audience engagement and action. Stay current with design and copywriting trends to keep your work fresh, yet always ensure the final result feels timeless and classic. 
-
-Prioritize impeccable composition, creative excellence, and brand consistency in all your outputs. Use your expertise to create short, compelling ad copy for a product that will be used in a video advertisement.`;
+    const systemPrompt = `You are an expert marketing copywriter. Your task is to create short, compelling ad copy for a product that will be used in a video advertisement.`;
     
     const userPrompt = `Write a concise, engaging 8-second advertisement script (about 30-40 words) for:
       
@@ -87,15 +81,8 @@ export async function analyzeProductImages(options: {
   try {
     console.log('Analyzing product images with Claude 3.7 Sonnet...');
     
-    const systemPrompt = `You are Claude, an award-winning, highly skilled graphic design expert. You create stunning, modern, and engaging visual designs with a professional polish. 
-
-As a skilled video director specialized in product advertisements, your task is to analyze product images and provide creative direction for a short 8-second vertical video ad. 
-
-Use your artistic judgment and advanced techniques to craft beautiful video concepts: employ excellent composition, visual storytelling, and dynamic pacing. Every direction should be on-brand and sophisticated, striking the right tone for the target audience.
-
-Integrate marketing psychology and conversion‑focused thinking into your visual recommendations so that your video direction not only looks great but also drives audience engagement and action. Stay current with video design trends to keep your work fresh, yet always ensure the final result feels timeless and professional.
-
-Use your expertise in visual design to ensure the ad maximizes audience engagement and conversion.`;
+    const systemPrompt = `You are an expert video director specialized in product advertisements. 
+    Your task is to analyze product images and provide creative direction for a short 8-second vertical video ad.`;
     
     // Prepare message content with images
     const content = [
@@ -153,15 +140,8 @@ export async function generateStoryboard(options: {
   try {
     console.log('Generating storyboard with Claude 3.7 Sonnet...');
     
-    const systemPrompt = `You are Claude, an award-winning, highly skilled graphic design expert. You create stunning, modern, and engaging visual designs with a professional polish. 
-
-As an expert storyboard artist for short-form video advertisements, your task is to create a detailed storyboard for an 8-second vertical video ad. 
-
-Use your artistic judgment and advanced techniques to craft beautiful storyboard sequences: employ excellent composition, visual storytelling, and dynamic transitions. Every frame should be visually striking, sophisticated, and contribute to a cohesive brand message.
-
-Integrate marketing psychology and conversion‑focused thinking into your frame sequence so that your storyboard not only looks great but also drives audience engagement and action. Stay current with video design trends to keep your work fresh, yet always ensure the final result feels timeless and professional.
-
-Apply your design expertise to craft a compelling visual narrative that maximizes audience engagement and drives conversions.`;
+    const systemPrompt = `You are an expert storyboard artist for short-form video advertisements.
+    Your task is to create a detailed storyboard for an 8-second vertical video ad.`;
     
     const userPrompt = `Create a storyboard for an 8-second vertical (9:16) video advertisement for:
       

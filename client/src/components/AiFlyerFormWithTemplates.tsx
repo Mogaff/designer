@@ -10,8 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { ImageIcon, Upload, TypeIcon, Check, PaintBucket, Crown, Sparkles, WandSparkles, Star } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import backgroundGradient from "@assets/image-mesh-gradient (11).png";
-import backgroundGradient2 from "@assets/image-mesh-gradient (13).png";
+import backgroundGradient from "../assets/background-gradient.png";
+import backgroundGradient2 from "../assets/backgroundd-gradient.png";
 import { useUserSettings } from "@/contexts/UserSettingsContext";
 import { loadGoogleFonts, loadFont } from '@/lib/fontService';
 import PremiumDesignPanel from "./PremiumDesignPanel";
@@ -43,221 +43,417 @@ export default function AiFlyerForm({
   aspectRatio,
   setAspectRatio,
   onOpenBrandKitPanel,
-  selectedTemplate,
+  selectedTemplate
 }: AiFlyerFormProps) {
-  const { toast } = useToast();
-  const isMobile = useIsMobile();
-  const { userSettings } = useUserSettings();
-  
-  // State for form inputs
-  const [prompt, setPrompt] = useState<string>("");
+  const [prompt, setPrompt] = useState("");
   const [backgroundImage, setBackgroundImage] = useState<File | null>(null);
   const [backgroundImagePreview, setBackgroundImagePreview] = useState<string>("");
   const [logo, setLogo] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>("");
-  const [generateAiBackground, setGenerateAiBackground] = useState<boolean>(false);
+  const [designCount, setDesignCount] = useState<string>("4"); // Default to 4 designs
+  const [generateAiBackground, setGenerateAiBackground] = useState<boolean>(false); // AI background generation toggle
+  const [isPremiumDialogOpen, setIsPremiumDialogOpen] = useState(false);
+  const [selectedPremiumOption, setSelectedPremiumOption] = useState<string | null>(null);
+  const { fontSettings } = useUserSettings(); // Get font settings from context
   
-  // State for premium design options
-  const [isPremiumDialogOpen, setIsPremiumDialogOpen] = useState<boolean>(false);
-  const [selectedPremiumOption, setSelectedPremiumOption] = useState<string>("");
-  const [designCount, setDesignCount] = useState<string>("1");
-  
-  // Aspect ratio options for the dropdown
-  const aspectRatioOptions = [
-    { id: "square", label: "Square - 1:1 (Instagram, Facebook)", value: "1:1" },
-    { id: "portrait", label: "Portrait - 4:5 (Instagram)", value: "4:5" },
-    { id: "landscape", label: "Landscape - 16:9 (YouTube, Twitter)", value: "16:9" },
-    { id: "story", label: "Story - 9:16 (Instagram, TikTok)", value: "9:16" },
-    { id: "facebook", label: "Facebook Cover - 851:315", value: "851:315" },
-    { id: "a4portrait", label: "A4 Portrait - 210:297", value: "210:297" },
-    { id: "a4landscape", label: "A4 Landscape - 297:210", value: "297:210" }
-  ];
-  
-  // Query for active brand kit
+  // Get active brand kit
   const { data: activeBrandKitData } = useQuery<{ brandKit: BrandKit }>({
     queryKey: ['/api/brand-kits/active'],
-    enabled: !selectedTemplate, // Only fetch if not using a template
+    refetchOnWindowFocus: false,
   });
   
   const activeBrandKit = activeBrandKitData?.brandKit;
   
-  // Mutation for generating AI flyer
-  const aiGenerationMutation = useMutation({
-    mutationFn: async (data: AiFlyerGenerationRequest) => {
-      return await apiRequest('POST', '/api/generate-ai', data, {}, true);
+  type AspectRatioOption = {
+    id: string;
+    label: string;
+    value: string;
+  };
+  
+  const aspectRatioOptions: AspectRatioOption[] = [
+    // Square formats
+    { id: "post", label: "Social Media Post (1200×1200)", value: "1/1" },
+    
+    // Landscape formats
+    { id: "fb_cover", label: "Facebook Cover (820×312)", value: "820/312" },
+    { id: "twitter_header", label: "Twitter Header (1500×500)", value: "3/1" },
+    { id: "yt_thumbnail", label: "YouTube Thumbnail (1280×720)", value: "16/9" },
+    { id: "linkedin_banner", label: "LinkedIn Banner (1584×396)", value: "4/1" },
+    
+    // Video/Ad formats
+    { id: "instream", label: "Video Ad (1920×1080)", value: "16/9" },
+    { id: "stories", label: "Instagram Stories (1080×1920)", value: "9/16" },
+    { id: "pinterest", label: "Pinterest Pin (1000×1500)", value: "2/3" },
+    
+    // Display Ad formats
+    { id: "leaderboard", label: "Leaderboard Ad (728×90)", value: "728/90" },
+    { id: "square_ad", label: "Square Ad (250×250)", value: "1/1" },
+    { id: "skyscraper", label: "Skyscraper Ad (160×600)", value: "160/600" },
+  ];
+  const { toast } = useToast();
+  const isMobile = useIsMobile();
+
+  // Set appropriate options when a template is selected
+  useEffect(() => {
+    if (selectedTemplate) {
+      // Set a relevant aspect ratio for the template if needed
+      if (selectedTemplate.category === "Social Media" || selectedTemplate.tags.includes("social")) {
+        setAspectRatio("post"); // 1:1 for social posts
+      } else if (selectedTemplate.category === "Banner" || selectedTemplate.tags.includes("banner")) {
+        setAspectRatio("fb_cover"); // Wide format for banners
+      }
+      
+      // Auto-select premium option if the template is premium
+      if (selectedTemplate.isPremium) {
+        setSelectedPremiumOption('premium');
+      } else {
+        setSelectedPremiumOption('basic');
+      }
+    }
+  }, [selectedTemplate]);
+
+  // Generate AI background image
+  const generateAiBackgroundMutation = useMutation({
+    mutationFn: async (prompt: string) => {
+      const response = await apiRequest("POST", "/api/generate-background", {
+        prompt,
+        imageSize: aspectRatio === "9/16" || aspectRatio === "2/3" ? "portrait_4_3" : 
+                 aspectRatio === "1/1" ? "square" : "landscape_4_3"
+      });
+      return response.json();
     },
-    onSuccess: (data: any) => {
-      setIsGenerating(false);
-      console.log("Server response:", data);
+    onSuccess: (data) => {
+      // Set the background image preview with the generated image URL
+      setBackgroundImagePreview(data.imageUrl);
+      setBackgroundImage(null); // Clear any uploaded file
+      
+      toast({
+        title: "Background Generated",
+        description: "AI background image created successfully! (1 credit used)",
+      });
+    },
+    onError: (error) => {
+      console.error("Error generating AI background:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to generate AI background";
+      
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Generate AI flyer designs
+  const generateAiFlyerMutation = useMutation({
+    mutationFn: async (data: AiFlyerGenerationRequest) => {
+      const formData = new FormData();
+      formData.append("prompt", data.prompt);
+      
+      // If we have a background image file, use it
+      if (data.backgroundImage) {
+        formData.append("backgroundImage", data.backgroundImage);
+      } 
+      // If we have a background image preview URL from AI generation, include it
+      else if (backgroundImagePreview && generateAiBackground) {
+        formData.append("backgroundImageUrl", backgroundImagePreview || "");
+      }
+      
+      if (data.logo) {
+        formData.append("logo", data.logo);
+      }
+      
+      if (data.designCount) {
+        formData.append("designCount", data.designCount.toString());
+      }
+      
+      if (data.aspectRatio) {
+        formData.append("aspectRatio", data.aspectRatio);
+      }
+      
+      // Add font settings to request
+      if (data.fontSettings) {
+        formData.append("headingFont", data.fontSettings.headingFont);
+        formData.append("bodyFont", data.fontSettings.bodyFont);
+      }
+      
+      // Add flag for AI background generation
+      formData.append("generateAiBackground", generateAiBackground.toString());
+      
+      // Add template information if provided
+      if (data.templateInfo) {
+        formData.append("templateInfo", JSON.stringify(data.templateInfo));
+      }
+      
+      const response = await apiRequest("POST", "/api/generate-ai", formData);
+      return response.json();
+    },
+    onSuccess: (data: DesignSuggestions) => {
+      // Store all designs in state for display
+      setDesignSuggestions(data.designs);
+      
+      // Automatically select and display the first design
       if (data.designs && data.designs.length > 0) {
-        setDesignSuggestions(data.designs);
-        // If we have the first design, set it immediately
-        if (data.designs[0]) {
-          setGeneratedFlyer({
-            imageUrl: data.designs[0].imageBase64 || "",
-            headline: "AI Generated Design",
-            content: `Design style: ${data.designs[0].style || "Custom"}`,
-            stylePrompt: data.designs[0].style || prompt,
-            template: "ai",
-            prompt: prompt,
-          });
-        }
+        const firstDesign = data.designs[0];
+        setGeneratedFlyer({
+          imageUrl: firstDesign.imageBase64,
+          headline: "AI Generated Design",
+          content: `Design style: ${firstDesign.style}`,
+          stylePrompt: prompt, // Save the original prompt
+          template: "ai"
+        });
+      } else {
+        // Clear any existing design if no designs were generated
+        setGeneratedFlyer(null);
+      }
+      
+      setIsGenerating(false);
+      
+      // Refresh the gallery to show newly saved designs
+      queryClient.invalidateQueries({ queryKey: ['/api/creations'] });
+      
+      // Show different messages based on how many designs were generated
+      if (data.designs.length >= 4) {
+        toast({
+          title: "Success!",
+          description: `Generated ${data.designs.length} design variations for you to choose from.`,
+        });
       } else {
         toast({
-          title: "Error",
-          description: "Failed to generate design suggestions. Please try again.",
-          variant: "destructive",
+          title: "Partial Success",
+          description: `Generated ${data.designs.length} design variations. Some designs could not be generated due to API quota limits.`,
+          duration: 5000,
         });
       }
     },
-    onError: (error: any) => {
+    onError: (error) => {
       setIsGenerating(false);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to generate flyer. Please try again.",
-        variant: "destructive",
-      });
-    },
+      setDesignSuggestions(null);
+      
+      // Get the error message
+      let errorMessage = error instanceof Error ? error.message : "Failed to generate AI design";
+      
+      // Check if it's a quota limit error
+      if (errorMessage.includes("API quota limit reached")) {
+        toast({
+          title: "API Quota Limit Reached",
+          description: "The Gemini AI API free tier limit has been reached for today. Please try again tomorrow.",
+          variant: "destructive",
+          duration: 7000,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
+    }
   });
-  
-  // Handle file changes (background image)
+
   const handleBackgroundImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check file type
+      if (!file.type.match('image.*')) {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload an image file",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please upload an image smaller than 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       setBackgroundImage(file);
-      setBackgroundImagePreview(URL.createObjectURL(file));
-      setGenerateAiBackground(false); // Disable AI background when user uploads an image
+      
+      // Create image preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setBackgroundImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
   
-  // Clear background image
-  const clearBackgroundImage = () => {
-    setBackgroundImage(null);
-    if (backgroundImagePreview) {
-      URL.revokeObjectURL(backgroundImagePreview);
-    }
-    setBackgroundImagePreview("");
-  };
-  
-  // Handle file changes (logo)
   const handleLogoChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check file type
+      if (!file.type.match('image.*')) {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload an image file",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please upload an image smaller than 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       setLogo(file);
-      setLogoPreview(URL.createObjectURL(file));
+      
+      // Create image preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
-  
-  // Clear logo
-  const clearLogo = () => {
-    setLogo(null);
-    if (logoPreview) {
-      URL.revokeObjectURL(logoPreview);
-    }
-    setLogoPreview("");
-  };
-  
-  // Handle form submission
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     
-    if (!prompt && !selectedTemplate) {
+    if (!prompt.trim()) {
       toast({
-        title: "Missing Input",
-        description: "Please provide a prompt for your design.",
+        title: "Prompt required",
+        description: "Please enter a description for your flyer",
         variant: "destructive",
       });
       return;
     }
+
+    // If no premium option is selected, show the dialog
+    if (!selectedPremiumOption) {
+      setIsPremiumDialogOpen(true);
+      return;
+    }
+    
+    // Use brand kit fonts if available, otherwise use user settings
+    const fontsToUse: FontSettings = activeBrandKit 
+      ? {
+          headingFont: activeBrandKit.heading_font || fontSettings.headingFont,
+          bodyFont: activeBrandKit.body_font || fontSettings.bodyFont
+        }
+      : fontSettings;
+      
+    // If using brand kit, add the brand colors to the prompt
+    let enhancedPrompt = prompt;
+    
+    // Add quality instructions based on the premium option
+    switch(selectedPremiumOption) {
+      case 'premium':
+        enhancedPrompt += " Create a high quality professional design with attention to detail.";
+        break;
+      case 'elite':
+        enhancedPrompt += " Create a premium quality design with sophisticated styling and perfect proportions.";
+        break;
+      case 'ultimate':
+        enhancedPrompt += " Create an ultra-high quality design with immaculate attention to detail, sophisticated styling and perfect balance.";
+        break;
+    }
+    
+    if (activeBrandKit) {
+      enhancedPrompt += ` Use these brand colors: primary color ${activeBrandKit.primary_color}, secondary color ${activeBrandKit.secondary_color}, accent color ${activeBrandKit.accent_color}.`;
+      
+      // If brand voice is defined, also add that to the prompt
+      if (activeBrandKit.brand_voice) {
+        enhancedPrompt += ` Brand voice: ${activeBrandKit.brand_voice}.`;
+      }
+    }
     
     setIsGenerating(true);
     
-    // Prepare form data for submission
-    const formData = new FormData();
-    formData.append("prompt", prompt);
-    
-    if (backgroundImage) {
-      formData.append("background_image", backgroundImage);
-    }
-    
-    if (logo) {
-      formData.append("logo", logo);
-    }
-    
-    // If a template is selected, include its ID
-    if (selectedTemplate) {
-      formData.append("template_id", selectedTemplate.id.toString());
-    }
-    
-    // Include aspect ratio
-    formData.append("aspect_ratio", aspectRatio);
-    
-    // Include design count
-    formData.append("design_count", designCount);
-    
-    // Include flag for AI background generation
-    formData.append("generate_ai_background", generateAiBackground ? "true" : "false");
-    
-    // Include active brand kit ID if available
-    if (activeBrandKit && !selectedTemplate) {
-      formData.append("brand_kit_id", activeBrandKit.id.toString());
+    // Check if we need to generate a background image first
+    if (generateAiBackground && !backgroundImagePreview) {
+      // Generate a background image using the prompt
+      const bgGenPrompt = `High quality background image for a flyer with the theme: ${prompt}`;
       
-      // Include fonts from brand kit
-      const fontsToUse: FontSettings = activeBrandKit 
-        ? {
-            headingFont: activeBrandKit.heading_font as GoogleFont,
-            bodyFont: activeBrandKit.body_font as GoogleFont,
-            accentFont: activeBrandKit.accent_font as GoogleFont,
-          }
-        : {
-            headingFont: "Inter" as GoogleFont,
-            bodyFont: "Inter" as GoogleFont,
-            accentFont: "Inter" as GoogleFont,
-          };
+      toast({
+        title: "Generating Background",
+        description: "Creating AI background image first. This will use 1 additional credit.",
+      });
       
-      formData.append("fonts", JSON.stringify(fontsToUse));
+      // First generate the background image, then the flyer
+      generateAiBackgroundMutation.mutate(bgGenPrompt, {
+        onSuccess: (data) => {
+          // Once the background is generated, generate the flyer
+          generateAiFlyerMutation.mutate({ 
+            prompt: enhancedPrompt, 
+            backgroundImage: backgroundImage || undefined,
+            logo: logo || undefined,
+            designCount: parseInt(designCount),
+            aspectRatio,
+            fontSettings: fontsToUse // Use brand kit fonts if active
+          });
+        },
+        onError: (error) => {
+          // If background generation fails, still try to generate the flyer without background
+          toast({
+            title: "Background generation failed",
+            description: "Continuing with flyer generation without AI background.",
+            variant: "destructive",
+          });
+          
+          generateAiFlyerMutation.mutate({ 
+            prompt: enhancedPrompt, 
+            backgroundImage: backgroundImage || undefined,
+            logo: logo || undefined,
+            designCount: parseInt(designCount),
+            aspectRatio,
+            fontSettings: fontsToUse
+          });
+        }
+      });
+    } else {
+      // No need to generate background image, directly generate the flyer
+      // Prepare the request with template information if a template is selected
+      const mutationData = { 
+        prompt: enhancedPrompt, 
+        backgroundImage: backgroundImage || undefined,
+        logo: logo || undefined,
+        designCount: parseInt(designCount),
+        aspectRatio,
+        fontSettings: fontsToUse, // Use brand kit fonts if active
+        
+        // Add template information if a template is selected
+        templateInfo: selectedTemplate ? {
+          name: selectedTemplate.name,
+          category: selectedTemplate.category,
+          tags: selectedTemplate.tags.join(', '),
+          description: selectedTemplate.description,
+          glassMorphism: selectedTemplate.styleData?.glassMorphism || false,
+          neonEffects: selectedTemplate.styleData?.neonEffects || false
+        } : undefined
+      };
       
-      // Include colors from brand kit
-      const colorsToUse = activeBrandKit
-        ? {
-            primary: activeBrandKit.primary_color || "#3B82F6",
-            secondary: activeBrandKit.secondary_color || "#10B981",
-            accent: activeBrandKit.accent_color || "#8B5CF6",
-            background: activeBrandKit.background_color || "#1F2937",
-            text: activeBrandKit.text_color || "#F9FAFB",
-          }
-        : {
-            primary: "#3B82F6",
-            secondary: "#10B981",
-            accent: "#8B5CF6",
-            background: "#1F2937",
-            text: "#F9FAFB",
-          };
-      
-      formData.append("colors", JSON.stringify(colorsToUse));
+      generateAiFlyerMutation.mutate(mutationData);
     }
-    
-    // Submit the form data
-    aiGenerationMutation.mutate(formData as any);
+  };
+
+  const clearBackgroundImage = () => {
+    setBackgroundImage(null);
+    setBackgroundImagePreview("");
   };
   
-  // Use keyboard shortcut (Ctrl/Cmd + Enter) to submit the form
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-        e.preventDefault();
-        handleSubmit(new Event('submit') as any);
-      }
-    };
+  const clearLogo = () => {
+    setLogo(null);
+    setLogoPreview("");
+  };
+
+  // When a premium option is selected
+  const handleSelectPremiumOption = (optionId: string) => {
+    setSelectedPremiumOption(optionId);
     
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [prompt, backgroundImage, logo, aspectRatio, generateAiBackground, activeBrandKit]);
-  
-  // Function to handle keyboard shortcuts
-  const handleCommandK = (e: KeyboardEvent) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-      e.preventDefault();
+    if (optionId) {
       handleSubmit(new Event('submit') as any);
     }
   };
@@ -265,77 +461,65 @@ export default function AiFlyerForm({
   return (
     <div className="h-full flex flex-col">
       <div className="mb-2">
-        <div className="bg-slate-800 rounded-md overflow-hidden p-1.5">
-          <div className="flex items-center gap-1.5">
-            <div className="bg-slate-700 p-0.5 rounded">
-              <WandSparkles className="h-3 w-3 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xs font-medium text-white">AI Design Studio</h2>
-              <p className="text-[9px] text-white/70">Create professional designs</p>
-            </div>
-          </div>
-        </div>
+        <h2 className="text-base font-semibold text-white">Create Design</h2>
       </div>
       
-      {/* Brand Kit Badge - Compact */}
+      {/* Brand Kit Badge */}
       {activeBrandKit && !selectedTemplate && (
-        <div className="mb-2 rounded-md overflow-hidden">
-          <div className="bg-slate-800 border border-slate-700 p-1 relative z-10">
-            <div className="flex items-center gap-1.5">
-              <div className="flex-shrink-0 h-4 w-4 rounded bg-slate-700 p-0.5 flex items-center justify-center overflow-hidden">
-                {activeBrandKit.logo_url ? (
-                  <img src={activeBrandKit.logo_url} alt="Brand Logo" className="max-h-full max-w-full object-contain" />
-                ) : (
-                  <PaintBucket className="h-2.5 w-2.5 text-slate-400" />
-                )}
+        <div className="mb-3 p-2 rounded-lg border border-indigo-500/30 bg-indigo-500/10 backdrop-blur-sm">
+          <div className="flex items-center gap-2">
+            <div className="flex-shrink-0 h-8 w-8 rounded bg-white/10 p-1 flex items-center justify-center overflow-hidden">
+              {activeBrandKit.logo_url ? (
+                <img src={activeBrandKit.logo_url} alt="Brand Logo" className="max-h-full max-w-full object-contain" />
+              ) : (
+                <PaintBucket className="h-4 w-4 text-indigo-400" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-medium text-white truncate">{activeBrandKit.name}</h3>
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-300 border border-green-500/30">
+                  <Check className="mr-1 h-3 w-3" />
+                  Active
+                </span>
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1">
-                  <h3 className="text-[10px] text-white truncate">{activeBrandKit.name}</h3>
-                  <span className="inline-flex items-center px-1 py-px rounded-full text-[8px] bg-green-900/30 text-green-400">
-                    <Check className="mr-0.5 h-2 w-2" />
-                    Active
-                  </span>
-                </div>
-                <p className="text-[8px] text-white/60 truncate">Using brand colors</p>
-              </div>
+              <p className="text-xs text-white/60 truncate">Using brand colors and typography</p>
             </div>
           </div>
         </div>
       )}
       
-      <p className="text-[9px] text-white/70 mb-1">
+      <p className="text-xs text-white/70 mb-3">
         {selectedTemplate 
-          ? "Using template with style. Add custom details in prompt."
-          : "Create a prompt below and upload images for your design."}
+          ? "Using selected template with pre-defined style. Customize the prompt for your specific needs."
+          : "Enter a detailed prompt and optionally upload background image and logo for your design."}
       </p>
       
-      <form onSubmit={handleSubmit} className="space-y-1.5 flex-grow flex flex-col">
-        {/* Design prompt - Simplified */}
-        <div className="space-y-1">
-          <Label htmlFor="prompt" className="text-[10px] font-medium text-white/70 flex items-center gap-1">
-            <TypeIcon className="h-2 w-2" />
-            Creative Brief
+      <form onSubmit={handleSubmit} className="space-y-3 flex-grow flex flex-col">
+        {/* Design prompt */}
+        <div className="space-y-2">
+          <Label htmlFor="prompt" className="text-xs font-medium text-white/70">
+            Design Description
           </Label>
           <Textarea
             id="prompt"
-            placeholder="Describe your design... (e.g., A modern social media post for a coffee shop with a warm color palette)"
+            placeholder="Describe your design in detail... For example: A modern social media post for a coffee shop with a warm color palette, featuring a latte art image, and text that says 'Start your day right'"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            className="h-16 resize-none bg-slate-800 border-slate-700 text-white placeholder:text-white/40 rounded-md text-[10px]"
+            className="h-28 resize-none bg-white/5 border-white/10 backdrop-blur-sm text-white placeholder:text-white/30"
             required
           />
         </div>
 
-        {/* Image Upload Row */}
-        <div className="grid grid-cols-2 gap-1.5">
-          {/* Background Image */}
-          <div>
-            <Label htmlFor="background-image" className="text-[10px] text-white/70 flex items-center gap-1 mb-0.5">
-              <ImageIcon className="h-2 w-2" />
-              Background
-            </Label>
+        {/* Design Settings - Background Image */}
+        <div className="space-y-1">
+          <Label className="text-xs font-medium text-white/70 flex items-center gap-1">
+            <ImageIcon className="h-3 w-3" />
+            Background Image
+          </Label>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {/* Background Image Uploader */}
             <div className="relative">
               <Input
                 type="file"
@@ -345,11 +529,11 @@ export default function AiFlyerForm({
               />
               <Label
                 htmlFor="background-image"
-                className="cursor-pointer flex justify-center items-center h-10 rounded-md border border-slate-700 bg-slate-800 relative overflow-hidden"
+                className="cursor-pointer flex justify-center items-center h-16 rounded-md border border-white/20 bg-white/5 hover:bg-white/10 backdrop-blur-sm"
               >
                 <div className="text-center">
-                  <Upload className="mx-auto h-2.5 w-2.5 text-white/70 mb-0.5" />
-                  <span className="text-[9px] font-medium text-white/90">
+                  <Upload className="mx-auto h-4 w-4 text-white/50" />
+                  <span className="mt-1 block text-xs font-medium text-white/70">
                     Upload Image
                   </span>
                 </div>
@@ -366,11 +550,11 @@ export default function AiFlyerForm({
                   <button
                     type="button"
                     onClick={clearBackgroundImage}
-                    className="absolute top-0.5 right-0.5 bg-black/70 text-white p-0.5 rounded-full"
+                    className="absolute top-1 right-1 bg-black/70 text-white p-1 rounded-full hover:bg-black/90"
                   >
                     <svg 
                       xmlns="http://www.w3.org/2000/svg" 
-                      className="h-2 w-2" 
+                      className="h-3 w-3" 
                       fill="none" 
                       viewBox="0 0 24 24" 
                       stroke="currentColor"
@@ -381,14 +565,40 @@ export default function AiFlyerForm({
                 </div>
               )}
             </div>
+            
+            {/* AI Background Generation Toggle */}
+            <div className={`flex flex-col ${backgroundImage || backgroundImagePreview ? 'opacity-50 pointer-events-none' : ''}`}>
+              <Label className="p-2 cursor-pointer flex items-center h-16 rounded-md border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 backdrop-blur-sm">
+                <div className="flex-1 flex items-center gap-2">
+                  <span className="mr-2">
+                    <Checkbox 
+                      id="generateAiBackground" 
+                      checked={generateAiBackground}
+                      onCheckedChange={(checked) => setGenerateAiBackground(!!checked)}
+                      className="data-[state=checked]:bg-indigo-500"
+                      disabled={!!(backgroundImage || backgroundImagePreview)}
+                    />
+                  </span>
+                  <WandSparkles className="h-3.5 w-3.5 text-indigo-400" />
+                  <div className="text-xs text-white/90">
+                    <span className="font-medium block">GENERATE WITH AI</span>
+                    <span className="text-white/60 text-[10px]">Uses 1 extra credit</span>
+                  </div>
+                </div>
+              </Label>
+            </div>
           </div>
+        </div>
+        
+        {/* Logo Upload */}
+        <div className="space-y-1">
+          <Label className="text-xs font-medium text-white/70 flex items-center gap-1">
+            <TypeIcon className="h-3 w-3" />
+            Logo
+          </Label>
           
-          {/* Logo Upload */}
-          <div>
-            <Label htmlFor="logo-upload" className="text-[10px] text-white/70 flex items-center gap-1 mb-0.5">
-              <TypeIcon className="h-2 w-2" />
-              Logo
-            </Label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {/* Logo Uploader */}
             <div className="relative">
               <Input
                 type="file"
@@ -398,11 +608,11 @@ export default function AiFlyerForm({
               />
               <Label
                 htmlFor="logo-upload"
-                className="cursor-pointer flex justify-center items-center h-10 rounded-md border border-slate-700 bg-slate-800 relative overflow-hidden"
+                className="cursor-pointer flex justify-center items-center h-16 rounded-md border border-white/20 bg-white/5 hover:bg-white/10 backdrop-blur-sm"
               >
                 <div className="text-center">
-                  <Upload className="mx-auto h-2.5 w-2.5 text-white/70 mb-0.5" />
-                  <span className="text-[9px] font-medium text-white/90">
+                  <Upload className="mx-auto h-4 w-4 text-white/50" />
+                  <span className="mt-1 block text-xs font-medium text-white/70">
                     Upload Logo
                   </span>
                 </div>
@@ -410,20 +620,20 @@ export default function AiFlyerForm({
               
               {/* Show logo preview */}
               {(logoPreview || logo) && (
-                <div className="absolute inset-0 rounded-md overflow-hidden bg-slate-800/80 flex items-center justify-center">
+                <div className="absolute inset-0 rounded-md overflow-hidden bg-white/5 flex items-center justify-center">
                   <img 
                     src={logoPreview} 
                     alt="Logo preview" 
-                    className="max-w-[70%] max-h-[70%] object-contain"
+                    className="max-w-[80%] max-h-[80%] object-contain"
                   />
                   <button
                     type="button"
                     onClick={clearLogo}
-                    className="absolute top-0.5 right-0.5 bg-black/70 text-white p-0.5 rounded-full"
+                    className="absolute top-1 right-1 bg-black/70 text-white p-1 rounded-full hover:bg-black/90"
                   >
                     <svg 
                       xmlns="http://www.w3.org/2000/svg" 
-                      className="h-2 w-2" 
+                      className="h-3 w-3" 
                       fill="none" 
                       viewBox="0 0 24 24" 
                       stroke="currentColor"
@@ -434,84 +644,96 @@ export default function AiFlyerForm({
                 </div>
               )}
             </div>
+            
+            {/* Use logo from brand kit if available */}
+            {activeBrandKit && activeBrandKit.logo_url && (
+              <div className="relative">
+                <div 
+                  onClick={() => {
+                    // Set the logo from brand kit
+                    setLogoPreview(activeBrandKit.logo_url || "");
+                    setLogo(null); // Clear any uploaded file
+                  }}
+                  className="cursor-pointer flex items-center h-16 rounded-md border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 backdrop-blur-sm p-2"
+                >
+                  <div className="flex-shrink-0 h-8 w-8 rounded bg-white/10 p-1 flex items-center justify-center overflow-hidden mr-2">
+                    {activeBrandKit.logo_url ? (
+                      <img src={activeBrandKit.logo_url} alt="Brand Logo" className="max-h-full max-w-full object-contain" />
+                    ) : (
+                      <PaintBucket className="h-4 w-4 text-indigo-400" />
+                    )}
+                  </div>
+                  <p className="text-sm text-white/80">Using logo from Brand Kit: <span className="font-medium">{activeBrandKit.name}</span></p>
+                  <Button 
+                    type="button"
+                    variant="outline" 
+                    size="sm"
+                    className="mt-2 text-xs bg-white/10"
+                    onClick={() => onOpenBrandKitPanel && onOpenBrandKitPanel()}
+                  >
+                    Edit Brand Kit
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
         
-        {/* Options Row */}
-        <div className="grid grid-cols-2 gap-1.5">
-          {/* AI Background Option */}
-          <div className={`${backgroundImage || backgroundImagePreview ? 'opacity-50 pointer-events-none' : ''}`}>
-            <Label className="flex items-center h-6 rounded-md border border-slate-700 bg-slate-800 p-1 cursor-pointer">
-              <div className="flex items-center gap-1.5">
-                <Checkbox 
-                  id="generateAiBackground" 
-                  checked={generateAiBackground}
-                  onCheckedChange={(checked) => setGenerateAiBackground(!!checked)}
-                  className="h-2.5 w-2.5 border-slate-600"
-                  disabled={!!(backgroundImage || backgroundImagePreview)}
-                />
-                <div className="flex items-center gap-1">
-                  <WandSparkles className="h-2.5 w-2.5 text-white/70" />
-                  <span className="text-[9px] text-white/90">AI Background</span>
-                </div>
-              </div>
-            </Label>
-          </div>
-          
-          {/* Brand Kit Logo Option */}
-          {activeBrandKit && activeBrandKit.logo_url && (
-            <div 
-              onClick={() => {
-                setLogoPreview(activeBrandKit.logo_url || "");
-                setLogo(null);
-              }}
-              className="cursor-pointer flex items-center h-6 rounded-md border border-slate-700 bg-slate-800 p-1"
-            >
-              <div className="flex items-center gap-1.5">
-                <div className="h-3 w-3 rounded bg-slate-700 flex items-center justify-center overflow-hidden">
-                  {activeBrandKit.logo_url && (
-                    <img src={activeBrandKit.logo_url} alt="Brand Logo" className="max-h-full max-w-full object-contain" />
-                  )}
-                </div>
-                <span className="text-[9px] text-white/90">Use brand logo</span>
-              </div>
-            </div>
-          )}
-        </div>
-        
-        {/* Settings Row */}
-        <div className="grid grid-cols-2 gap-1.5">
-          {/* Quality Tier */}
-          <div>
-            <Label className="text-[10px] text-white/70 flex items-center gap-1 mb-0.5">
-              <Crown className="h-2 w-2" />
-              Quality
+        {/* Design Settings - Aspect Ratio and Fonts */}
+        <div className="grid grid-cols-2 gap-4 mb-3">
+          {/* Premium Design Options Button */}
+          <div className="space-y-1">
+            <Label className="text-xs font-medium text-white/70 flex items-center gap-1">
+              <Crown className="h-3 w-3 text-amber-400" />
+              Design Quality
             </Label>
             <Button
               type="button"
-              className="w-full h-6 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white rounded-md px-2 text-[9px] justify-between"
+              className="w-full bg-gradient-to-r from-indigo-500/40 to-purple-500/40 hover:from-indigo-500/60 hover:to-purple-500/60 backdrop-blur-sm border border-indigo-500/30 text-white"
               onClick={() => setIsPremiumDialogOpen(true)}
             >
-              <span>{selectedPremiumOption || 'Choose Quality'}</span>
-              <svg width="8" height="8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+              <Sparkles className="h-4 w-4 mr-2 text-amber-400" />
+              {selectedPremiumOption ? `${selectedPremiumOption} Selected` : 'Choose Style'}
             </Button>
           </div>
           
-          {/* Format */}
-          <div>
-            <Label className="text-[10px] text-white/70 flex items-center gap-1 mb-0.5">
-              <ImageIcon className="h-2 w-2" />
-              Format
+          {/* Premium Design Options Dialog */}
+          <PremiumDesignPanel
+            isOpen={isPremiumDialogOpen}
+            onClose={() => setIsPremiumDialogOpen(false)}
+            onSelectOption={(optionId) => {
+              setSelectedPremiumOption(optionId);
+              // Set the design count based on the option selected
+              switch(optionId) {
+                case 'basic':
+                  setDesignCount('1');
+                  break;
+                case 'premium':
+                  setDesignCount('4');
+                  break;
+                case 'elite':
+                  setDesignCount('8');
+                  break;
+                case 'ultimate':
+                  setDesignCount('16');
+                  break;
+              }
+              setIsPremiumDialogOpen(false);
+            }}
+          />
+          
+          {/* Aspect Ratio Selector */}
+          <div className="space-y-1">
+            <Label className="text-xs font-medium text-white/70">
+              Format / Aspect Ratio
             </Label>
             <Select value={aspectRatio} onValueChange={setAspectRatio}>
-              <SelectTrigger className="h-6 bg-slate-800 border-slate-700 text-white text-[9px] rounded-md">
-                <SelectValue placeholder="Select format" />
+              <SelectTrigger className="w-full bg-white/5 border-white/10 text-white">
+                <SelectValue placeholder="Choose a size" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-700 text-white rounded-md max-h-[200px]">
+              <SelectContent className="bg-slate-900 border-white/10 text-white">
                 {aspectRatioOptions.map((option) => (
-                  <SelectItem key={option.id} value={option.id} className="text-[9px]">
+                  <SelectItem key={option.id} value={option.id}>
                     {option.label}
                   </SelectItem>
                 ))}
@@ -520,43 +742,16 @@ export default function AiFlyerForm({
           </div>
         </div>
         
-        {/* Premium Design Options Dialog */}
-        <PremiumDesignPanel
-          isOpen={isPremiumDialogOpen}
-          onClose={() => setIsPremiumDialogOpen(false)}
-          onSelectOption={(optionId) => {
-            setSelectedPremiumOption(optionId);
-            // Set the design count based on the option selected
-            switch(optionId) {
-              case 'basic':
-                setDesignCount('1');
-                break;
-              case 'premium':
-                setDesignCount('4');
-                break;
-              case 'elite':
-                setDesignCount('8');
-                break;
-              case 'ultimate':
-                setDesignCount('16');
-                break;
-            }
-            setIsPremiumDialogOpen(false);
-          }}
-          isGenerating={isGenerating}
-        />
-        
-        {/* Generate Button - Simplified */}
-        <div className="mt-auto mb-0">
+        <div className="mt-auto pt-2">
           <Button
             type="submit"
-            className="w-full h-8 bg-slate-800 hover:bg-slate-700 text-white rounded-md text-[10px] font-medium"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
             disabled={isGenerating || (!prompt && !selectedTemplate)}
           >
             {isGenerating ? (
               <>
                 <svg
-                  className="animate-spin -ml-1 mr-2 h-3 w-3 text-white"
+                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -575,13 +770,10 @@ export default function AiFlyerForm({
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                <span>Generating...</span>
+                Generating Designs...
               </>
             ) : (
-              <>
-                <WandSparkles className="mr-1.5 h-2.5 w-2.5" />
-                <span>Generate AI Designs</span>
-              </>
+              <>Generate Designs</>
             )}
           </Button>
         </div>
