@@ -81,16 +81,17 @@ export default function AiFlyerFormCompact({
     },
     onSuccess: (data: any) => {
       setIsGenerating(false);
-      if (data.suggestions && data.suggestions.length > 0) {
-        setDesignSuggestions(data.suggestions);
+      console.log("Server response:", data);
+      if (data.designs && data.designs.length > 0) {
+        setDesignSuggestions(data.designs);
         // Show the first design suggestion immediately
-        if (data.suggestions[0]) {
+        if (data.designs[0]) {
           // Create a GeneratedFlyer object with all required properties
           setGeneratedFlyer({
-            imageUrl: data.suggestions[0].imageBase64 || "",
+            imageUrl: data.designs[0].imageBase64 || "",
             headline: "AI Generated Design",
-            content: `Design style: ${data.suggestions[0].style || "Custom"}`,
-            stylePrompt: data.suggestions[0].style || prompt,
+            content: `Design style: ${data.designs[0].style || "Custom"}`,
+            stylePrompt: data.designs[0].style || prompt,
             template: "ai"
           });
         }

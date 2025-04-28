@@ -86,18 +86,19 @@ export default function AiFlyerForm({
     mutationFn: async (data: AiFlyerGenerationRequest) => {
       return await apiRequest('POST', '/api/generate-ai', data, {}, true);
     },
-    onSuccess: (data: DesignSuggestions) => {
+    onSuccess: (data: any) => {
       setIsGenerating(false);
-      if (data.suggestions && data.suggestions.length > 0) {
-        setDesignSuggestions(data.suggestions);
-        // If we have a suggested HTML, set it immediately
-        if (data.suggestions[0].html) {
+      console.log("Server response:", data);
+      if (data.designs && data.designs.length > 0) {
+        setDesignSuggestions(data.designs);
+        // If we have the first design, set it immediately
+        if (data.designs[0]) {
           setGeneratedFlyer({
-            html: data.suggestions[0].html,
-            css: data.suggestions[0].css || "",
-            imageUrl: data.suggestions[0].imageUrl || "",
-            backgroundImageUrl: data.suggestions[0].backgroundImageUrl || "",
-            logoUrl: logoPreview || (activeBrandKit?.logo_url || ""),
+            imageUrl: data.designs[0].imageBase64 || "",
+            headline: "AI Generated Design",
+            content: `Design style: ${data.designs[0].style || "Custom"}`,
+            stylePrompt: data.designs[0].style || prompt,
+            template: "ai",
             prompt: prompt,
           });
         }
