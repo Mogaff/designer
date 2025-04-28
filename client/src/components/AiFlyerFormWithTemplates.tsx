@@ -460,67 +460,100 @@ export default function AiFlyerForm({
 
   return (
     <div className="h-full flex flex-col">
-      <div className="mb-2">
-        <h2 className="text-base font-semibold text-white">Create Design</h2>
+      <div className="mb-4">
+        <div className="bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-xl border border-indigo-500/30 backdrop-blur-md overflow-hidden relative group">
+          <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/10 via-purple-600/10 to-indigo-600/10 opacity-50 group-hover:opacity-70 transition-opacity duration-700"></div>
+          <div className="p-3 relative z-10">
+            <div className="flex items-center gap-3">
+              <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-2 rounded-lg shadow-lg">
+                <WandSparkles className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-white tracking-tight">AI Design Studio</h2>
+                <p className="text-xs text-white/70">Create stunning professional-grade designs</p>
+              </div>
+            </div>
+          </div>
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+        </div>
       </div>
       
-      {/* Brand Kit Badge */}
+      {/* Brand Kit Badge - More App Like */}
       {activeBrandKit && !selectedTemplate && (
-        <div className="mb-3 p-2 rounded-lg border border-indigo-500/30 bg-indigo-500/10 backdrop-blur-sm">
-          <div className="flex items-center gap-2">
-            <div className="flex-shrink-0 h-8 w-8 rounded bg-white/10 p-1 flex items-center justify-center overflow-hidden">
-              {activeBrandKit.logo_url ? (
-                <img src={activeBrandKit.logo_url} alt="Brand Logo" className="max-h-full max-w-full object-contain" />
-              ) : (
-                <PaintBucket className="h-4 w-4 text-indigo-400" />
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-medium text-white truncate">{activeBrandKit.name}</h3>
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-300 border border-green-500/30">
-                  <Check className="mr-1 h-3 w-3" />
-                  Active
-                </span>
+        <div className="mb-4 rounded-xl overflow-hidden relative group">
+          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20"></div>
+          <div className="border border-indigo-500/30 p-3 backdrop-blur-md relative z-10">
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500/30 to-purple-500/30 p-1.5 flex items-center justify-center overflow-hidden shadow-lg">
+                {activeBrandKit.logo_url ? (
+                  <img src={activeBrandKit.logo_url} alt="Brand Logo" className="max-h-full max-w-full object-contain" />
+                ) : (
+                  <PaintBucket className="h-5 w-5 text-indigo-300" />
+                )}
               </div>
-              <p className="text-xs text-white/60 truncate">Using brand colors and typography</p>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <h3 className="text-sm font-bold text-white truncate">{activeBrandKit.name}</h3>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-green-500/30 to-emerald-500/30 text-green-300 border border-green-500/30">
+                    <Check className="mr-1 h-3 w-3" />
+                    Active
+                  </span>
+                </div>
+                <p className="text-xs text-white/60 truncate">Brand colors and typography applied automatically</p>
+              </div>
             </div>
           </div>
         </div>
       )}
       
-      <p className="text-xs text-white/70 mb-3">
-        {selectedTemplate 
-          ? "Using selected template with pre-defined style. Customize the prompt for your specific needs."
-          : "Enter a detailed prompt and optionally upload background image and logo for your design."}
-      </p>
+      <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-lg p-2 mb-4 backdrop-blur-sm">
+        <p className="text-xs text-white/80 flex items-center">
+          <Star className="h-3 w-3 text-amber-400 mr-1 flex-shrink-0" />
+          {selectedTemplate 
+            ? "Using premium template with professional styling. Add custom details in your prompt."
+            : "Create a detailed prompt below and upload images for a stunning professional design."}
+        </p>
+      </div>
       
-      <form onSubmit={handleSubmit} className="space-y-3 flex-grow flex flex-col">
-        {/* Design prompt */}
+      <form onSubmit={handleSubmit} className="space-y-4 flex-grow flex flex-col">
+        {/* Design prompt - Modern App Style */}
         <div className="space-y-2">
-          <Label htmlFor="prompt" className="text-xs font-medium text-white/70">
-            Design Description
+          <Label htmlFor="prompt" className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white p-1 rounded">
+                <TypeIcon className="h-3 w-3" />
+              </div>
+              <span className="text-xs font-semibold text-white/90 uppercase tracking-wide">Creative Brief</span>
+            </div>
+            <span className="text-[10px] text-white/50 px-2 py-0.5 rounded-full bg-white/5 border border-white/10">AI-Enhanced</span>
           </Label>
-          <Textarea
-            id="prompt"
-            placeholder="Describe your design in detail... For example: A modern social media post for a coffee shop with a warm color palette, featuring a latte art image, and text that says 'Start your day right'"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            className="h-28 resize-none bg-white/5 border-white/10 backdrop-blur-sm text-white placeholder:text-white/30"
-            required
-          />
+          <div className="relative group rounded-xl overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 group-hover:from-indigo-500/10 group-hover:to-purple-500/10 transition-all duration-500 z-0"></div>
+            <Textarea
+              id="prompt"
+              placeholder="Describe your design vision... For example: A modern social media post for a coffee shop with a warm color palette, featuring artisanal coffee imagery, and text that says 'Start your day right'"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              className="min-h-[120px] resize-none bg-black/30 border-indigo-500/20 focus:border-indigo-500/50 backdrop-blur-sm text-white placeholder:text-white/40 rounded-xl shadow-lg relative z-10 transition-all duration-300"
+              required
+            />
+          </div>
         </div>
 
-        {/* Design Settings - Background Image */}
-        <div className="space-y-1">
-          <Label className="text-xs font-medium text-white/70 flex items-center gap-1">
-            <ImageIcon className="h-3 w-3" />
-            Background Image
+        {/* Design Settings - Background Image - Modern App Style */}
+        <div className="space-y-2">
+          <Label className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white p-1 rounded">
+                <ImageIcon className="h-3 w-3" />
+              </div>
+              <span className="text-xs font-semibold text-white/90 uppercase tracking-wide">Background</span>
+            </div>
           </Label>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {/* Background Image Uploader */}
-            <div className="relative">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Background Image Uploader - Modern Style */}
+            <div className="relative rounded-xl overflow-hidden shadow-lg group">
               <Input
                 type="file"
                 id="background-image"
@@ -529,87 +562,105 @@ export default function AiFlyerForm({
               />
               <Label
                 htmlFor="background-image"
-                className="cursor-pointer flex justify-center items-center h-16 rounded-md border border-white/20 relative overflow-hidden hover:border-indigo-500/30 transition-all duration-200"
+                className="cursor-pointer flex justify-center items-center h-20 rounded-xl border-0 relative overflow-hidden group-hover:shadow-indigo-500/20 group-hover:shadow-lg transition-all duration-300"
               >
-                {/* Background gradient */}
+                {/* Background gradient with animation */}
                 <div className="absolute inset-0 z-0">
                   <img 
                     src={backgroundGradient} 
                     alt="" 
-                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/70 backdrop-blur-[1px]"></div>
                 </div>
                 
-                <div className="text-center relative z-10">
-                  <Upload className="mx-auto h-4 w-4 text-white/70" />
-                  <span className="mt-1 block text-xs font-medium text-white/90">
-                    Upload Image
+                <div className="text-center relative z-10 transform transition-transform duration-300 group-hover:scale-105">
+                  <div className="bg-white/10 backdrop-blur-md p-2 rounded-full mb-1 inline-block">
+                    <Upload className="mx-auto h-5 w-5 text-white" />
+                  </div>
+                  <span className="block text-xs font-bold text-white tracking-wide">
+                    UPLOAD IMAGE
                   </span>
+                  <span className="text-[10px] text-white/70 mt-1">Drop your image or click to browse</span>
                 </div>
               </Label>
               
-              {/* Show background image preview */}
+              {/* Show background image preview with modern styling */}
               {(backgroundImagePreview || backgroundImage) && (
-                <div className="absolute inset-0 rounded-md overflow-hidden">
+                <div className="absolute inset-0 rounded-xl overflow-hidden">
                   <img 
                     src={backgroundImagePreview} 
                     alt="Background preview" 
                     className="w-full h-full object-cover"
                   />
-                  <button
-                    type="button"
-                    onClick={clearBackgroundImage}
-                    className="absolute top-1 right-1 bg-black/70 text-white p-1 rounded-full hover:bg-black/90"
-                  >
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      className="h-3 w-3" 
-                      fill="none" 
-                      viewBox="0 0 24 24" 
-                      stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2 backdrop-blur-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-white/90 font-medium">Background Selected</span>
+                      <button
+                        type="button"
+                        onClick={clearBackgroundImage}
+                        className="bg-white/20 text-white p-1 rounded-full hover:bg-white/30 transition-colors"
+                      >
+                        <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          className="h-3.5 w-3.5" 
+                          fill="none" 
+                          viewBox="0 0 24 24" 
+                          stroke="currentColor"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
             
-            {/* AI Background Generation Toggle */}
-            <div className={`flex flex-col ${backgroundImage || backgroundImagePreview ? 'opacity-50 pointer-events-none' : ''}`}>
-              <Label className="p-2 cursor-pointer flex items-center h-16 rounded-md border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 backdrop-blur-sm">
-                <div className="flex-1 flex items-center gap-2">
-                  <span className="mr-2">
+            {/* AI Background Generation - Modern Toggle Card */}
+            <div className={`relative rounded-xl overflow-hidden ${backgroundImage || backgroundImagePreview ? 'opacity-50 pointer-events-none' : ''}`}>
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-purple-500/10"></div>
+              <Label className="cursor-pointer flex flex-col justify-center items-center h-20 relative z-10 rounded-xl border border-indigo-500/30 bg-black/20 hover:bg-black/30 backdrop-blur-md transition-all duration-300">
+                <div className="flex items-center justify-center gap-3 mb-1">
+                  <div className="relative">
                     <Checkbox 
                       id="generateAiBackground" 
                       checked={generateAiBackground}
                       onCheckedChange={(checked) => setGenerateAiBackground(!!checked)}
-                      className="data-[state=checked]:bg-indigo-500"
+                      className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-indigo-500 data-[state=checked]:to-purple-500 border-white/30 h-5 w-5"
                       disabled={!!(backgroundImage || backgroundImagePreview)}
                     />
-                  </span>
-                  <WandSparkles className="h-3.5 w-3.5 text-indigo-400" />
-                  <div className="text-xs text-white/90">
-                    <span className="font-medium block">GENERATE WITH AI</span>
-                    <span className="text-white/60 text-[10px]">Uses 1 extra credit</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-1.5 rounded-full">
+                      <WandSparkles className="h-4 w-4 text-white" />
+                    </div>
+                    <div className="text-left">
+                      <span className="font-semibold block text-white text-xs">AI BACKGROUND</span>
+                      <span className="text-white/60 text-[10px]">Uses 1 credit</span>
+                    </div>
                   </div>
                 </div>
+                <span className="text-[10px] text-white/60 px-2 text-center">AI will generate a unique background based on your prompt</span>
               </Label>
             </div>
           </div>
         </div>
         
-        {/* Logo Upload */}
-        <div className="space-y-1">
-          <Label className="text-xs font-medium text-white/70 flex items-center gap-1">
-            <TypeIcon className="h-3 w-3" />
-            Logo
+        {/* Logo Upload - Modern App Style */}
+        <div className="space-y-2">
+          <Label className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white p-1 rounded">
+                <TypeIcon className="h-3 w-3" />
+              </div>
+              <span className="text-xs font-semibold text-white/90 uppercase tracking-wide">Logo</span>
+            </div>
           </Label>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {/* Logo Uploader */}
-            <div className="relative">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Logo Uploader - Modern Style */}
+            <div className="relative rounded-xl overflow-hidden shadow-lg group">
               <Input
                 type="file"
                 id="logo-upload"
@@ -618,103 +669,142 @@ export default function AiFlyerForm({
               />
               <Label
                 htmlFor="logo-upload"
-                className="cursor-pointer flex justify-center items-center h-16 rounded-md border border-white/20 relative overflow-hidden hover:border-indigo-500/30 transition-all duration-200"
+                className="cursor-pointer flex justify-center items-center h-20 rounded-xl border-0 relative overflow-hidden group-hover:shadow-amber-500/20 group-hover:shadow-lg transition-all duration-300"
               >
-                {/* Background gradient */}
+                {/* Background gradient with animation */}
                 <div className="absolute inset-0 z-0">
                   <img 
                     src={backgroundGradient2} 
                     alt="" 
-                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/70 backdrop-blur-[1px]"></div>
                 </div>
                 
-                <div className="text-center relative z-10">
-                  <Upload className="mx-auto h-4 w-4 text-white/70" />
-                  <span className="mt-1 block text-xs font-medium text-white/90">
-                    Upload Logo
+                <div className="text-center relative z-10 transform transition-transform duration-300 group-hover:scale-105">
+                  <div className="bg-white/10 backdrop-blur-md p-2 rounded-full mb-1 inline-block">
+                    <Upload className="mx-auto h-5 w-5 text-white" />
+                  </div>
+                  <span className="block text-xs font-bold text-white tracking-wide">
+                    UPLOAD LOGO
                   </span>
+                  <span className="text-[10px] text-white/70 mt-1">Transparent PNG recommended</span>
                 </div>
               </Label>
               
-              {/* Show logo preview */}
+              {/* Show logo preview with modern styling */}
               {(logoPreview || logo) && (
-                <div className="absolute inset-0 rounded-md overflow-hidden bg-white/5 flex items-center justify-center">
+                <div className="absolute inset-0 rounded-xl overflow-hidden bg-gradient-to-b from-white/5 to-black/50 flex items-center justify-center backdrop-blur-sm">
                   <img 
                     src={logoPreview} 
                     alt="Logo preview" 
-                    className="max-w-[80%] max-h-[80%] object-contain"
+                    className="max-w-[70%] max-h-[70%] object-contain drop-shadow-lg"
                   />
-                  <button
-                    type="button"
-                    onClick={clearLogo}
-                    className="absolute top-1 right-1 bg-black/70 text-white p-1 rounded-full hover:bg-black/90"
-                  >
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      className="h-3 w-3" 
-                      fill="none" 
-                      viewBox="0 0 24 24" 
-                      stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/50 p-1.5 backdrop-blur-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-white/90 font-medium">Logo Uploaded</span>
+                      <button
+                        type="button"
+                        onClick={clearLogo}
+                        className="bg-white/20 text-white p-1 rounded-full hover:bg-white/30 transition-colors"
+                      >
+                        <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          className="h-3.5 w-3.5" 
+                          fill="none" 
+                          viewBox="0 0 24 24" 
+                          stroke="currentColor"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
             
-            {/* Use logo from brand kit if available */}
+            {/* Use logo from brand kit if available - modern style */}
             {activeBrandKit && activeBrandKit.logo_url && (
-              <div className="relative">
+              <div className="relative rounded-xl overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-orange-500/10"></div>
                 <div 
                   onClick={() => {
                     // Set the logo from brand kit
                     setLogoPreview(activeBrandKit.logo_url || "");
                     setLogo(null); // Clear any uploaded file
                   }}
-                  className="cursor-pointer flex items-center h-16 rounded-md border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 backdrop-blur-sm p-2"
+                  className="cursor-pointer flex items-center h-20 rounded-xl border border-amber-500/30 bg-black/20 p-3 backdrop-blur-md relative z-10 transition-colors hover:bg-black/40"
                 >
-                  <div className="flex-shrink-0 h-8 w-8 rounded bg-white/10 p-1 flex items-center justify-center overflow-hidden mr-2">
+                  <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-gradient-to-br from-amber-500/20 to-orange-500/20 p-1.5 flex items-center justify-center overflow-hidden mr-3 shadow-lg border border-amber-500/30">
                     {activeBrandKit.logo_url ? (
                       <img src={activeBrandKit.logo_url} alt="Brand Logo" className="max-h-full max-w-full object-contain" />
                     ) : (
-                      <PaintBucket className="h-4 w-4 text-indigo-400" />
+                      <PaintBucket className="h-5 w-5 text-amber-400" />
                     )}
                   </div>
-                  <p className="text-sm text-white/80">Using logo from Brand Kit: <span className="font-medium">{activeBrandKit.name}</span></p>
-                  <Button 
-                    type="button"
-                    variant="outline" 
-                    size="sm"
-                    className="mt-2 text-xs bg-white/10"
-                    onClick={() => onOpenBrandKitPanel && onOpenBrandKitPanel()}
-                  >
-                    Edit Brand Kit
-                  </Button>
+                  <div className="flex flex-col gap-1">
+                    <p className="text-sm font-bold text-white truncate">
+                      Brand Kit: <span className="text-amber-300">{activeBrandKit.name}</span>
+                    </p>
+                    <Button 
+                      type="button"
+                      variant="outline" 
+                      size="sm"
+                      className="text-[10px] h-6 py-0 bg-white/5 border-amber-500/30 hover:bg-white/10 hover:text-amber-300"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onOpenBrandKitPanel && onOpenBrandKitPanel();
+                      }}
+                    >
+                      <PaintBucket className="h-3 w-3 mr-1" /> Edit Brand Kit
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}
           </div>
         </div>
         
-        {/* Design Settings - Aspect Ratio and Fonts */}
-        <div className="grid grid-cols-2 gap-4 mb-3">
-          {/* Premium Design Options Button */}
-          <div className="space-y-1">
-            <Label className="text-xs font-medium text-white/70 flex items-center gap-1">
-              <Crown className="h-3 w-3 text-amber-400" />
-              Design Quality
+        {/* Design Settings - Aspect Ratio and Quality - Modern App Style */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
+          {/* Premium Design Options Button - Enhanced App-like Look */}
+          <div className="space-y-2">
+            <Label className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white p-1 rounded">
+                  <Crown className="h-3 w-3" />
+                </div>
+                <span className="text-xs font-semibold text-white/90 uppercase tracking-wide">Quality Tier</span>
+              </div>
             </Label>
-            <Button
-              type="button"
-              className="w-full bg-gradient-to-r from-indigo-500/40 to-purple-500/40 hover:from-indigo-500/60 hover:to-purple-500/60 backdrop-blur-sm border border-indigo-500/30 text-white"
-              onClick={() => setIsPremiumDialogOpen(true)}
-            >
-              <Sparkles className="h-4 w-4 mr-2 text-amber-400" />
-              {selectedPremiumOption ? `${selectedPremiumOption} Selected` : 'Choose Style'}
-            </Button>
+            <div className="relative rounded-xl overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 group-hover:opacity-75 transition-opacity duration-300"></div>
+              <Button
+                type="button"
+                className="w-full h-16 relative z-10 bg-black/30 hover:bg-black/40 backdrop-blur-md border border-amber-500/30 text-white rounded-xl group-hover:shadow-lg group-hover:shadow-amber-500/20 transition-all duration-300"
+                onClick={() => setIsPremiumDialogOpen(true)}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/5 via-amber-500/5 to-orange-500/5 opacity-50 rounded-xl"></div>
+                <div className="relative z-10 flex items-center justify-center gap-3">
+                  <div className="bg-gradient-to-r from-yellow-500 to-amber-500 p-2 rounded-lg shadow-lg">
+                    <Sparkles className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="text-left">
+                    <span className="block text-xs uppercase font-bold tracking-wide">
+                      {selectedPremiumOption ? selectedPremiumOption : 'Choose Quality Tier'}
+                    </span>
+                    <span className="text-[10px] text-white/60">
+                      {selectedPremiumOption === 'basic' && 'Standard (1 design)'}
+                      {selectedPremiumOption === 'premium' && 'Premium quality (4 designs)'}
+                      {selectedPremiumOption === 'elite' && 'Elite quality (8 designs)'}
+                      {selectedPremiumOption === 'ultimate' && 'Ultimate quality (16 designs)'}
+                      {!selectedPremiumOption && 'Select your preferred quality level'}
+                    </span>
+                  </div>
+                </div>
+              </Button>
+            </div>
           </div>
           
           {/* Premium Design Options Dialog */}
@@ -742,59 +832,95 @@ export default function AiFlyerForm({
             }}
           />
           
-          {/* Aspect Ratio Selector */}
-          <div className="space-y-1">
-            <Label className="text-xs font-medium text-white/70">
-              Format / Aspect Ratio
+          {/* Aspect Ratio Selector - Modern App Style */}
+          <div className="space-y-2">
+            <Label className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white p-1 rounded">
+                  <svg 
+                    width="12" 
+                    height="12" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2"
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                    className="text-white"
+                  >
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <line x1="12" y1="3" x2="12" y2="21" />
+                  </svg>
+                </div>
+                <span className="text-xs font-semibold text-white/90 uppercase tracking-wide">Format</span>
+              </div>
             </Label>
-            <Select value={aspectRatio} onValueChange={setAspectRatio}>
-              <SelectTrigger className="w-full bg-white/5 border-white/10 text-white">
-                <SelectValue placeholder="Choose a size" />
-              </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-white/10 text-white">
-                {aspectRatioOptions.map((option) => (
-                  <SelectItem key={option.id} value={option.id}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="relative rounded-xl overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-emerald-500/10 group-hover:opacity-75 transition-opacity duration-300"></div>
+              <Select value={aspectRatio} onValueChange={setAspectRatio}>
+                <SelectTrigger className="w-full h-16 bg-black/30 border-emerald-500/30 text-white relative z-10 rounded-xl group-hover:border-emerald-500/50 group-hover:shadow-lg group-hover:shadow-emerald-500/20 transition-all duration-300">
+                  <div className="flex items-center gap-2">
+                    <SelectValue placeholder="Select size format" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent className="bg-slate-900/95 backdrop-blur-md border-emerald-500/30 text-white rounded-lg shadow-lg">
+                  <div className="grid grid-cols-1 gap-1 p-1">
+                    {aspectRatioOptions.map((option) => (
+                      <SelectItem key={option.id} value={option.id} className="rounded hover:bg-emerald-500/20">
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </div>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
         
-        <div className="mt-auto pt-2">
+        {/* Generate Button - Modern Gradient Style */}
+        <div className="mt-6 pt-4 relative">
+          <div className="absolute inset-0 blur-lg bg-gradient-to-r from-indigo-500/30 via-purple-500/30 to-pink-500/30 transform -translate-y-1/2 opacity-50"></div>
           <Button
             type="submit"
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+            className="w-full h-14 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 hover:from-indigo-700 hover:via-purple-700 hover:to-indigo-700 text-white rounded-xl relative shadow-xl shadow-indigo-500/20 border border-indigo-500/30"
             disabled={isGenerating || (!prompt && !selectedTemplate)}
           >
-            {isGenerating ? (
-              <>
-                <svg
-                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                Generating Designs...
-              </>
-            ) : (
-              <>Generate Designs</>
-            )}
+            <div className="absolute inset-0 overflow-hidden rounded-xl">
+              <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/30 via-purple-600/30 to-indigo-600/30 opacity-50"></div>
+              <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-indigo-400/0 via-indigo-400/70 to-indigo-400/0"></div>
+            </div>
+            <div className="relative z-10 flex items-center justify-center">
+              {isGenerating ? (
+                <>
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  <span className="text-base font-bold tracking-wide">Generating Your Designs...</span>
+                </>
+              ) : (
+                <>
+                  <WandSparkles className="mr-3 h-5 w-5" />
+                  <span className="text-base font-bold tracking-wide">Generate AI Designs</span>
+                </>
+              )}
+            </div>
           </Button>
         </div>
       </form>
