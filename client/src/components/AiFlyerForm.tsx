@@ -133,9 +133,9 @@ export default function AiFlyerForm({
       const formData = new FormData();
       formData.append("prompt", data.prompt);
       
-      // If we have a background image file, use it
-      if (data.backgroundImage) {
-        formData.append("backgroundImage", data.backgroundImage);
+      // Handle background image
+      if (data.backgroundImage instanceof File) {
+        formData.append("backgroundImage", data.backgroundImage, data.backgroundImage.name);
       } 
       // If we have a background image preview URL from AI generation, include it
       else if (backgroundImagePreview && generateAiBackground) {

@@ -148,13 +148,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           // Fetch the image from the URL
           const axios = require('axios');
-          const imageResponse = await axios.get(req.body.backgroundImageUrl, { responseType: 'arraybuffer' });
+          const imageResponse = await axios.get(req.body.backgroundImageUrl, { 
+            responseType: 'arraybuffer',
+            timeout: 10000 // 10 second timeout
+          });
+          
+          if (!imageResponse.data) {
+            throw new Error('No image data received');
+          }
+          
           const imageBuffer = Buffer.from(imageResponse.data, 'binary');
           const backgroundImageBase64 = imageBuffer.toString('base64');
           generationOptions.backgroundImageBase64 = backgroundImageBase64;
+          
+          log("Successfully processed background image URL", "generator");
         } catch (error) {
           log(`Error fetching background image from URL: ${error}`, "generator");
-          // Continue without background image if there's an error
+          return res.status(400).json({ 
+            error: "Failed to process background image",
+            details: error instanceof Error ? error.message : String(error)
+          });
         }
       }
       
