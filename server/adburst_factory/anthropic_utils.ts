@@ -30,7 +30,7 @@ export async function generateMarketingCopy(options: {
   try {
     console.log('Generating marketing copy with Claude 3.7 Sonnet...');
     
-    const systemPrompt = `You are an expert marketing copywriter. Your task is to create short, compelling ad copy for a product that will be used in a video advertisement.`;
+    const systemPrompt = `You are Claude, an award-winning, highly skilled graphic design expert. You create stunning, modern, and engaging visual designs with a professional polish. Your focus is on creating compelling marketing copy that drives audience engagement and action. Use your expertise to create short, compelling ad copy for a product that will be used in a video advertisement.`;
     
     const userPrompt = `Write a concise, engaging 8-second advertisement script (about 30-40 words) for:
       
@@ -81,8 +81,7 @@ export async function analyzeProductImages(options: {
   try {
     console.log('Analyzing product images with Claude 3.7 Sonnet...');
     
-    const systemPrompt = `You are an expert video director specialized in product advertisements. 
-    Your task is to analyze product images and provide creative direction for a short 8-second vertical video ad.`;
+    const systemPrompt = `You are Claude, an award-winning, highly skilled graphic design expert. You create stunning, modern, and engaging visual designs with a professional polish. As a skilled video director specialized in product advertisements, your task is to analyze product images and provide creative direction for a short 8-second vertical video ad. Use your expertise in visual design to ensure the ad maximizes audience engagement and conversion.`;
     
     // Prepare message content with images
     const content = [
