@@ -45,14 +45,35 @@ export async function apiRequest(
     
     // Log the response status and headers
     console.log(`Response status: ${res.status} ${res.statusText}`);
-    console.log("Response headers:", Object.fromEntries([...res.headers.entries()]));
     
-    // Try to check content type to see if it's JSON
-    const contentType = res.headers.get('content-type');
-    if (contentType && contentType.includes('application/json')) {
-      console.log("Response is JSON");
-    } else {
-      console.log("Response content-type:", contentType);
+    try {
+      // Use a safer approach for headers
+      const headers = {};
+      res.headers.forEach((value, key) => {
+        headers[key] = value;
+      });
+      console.log("Response headers:", headers);
+      
+      // Try to check content type to see if it's JSON
+      const contentType = res.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        console.log("Response is JSON");
+        
+        // Peek at the JSON content for debugging
+        resClone.clone().json()
+          .then(data => {
+            console.log("JSON peek:", typeof data, 
+                        data ? Object.keys(data).length : 0, 
+                        "keys:", data ? Object.keys(data) : []);
+          })
+          .catch(err => {
+            console.error("Failed to peek at JSON:", err);
+          });
+      } else {
+        console.log("Response content-type:", contentType);
+      }
+    } catch (e) {
+      console.error("Error inspecting response:", e);
     }
     
     return resClone;

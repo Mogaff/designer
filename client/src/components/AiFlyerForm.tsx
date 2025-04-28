@@ -166,7 +166,20 @@ export default function AiFlyerForm({
       try {
         const response = await apiRequest("POST", "/api/generate-ai", formData);
         const data = await response.json();
-        console.log("JSON data received:", data);
+        console.log("JSON data received:", JSON.stringify(data).substring(0, 200) + "...");
+        
+        // Workaround to check for empty object
+        if (Object.keys(data).length === 0) {
+          console.error("Empty response object received");
+          throw new Error("Empty response received from server");
+        }
+        
+        // Ensure designs property exists
+        if (!data.designs || !Array.isArray(data.designs)) {
+          console.error("No designs array in response:", data);
+          throw new Error("Server response missing designs array");
+        }
+        
         return data;
       } catch (error) {
         console.error("Error parsing JSON response:", error);
