@@ -1,0 +1,95 @@
+
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Gemini Generated Flyer</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+          tailwind.config = {
+            theme: {
+              extend: {
+                animation: {
+                  'gradient': 'gradient 8s ease infinite',
+                  'float': 'float 6s ease-in-out infinite',
+                  'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                },
+                keyframes: {
+                  gradient: {
+                    '0%, 100%': { backgroundPosition: '0% 50%' },
+                    '50%': { backgroundPosition: '100% 50%' },
+                  },
+                  float: {
+                    '0%, 100%': { transform: 'translateY(0)' },
+                    '50%': { transform: 'translateY(-10px)' },
+                  }
+                }
+              }
+            }
+          }
+        </script>
+        <style>
+          
+          body {
+            margin: 0;
+            padding: 0;
+          }
+        
+          
+          
+          /* Advanced effects */
+          .gradient-text {
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            background-image: linear-gradient(to right, var(--tw-gradient-stops));
+          }
+          .gradient-bg {
+            background-size: 200% 200%;
+            animation: gradient 15s ease infinite;
+          }
+          
+          /* Ensure no rotated text (enforce horizontal-only text) */
+          h1, h2, h3, h4, h5, h6, p, span, div, li, a, strong, em, label, blockquote, caption, button, text {
+            transform: none !important;
+            rotate: 0deg !important;
+            transform-origin: center !important;
+          }
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Plus+Jakarta+Sans:wght@700&display=swap');
+
+/* Add any extra custom styles here as needed */
+.blur-sm {
+  filter: blur(5px);
+}
+
+        </style>
+      </head>
+      <body>
+        <div class="relative w-full h-[400px] md:h-[500px] bg-gradient-to-r from-[#F0F2F7] to-[#FFFFFF] overflow-hidden">
+  <div class="absolute top-0 left-0 w-full h-full bg-cover bg-center blur-sm opacity-20" style="background-image: url('https://source.unsplash.com/1600x900/?ai,abstract');"></div>
+  <div class="relative z-10 flex flex-col justify-between items-center w-full h-full p-8 md:p-16">
+    <div class="text-left w-full md:w-2/3">
+      <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 leading-tight tracking-tight mb-4 font-['Plus Jakarta Sans']">Haitugen.ai</h1>
+      <p class="text-lg md:text-xl text-gray-600 font-['Inter'] mb-8 leading-relaxed">Revolutionizing AI. Create stunning visuals effortlessly with the power of advanced AI.</p>
+      <button class="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300 ease-in-out font-['Plus Jakarta Sans']">Join the Waitlist</button>
+    </div>
+
+    <div class="text-gray-500 text-sm md:text-base flex justify-between w-full mt-8">
+      <div class="flex flex-col">
+        <span class="font-bold text-gray-700 font-['Inter'] mb-1">Learn More</span>
+        <a href="#" class="hover:underline font-['Inter']">Features</a>
+        <a href="#" class="hover:underline font-['Inter']">Pricing</a>
+        <a href="#" class="hover:underline font-['Inter']">Blog</a>
+      </div>
+      <div class="flex flex-col text-right">
+        <span class="font-bold text-gray-700 font-['Inter'] mb-1">Contact</span>
+        <a href="#" class="hover:underline font-['Inter']">hello@haitugen.ai</a>
+        <a href="#" class="hover:underline font-['Inter']">+1 (555) 123-4567</a>
+      </div>
+    </div>
+  </div>
+</div>
+      </body>
+      </html>
+    

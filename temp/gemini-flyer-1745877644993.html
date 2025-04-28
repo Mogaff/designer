@@ -1,0 +1,95 @@
+
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Gemini Generated Flyer</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+          tailwind.config = {
+            theme: {
+              extend: {
+                animation: {
+                  'gradient': 'gradient 8s ease infinite',
+                  'float': 'float 6s ease-in-out infinite',
+                  'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                },
+                keyframes: {
+                  gradient: {
+                    '0%, 100%': { backgroundPosition: '0% 50%' },
+                    '50%': { backgroundPosition: '100% 50%' },
+                  },
+                  float: {
+                    '0%, 100%': { transform: 'translateY(0)' },
+                    '50%': { transform: 'translateY(-10px)' },
+                  }
+                }
+              }
+            }
+          }
+        </script>
+        <style>
+          
+          body {
+            margin: 0;
+            padding: 0;
+          }
+        
+          
+          
+          /* Advanced effects */
+          .gradient-text {
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            background-image: linear-gradient(to right, var(--tw-gradient-stops));
+          }
+          .gradient-bg {
+            background-size: 200% 200%;
+            animation: gradient 15s ease infinite;
+          }
+          
+          /* Ensure no rotated text (enforce horizontal-only text) */
+          h1, h2, h3, h4, h5, h6, p, span, div, li, a, strong, em, label, blockquote, caption, button, text {
+            transform: none !important;
+            rotate: 0deg !important;
+            transform-origin: center !important;
+          }
+          @tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  h1 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+  }
+
+  p {
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+  }
+
+  button {
+      font-family: 'Inter', sans-serif;
+  }
+}
+        </style>
+      </head>
+      <body>
+        <div class="relative w-full h-[300px] md:h-[400px] overflow-hidden bg-gradient-to-r from-indigo-50 to-pink-50">
+  <div class="absolute inset-0 z-0 opacity-50">
+    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] md:w-[800px] md:h-[800px] rounded-full bg-gradient-to-r from-indigo-200 to-pink-200 blur-xl"></div>
+  </div>
+  <div class="relative z-10 flex flex-col justify-center items-center w-full h-full p-8 md:p-16">
+    <h1 class="text-4xl md:text-6xl font-extrabold text-gray-800 leading-tight mb-4">haitugen.ai</h1>
+    <p class="text-lg md:text-xl text-gray-600 mb-8 font-light tracking-wide">AI-powered content generation, simplified.</p>
+    <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-300">Join the Waitlist</button>
+  </div>
+  <div class="absolute bottom-4 left-4 text-sm text-gray-500">© 2024 haitugen.ai</div>
+  <div class="absolute top-4 right-4 text-sm text-gray-500">Beta Access Coming Soon</div>
+</div>
+      </body>
+      </html>
+    

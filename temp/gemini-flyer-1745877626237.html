@@ -1,0 +1,96 @@
+
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Gemini Generated Flyer</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+          tailwind.config = {
+            theme: {
+              extend: {
+                animation: {
+                  'gradient': 'gradient 8s ease infinite',
+                  'float': 'float 6s ease-in-out infinite',
+                  'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                },
+                keyframes: {
+                  gradient: {
+                    '0%, 100%': { backgroundPosition: '0% 50%' },
+                    '50%': { backgroundPosition: '100% 50%' },
+                  },
+                  float: {
+                    '0%, 100%': { transform: 'translateY(0)' },
+                    '50%': { transform: 'translateY(-10px)' },
+                  }
+                }
+              }
+            }
+          }
+        </script>
+        <style>
+          
+          body {
+            margin: 0;
+            padding: 0;
+          }
+        
+          
+          
+          /* Advanced effects */
+          .gradient-text {
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            background-image: linear-gradient(to right, var(--tw-gradient-stops));
+          }
+          .gradient-bg {
+            background-size: 200% 200%;
+            animation: gradient 15s ease infinite;
+          }
+          
+          /* Ensure no rotated text (enforce horizontal-only text) */
+          h1, h2, h3, h4, h5, h6, p, span, div, li, a, strong, em, label, blockquote, caption, button, text {
+            transform: none !important;
+            rotate: 0deg !important;
+            transform-origin: center !important;
+          }
+          @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Open+Sans:wght@300&family=Montserrat:wght@700&family=Roboto&display=swap');
+
+/* Add any further customizations if needed */
+.mix-blend-overlay {
+  mix-blend-mode: overlay;
+}
+
+        </style>
+      </head>
+      <body>
+        <div class="relative w-full h-[600px] bg-gradient-to-r from-[#1A1A1A] to-[#333333] overflow-hidden">
+  <div class="absolute top-0 left-0 w-full h-full bg-[url('https://placehold.co/1200x600/333333/666666?text=Luxury+Background+Image')] bg-cover bg-center mix-blend-overlay opacity-50"></div>
+
+  <div class="relative z-10 w-full h-full flex flex-col justify-center items-center text-white px-6 md:px-12">
+    <h1 class="text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-tight font-['Playfair Display'] mb-4">
+      haitugen.ai
+    </h1>
+    <p class="text-lg md:text-xl font-light font-['Open Sans'] mb-8 max-w-3xl text-center">
+      Crafting the future of AI.  Generate breathtaking visuals, compelling copy, and innovative designs with unparalleled ease and sophistication.
+    </p>
+
+    <button class="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold py-3 px-6 rounded-lg text-lg font-['Montserrat'] transition duration-300 ease-in-out">
+      Join the Waitlist
+    </button>
+  </div>
+
+  <div class="absolute bottom-4 left-4 text-white font-['Roboto'] text-sm opacity-70">
+    © 2024 haitugen.ai. All rights reserved.
+  </div>
+
+  <div class="absolute bottom-4 right-4 text-white font-['Roboto'] text-sm opacity-70 flex flex-col items-end">
+    <span>Contact:</span>
+    <a href="mailto:info@haitugen.ai" class="hover:underline">info@haitugen.ai</a>
+  </div>
+</div>
+      </body>
+      </html>
+    

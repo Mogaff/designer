@@ -1,0 +1,103 @@
+
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Gemini Generated Flyer</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+          tailwind.config = {
+            theme: {
+              extend: {
+                animation: {
+                  'gradient': 'gradient 8s ease infinite',
+                  'float': 'float 6s ease-in-out infinite',
+                  'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                },
+                keyframes: {
+                  gradient: {
+                    '0%, 100%': { backgroundPosition: '0% 50%' },
+                    '50%': { backgroundPosition: '100% 50%' },
+                  },
+                  float: {
+                    '0%, 100%': { transform: 'translateY(0)' },
+                    '50%': { transform: 'translateY(-10px)' },
+                  }
+                }
+              }
+            }
+          }
+        </script>
+        <style>
+          
+          body {
+            margin: 0;
+            padding: 0;
+          }
+        
+          
+          
+          /* Advanced effects */
+          .gradient-text {
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            background-image: linear-gradient(to right, var(--tw-gradient-stops));
+          }
+          .gradient-bg {
+            background-size: 200% 200%;
+            animation: gradient 15s ease infinite;
+          }
+          
+          /* Ensure no rotated text (enforce horizontal-only text) */
+          h1, h2, h3, h4, h5, h6, p, span, div, li, a, strong, em, label, blockquote, caption, button, text {
+            transform: none !important;
+            rotate: 0deg !important;
+            transform-origin: center !important;
+          }
+          @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Playfair+Display&family=Roboto&display=swap');
+/* Add any further needed Tailwind directives or custom styles here */
+.mix-blend-overlay {
+  mix-blend-mode: overlay;
+}
+
+        </style>
+      </head>
+      <body>
+        <div class="relative w-full h-[600px] overflow-hidden bg-gradient-to-r from-[#F2E9E4] to-[#D9D7F1]">
+  <div class="absolute top-0 left-0 w-full h-full bg-[url('https://source.unsplash.com/random/1920x1080/?fashion')] bg-cover bg-center mix-blend-overlay opacity-50"></div>
+
+  <div class="absolute top-0 left-0 w-full h-full flex flex-col justify-between p-12">
+    <div class="flex items-center justify-between">
+      <img src="https://via.placeholder.com/150x50?text=haitugen.ai+logo" alt="haitugen.ai Logo" class="w-48">
+      <div class="text-right text-[#363062] font-['Playfair\ Display'] tracking-widest">
+        <p class="text-sm">Revolutionizing Fashion Design</p>
+        <p class="text-sm">Through Generative AI</p>
+      </div>
+    </div>
+
+    <div class="flex flex-col items-center gap-8">
+      <h1 class="text-6xl text-[#363062] font-['Montserrat'] font-bold text-center leading-tight">
+        Unleash Your<br>Creative Vision
+      </h1>
+      <p class="text-[#404258] text-2xl font-['Roboto'] text-center">
+        Haitugen.ai empowers you to create stunning, unique, and high-fashion designs with the power of artificial intelligence.
+      </p>
+      <button class="bg-[#4D4C7D] hover:bg-[#363062] text-white font-['Montserrat'] font-bold py-4 px-12 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+        Join the Waitlist
+      </button>
+    </div>
+
+    <div class="flex items-center justify-between text-xs text-[#404258] font-['Roboto'] tracking-widest">
+      <p>© 2023 haitugen.ai. All rights reserved.</p>
+      <div class="flex gap-4">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+      </div>
+    </div>
+  </div>
+</div>
+      </body>
+      </html>
+    

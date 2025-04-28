@@ -1,0 +1,114 @@
+
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Gemini Generated Flyer</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+          tailwind.config = {
+            theme: {
+              extend: {
+                animation: {
+                  'gradient': 'gradient 8s ease infinite',
+                  'float': 'float 6s ease-in-out infinite',
+                  'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                },
+                keyframes: {
+                  gradient: {
+                    '0%, 100%': { backgroundPosition: '0% 50%' },
+                    '50%': { backgroundPosition: '100% 50%' },
+                  },
+                  float: {
+                    '0%, 100%': { transform: 'translateY(0)' },
+                    '50%': { transform: 'translateY(-10px)' },
+                  }
+                }
+              }
+            }
+          }
+        </script>
+        <style>
+          
+          body {
+            margin: 0;
+            padding: 0;
+          }
+        
+          
+          
+          /* Advanced effects */
+          .gradient-text {
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            background-image: linear-gradient(to right, var(--tw-gradient-stops));
+          }
+          .gradient-bg {
+            background-size: 200% 200%;
+            animation: gradient 15s ease infinite;
+          }
+          
+          /* Ensure no rotated text (enforce horizontal-only text) */
+          h1, h2, h3, h4, h5, h6, p, span, div, li, a, strong, em, label, blockquote, caption, button, text {
+            transform: none !important;
+            rotate: 0deg !important;
+            transform-origin: center !important;
+          }
+          @tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer components {
+    .font-display {
+      font-family: 'Playfair Display', serif; /* Example premium serif font */
+    }
+    .font-body {
+      font-family: 'Inter', sans-serif;
+    }
+}
+
+        </style>
+      </head>
+      <body>
+        <div class="flyer-container" style="width: 1200px; height: 1200px; overflow: hidden;">
+  <div class="relative h-full w-full bg-gradient-to-br from-[#17181A] to-[#303134]">
+    <div class="absolute inset-0 flex flex-col justify-between p-16">
+      <div class="text-white font-display text-5xl leading-tight tracking-tight">
+        haitu<span class="font-thin">gen.</span><span class="text-[#959699] font-thin">ai</span>
+      </div>
+
+      <div class="text-[#959699] text-lg font-body leading-relaxed">
+        <p class="mb-6">
+          Transform your ideas into stunning visuals.<br>
+          AI-powered image generation, reimagined.
+        </p>
+
+        <button class="bg-gradient-to-r from-[#C26EFF] to-[#6479F1] hover:from-[#b056ff] hover:to-[#5065e4] text-white font-bold py-4 px-8 rounded-full shadow-lg transition-colors duration-300 ease-in-out">
+          Join the Waitlist
+        </button>
+      </div>
+
+      <div class="flex justify-between text-[#959699] text-sm font-body">
+        <div class="flex flex-col">
+          <span>© 2024 Haitugen.ai</span>
+          <span>All Rights Reserved.</span>
+        </div>
+        <div>
+          <a href="#" class="hover:text-white">Privacy Policy</a> · <a href="#" class="hover:text-white">Terms & Conditions</a>
+        </div>
+      </div>
+    </div>
+    <div class="absolute bottom-16 right-16 w-48 h-48 bg-gradient-to-br from-[#C26EFF]/50 to-[#6479F1]/50 rounded-full blur-2xl"></div>
+  </div>
+</div>
+      </body>
+      </html>
+    
