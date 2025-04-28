@@ -163,41 +163,16 @@ export default function AiFlyerForm({
       // Add flag for AI background generation
       formData.append("generateAiBackground", generateAiBackground.toString());
       
-      try {
-        const response = await apiRequest("POST", "/api/generate-ai", formData);
-        const data = await response.json();
-        console.log("JSON data received:", JSON.stringify(data).substring(0, 200) + "...");
-        
-        // Workaround to check for empty object
-        if (Object.keys(data).length === 0) {
-          console.error("Empty response object received");
-          throw new Error("Empty response received from server");
-        }
-        
-        // Ensure designs property exists
-        if (!data.designs || !Array.isArray(data.designs)) {
-          console.error("No designs array in response:", data);
-          throw new Error("Server response missing designs array");
-        }
-        
-        return data;
-      } catch (error) {
-        console.error("Error parsing JSON response:", error);
-        throw error;
-      }
+      const response = await apiRequest("POST", "/api/generate-ai", formData);
+      return response.json();
     },
     onSuccess: (data: DesignSuggestions) => {
-      // Add debug logging to see what's coming back from the server
-      console.log("Server response:", data);
-      
       // Store all designs in state for display
       setDesignSuggestions(data.designs);
       
       // Automatically select and display the first design
       if (data.designs && data.designs.length > 0) {
         const firstDesign = data.designs[0];
-        console.log("First design:", firstDesign);
-        
         setGeneratedFlyer({
           imageUrl: firstDesign.imageBase64,
           headline: "AI Generated Design",
@@ -207,7 +182,6 @@ export default function AiFlyerForm({
         });
       } else {
         // Clear any existing design if no designs were generated
-        console.log("No designs returned from server");
         setGeneratedFlyer(null);
       }
       

@@ -350,7 +350,7 @@ export default function AiFlyerForm({
                 <div className="text-center">
                   <Upload className="mx-auto h-2.5 w-2.5 text-white/70 mb-0.5" />
                   <span className="text-[9px] font-medium text-white/90">
-                    BACKGROUND
+                    Upload Image
                   </span>
                 </div>
               </Label>
@@ -403,7 +403,7 @@ export default function AiFlyerForm({
                 <div className="text-center">
                   <Upload className="mx-auto h-2.5 w-2.5 text-white/70 mb-0.5" />
                   <span className="text-[9px] font-medium text-white/90">
-                    LOGO
+                    Upload Logo
                   </span>
                 </div>
               </Label>

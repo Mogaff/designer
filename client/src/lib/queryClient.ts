@@ -27,60 +27,16 @@ export async function apiRequest(
     requestHeaders["Content-Type"] = "application/json";
   }
   
-  try {
-    console.log(`Making ${method} request to ${url}`);
-    
-    const res = await fetch(url, {
-      method,
-      headers: requestHeaders,
-      // If it's FormData or explicitly marked as raw form data, send directly, otherwise stringify
-      body: (isFormData || isRawFormData) ? data as FormData : data ? JSON.stringify(data) : undefined,
-      credentials: "include",
-    });
+  const res = await fetch(url, {
+    method,
+    headers: requestHeaders,
+    // If it's FormData or explicitly marked as raw form data, send directly, otherwise stringify
+    body: (isFormData || isRawFormData) ? data as FormData : data ? JSON.stringify(data) : undefined,
+    credentials: "include",
+  });
 
-    await throwIfResNotOk(res);
-    
-    // Clone the response to log it and still return the original
-    const resClone = res.clone();
-    
-    // Log the response status and headers
-    console.log(`Response status: ${res.status} ${res.statusText}`);
-    
-    try {
-      // Use a safer approach for headers
-      const headers = {};
-      res.headers.forEach((value, key) => {
-        headers[key] = value;
-      });
-      console.log("Response headers:", headers);
-      
-      // Try to check content type to see if it's JSON
-      const contentType = res.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        console.log("Response is JSON");
-        
-        // Peek at the JSON content for debugging
-        resClone.clone().json()
-          .then(data => {
-            console.log("JSON peek:", typeof data, 
-                        data ? Object.keys(data).length : 0, 
-                        "keys:", data ? Object.keys(data) : []);
-          })
-          .catch(err => {
-            console.error("Failed to peek at JSON:", err);
-          });
-      } else {
-        console.log("Response content-type:", contentType);
-      }
-    } catch (e) {
-      console.error("Error inspecting response:", e);
-    }
-    
-    return resClone;
-  } catch (error) {
-    console.error(`API Request Error for ${method} ${url}:`, error);
-    throw error;
-  }
+  await throwIfResNotOk(res);
+  return res;
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";

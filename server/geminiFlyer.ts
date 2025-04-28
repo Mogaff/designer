@@ -99,17 +99,12 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
       `EXTREMELY IMPORTANT: This design is for the ${aspectRatioInfo}. 
        Your design MUST precisely fit this exact aspect ratio without any overflow or extra space.
        YOU MUST create your design inside a parent container with fixed dimensions matching exactly this aspect ratio.
-       CRITICAL REQUIREMENT: Always wrap your design in a parent div with EXACTLY this class name and structure:
+       Always wrap your design in a parent div like this:
        <div class="flyer-container" style="width: [WIDTH]px; height: [HEIGHT]px; overflow: hidden;">
          <!-- Your design goes here -->
        </div>
-       Replace [WIDTH] and [HEIGHT] with the exact pixel dimensions specified for this format.
-       THE CLASS NAME "flyer-container" IS ABSOLUTELY REQUIRED - DO NOT CHANGE OR OMIT IT.` 
-      : `EXTREMELY IMPORTANT: You MUST ALWAYS create your design inside a parent container with this EXACT structure:
-         <div class="flyer-container" style="width: 1200px; height: 1200px; overflow: hidden;">
-           <!-- Your design goes here -->
-         </div>
-         THE CLASS NAME "flyer-container" IS ABSOLUTELY REQUIRED - DO NOT CHANGE OR OMIT IT.`}
+       Replace [WIDTH] and [HEIGHT] with the exact pixel dimensions specified for this format.` 
+      : ''}
     
  
     
@@ -131,9 +126,9 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
         }
       });
       
-      // Add explicit instructions for creative integration of the image
+      // Add explicit instructions to use the image as background
       parts.push({
-        text: "IMPORTANT: The above image has been provided as a design element for your flyer. Rather than simply using it as a full background, creatively integrate it into your design in one of the following ways:\n\n1. Use it as a featured visual element alongside other design components\n2. Apply artistic treatments like frames, shadows, or transformations\n3. Create a composition where the image becomes part of a larger design story\n4. Extract colors from the image to inform your color palette while using the image itself as a focal point\n\nYour design should feel professionally composed with the image as an important visual component, not just a background layer. Create visual interest through layering, contrast, and thoughtful placement."
+        text: "IMPORTANT: Use the above image as the BACKGROUND of your flyer design. Do not try to reference it with an img tag - I will handle embedding it for you. Instead, directly create HTML that assumes the image is already the background. Use appropriate text colors that contrast well with the image's colors. Add overlays or semi-transparent elements as needed to maintain text readability over the background image."
       });
     }
     
@@ -186,7 +181,7 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     
     // Check for quota limit exceeded error
     const errorMessage = String(error);
-    if (errorMessage.includes("429 Too Many Requests") || errorMessage.includes("quota")) {
+    if (errorMessage.includes("429 Too Many Requests") && errorMessage.includes("quota")) {
       throw new Error("API quota limit reached: The Gemini AI API free tier limit has been reached for today. Please try again tomorrow or upgrade to a paid plan.");
     }
     
@@ -205,20 +200,25 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
     const { htmlContent, cssStyles } = await generateFlyerContent(options);
     
     // Create a complete HTML document with the generated content
-    // Basic body styling without directly adding background image
-    const backgroundStyle = `
-      body {
-        margin: 0;
-        padding: 0;
-        min-height: 100vh;
-      }
-      
-      /* Make uploaded images available as resources */
-      .user-bg-image {
-        content: url('data:image/jpeg;base64,${options.backgroundImageBase64 || ''}');
-        display: none;
-      }
-    `;
+    // Add background image styling if an image was provided
+    const backgroundStyle = options.backgroundImageBase64 
+      ? `
+          body {
+            margin: 0;
+            padding: 0;
+            background-image: url('data:image/jpeg;base64,${options.backgroundImageBase64}');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+          }
+        `
+      : `
+          body {
+            margin: 0;
+            padding: 0;
+          }
+        `;
         
     // Add logo styling if a logo was provided
     const logoStyle = options.logoBase64
@@ -448,7 +448,7 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
     
     // Check for quota limit exceeded error
     const errorMessage = String(error);
-    if (errorMessage.includes("429 Too Many Requests") || errorMessage.includes("quota")) {
+    if (errorMessage.includes("429 Too Many Requests") && errorMessage.includes("quota")) {
       throw new Error("API quota limit reached: The Gemini AI API free tier limit has been reached for today. Please try again tomorrow or upgrade to a paid plan.");
     }
     
