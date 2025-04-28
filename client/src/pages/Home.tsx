@@ -82,14 +82,14 @@ Create this as an advertisement design, NOT as a website or HTML.`;
         {/* Main Content Area - Full Browser Width */}
         <div className="flex flex-col lg:flex-row w-full h-[calc(100vh-80px)] gap-3 mt-10">
           {/* Left Sidebar - Contains Design Creation and Tabs */}
-          <div className="w-full lg:w-[400px] backdrop-blur-md bg-white/5 border border-white/10 overflow-hidden flex flex-col rounded-lg relative">
+          <div className="w-full lg:w-[250px] backdrop-blur-md bg-white/5 border border-white/10 overflow-hidden flex flex-col rounded-lg relative">
             {/* Brand Kit Panel as a child of the Create Design panel */}
             <BrandKitPanel 
               isOpen={isBrandKitPanelOpen && !selectedTemplate} 
               onClose={() => setIsBrandKitPanelOpen(false)} 
             />
             
-            <div className="flex-grow overflow-auto p-3">
+            <div className="flex-grow overflow-auto p-2">
               {selectedTemplate ? (
                 <div className="flex flex-col space-y-4">
                   <div className="flex items-center justify-between">
@@ -165,7 +165,7 @@ Create this as an advertisement design, NOT as a website or HTML.`;
                   setDesignSuggestions={setDesignSuggestions}
                 />
               ) : (
-                <AiFlyerFormWithTemplates
+                <AiFlyerFormCompact
                   setGeneratedFlyer={setGeneratedFlyer}
                   isGenerating={isGenerating}
                   setIsGenerating={setIsGenerating}
@@ -222,8 +222,8 @@ Create this as an advertisement design, NOT as a website or HTML.`;
           </div>
           
           {/* Right Sidebar - Gallery */}
-          <div className="hidden lg:block w-[240px] backdrop-blur-md bg-white/5 border border-white/10 overflow-hidden rounded-lg h-[calc(100vh-80px)]">
-            <div className="overflow-auto p-2">
+          <div className="hidden lg:block w-[180px] backdrop-blur-md bg-white/5 border border-white/10 overflow-hidden rounded-lg h-[calc(100vh-80px)]">
+            <div className="overflow-auto p-1">
               <RecentCreations vertical={true} />
             </div>
           </div>
