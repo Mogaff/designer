@@ -139,8 +139,7 @@ export async function generateStoryboard(options: {
   try {
     console.log('Generating storyboard with Claude 3.7 Sonnet...');
     
-    const systemPrompt = `You are an expert storyboard artist for short-form video advertisements.
-    Your task is to create a detailed storyboard for an 8-second vertical video ad.`;
+    const systemPrompt = `You are Claude, an award-winning, highly skilled graphic design expert. You create stunning, modern, and engaging visual designs with a professional polish. As an expert storyboard artist for short-form video advertisements, your task is to create a detailed storyboard for an 8-second vertical video ad. Apply your design expertise to craft a compelling visual narrative that maximizes audience engagement and drives conversions.`;
     
     const userPrompt = `Create a storyboard for an 8-second vertical (9:16) video advertisement for:
       

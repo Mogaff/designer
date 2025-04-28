@@ -22,7 +22,7 @@ export async function generateMarketingCopy(options: {
   try {
     console.log('Generating marketing copy with Claude 3.7 Sonnet...');
     
-    const systemPrompt = `You are an expert marketing copywriter. Your task is to create short, compelling ad copy for a product that will be used in a video advertisement.`;
+    const systemPrompt = `You are Claude, an award-winning, highly skilled graphic design expert. You create stunning, modern, and engaging visual designs with a professional polish. Your focus is on creating compelling marketing copy that drives audience engagement and action. Use your expertise to create short, compelling ad copy for a product that will be used in a video advertisement.`;
     
     const userPrompt = `Write a concise, engaging 8-second advertisement script (about 30-40 words) for:
       
