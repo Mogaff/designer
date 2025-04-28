@@ -55,17 +55,20 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
   const [selectedKit, setSelectedKit] = useState<BrandKit | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>('');
   
-  // Animation style for sliding from right - pushing content instead of overlaying
+  // Animation style for sliding panel from left sidebar
   const slideInStyle = {
-    position: 'relative',
-    transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
-    width: '100%',
+    position: 'absolute',
+    top: 0,
+    left: isOpen ? '250px' : '-320px', // Position relative to the left sidebar (250px width)
+    width: '300px',
     height: '100%',
-    transition: 'transform 0.3s ease-in-out',
-    background: 'rgba(15, 23, 42, 0.8)',
+    zIndex: 40,
+    transition: 'left 0.3s ease-in-out',
+    background: 'rgba(15, 23, 42, 0.9)',
     backdropFilter: 'blur(8px)',
-    borderLeft: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: 'inherit'
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '0.5rem',
+    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)'
   } as React.CSSProperties;
   
   // Form setup
