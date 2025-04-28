@@ -1,0 +1,95 @@
+
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Gemini Generated Flyer</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+          tailwind.config = {
+            theme: {
+              extend: {
+                animation: {
+                  'gradient': 'gradient 8s ease infinite',
+                  'float': 'float 6s ease-in-out infinite',
+                  'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                },
+                keyframes: {
+                  gradient: {
+                    '0%, 100%': { backgroundPosition: '0% 50%' },
+                    '50%': { backgroundPosition: '100% 50%' },
+                  },
+                  float: {
+                    '0%, 100%': { transform: 'translateY(0)' },
+                    '50%': { transform: 'translateY(-10px)' },
+                  }
+                }
+              }
+            }
+          }
+        </script>
+        <style>
+          
+          body {
+            margin: 0;
+            padding: 0;
+          }
+        
+          
+          
+          /* Advanced effects */
+          .gradient-text {
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            background-image: linear-gradient(to right, var(--tw-gradient-stops));
+          }
+          .gradient-bg {
+            background-size: 200% 200%;
+            animation: gradient 15s ease infinite;
+          }
+          
+          /* Ensure no rotated text (enforce horizontal-only text) */
+          h1, h2, h3, h4, h5, h6, p, span, div, li, a, strong, em, label, blockquote, caption, button, text {
+            transform: none !important;
+            rotate: 0deg !important;
+            transform-origin: center !important;
+          }
+          
+        </style>
+      </head>
+      <body>
+        <div class="flyer-container" style="width: 1200px; height: 1200px; overflow: hidden;">
+  <div class="relative h-full w-full bg-gradient-to-br from-purple-800 to-pink-700 overflow-hidden">
+    <div class="absolute inset-0 bg-black opacity-50"></div>
+    <div class="relative z-10 flex flex-col justify-between items-center h-full w-full p-16">
+      <div class="text-white text-5xl font-extrabold tracking-wide leading-tight mb-8">
+        <span class="font-serif">haitugen.</span><span class="font-sans">ai</span>
+      </div>
+      <div class="flex flex-wrap justify-center gap-8">
+        <div class="w-64 bg-white/20 p-6 rounded-lg backdrop-blur-sm">
+          <h3 class="text-xl font-bold text-white mb-4">Generate</h3>
+          <p class="text-white/80">Create stunning visuals effortlessly.</p>
+        </div>
+        <div class="w-64 bg-white/20 p-6 rounded-lg backdrop-blur-sm">
+          <h3 class="text-xl font-bold text-white mb-4">Elevate</h3>
+          <p class="text-white/80">Enhance your brand with AI-powered design.</p>
+        </div>
+        <div class="w-64 bg-white/20 p-6 rounded-lg backdrop-blur-sm">
+          <h3 class="text-xl font-bold text-white mb-4">Innovate</h3>
+          <p class="text-white/80">Explore the future of fashion design.</p>
+        </div>
+      </div>
+      <div class="mt-12">
+        <a href="#" class="bg-white/30 hover:bg-white/50 text-white font-bold py-4 px-8 rounded-full text-xl transition duration-300 ease-in-out">
+          Join the Waitlist
+        </a>
+      </div>
+    </div>
+    <img src="https://placeimg.com/1200/1200/fashion" alt="Fashion Image" class="absolute inset-0 w-full h-full object-cover opacity-30">
+  </div>
+</div>
+      </body>
+      </html>
+    
