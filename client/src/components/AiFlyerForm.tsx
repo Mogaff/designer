@@ -13,6 +13,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import backgroundGradient from "../assets/background-gradient.png";
 import backgroundGradient2 from "../assets/backgroundd-gradient.png";
 import iconUpload from "../assets/iconupload.png";
+import meshGradient from "../assets/image-mesh-gradient (18).png";
 import { useUserSettings } from "@/contexts/UserSettingsContext";
 import { loadGoogleFonts, loadFont } from '@/lib/fontService';
 import PremiumDesignPanel from "./PremiumDesignPanel";
@@ -486,7 +487,16 @@ export default function AiFlyerForm({
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-center h-full w-full relative z-10 rounded-xl backdrop-blur-md">
+                <div 
+                  className="flex items-center justify-center h-full w-full relative z-10 rounded-xl backdrop-blur-md overflow-hidden"
+                  style={{
+                    backgroundImage: `url(${meshGradient})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
+                  }}
+                >
+                  <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] z-0 animate-pulse-slow" />
+                  
                   <Input
                     id="background-image-upload"
                     type="file"
@@ -494,21 +504,30 @@ export default function AiFlyerForm({
                     onChange={handleBackgroundImageChange}
                     className="hidden"
                   />
-                  <Button 
-                    type="button" 
-                    className="bg-indigo-500/30 backdrop-blur-md text-white rounded-full hover:bg-indigo-500/50 transition-all border border-indigo-500/40 shadow-lg"
-                    onClick={() => document.getElementById('background-image-upload')?.click()}
-                  >
-                    {isMobile ? (
-                      <Upload className="h-4 w-4" />
-                    ) : (
-                      <span className="px-4">Select Image</span>
-                    )}
-                  </Button>
+                  
+                  <div className="z-10 flex flex-col items-center gap-2">
+                    <img 
+                      src={iconUpload} 
+                      alt="Upload" 
+                      className="w-16 h-16 opacity-80 hover:opacity-100 transition-all cursor-pointer"
+                      onClick={() => document.getElementById('background-image-upload')?.click()}
+                    />
+                    <Button 
+                      type="button" 
+                      className="bg-indigo-500/60 backdrop-blur-md text-white rounded-full hover:bg-indigo-500/80 transition-all border border-indigo-300/40 shadow-lg animate-pulse-slow"
+                      onClick={() => document.getElementById('background-image-upload')?.click()}
+                    >
+                      {isMobile ? (
+                        <Upload className="h-4 w-4" />
+                      ) : (
+                        <span className="px-4">Select Background</span>
+                      )}
+                    </Button>
+                  </div>
                   
                   {/* AI Background Generation Option */}
-                  <div className="absolute bottom-0 left-0 right-0 z-20 bg-black/50 backdrop-blur-sm p-1">
-                    <div className="flex items-center gap-1">
+                  <div className="absolute bottom-0 left-0 right-0 z-20 bg-black/60 backdrop-blur-sm p-2">
+                    <div className="flex items-center gap-1 justify-center">
                       <Checkbox 
                         id="generate-ai-bg" 
                         checked={generateAiBackground}
@@ -517,9 +536,9 @@ export default function AiFlyerForm({
                       />
                       <label 
                         htmlFor="generate-ai-bg" 
-                        className="text-[8px] text-white leading-tight cursor-pointer flex items-center"
+                        className="text-[10px] text-white leading-tight cursor-pointer flex items-center"
                       >
-                        <WandSparkles className="h-2 w-2 mr-0.5 text-indigo-300" />
+                        <WandSparkles className="h-3 w-3 mr-0.5 text-indigo-300" />
                         GENERATE WITH AI (1 CREDIT)
                       </label>
                     </div>
@@ -565,7 +584,16 @@ export default function AiFlyerForm({
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center h-full w-full relative z-10 rounded-xl backdrop-blur-md">
+                  <div 
+                    className="flex items-center justify-center h-full w-full relative z-10 rounded-xl backdrop-blur-md overflow-hidden"
+                    style={{
+                      backgroundImage: `url(${backgroundGradient2})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center'
+                    }}
+                  >
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] z-0 animate-pulse-slow" />
+                    
                     <Input
                       id="logo-upload"
                       type="file"
@@ -573,17 +601,26 @@ export default function AiFlyerForm({
                       onChange={handleLogoChange}
                       className="hidden"
                     />
-                    <Button 
-                      type="button" 
-                      className="bg-indigo-500/30 backdrop-blur-md text-white rounded-full hover:bg-indigo-500/50 transition-all border border-indigo-500/40 shadow-lg"
-                      onClick={() => document.getElementById('logo-upload')?.click()}
-                    >
-                      {isMobile ? (
-                        <Upload className="h-4 w-4" />
-                      ) : (
-                        <span className="px-4">Select Logo</span>
-                      )}
-                    </Button>
+                    
+                    <div className="z-10 flex flex-col items-center gap-2">
+                      <img 
+                        src={iconUpload} 
+                        alt="Upload" 
+                        className="w-12 h-12 opacity-80 hover:opacity-100 transition-all cursor-pointer"
+                        onClick={() => document.getElementById('logo-upload')?.click()}
+                      />
+                      <Button 
+                        type="button" 
+                        className="bg-indigo-500/60 backdrop-blur-md text-white rounded-full hover:bg-indigo-500/80 transition-all border border-indigo-300/40 shadow-lg"
+                        onClick={() => document.getElementById('logo-upload')?.click()}
+                      >
+                        {isMobile ? (
+                          <Upload className="h-4 w-4" />
+                        ) : (
+                          <span className="px-4">Select Logo</span>
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>
