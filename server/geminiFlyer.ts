@@ -106,39 +106,7 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
        Replace [WIDTH] and [HEIGHT] with the exact pixel dimensions specified for this format.` 
       : ''}
     
-    DESIGN PHILOSOPHY & APPROACH:
-    1. Think like a professional PRINT DESIGNER, not a web developer - focus on visual impact, not web functionality
-    2. Create designs that would be suitable for a high-end advertising campaign or luxury brand
-    3. Draw inspiration from award-winning graphic design work by top agencies like Pentagram, Sagmeister & Walsh, and Wolff Olins
-    4. Your design should look like it belongs in a prestigious design annual or creative industry award showcase
-    
-    Your design MUST include:
-    1. SOPHISTICATED VISUAL HIERARCHY with thoughtful organization of elements
-    2. PROFESSIONAL TYPOGRAPHY using elegant typeface combinations that create dramatic contrast
-    3. ARTFUL COLOR PALETTES with harmonious, intentional color relationships - avoid default or basic color schemes
-    4. ADVANCED COMPOSITION techniques with golden ratio proportions and masterful use of white space
-    5. PREMIUM VISUAL TREATMENT with depth, texture, and visual richness (overlays, gradients, textures, masks)
-    6. CREATIVE GRAPHIC ELEMENTS like custom shapes, elegant dividers, and sophisticated patterns
-    7. ARTISTIC TOUCHES that demonstrate attention to detail (subtle textures, refined borders, elegant shadows)
-    8. LUXURY BRAND AESTHETICS that convey premium, upscale quality
-    
-    CRITICAL DESIGN REQUIREMENTS:
-    1. DO NOT create any buttons or interactive elements - this is a PRINT DESIGN, not a website
-    2. DO NOT use rotated, diagonal, or slanted text - ALL text must be perfectly horizontal
-    3. Keep all headings and text content perfectly straight (0 degree rotation)
-    4. Use only straight text alignment (no diagonal text)
-    5. Text can be left-aligned, right-aligned or centered, but never at an angle
-    6. Ensure ALL content fits within the specified container - nothing should overflow or be cut off
-    7. The design must respect the aspect ratio exactly - no extra space or padding outside the main container
-    
-    NEVER CREATE:
-    - Buttons, clickable elements, or any web-only interactive components
-    - Rotated, angled, or diagonal text of any kind
-    - Basic or generic web layouts (navigation bars, footers, etc.)
-    - Simple, uninspired grid layouts with equal-sized sections
-    - Default or flat color schemes without visual interest
-    - Designs that lack professional polish or refinement
-    - Layouts that look like website templates or basic web designs
+ 
     
     Return your response in the following JSON format:
     {
