@@ -12,6 +12,7 @@ import { ImageIcon, Upload, TypeIcon, Check, PaintBucket, Crown, Sparkles, WandS
 import { useIsMobile } from "@/hooks/use-mobile";
 import backgroundGradient from "../assets/background-gradient.png";
 import backgroundGradient2 from "../assets/backgroundd-gradient.png";
+import iconUpload from "../assets/iconupload.png";
 import { useUserSettings } from "@/contexts/UserSettingsContext";
 import { loadGoogleFonts, loadFont } from '@/lib/fontService';
 import PremiumDesignPanel from "./PremiumDesignPanel";
@@ -455,11 +456,11 @@ export default function AiFlyerForm({
             {/* Background Image Upload - Fixed size container */}
             <div className="relative w-full h-28 overflow-hidden rounded-xl group transition-all duration-300 border border-gray-800/50 hover:border-indigo-500/50 hover:shadow-md hover:shadow-indigo-500/20">
               {/* Background Gradient Image */}
-              <div className="absolute inset-0 z-0">
+              <div className="absolute inset-0 z-0" style={{ overflow: 'hidden' }}>
                 <img 
                   src={backgroundGradient} 
                   alt="" 
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
               </div>
               
@@ -534,11 +535,11 @@ export default function AiFlyerForm({
             {!activeBrandKit ? (
               <div className="relative w-full h-28 overflow-hidden rounded-xl group transition-all duration-300 border border-gray-800/50 hover:border-indigo-500/50 hover:shadow-md hover:shadow-indigo-500/20">
                 {/* Background Gradient Image */}
-                <div className="absolute inset-0 z-0">
+                <div className="absolute inset-0 z-0" style={{ overflow: 'hidden' }}>
                   <img 
                     src={backgroundGradient2} 
                     alt="" 
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                 </div>
                 
@@ -587,7 +588,7 @@ export default function AiFlyerForm({
                 )}
               </div>
             ) : (
-              <div className="relative w-full h-28 overflow-hidden rounded-xl group transition-all duration-300 border border-gray-800/50 bg-black/20">
+              <div className="relative w-full h-28 overflow-hidden rounded-xl group transition-all duration-300 border border-gray-800/50 bg-black/20" style={{ background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%)' }}>
                 <div className="flex flex-col items-center justify-center h-full w-full text-center p-3">
                   <div className="w-12 h-12 rounded-md flex items-center justify-center overflow-hidden mb-2">
                     {activeBrandKit.logo_url ? (
