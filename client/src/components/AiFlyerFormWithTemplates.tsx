@@ -10,8 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { ImageIcon, Upload, TypeIcon, Check, PaintBucket, Crown, Sparkles, WandSparkles, Star } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import backgroundGradient from "../assets/background-gradient.png";
-import backgroundGradient2 from "../assets/backgroundd-gradient.png";
+import backgroundGradient from "@assets/image-mesh-gradient (11).png";
+import backgroundGradient2 from "@assets/image-mesh-gradient (13).png";
 import { useUserSettings } from "@/contexts/UserSettingsContext";
 import { loadGoogleFonts, loadFont } from '@/lib/fontService';
 import PremiumDesignPanel from "./PremiumDesignPanel";
@@ -529,11 +529,21 @@ export default function AiFlyerForm({
               />
               <Label
                 htmlFor="background-image"
-                className="cursor-pointer flex justify-center items-center h-16 rounded-md border border-white/20 bg-white/5 hover:bg-white/10 backdrop-blur-sm"
+                className="cursor-pointer flex justify-center items-center h-16 rounded-md border border-white/20 relative overflow-hidden hover:border-indigo-500/30 transition-all duration-200"
               >
-                <div className="text-center">
-                  <Upload className="mx-auto h-4 w-4 text-white/50" />
-                  <span className="mt-1 block text-xs font-medium text-white/70">
+                {/* Background gradient */}
+                <div className="absolute inset-0 z-0">
+                  <img 
+                    src={backgroundGradient} 
+                    alt="" 
+                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
+                </div>
+                
+                <div className="text-center relative z-10">
+                  <Upload className="mx-auto h-4 w-4 text-white/70" />
+                  <span className="mt-1 block text-xs font-medium text-white/90">
                     Upload Image
                   </span>
                 </div>
@@ -608,11 +618,21 @@ export default function AiFlyerForm({
               />
               <Label
                 htmlFor="logo-upload"
-                className="cursor-pointer flex justify-center items-center h-16 rounded-md border border-white/20 bg-white/5 hover:bg-white/10 backdrop-blur-sm"
+                className="cursor-pointer flex justify-center items-center h-16 rounded-md border border-white/20 relative overflow-hidden hover:border-indigo-500/30 transition-all duration-200"
               >
-                <div className="text-center">
-                  <Upload className="mx-auto h-4 w-4 text-white/50" />
-                  <span className="mt-1 block text-xs font-medium text-white/70">
+                {/* Background gradient */}
+                <div className="absolute inset-0 z-0">
+                  <img 
+                    src={backgroundGradient2} 
+                    alt="" 
+                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
+                </div>
+                
+                <div className="text-center relative z-10">
+                  <Upload className="mx-auto h-4 w-4 text-white/70" />
+                  <span className="mt-1 block text-xs font-medium text-white/90">
                     Upload Logo
                   </span>
                 </div>
