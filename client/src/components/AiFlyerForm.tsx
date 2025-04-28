@@ -163,8 +163,15 @@ export default function AiFlyerForm({
       // Add flag for AI background generation
       formData.append("generateAiBackground", generateAiBackground.toString());
       
-      const response = await apiRequest("POST", "/api/generate-ai", formData);
-      return response.json();
+      try {
+        const response = await apiRequest("POST", "/api/generate-ai", formData);
+        const data = await response.json();
+        console.log("JSON data received:", data);
+        return data;
+      } catch (error) {
+        console.error("Error parsing JSON response:", error);
+        throw error;
+      }
     },
     onSuccess: (data: DesignSuggestions) => {
       // Add debug logging to see what's coming back from the server

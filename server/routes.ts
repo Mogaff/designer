@@ -222,6 +222,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get updated user info
       const updatedUser = await storage.getUser(userId);
       
+      // Ensure proper content type is set for JSON
+      res.set('Content-Type', 'application/json');
+      
+      // Log response details before sending
+      log(`Sending JSON response with ${designData.length} designs`, "generator");
+      
       // Send JSON response with all designs and updated credit info
       res.json({ 
         designs: designData,

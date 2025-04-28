@@ -27,16 +27,39 @@ export async function apiRequest(
     requestHeaders["Content-Type"] = "application/json";
   }
   
-  const res = await fetch(url, {
-    method,
-    headers: requestHeaders,
-    // If it's FormData or explicitly marked as raw form data, send directly, otherwise stringify
-    body: (isFormData || isRawFormData) ? data as FormData : data ? JSON.stringify(data) : undefined,
-    credentials: "include",
-  });
+  try {
+    console.log(`Making ${method} request to ${url}`);
+    
+    const res = await fetch(url, {
+      method,
+      headers: requestHeaders,
+      // If it's FormData or explicitly marked as raw form data, send directly, otherwise stringify
+      body: (isFormData || isRawFormData) ? data as FormData : data ? JSON.stringify(data) : undefined,
+      credentials: "include",
+    });
 
-  await throwIfResNotOk(res);
-  return res;
+    await throwIfResNotOk(res);
+    
+    // Clone the response to log it and still return the original
+    const resClone = res.clone();
+    
+    // Log the response status and headers
+    console.log(`Response status: ${res.status} ${res.statusText}`);
+    console.log("Response headers:", Object.fromEntries([...res.headers.entries()]));
+    
+    // Try to check content type to see if it's JSON
+    const contentType = res.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      console.log("Response is JSON");
+    } else {
+      console.log("Response content-type:", contentType);
+    }
+    
+    return resClone;
+  } catch (error) {
+    console.error(`API Request Error for ${method} ${url}:`, error);
+    throw error;
+  }
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
