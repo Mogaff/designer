@@ -49,10 +49,8 @@ export default function AiFlyerFormCompact({
   const [logoPreview, setLogoPreview] = useState<string>("");
   const [generateAiBackground, setGenerateAiBackground] = useState<boolean>(false);
   
-  // State for premium design options
-  const [isPremiumDialogOpen, setIsPremiumDialogOpen] = useState<boolean>(false);
-  const [selectedPremiumOption, setSelectedPremiumOption] = useState<string>("");
-  const [designCount, setDesignCount] = useState<string>("1");
+  // State für die Anzahl der zu generierenden Designs
+  const [designCount, setDesignCount] = useState<string>("4"); // Default ist jetzt 4 Designs
   
   // Aspect ratio options for the dropdown
   const aspectRatioOptions = [
@@ -420,22 +418,23 @@ export default function AiFlyerFormCompact({
         
         {/* Settings Row */}
         <div className="grid grid-cols-2 gap-1.5">
-          {/* Quality Tier */}
+          {/* Design Count Selection */}
           <div>
             <Label className="text-[9px] text-white/70 flex items-center gap-1 mb-0.5">
               <Crown className="h-2 w-2" />
-              Quality
+              Anzahl Designs
             </Label>
-            <Button
-              type="button"
-              className="w-full h-6 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white rounded-md px-1.5 text-[8px] justify-between"
-              onClick={() => setIsPremiumDialogOpen(true)}
-            >
-              <span>{selectedPremiumOption || 'Choose Quality'}</span>
-              <svg width="6" height="6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </Button>
+            <Select value={designCount} onValueChange={setDesignCount}>
+              <SelectTrigger className="h-6 bg-slate-800 border-slate-700 text-white text-[8px] rounded-md">
+                <SelectValue placeholder="Anzahl Designs" />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-900 border-slate-700 text-white rounded-md">
+                <SelectItem value="1">1 Design</SelectItem>
+                <SelectItem value="2">2 Designs</SelectItem>
+                <SelectItem value="3">3 Designs</SelectItem>
+                <SelectItem value="4">4 Designs</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           
           {/* Format */}
@@ -459,31 +458,7 @@ export default function AiFlyerFormCompact({
           </div>
         </div>
         
-        {/* Premium Design Options Dialog */}
-        <PremiumDesignPanel
-          isOpen={isPremiumDialogOpen}
-          onClose={() => setIsPremiumDialogOpen(false)}
-          onSelectOption={(optionId) => {
-            setSelectedPremiumOption(optionId);
-            // Set the design count based on the option selected
-            switch(optionId) {
-              case 'basic':
-                setDesignCount('1');
-                break;
-              case 'premium':
-                setDesignCount('4');
-                break;
-              case 'elite':
-                setDesignCount('8');
-                break;
-              case 'ultimate':
-                setDesignCount('16');
-                break;
-            }
-            setIsPremiumDialogOpen(false);
-          }}
-          isGenerating={isGenerating}
-        />
+        {/* Premium feature not used anymore - removed dialog */}
         
         {/* Generate Button - Simplified */}
         <div className="mt-auto mb-0">
