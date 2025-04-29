@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { log } from './logger';
+import { log } from './vite';
 
 /**
  * Validates base64 image data to ensure it has the correct structure

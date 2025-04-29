@@ -204,21 +204,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Create a response with all design images
       const designData = successfulDesigns.map((design, index) => {
-        // Convert buffer to base64 for JSON transport
-        const base64Data = design.imageBuffer.toString('base64');
-        log(`Design ${index + 1} - Base64 length: ${base64Data.length}`, "generator");
-        
-        // Check if base64 has the correct format (not numeric values)
-        if (/^\d+,\d+/.test(base64Data.substring(0, 10))) {
-          log(`WARNING: Design ${index + 1} has numeric data instead of base64: ${base64Data.substring(0, 50)}`, "generator");
+        try {
+          // An important discovery - sometimes the buffers might not be properly encoded
+          // So we make sure to handle them consistently
+          
+          // Step 1: Ensure we have a valid Buffer
+          const imageBuffer = Buffer.isBuffer(design.imageBuffer) 
+            ? design.imageBuffer 
+            : Buffer.from(design.imageBuffer);
+          
+          // Step 2: Convert to base64 properly
+          const base64Data = imageBuffer.toString('base64');
+          log(`Design ${index + 1} - Base64 length: ${base64Data.length}`, "generator");
+          
+          // Evaluate the first few bytes to determine what kind of image we have
+          const firstByte = imageBuffer[0];
+          const secondByte = imageBuffer[1];
+          
+          // JPEG usually starts with FF D8
+          // PNG usually starts with 89 50 4E 47
+          const isJpeg = firstByte === 0xFF && secondByte === 0xD8;
+          const isPng = firstByte === 0x89 && secondByte === 0x50;
+          
+          log(`Design ${index + 1} is ${isJpeg ? 'JPEG' : isPng ? 'PNG' : 'Unknown image format'}`, "generator");
+          
+          // Step 3: Create proper data URL with correct MIME type
+          const mimeType = isJpeg ? 'image/jpeg' : isPng ? 'image/png' : 'image/jpeg'; // Default to JPEG
+          return {
+            imageBase64: `data:${mimeType};base64,${base64Data}`,
+            style: design.style,
+            id: index + 1
+          };
+        } catch (error) {
+          log(`Error processing design ${index + 1}: ${error}`, "generator");
+          // Provide fallback SVG that is guaranteed to work
+          const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><rect width="400" height="400" fill="#4337fe"/><text x="50%" y="50%" font-family="Arial" font-size="24" fill="white" text-anchor="middle" dy=".3em">Design ${index + 1}</text></svg>`;
+          const svgBase64 = Buffer.from(svgContent).toString('base64');
+          return {
+            imageBase64: `data:image/svg+xml;base64,${svgBase64}`,
+            style: design.style,
+            id: index + 1
+          };
         }
-        
-        // FIXED: Base64 data is a JPEG from puppeteer screenshot
-        return {
-          imageBase64: `data:image/jpeg;base64,${base64Data}`,
-          style: design.style,
-          id: index + 1
-        };
       });
       
       log("AI Flyer generation completed", "generator");
