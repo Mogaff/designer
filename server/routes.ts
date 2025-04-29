@@ -63,6 +63,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Parse designCount (default to 4 if not specified or invalid)
       const numDesigns = parseInt(designCount) || 4;
+      
+      // WICHTIG: numDesigns wird die tatsächliche Anzahl der zu generierenden Designs sein
+      // maxDesigns ist nur für die Kreditberechnung, wird nicht mehr für die Schleife verwendet
       const maxDesigns = Math.min(Math.max(1, numDesigns), 4); // Ensure between 1 and 4
       
       if (!prompt) {
@@ -107,9 +110,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Calculate credits required based on number of designs
+      // Calculate credits required based on number of designs ACTUALLY requested by the user
       const creditsPerDesign = designConfig.credits_per_design;
-      const totalRequiredCredits = creditsPerDesign * maxDesigns;
+      // Wichtig: Die tatsächlich angeforderte Anzahl von Designs für Kreditberechnung verwenden
+      const totalRequiredCredits = creditsPerDesign * numDesigns;
       
       // Check if user has enough credits
       if (user.credits_balance < totalRequiredCredits) {
