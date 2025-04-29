@@ -342,7 +342,7 @@ export default function FlyerPreview({
         </Button>
       </div>
       
-      <div className="bg-slate-900/70 backdrop-blur-md h-full w-full flex flex-col items-center justify-center relative">
+      <div className="bg-transparent h-full w-full flex flex-col items-center justify-center relative">
         
         
         {!generatedFlyer && !isGenerating ? (

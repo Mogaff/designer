@@ -355,7 +355,7 @@ export default function CanvasEditor({ generatedFlyer, isGenerating, onSave }: C
       )}
       
       {/* Full-screen canvas area */}
-      <div className="relative bg-slate-900/70 backdrop-blur-md w-full h-full overflow-hidden">
+      <div className="relative bg-transparent w-full h-full overflow-hidden">
         
         {/* Generation progress overlay */}
         {showGenerationProgress && (
