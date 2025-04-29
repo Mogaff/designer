@@ -640,20 +640,33 @@ export default function AiFlyerForm({
         
         {/* Design Settings - Aspect Ratio and Fonts */}
         <div className="grid grid-cols-2 gap-4 mb-3">
-          {/* Premium Design Options Button */}
+          {/* Number of Designs Selection */}
           <div className="space-y-1">
             <Label className="text-xs font-medium text-white/70 flex items-center gap-1">
-              <Crown className="h-3 w-3 text-amber-400" />
-              Design Quality
+              <WandSparkles className="h-3 w-3 text-amber-400" />
+              Number of Designs
             </Label>
-            <Button
-              type="button"
-              className="w-full bg-gradient-to-r from-indigo-500/40 to-purple-500/40 hover:from-indigo-500/60 hover:to-purple-500/60 backdrop-blur-sm border border-indigo-500/30 text-white"
-              onClick={() => setIsPremiumDialogOpen(true)}
-            >
-              <Sparkles className="h-4 w-4 mr-2 text-amber-400" />
-              {selectedPremiumOption ? `${selectedPremiumOption} Selected` : 'Choose Style'}
-            </Button>
+            <div className="flex space-x-2">
+              {["1", "2", "3", "4"].map((count) => (
+                <Button
+                  key={count}
+                  type="button"
+                  variant={designCount === count ? "default" : "outline"}
+                  className={`flex-1 h-8 px-0 rounded-full ${
+                    designCount === count 
+                      ? "bg-indigo-500 hover:bg-indigo-600 text-white" 
+                      : "bg-black/20 hover:bg-black/30 border-indigo-500/30 text-white"
+                  }`}
+                  onClick={() => {
+                    setDesignCount(count);
+                    // Set premium option based on count
+                    setSelectedPremiumOption(count === "1" ? "basic" : "premium");
+                  }}
+                >
+                  {count}
+                </Button>
+              ))}
+            </div>
           </div>
           
           {/* Premium Design Options Dialog */}
@@ -808,7 +821,7 @@ export default function AiFlyerForm({
                     type="button"
                     onClick={() => setAspectRatio(option.id)}
                     className={`
-                      h-9 px-2 rounded-md flex flex-col items-center justify-center transition-all duration-200
+                      relative h-16 px-2 rounded-md flex flex-col items-center justify-center transition-all duration-200
                       ${aspectRatio === option.id
                         ? 'bg-indigo-500/50 border-indigo-400/70 text-white backdrop-blur-md' 
                         : 'bg-white/10 border-gray-800/50 text-white/80 hover:bg-indigo-500/30 backdrop-blur-sm'}
@@ -816,12 +829,32 @@ export default function AiFlyerForm({
                       active:scale-95 w-full
                     `}
                   >
-                    <span className={`text-[10px] font-medium ${aspectRatio === option.id ? 'text-white' : 'text-white/90'}`}>
-                      {option.label.split(' ')[0]}
-                    </span>
-                    <span className={`text-[8px] ${aspectRatio === option.id ? 'text-white/90' : 'text-white/60'}`}>
-                      {option.label.split('(')[1]?.split(')')[0] || ''}
-                    </span>
+                    {/* Aspect ratio visual preview */}
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div 
+                        className={`
+                          ${aspectRatio === option.id ? 'bg-white/30' : 'bg-white/10'}
+                          border ${aspectRatio === option.id ? 'border-white/40' : 'border-white/20'}
+                          transition-all duration-200
+                        `}
+                        style={{
+                          width: option.value.includes('/') 
+                            ? `${Math.min(40, 40 * (parseInt(option.value.split('/')[0]) / parseInt(option.value.split('/')[1])))}px` 
+                            : '40px',
+                          height: option.value.includes('/') 
+                            ? `${Math.min(40, 40 * (parseInt(option.value.split('/')[1]) / parseInt(option.value.split('/')[0])))}px` 
+                            : '40px',
+                        }}
+                      />
+                    </div>
+                    <div className="relative z-10 text-center mt-5">
+                      <span className={`text-[10px] font-medium ${aspectRatio === option.id ? 'text-white' : 'text-white/90'}`}>
+                        {option.label.split(' ')[0]}
+                      </span>
+                      <span className={`block text-[8px] ${aspectRatio === option.id ? 'text-white/90' : 'text-white/60'}`}>
+                        {option.label.split('(')[1]?.split(')')[0] || ''}
+                      </span>
+                    </div>
                   </button>
                 ))}
               </div>
