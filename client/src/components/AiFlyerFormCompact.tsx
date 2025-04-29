@@ -182,8 +182,8 @@ export default function AiFlyerFormCompact({
       formData.append("template_id", selectedTemplate.id.toString());
     }
     
-    // Include aspect ratio
-    formData.append("aspect_ratio", aspectRatio);
+    // Include aspect ratio (using camelCase to match server expectations)
+    formData.append("aspectRatio", aspectRatio);
     
     // Include design count
     formData.append("design_count", designCount);
