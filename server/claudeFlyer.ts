@@ -582,13 +582,18 @@ export async function renderFlyerFromClaude(options: GenerationOptions): Promise
             // Get bounding box for the element
             const boundingBox = await elementHandle.boundingBox();
             if (boundingBox && boundingBox.width > 50 && boundingBox.height > 50) {
+              // Take screenshot with high quality
               const screenshot = await elementHandle.screenshot({
                 type: 'jpeg', 
                 quality: 95,
                 omitBackground: false
               });
               
-              return screenshot as Buffer;
+              // CRITICAL FIX: Ensure the buffer is properly converted to a format
+              // that can be correctly base64 encoded later
+              // This avoids the numeric buffer values issue
+              const properBuffer = Buffer.from(screenshot);
+              return properBuffer;
             }
           } catch (err) {
             log(`Error taking screenshot of element with selector ${selector}: ${err}`, "claude");
@@ -624,7 +629,9 @@ export async function renderFlyerFromClaude(options: GenerationOptions): Promise
           fullPage: false
         });
         
-        return screenshot as Buffer;
+        // Same fix for full page screenshot
+        const properBuffer = Buffer.from(screenshot);
+        return properBuffer;
       } catch (err) {
         log(`Error taking screenshot of page: ${err}`, "claude");
         throw err;
@@ -709,7 +716,9 @@ export async function renderFlyerFromClaude(options: GenerationOptions): Promise
       const screenshot = await page.screenshot({ type: 'jpeg', quality: 90 });
       await browser.close();
       
-      return screenshot as Buffer;
+      // Also fix the error fallback image
+      const properBuffer = Buffer.from(screenshot);
+      return properBuffer;
     } catch (fallbackError) {
       log(`Error creating fallback image: ${fallbackError}`, "claude");
       // If even the fallback fails, rethrow the original error
