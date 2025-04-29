@@ -42,15 +42,65 @@ export default function CanvasEditor({ generatedFlyer, isGenerating, onSave }: C
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
 
-  // Setup dummy generation progress for demo
+  // Setup generation progress visualization
   useEffect(() => {
     if (isGenerating && !showGenerationProgress) {
       setShowGenerationProgress(true);
-      simulateGenerationProgress();
+      
+      // Initialize with meaningful steps
+      setGenerationProgressSteps([
+        "Analyzing request...",
+        "Planning design layout...",
+        "Generating visual elements...",
+        "Applying style adjustments...",
+        "Finalizing design..."
+      ]);
+      
+      // Start at 25% immediately to give a feeling of faster progress
+      setGenerationProgressPercent(25);
+      
+      // Accelerated progress simulation - faster initial progress
+      const simulateProgress = () => {
+        // Move quickly to 90% then slow down for the final steps
+        const interval = setInterval(() => {
+          setGenerationProgressPercent(prevPercent => {
+            if (prevPercent < 50) {
+              // Move quickly to 50%
+              return prevPercent + 5;
+            } else if (prevPercent < 80) {
+              // Slightly slower to 80%
+              return prevPercent + 3;
+            } else if (prevPercent < 90) {
+              // Even slower to 90%
+              return prevPercent + 1;
+            }
+            // Hold at 90% until generation completes
+            return 90;
+          });
+        }, 100); // Faster interval
+        
+        return interval;
+      };
+      
+      const progressInterval = simulateProgress();
+      
+      return () => {
+        clearInterval(progressInterval);
+      };
     } else if (!isGenerating) {
-      setShowGenerationProgress(false);
-      setGenerationProgressSteps([]);
-      setGenerationProgressPercent(0);
+      // When generation completes, quickly show 100%
+      setGenerationProgressPercent(100);
+      
+      // After a brief delay, hide the progress indicator
+      const hideTimeout = setTimeout(() => {
+        setShowGenerationProgress(false);
+        setGenerationProgressSteps([]);
+        setGenerationProgressPercent(0);
+      }, 800);
+      
+      return () => {
+        clearTimeout(hideTimeout);
+      };
     }
   }, [isGenerating]);
 
@@ -227,119 +277,130 @@ export default function CanvasEditor({ generatedFlyer, isGenerating, onSave }: C
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="bg-black/40 backdrop-blur-md border border-white/10 p-4 rounded-lg">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-white">Canvas Editor</h2>
-          
-          <div className="flex space-x-2">
-            <Button 
-              size="sm" 
-              className="bg-indigo-500/70 text-white hover:bg-indigo-600/70"
-              onClick={() => setShowControls(!showControls)}
-            >
-              {showControls ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}
-              {showControls ? 'Hide Controls' : 'Show Controls'}
-            </Button>
-            
-            <Button 
-              size="sm" 
-              className="bg-green-600/70 text-white hover:bg-green-700/70"
-              onClick={saveDesign}
-              disabled={isSaving || isGenerating}
-            >
-              {isSaving ? (
-                <Loader className="h-4 w-4 mr-1 animate-spin" />
-              ) : (
-                <Save className="h-4 w-4 mr-1" />
-              )}
-              Save
-            </Button>
-            
-            <Button 
-              size="sm" 
-              className="bg-indigo-500/70 text-white hover:bg-indigo-600/70"
-              onClick={downloadDesign}
-              disabled={isGenerating}
-            >
-              <Download className="h-4 w-4 mr-1" />
-              Download
-            </Button>
-          </div>
-        </div>
+    <div className="h-full w-full flex flex-col">
+      {/* Top toolbar */}
+      <div className="absolute top-2 right-4 z-30 flex gap-2">
+        <Button 
+          size="sm" 
+          className="bg-indigo-500/70 text-white hover:bg-indigo-600/70 backdrop-blur-sm h-8"
+          onClick={() => setShowControls(!showControls)}
+        >
+          {showControls ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}
+          {showControls ? 'Hide Controls' : 'Show Controls'}
+        </Button>
         
-        {showControls && (
-          <div className="flex items-center space-x-2 mb-4">
-            <Button 
-              size="sm" 
-              variant="outline" 
-              className="border-white/20 text-white hover:bg-white/10"
-              onClick={() => addElement('text')}
-            >
-              <Plus className="h-3 w-3 mr-1" />
-              Add Text
-            </Button>
+        <Button 
+          size="sm" 
+          className="bg-green-600/70 text-white hover:bg-green-700/70 backdrop-blur-sm h-8"
+          onClick={saveDesign}
+          disabled={isSaving || isGenerating}
+        >
+          {isSaving ? (
+            <Loader className="h-4 w-4 mr-1 animate-spin" />
+          ) : (
+            <Save className="h-4 w-4 mr-1" />
+          )}
+          Save
+        </Button>
+        
+        <Button 
+          size="sm" 
+          className="bg-indigo-500/70 text-white hover:bg-indigo-600/70 backdrop-blur-sm h-8"
+          onClick={downloadDesign}
+          disabled={isGenerating}
+        >
+          <Download className="h-4 w-4 mr-1" />
+          Download
+        </Button>
+      </div>
+      
+      {/* Bottom toolbar - visible when controls are enabled */}
+      {showControls && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30 flex items-center gap-2 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full">
+          <Button 
+            size="sm" 
+            variant="ghost" 
+            className="text-white hover:bg-white/10 rounded-full h-8 px-3"
+            onClick={() => addElement('text')}
+          >
+            <Plus className="h-3 w-3 mr-1" />
+            Add Text
+          </Button>
+          
+          <div className="w-px h-5 bg-white/20"></div>
+          
+          <Button 
+            size="sm" 
+            variant="ghost" 
+            className="text-white hover:bg-white/10 rounded-full h-8 px-3"
+            onClick={() => addElement('shape')}
+          >
+            <Plus className="h-3 w-3 mr-1" />
+            Add Shape
+          </Button>
+          
+          <div className="w-px h-5 bg-white/20"></div>
+          
+          <Button 
+            size="sm" 
+            variant="ghost" 
+            className={`rounded-full h-8 px-3 ${!selectedElement || selectedElement === 'background' ? 'text-white/40' : 'text-white hover:bg-white/10'}`}
+            onClick={deleteSelectedElement}
+            disabled={!selectedElement || selectedElement === 'background'}
+          >
+            <Trash className="h-3 w-3 mr-1" />
+            Delete
+          </Button>
+        </div>
+      )}
+      
+      {/* Full-screen canvas area */}
+      <div className="relative bg-slate-900/70 backdrop-blur-md w-full h-full overflow-hidden">
+        {/* Grid background pattern */}
+        <div className="absolute inset-0 bg-grid-pattern opacity-10 pointer-events-none"></div>
+        
+        {/* Generation progress overlay */}
+        {showGenerationProgress && (
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-md z-20 flex flex-col items-center justify-center p-6">
+            <h3 className="text-xl font-bold text-white mb-4">Creating Your Design</h3>
             
-            <Button 
-              size="sm" 
-              variant="outline" 
-              className="border-white/20 text-white hover:bg-white/10"
-              onClick={() => addElement('shape')}
-            >
-              <Plus className="h-3 w-3 mr-1" />
-              Add Shape
-            </Button>
+            <div className="w-full max-w-md mb-8">
+              <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-500" 
+                  style={{ width: `${generationProgressPercent}%` }}
+                ></div>
+              </div>
+              <div className="flex justify-between mt-1 text-xs text-gray-400">
+                <span>Generating...</span>
+                <span>{generationProgressPercent}%</span>
+              </div>
+            </div>
             
-            <Button 
-              size="sm" 
-              variant="outline" 
-              className="border-white/20 text-white hover:bg-white/10"
-              onClick={deleteSelectedElement}
-              disabled={!selectedElement || selectedElement === 'background'}
-            >
-              <Trash className="h-3 w-3 mr-1" />
-              Delete
-            </Button>
+            <div className="w-full max-w-md border border-gray-800 rounded-lg bg-black/40 p-3 max-h-60 overflow-y-auto">
+              {generationProgressSteps.map((step, index) => (
+                <div key={index} className="flex items-center mb-2 last:mb-0 animate-fadeIn">
+                  <div className="w-4 h-4 rounded-full bg-indigo-500/30 flex items-center justify-center mr-2">
+                    <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+                  </div>
+                  <p className="text-sm text-gray-300">{step}</p>
+                </div>
+              ))}
+            </div>
           </div>
         )}
         
-        {/* Canvas area */}
-        <div className="relative bg-black/20 backdrop-blur-sm border border-white/10 rounded-lg overflow-hidden" style={{ height: '500px' }}>
-          {/* Generation progress overlay */}
-          {showGenerationProgress && (
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-md z-30 flex flex-col items-center justify-center p-6">
-              <h3 className="text-xl font-bold text-white mb-4">Creating Your Design</h3>
-              
-              <div className="w-full max-w-md mb-8">
-                <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-500" 
-                    style={{ width: `${generationProgressPercent}%` }}
-                  ></div>
-                </div>
-                <div className="flex justify-between mt-1 text-xs text-gray-400">
-                  <span>Generating...</span>
-                  <span>{generationProgressPercent}%</span>
-                </div>
-              </div>
-              
-              <div className="w-full max-w-md border border-gray-800 rounded-lg bg-black/40 p-3 max-h-60 overflow-y-auto">
-                {generationProgressSteps.map((step, index) => (
-                  <div key={index} className="flex items-center mb-2 last:mb-0 animate-fadeIn">
-                    <div className="w-4 h-4 rounded-full bg-indigo-500/30 flex items-center justify-center mr-2">
-                      <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
-                    </div>
-                    <p className="text-sm text-gray-300">{step}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {/* Design canvas */}
+        {/* Design canvas - centered in available space */}
+        <div className="absolute inset-0 flex items-center justify-center">
           <div 
             ref={canvasRef}
-            className="relative w-full h-full"
+            className="relative backdrop-blur-md bg-white/5 border border-white/10"
+            style={{ 
+              width: '90%', 
+              height: '90%',
+              maxWidth: '1200px',
+              maxHeight: '900px'
+            }}
           >
             {canvasElements.map((element) => (
               <motion.div
@@ -355,7 +416,7 @@ export default function CanvasEditor({ generatedFlyer, isGenerating, onSave }: C
                 }}
                 whileDrag={{ scale: 1.02 }}
                 onClick={() => handleSelectElement(element.id)}
-                className={`${selectedElement === element.id ? 'ring-2 ring-indigo-500' : ''}`}
+                className={`${selectedElement === element.id ? 'ring-2 ring-white/50' : ''}`}
               >
                 {element.type === 'text' && (
                   <div 
@@ -397,9 +458,13 @@ export default function CanvasEditor({ generatedFlyer, isGenerating, onSave }: C
                   ></div>
                 )}
                 
-                {/* Resize and rotate handles (would be implemented with interact.js or similar in a full implementation) */}
+                {/* Resize and rotate handles */}
                 {selectedElement === element.id && element.id !== 'background' && (
-                  <div className="absolute -right-1 -bottom-1 w-4 h-4 bg-indigo-500 rounded-full cursor-se-resize"></div>
+                  <>
+                    <div className="absolute -right-1 -bottom-1 w-4 h-4 bg-white rounded-full cursor-se-resize opacity-70"></div>
+                    <div className="absolute top-1/2 -right-1 transform -translate-y-1/2 w-4 h-4 bg-white rounded-full cursor-e-resize opacity-70"></div>
+                    <div className="absolute left-1/2 -bottom-1 transform -translate-x-1/2 w-4 h-4 bg-white rounded-full cursor-s-resize opacity-70"></div>
+                  </>
                 )}
               </motion.div>
             ))}
