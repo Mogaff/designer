@@ -37,6 +37,15 @@ export type FlyerGenerationRequest = {
   fontSettings?: FontSettings;
 };
 
+export interface TemplateInfo {
+  name: string;
+  category: string;
+  tags: string;
+  description: string;
+  glassMorphism: boolean;
+  neonEffects: boolean;
+}
+
 export type AiFlyerGenerationRequest = {
   prompt: string;
   backgroundImage?: File;
@@ -44,6 +53,7 @@ export type AiFlyerGenerationRequest = {
   designCount?: number;
   aspectRatio?: string;
   fontSettings?: FontSettings;
+  templateInfo?: TemplateInfo;
 };
 
 export interface BrandKit {
@@ -60,4 +70,29 @@ export interface BrandKit {
   created_at: string;
   updated_at: string;
   is_active: boolean;
+}
+
+export interface DesignTemplate {
+  id: string;
+  name: string;
+  previewUrl: string;
+  category: string;
+  tags: string[];
+  isPremium: boolean;
+  isNew: boolean;
+  isTrending: boolean;
+  description: string;
+  styleData?: {
+    cssCode?: string;
+    htmlTemplate?: string;
+    glassEffects?: boolean;
+    glassMorphism?: boolean;
+    neonEffects?: boolean;
+    specialEffects?: string[];
+    glitchEffects?: boolean;
+    duotone?: boolean;
+    gradientType?: string;
+    specialShapes?: string[];
+    effectLevel?: "minimal" | "medium" | "heavy" | "light";
+  };
 }

@@ -55,6 +55,23 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
   const [selectedKit, setSelectedKit] = useState<BrandKit | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>('');
   
+  // Animation style with glass effect that stays on the left
+  const slideInStyle = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '250px',
+    height: '100%',
+    zIndex: 50,
+    opacity: isOpen ? 1 : 0,
+    visibility: isOpen ? 'visible' : 'hidden',
+    transition: 'opacity 0.3s ease-in-out, visibility 0.3s ease-in-out',
+    background: 'rgba(15, 23, 42, 0.4)',
+    backdropFilter: 'blur(12px)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: 'inherit'
+  } as React.CSSProperties;
+  
   // Form setup
   const form = useForm<BrandKitFormValues>({
     resolver: zodResolver(brandKitSchema),
@@ -92,6 +109,34 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
   
   // Mutations for creating and updating brand kits
   const queryClient = useQueryClient();
+  
+  // Mutation to deactivate brand kit
+  const deactivateBrandKitMutation = useMutation<any, Error>({
+    mutationFn: async () => {
+      const response = await fetch('/api/brand-kits/deactivate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to deactivate brand kit');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/brand-kits'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/brand-kits/active'] });
+      setView('list');
+      setSelectedKit(null);
+    },
+    onError: (error) => {
+      console.error('Failed to deactivate brand kit:', error);
+    },
+  });
   
   // Set active brand kit mutation
   const setActiveBrandKitMutation = useMutation<any, Error, number>({
@@ -264,10 +309,7 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
 
   return (
     <div 
-      className={cn(
-        "fixed top-16 left-[calc(var(--sidebar-collapsed-width)+2px)] w-72 max-h-[80vh] overflow-hidden rounded-lg bg-black/60 backdrop-blur-md z-40 border border-white/10 transform transition-all duration-300 ease-in-out shadow-xl",
-        isOpen ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0 pointer-events-none"
-      )}
+      style={slideInStyle}
       ref={panelRef}
     >
       <div className="flex flex-col max-h-[80vh]">
@@ -337,10 +379,25 @@ export function BrandKitPanel({ isOpen, onClose }: BrandKitPanelProps) {
                           </div>
                           <span className="ml-2 font-medium text-white text-sm">{brandKit.name}</span>
                           {brandKit.is_active && (
-                            <div className="ml-2 bg-green-600/20 p-0.5 px-1.5 rounded text-xs text-green-500 flex items-center">
-                              <Check className="h-2.5 w-2.5 mr-0.5" />
-                              Active
-                            </div>
+                            <>
+                              <div className="ml-2 bg-green-600/20 p-0.5 px-1.5 rounded text-xs text-green-500 flex items-center">
+                                <Check className="h-2.5 w-2.5 mr-0.5" />
+                                Active
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (brandKit.is_active) {
+                                    deactivateBrandKitMutation.mutate();
+                                  }
+                                }}
+                                className="ml-2 bg-red-600/10 hover:bg-red-600/20 text-xs text-red-400 h-5 rounded-sm px-1.5"
+                              >
+                                Deactivate
+                              </Button>
+                            </>
                           )}
                         </div>
                         <div className="flex space-x-1">

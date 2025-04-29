@@ -141,27 +141,51 @@ export default function FlyerPreview({
         "Finalizing design..."
       ]);
       
-      // Simulate progress steps
-      let step = 0;
-      const interval = setInterval(() => {
-        setProgressPercent((prev) => {
-          const newValue = Math.min(prev + 5, 100);
-          return newValue;
-        });
+      // Start at 25% immediately to give a feeling of faster progress
+      setProgressPercent(25);
+      
+      // Accelerated progress simulation - faster initial progress
+      const simulateProgress = () => {
+        // Move quickly to 90% then slow down for the final steps
+        const interval = setInterval(() => {
+          setProgressPercent(prevPercent => {
+            if (prevPercent < 50) {
+              // Move quickly to 50%
+              return prevPercent + 5;
+            } else if (prevPercent < 80) {
+              // Slightly slower to 80%
+              return prevPercent + 3;
+            } else if (prevPercent < 90) {
+              // Even slower to 90%
+              return prevPercent + 1;
+            }
+            // Hold at 90% until generation completes
+            return 90;
+          });
+        }, 100); // Faster interval
         
-        if (step < 4 && progressPercent > step * 25) {
-          step++;
-        }
-        
-        if (progressPercent >= 100) {
-          clearInterval(interval);
-        }
-      }, 200);
+        return interval;
+      };
+      
+      const progressInterval = simulateProgress();
       
       return () => {
-        clearInterval(interval);
+        clearInterval(progressInterval);
       };
-    } else {
+    } else if (!isGenerating && showGenerationProgress) {
+      // When generation completes, quickly show 100%
+      setProgressPercent(100);
+      
+      // After a brief delay, hide the progress indicator
+      const hideTimeout = setTimeout(() => {
+        setShowGenerationProgress(false);
+        setProgressPercent(0);
+      }, 800);
+      
+      return () => {
+        clearTimeout(hideTimeout);
+      };
+    } else if (!showProgress) {
       setShowGenerationProgress(false);
       setProgressPercent(0);
     }
@@ -282,39 +306,39 @@ export default function FlyerPreview({
 
   return (
     <div className="h-full flex flex-col">
-      <div className="absolute top-2 right-4 z-30 flex gap-2">
+      <div className="absolute top-2 right-4 z-30 flex gap-1">
         <Button
-          className="bg-green-600/70 backdrop-blur-sm border-none text-white h-8 px-3 py-1 text-xs hover:bg-green-600/90"
+          className="bg-white/10 backdrop-blur-sm border-none text-white h-7 px-2 py-0 text-[10px] hover:bg-white/20"
           size="sm"
           onClick={saveDesignToGallery}
           disabled={!generatedFlyer || isSaving}
+          title="Save to Gallery"
         >
           {isSaving ? (
-            <span className="h-3 w-3 mr-1 animate-spin">⏳</span>
+            <span className="h-3 w-3 animate-spin">⏳</span>
           ) : (
-            <Check className="h-3 w-3 mr-1" />
+            <Check className="h-3 w-3" />
           )}
-          Save to Gallery
         </Button>
         
         <Button
-          className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-8 px-3 py-1 text-xs hover:bg-indigo-500/30"
+          className="bg-white/10 backdrop-blur-sm border-none text-white h-7 px-2 py-0 text-[10px] hover:bg-white/20"
           size="sm"
           onClick={handleDownload}
           disabled={!generatedFlyer}
+          title="Download"
         >
-          <Download className="h-3 w-3 mr-1" />
-          Download
+          <Download className="h-3 w-3" />
         </Button>
         
         <Button
-          className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-8 px-3 py-1 text-xs hover:bg-indigo-500/30"
+          className="bg-white/10 backdrop-blur-sm border-none text-white h-7 px-2 py-0 text-[10px] hover:bg-white/20"
           size="sm"
           onClick={handleShare}
           disabled={!generatedFlyer}
+          title="Share"
         >
-          <Share2 className="h-3 w-3 mr-1" />
-          Share
+          <Share2 className="h-3 w-3" />
         </Button>
       </div>
       
@@ -325,7 +349,7 @@ export default function FlyerPreview({
         {!generatedFlyer && !isGenerating ? (
           <div className="w-full h-full flex items-center justify-center p-4">
             <div 
-              className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-900/20 to-teal-800/30 border border-blue-500/20 mx-auto"
+              className="relative flex items-center justify-center overflow-hidden backdrop-blur-md bg-white/5 border border-white/10 mx-auto"
               style={{
                 maxWidth: '80%',
                 maxHeight: '80%',
@@ -349,7 +373,7 @@ export default function FlyerPreview({
           <div className="w-full h-full flex flex-col">
             <div className="flex-grow flex items-center justify-center">
               <div 
-                className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-900/20 to-teal-800/30 border border-blue-500/20 mx-auto"
+                className="relative flex items-center justify-center overflow-hidden backdrop-blur-md bg-white/5 border border-white/10 mx-auto"
                 style={{
                   maxWidth: '80%',
                   maxHeight: '80%',
@@ -391,7 +415,7 @@ export default function FlyerPreview({
                       {/* Progress bar */}
                       <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
                         <div 
-                          className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-300" 
+                          className="h-full bg-gradient-to-r from-white/70 to-white/40 transition-all duration-300" 
                           style={{ width: `${progressPercent}%` }}
                         ></div>
                       </div>
@@ -429,7 +453,7 @@ export default function FlyerPreview({
                       className={`flex flex-col items-center ${Math.floor(progressPercent / 20) >= index ? 'text-white/90' : 'text-white/40'}`}
                     >
                       <div 
-                        className={`w-3 h-3 rounded-full mb-1 ${Math.floor(progressPercent / 20) >= index ? 'bg-green-500' : 'bg-gray-600'}`}
+                        className={`w-3 h-3 rounded-full mb-1 ${Math.floor(progressPercent / 20) >= index ? 'bg-white' : 'bg-gray-600'}`}
                       ></div>
                       <span className="text-[10px] text-center max-w-[80px]">{step.split("...")[0]}</span>
                     </div>
