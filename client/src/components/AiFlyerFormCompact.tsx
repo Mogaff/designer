@@ -77,7 +77,9 @@ export default function AiFlyerFormCompact({
   const aiGenerationMutation = useMutation({
     mutationFn: async (data: FormData) => {
       // Using apiRequest with special handling for FormData
-      return await apiRequest('POST', '/api/generate-ai', data as any, {}, true);
+      const response = await apiRequest('POST', '/api/generate-ai', data as any, {}, true);
+      // Parse the response to JSON before returning it
+      return await response.json();
     },
     onSuccess: (data: any) => {
       setIsGenerating(false);
