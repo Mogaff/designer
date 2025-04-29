@@ -141,28 +141,77 @@ export default function DesignSuggestions({
       </div>
       
       <div className="flex-grow flex flex-col">
-        <div className={`grid grid-cols-2 gap-3 h-[400px]`}>
+        <div className={`grid ${designs.length > 1 ? 'grid-cols-2' : 'grid-cols-1'} gap-3 max-h-[75vh] overflow-auto p-1`}>
           {designs.map((design) => {
-            // Extrahiere das Aspect Ratio aus dem Base64-Bild
+            // Extrahiere das Aspect Ratio aus der URL
             const getAspectRatioClass = () => {
               // Standardwert, wenn wir das Verhältnis nicht bestimmen können
               let aspectClass = "aspect-square"; 
               
-              // Versuche aus dem Style-Text das Aspect Ratio zu extrahieren
-              if (design.style) {
-                if (design.style.includes("9:16") || design.style.includes("story")) {
-                  aspectClass = "aspect-[9/16]";
-                } else if (design.style.includes("16:9") || design.style.includes("landscape")) {
-                  aspectClass = "aspect-[16/9]";
-                } else if (design.style.includes("4:5") || design.style.includes("portrait")) {
-                  aspectClass = "aspect-[4/5]";
-                } else if (design.style.includes("1:1") || design.style.includes("square")) {
+              // Hole das aktuelle Aspect Ratio aus der URL
+              const urlParams = new URLSearchParams(window.location.search);
+              const selectedAspectRatio = urlParams.get('aspectRatio') || '';
+              
+              console.log(`Current URL aspect ratio: ${selectedAspectRatio}`);
+              
+              // Bestimme den CSS-Class basierend auf dem Aspect Ratio
+              switch(selectedAspectRatio) {
+                // Square formats
+                case 'profile':
+                case 'post':
+                case 'square_ad':
                   aspectClass = "aspect-square";
-                } else if (design.style.includes("A4") || design.style.includes("210:297")) {
-                  aspectClass = "aspect-[210/297]";
-                }
+                  break;
+                  
+                // Landscape formats  
+                case 'fb_cover':
+                case 'facebook_cover':
+                  aspectClass = "aspect-[820/312]";
+                  break;
+                case 'twitter_header':
+                  aspectClass = "aspect-[3/1]";
+                  break;
+                case 'yt_thumbnail':
+                case 'instream':
+                  aspectClass = "aspect-[16/9]";
+                  break;
+                case 'linkedin_banner':
+                  aspectClass = "aspect-[4/1]";
+                  break;
+                  
+                // Portrait formats
+                case 'stories':
+                  aspectClass = "aspect-[9/16]";
+                  break;
+                case 'pinterest':
+                  aspectClass = "aspect-[2/3]";
+                  break;
+                  
+                // Special formats
+                case 'leaderboard':
+                  aspectClass = "aspect-[728/90]";
+                  break;
+                case 'skyscraper':
+                  aspectClass = "aspect-[160/600]";
+                  break;
+                default:
+                  // Fallback: Versuche aus dem Style-Text das Aspect Ratio zu extrahieren
+                  if (design.style) {
+                    if (design.style.includes("9:16") || design.style.includes("story")) {
+                      aspectClass = "aspect-[9/16]";
+                    } else if (design.style.includes("16:9") || design.style.includes("landscape")) {
+                      aspectClass = "aspect-[16/9]";
+                    } else if (design.style.includes("4:5") || design.style.includes("portrait")) {
+                      aspectClass = "aspect-[4/5]";
+                    } else if (design.style.includes("1:1") || design.style.includes("square")) {
+                      aspectClass = "aspect-square";
+                    } else if (design.style.includes("A4") || design.style.includes("210:297")) {
+                      aspectClass = "aspect-[210/297]";
+                    }
+                  }
               }
               
+              console.log(`Using aspect class: ${aspectClass} for design ${design.id}`);
               return aspectClass;
             };
             

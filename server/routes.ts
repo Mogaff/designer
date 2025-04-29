@@ -163,7 +163,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // WICHTIG: Nur die Anzahl der Designs generieren, die der Benutzer ausgewählt hat
       // Beschränke die Schleife auf die vom Benutzer gewünschte Anzahl von Designs
-      const designsToGenerate = Math.min(maxDesigns, styleVariations.length);
+      const designsToGenerate = Math.min(numDesigns, styleVariations.length);
+      
+      log(`Will generate exactly ${designsToGenerate} designs (user requested: ${numDesigns})`, "generator");
       
       // Try each style variation until we have the requested number of successful designs
       for (let index = 0; index < designsToGenerate; index++) {
