@@ -315,6 +315,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ status: "ok", message: "Server is running correctly" });
   });
   
+  // Add a test route to verify Claude API is working
+  app.get("/api/test-claude", async (req: Request, res: Response) => {
+    try {
+      const anthropic = new Anthropic({
+        apiKey: process.env.ANTHROPIC_API_KEY,
+      });
+      
+      // Test the API with a simple request
+      log("Testing Claude API connection...", "claude");
+      const response = await anthropic.messages.create({
+        model: "claude-3-7-sonnet-20250219",
+        max_tokens: 100,
+        messages: [{ role: "user", content: "Say hello in JSON format please" }],
+        system: "You are a helpful assistant. Always respond with valid JSON only."
+      });
+      
+      // Check for valid response
+      const text = response.content[0].text;
+      log(`Claude API test response: ${text}`, "claude");
+      
+      res.json({ 
+        status: "ok", 
+        message: "Claude API is working correctly",
+        sample_response: text
+      });
+    } catch (error) {
+      log(`Claude API test error: ${error}`, "claude");
+      res.status(500).json({ 
+        status: "error", 
+        message: `Claude API test failed: ${error instanceof Error ? error.message : String(error)}`
+      });
+    }
+  });
+  
   // Credits and design configurations API endpoints
   
   // Get user's credits balance and history
