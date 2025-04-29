@@ -155,6 +155,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Generate design variations with distinct professional style instructions
+      // Wir brauchen nur 4 Stile, da wir maximal 4 Designs generieren wollen
       const styleVariations = [
         "with a luxury brand aesthetic using dramatic contrasts and premium typography",
         "with a modern minimalist style emphasizing elegant white space and refined typography",
