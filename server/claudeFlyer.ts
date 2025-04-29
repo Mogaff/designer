@@ -152,13 +152,14 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
       });
     }
 
-    // Generate content using Claude
+    // Generate content using Claude with explicit JSON response format
     const message = await anthropic.messages.create({
       model: 'claude-3-7-sonnet-20250219',
       max_tokens: 4096,
       messages: [
         { role: 'user', content: messageContent }
       ],
+      system: "You are an expert graphic designer. Return your response ONLY as a valid JSON object with 'htmlContent' and 'cssStyles' properties. Never include explanations, notes, or any text outside the JSON structure. The JSON must be properly formatted and parseable."
     });
 
     // Check if the response has content and the first block is a text block
@@ -198,12 +199,22 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     
     throw new Error("Could not extract valid HTML from the Claude response");
   } catch (error: any) {
+    // Log detailed error information
     log(`Error generating content with Claude: ${error}`, "claude");
+    if (error.status) log(`Error status: ${error.status}`, "claude");
+    if (error.message) log(`Error message: ${error.message}`, "claude");
+    if (error.response) log(`Error response: ${JSON.stringify(error.response)}`, "claude");
+    if (error.stack) log(`Error stack: ${error.stack}`, "claude");
     
     // Check for quota limit exceeded error
     const errorMessage = String(error);
     if (errorMessage.includes("429 Too Many Requests") || errorMessage.includes("quota")) {
       throw new Error("API quota limit reached: The Claude AI API free tier limit has been reached for today. Please try again tomorrow or upgrade to a paid plan.");
+    }
+    
+    // Check for authentication errors
+    if (errorMessage.includes("401") || errorMessage.includes("auth") || errorMessage.includes("Authentication")) {
+      throw new Error("Authentication error with Claude API. Please check your API key.");
     }
     
     throw error;
