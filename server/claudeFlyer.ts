@@ -15,7 +15,7 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-type GeminiResponse = {
+type ClaudeResponse = {
   htmlContent: string;
   cssStyles: string;
 };
@@ -40,7 +40,7 @@ interface GenerationOptions {
 /**
  * Generate HTML and CSS for a flyer based on a prompt using Claude AI
  */
-export async function generateFlyerContent(options: GenerationOptions): Promise<GeminiResponse> {
+export async function generateFlyerContent(options: GenerationOptions): Promise<ClaudeResponse> {
   log("Generating flyer content with Claude AI", "claude");
   
   try {
