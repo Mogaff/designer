@@ -62,11 +62,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Parse designCount (default to 4 if not specified or invalid)
+      // Das designCount kommt aus dem premium option in frontend (1, 4, 8, 12)
       const numDesigns = parseInt(designCount) || 4;
       
-      // WICHTIG: numDesigns wird die tatsächliche Anzahl der zu generierenden Designs sein
-      // maxDesigns ist nur für die Kreditberechnung, wird nicht mehr für die Schleife verwendet
-      const maxDesigns = Math.min(Math.max(1, numDesigns), 4); // Ensure between 1 and 4
+      // WICHTIG: numDesigns wird als die tatsächliche Anzahl der zu generierenden Designs verwendet
+      // Stellen Sie sicher, dass es mindestens 1 ist, aber keine Obergrenze mehr (für Premium-Optionen)
+      const maxDesigns = Math.max(1, numDesigns); // Ensure minimum 1 design
       
       if (!prompt) {
         return res.status(400).json({ message: "Prompt is required" });
