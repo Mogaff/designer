@@ -101,38 +101,6 @@ export default function BrandKit({ onOpenPanel }: BrandKitProps) {
   });
   
   const activeBrandKit = activeBrandKitData?.brandKit;
-  
-  // Deactivate brand kit mutation
-  const deactivateBrandKitMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetch('/api/brand-kits/deactivate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to deactivate brand kit');
-      }
-      
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/brand-kits'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/brand-kits/active'] });
-      toast({
-        title: 'Success',
-        description: 'Brand kit deactivated successfully',
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
-    },
-  });
 
   // Add brand kit mutation
   const addBrandKitMutation = useMutation({

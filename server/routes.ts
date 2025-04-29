@@ -5,8 +5,6 @@ import path from "path";
 import fs from "fs";
 import { generateFlyer } from "./flyerGenerator";
 import { renderFlyerFromGemini } from "./geminiFlyer";
-import { renderFlyerFromClaude } from "./claudeFlyer";
-import { generateBackgroundImageHandler } from "./fluxImageService";
 import multer from "multer";
 import { log } from "./vite";
 import passport from "./auth";
@@ -27,7 +25,7 @@ const upload = multer({
 
 // Create a multer middleware that can handle multiple files
 const uploadFields = upload.fields([
-  { name: 'background_image', maxCount: 1 },
+  { name: 'backgroundImage', maxCount: 1 },
   { name: 'logo', maxCount: 1 }
 ]);
 
@@ -35,31 +33,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize and register the AdBurst Factory routes
   registerAdBurstApiRoutes(app);
   
-  // Add route for generating background images with Flux AI
-  app.post("/api/generate-background", isAuthenticated, generateBackgroundImageHandler);
-  
   // Serve the credits admin page
   app.get("/admin/credits", (req: Request, res: Response) => {
     res.sendFile(path.resolve(process.cwd(), "add-credits.html"));
   });
-  // API endpoint to generate multiple flyer designs using Claude AI
+  // API endpoint to generate multiple flyer designs using Gemini AI
   app.post("/api/generate-ai", isAuthenticated, uploadFields, async (req: Request, res: Response) => {
     try {
       log("AI Flyer generation started", "generator");
       
-      const { prompt, configId, designCount, aspectRatio, templateInfo } = req.body;
+      const { prompt, configId, designCount, aspectRatio } = req.body;
       const userId = (req.user as any).id;
-      
-      // Parse template information if provided
-      let parsedTemplateInfo;
-      if (templateInfo) {
-        try {
-          parsedTemplateInfo = JSON.parse(templateInfo);
-          log(`Using template: ${parsedTemplateInfo.name}`, "generator");
-        } catch (error) {
-          log(`Error parsing template info: ${error}`, "generator");
-        }
-      }
       
       // Parse designCount (default to 4 if not specified or invalid)
       const numDesigns = parseInt(designCount) || 4;
@@ -123,7 +107,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       log(`Generating AI flyer with prompt: ${prompt}`, "generator");
       
-      // Generate options for Claude
+      // Generate options for Gemini
       const generationOptions: { 
         prompt: string; 
         backgroundImageBase64?: string;
@@ -137,9 +121,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Add images to options if provided (using type assertion for files)
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
       
-      if (files && files.background_image && files.background_image[0]) {
+      if (files && files.backgroundImage && files.backgroundImage[0]) {
         log("Background image received for AI generation", "generator");
-        const backgroundImageBase64 = files.background_image[0].buffer.toString('base64');
+        const backgroundImageBase64 = files.backgroundImage[0].buffer.toString('base64');
         generationOptions.backgroundImageBase64 = backgroundImageBase64;
       }
       
@@ -168,22 +152,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const variantOptions = {
             ...generationOptions,
             prompt: `${generationOptions.prompt} ${styleVariation}`,
-            aspectRatio: aspectRatio,
-            templateInfo: parsedTemplateInfo // Pass the template info to the render function
+            aspectRatio: aspectRatio
           };
           
           log(`Generating design variation ${index + 1}: ${styleVariation}`, "generator");
-          // Use Claude AI instead of Gemini for flyer generation (upgraded on April 29, 2025)
-          // Claude 3.7 Sonnet is the latest model with enhanced image generation capabilities
-          const screenshot = await renderFlyerFromClaude(variantOptions);
+          const screenshot = await renderFlyerFromGemini(variantOptions);
           successfulDesigns.push({
             imageBuffer: screenshot,
             style: styleVariation
           });
           
-          // Minimal delay between requests to avoid hitting rate limits
+          // Add a slight delay between requests to avoid hitting rate limits
           if (index < styleVariations.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 50)); // Reduced delay from 200ms to 50ms
+            await new Promise(resolve => setTimeout(resolve, 200));
           }
         } catch (error) {
           log(`Error generating design variation ${index + 1}: ${error}`, "generator");
@@ -241,7 +222,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (errorMessage.includes("API quota limit reached")) {
         // Send 429 Too Many Requests status code for quota limit errors
         res.status(429).json({ 
-          message: errorMessage.replace("Gemini AI", "Claude AI"),
+          message: errorMessage,
           quotaExceeded: true
         });
       } else {
@@ -812,30 +793,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       res.status(500).json({ message: `Failed to get active brand kit: ${errorMessage}` });
-    }
-  });
-  
-  // Deactivate the current brand kit
-  app.post("/api/brand-kits/deactivate", isAuthenticated, async (req: Request, res: Response) => {
-    try {
-      const userId = (req.user as any).id;
-      const activeBrandKit = await storage.getActiveBrandKit(userId);
-      
-      if (!activeBrandKit) {
-        return res.status(404).json({ message: "No active brand kit found" });
-      }
-      
-      // Update the brand kit to be inactive
-      const updatedBrandKit = await storage.updateBrandKit(
-        activeBrandKit.id, 
-        { is_active: false },
-        userId
-      );
-      
-      res.json({ success: true, brandKit: updatedBrandKit });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      res.status(500).json({ message: `Failed to deactivate brand kit: ${errorMessage}` });
     }
   });
   

@@ -22,13 +22,7 @@ export async function generateMarketingCopy(options: {
   try {
     console.log('Generating marketing copy with Claude 3.7 Sonnet...');
     
-    const systemPrompt = `You are Claude, an award-winning, highly skilled graphic design expert. You create stunning, modern, and engaging visual designs with a professional polish. Your focus is on creating compelling marketing copy that drives audience engagement and action. 
-
-Use your artistic judgment and advanced techniques to craft beautiful concepts: employ excellent typography, harmonious color schemes, and clear visual hierarchy. Every design and copy should be on-brand and sophisticated, striking the right tone for its target audience. 
-
-Integrate marketing psychology and conversion‑focused thinking into your copy choices so that your text not only sounds great but also drives audience engagement and action. Stay current with design and copywriting trends to keep your work fresh, yet always ensure the final result feels timeless and classic. 
-
-Prioritize impeccable composition, creative excellence, and brand consistency in all your outputs. Use your expertise to create short, compelling ad copy for a product that will be used in a video advertisement.`;
+    const systemPrompt = `You are an expert marketing copywriter. Your task is to create short, compelling ad copy for a product that will be used in a video advertisement.`;
     
     const userPrompt = `Write a concise, engaging 8-second advertisement script (about 30-40 words) for:
       

@@ -10,15 +10,14 @@ interface PremiumDesignPanelProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectOption: (optionId: string) => void;
-  isGenerating?: boolean;
-  selectedOption?: string | null;
+  isGenerating: boolean;
 }
 
 export default function PremiumDesignPanel({ 
   isOpen, 
   onClose, 
   onSelectOption,
-  isGenerating = false
+  isGenerating
 }: PremiumDesignPanelProps) {
   const { toast } = useToast();
   
