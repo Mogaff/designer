@@ -42,7 +42,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/admin/credits", (req: Request, res: Response) => {
     res.sendFile(path.resolve(process.cwd(), "add-credits.html"));
   });
-  // API endpoint to generate multiple flyer designs using Gemini AI
+  // API endpoint to generate multiple flyer designs using Claude AI
   app.post("/api/generate-ai", isAuthenticated, uploadFields, async (req: Request, res: Response) => {
     try {
       log("AI Flyer generation started", "generator");
@@ -123,7 +123,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       log(`Generating AI flyer with prompt: ${prompt}`, "generator");
       
-      // Generate options for Gemini
+      // Generate options for Claude
       const generationOptions: { 
         prompt: string; 
         backgroundImageBase64?: string;
@@ -173,7 +173,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           };
           
           log(`Generating design variation ${index + 1}: ${styleVariation}`, "generator");
-          // Use Claude instead of Gemini for flyer generation
+          // Use Claude AI instead of Gemini for flyer generation (upgraded on April 29, 2025)
+          // Claude 3.7 Sonnet is the latest model with enhanced image generation capabilities
           const screenshot = await renderFlyerFromClaude(variantOptions);
           successfulDesigns.push({
             imageBuffer: screenshot,
