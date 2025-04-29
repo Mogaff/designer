@@ -208,8 +208,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const base64Data = design.imageBuffer.toString('base64');
         log(`Design ${index + 1} - Base64 length: ${base64Data.length}`, "generator");
         
+        // FIXED: Base64 data is a JPEG from puppeteer screenshot
         return {
-          imageBase64: `data:image/png;base64,${base64Data}`,
+          imageBase64: `data:image/jpeg;base64,${base64Data}`,
           style: design.style,
           id: index + 1
         };

@@ -154,11 +154,20 @@ export default function DesignSuggestions({
               onClick={() => handleSelectDesign(design)}
             >
               <div className="relative aspect-square w-full flex items-center justify-center">
-                <img 
-                  src={design.imageBase64} 
-                  alt={`Design option ${design.id}`}
-                  className="w-full h-full object-cover"
-                />
+                {design.imageBase64 && (
+                  <img 
+                    src={design.imageBase64} 
+                    alt={`Design option ${design.id}`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // Fallback if image fails to load
+                      console.error(`Image load error for design ${design.id}`);
+                      const target = e.target as HTMLImageElement;
+                      target.onerror = null; // Prevent infinite error loop
+                      target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiM0MzM3ZmUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkRlc2lnbiBWb3JzY2hsYWc8L3RleHQ+PC9zdmc+';
+                    }}
+                  />
+                )}
                 
                 {/* Selection indicator */}
                 {selectedDesign === design.id && (

@@ -318,7 +318,7 @@ export async function renderFlyerFromClaude(options: GenerationOptions): Promise
             display: flex;
             flex-direction: column;
             justify-content: center;
-            background-image: url('data:image/png;base64,${options.backgroundImageBase64}');
+            background-image: url('data:image/jpeg;base64,${options.backgroundImageBase64}');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
