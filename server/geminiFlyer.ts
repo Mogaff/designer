@@ -248,6 +248,14 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Gemini Generated Flyer</title>
+        <style>
+          .flyer-container {
+            width: ${viewportWidth}px;
+            height: ${viewportHeight}px;
+            overflow: hidden;
+            position: relative;
+            margin: 0 auto;
+          }
         <script src="https://cdn.tailwindcss.com"></script>
         <script>
           tailwind.config = {
@@ -415,26 +423,29 @@ export async function renderFlyerFromGemini(options: GenerationOptions): Promise
       // Take screenshot
       log("Taking screenshot of the Gemini-generated flyer", "gemini");
       
-      // First try to find the flyer-container element
+      // Wait for the container to be present
+      await page.waitForSelector('.flyer-container', { timeout: 5000 });
+      
+      // Get the container element
       const elementHandle = await page.$('.flyer-container');
       
-      if (elementHandle) {
-        // If we can find the container, take a screenshot of just that element
-        log("Found flyer-container element, taking targeted screenshot", "gemini");
-        const screenshot = await elementHandle.screenshot({
-          type: "png",
-          omitBackground: false
-        });
-        return Buffer.from(screenshot);
-      } else {
-        // Fallback to a standard screenshot with the configured viewport
-        log("No flyer-container found, taking viewport screenshot", "gemini");
-        const screenshot = await page.screenshot({
-          type: "png",
-          fullPage: false
-        });
-        return Buffer.from(screenshot);
+      if (!elementHandle) {
+        throw new Error('Failed to find flyer container element');
       }
+      
+      // Ensure element is visible
+      await elementHandle.evaluate(el => {
+        el.style.display = 'block';
+        el.style.visibility = 'visible';
+      });
+      
+      // Take screenshot of the container
+      const screenshot = await elementHandle.screenshot({
+        type: "png",
+        omitBackground: true
+      });
+      
+      return Buffer.from(screenshot);
       
       // Clean up the temporary HTML file before returning
       fs.unlinkSync(htmlPath);
