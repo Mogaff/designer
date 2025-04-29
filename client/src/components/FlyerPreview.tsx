@@ -343,8 +343,7 @@ export default function FlyerPreview({
       </div>
       
       <div className="bg-slate-900/70 backdrop-blur-md h-full w-full flex flex-col items-center justify-center relative">
-        {/* Background grid pattern */}
-        <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none"></div>
+        
         
         {!generatedFlyer && !isGenerating ? (
           <div className="w-full h-full flex items-center justify-center p-4">

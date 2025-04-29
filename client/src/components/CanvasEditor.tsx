@@ -356,8 +356,6 @@ export default function CanvasEditor({ generatedFlyer, isGenerating, onSave }: C
       
       {/* Full-screen canvas area */}
       <div className="relative bg-slate-900/70 backdrop-blur-md w-full h-full overflow-hidden">
-        {/* Grid background pattern */}
-        <div className="absolute inset-0 bg-grid-pattern opacity-10 pointer-events-none"></div>
         
         {/* Generation progress overlay */}
         {showGenerationProgress && (

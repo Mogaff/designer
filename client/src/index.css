@@ -205,11 +205,5 @@ button svg {
     transform: rotate(-15deg);
   }
   
-  /* Hintergrund-Rastermuster für den Vorschaubereich */
-  .bg-grid-pattern {
-    background-image: 
-      linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-    background-size: 20px 20px;
-  }
+  /* Der Hintergrund-Rastermuster-Code wurde entfernt, da er nicht mehr benötigt wird */
 }
