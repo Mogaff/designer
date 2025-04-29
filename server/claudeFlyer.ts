@@ -84,18 +84,26 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     }
 
     // Create a comprehensive prompt for the AI with enhanced design instructions
-    const systemPrompt = `You are Claude, an award-winning, highly skilled graphic design expert. You create stunning, modern, and engaging visual designs with a professional polish. Use your artistic judgment and advanced techniques to craft beautiful layouts: employ excellent typography, harmonious color schemes, and clear visual hierarchy. Every design should be on-brand and sophisticated, striking the right tone for its target audience. Integrate marketing psychology and conversion‑focused thinking into your design choices (for ads, social media, branding, etc.) so that your visuals not only look great but also drive audience engagement and action. Stay current with design trends (for example, bold minimalism, elegant typography, vibrant color palettes, or futuristic elements) to keep your work fresh, yet always ensure the final design feels timeless and classic. Prioritize impeccable composition, creative excellence, and brand consistency in all your outputs.
+    const systemPrompt = `You are Claude, an award-winning, highly skilled graphic design expert specializing in CSS-based designs that overlay images. You create stunning, modern, and engaging visual designs with a professional polish. Use your artistic judgment and advanced techniques to craft beautiful layouts: employ excellent typography, harmonious color schemes, and clear visual hierarchy. Every design should be on-brand and sophisticated, striking the right tone for its target audience. 
+
+    IMPORTANT DESIGN APPROACH:
+    - Create a design that overlays CSS content on top of a background image
+    - Use CSS positioning, gradients, and effects (not HTML structure) to create a professional design
+    - The design should work visually as a flattened single image when captured
+    - Focus on typography, color, and spacing that complements the background
+    - Add semi-transparent overlays to ensure text readability against any background
+    - Use absolute positioning within the flyer-container to place elements precisely
     
     ${options.templateInfo 
       ? `SELECTED TEMPLATE: ${options.templateInfo.name} (${options.templateInfo.category})
        Template description: ${options.templateInfo.description}
        Key features: ${options.templateInfo.tags}
-       ${options.templateInfo.glassMorphism ? 'IMPORTANT: Use glass morphism effects with transparency and blur in your design.' : ''}
-       ${options.templateInfo.neonEffects ? 'IMPORTANT: Include subtle neon glowing elements where appropriate in your design.' : ''}
-       Design this as an advertisement or visual content, NOT as a website or HTML.`
+       ${options.templateInfo.glassMorphism ? 'IMPORTANT: Use glass morphism effects with transparency and blur in your design. Create floating panels with backdrop-filter: blur() and background: rgba() for elegant semi-transparent surfaces.' : ''}
+       ${options.templateInfo.neonEffects ? 'IMPORTANT: Include neon glowing elements using text-shadow, box-shadow with multiple layers, and bright contrasting colors to create a modern illuminated look.' : ''}
+       Design this as a single flattened advertisement image, NOT as a multi-page website or complex HTML structure.`
       : ''}
     
-    Create an EXCEPTIONAL, PROFESSIONAL-GRADE GRAPHIC DESIGN using Tailwind CSS and advanced design techniques based on the following prompt:
+    Create an EXCEPTIONAL, PROFESSIONAL-GRADE FLYER DESIGN using modern CSS techniques based on the following prompt:
     "${options.prompt}"
     
     ${options.aspectRatio ? 
@@ -131,7 +139,15 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
       
       messageContent.push({
         type: 'text',
-        text: "IMPORTANT: Use the above image as the BACKGROUND of your flyer design. Do not try to reference it with an img tag - I will handle embedding it for you. Instead, directly create HTML that assumes the image is already the background. Use appropriate text colors that contrast well with the image's colors. Add overlays or semi-transparent elements as needed to maintain text readability over the background image."
+        text: `IMPORTANT: Use the above image as the BACKGROUND of your flyer design. 
+
+1. I will automatically set this image as the background of the .flyer-container element
+2. Do NOT use an <img> tag to reference this background
+3. Create CSS elements that overlay this background image - think of this as you designing a layer on top of the existing background
+4. Use appropriate text colors that contrast well with the image colors
+5. Add semi-transparent colored overlays when needed (using divs with background: rgba()) to improve readability
+6. Consider the mood and colors in the image when choosing your design style
+7. Keep all your elements inside the .flyer-container div`
       });
     }
     
@@ -159,7 +175,7 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
       messages: [
         { role: 'user', content: messageContent }
       ],
-      system: "You are an expert graphic designer. Return your response ONLY as a valid JSON object with 'htmlContent' and 'cssStyles' properties. Never include explanations, notes, or any text outside the JSON structure. The JSON must be properly formatted and parseable."
+      system: "You are an expert CSS designer specializing in overlaying designs on background images. Return ONLY valid JSON with htmlContent and cssStyles properties. Use minimal HTML with rich CSS styling."
     });
 
     // Check if the response has content and the first block is a text block
@@ -277,17 +293,58 @@ export async function renderFlyerFromClaude(options: GenerationOptions): Promise
           body {
             margin: 0;
             padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+          }
+          .flyer-container {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
             background-image: url('data:image/jpeg;base64,${options.backgroundImageBase64}');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            min-height: 100vh;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+          }
+          .flyer-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.3));
+            pointer-events: none;
+            z-index: 1;
+          }
+          .flyer-container > * {
+            position: relative;
+            z-index: 2;
           }
         `
       : `
           body {
             margin: 0;
             padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f5f5f5;
+          }
+          .flyer-container {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
           }
         `;
         
