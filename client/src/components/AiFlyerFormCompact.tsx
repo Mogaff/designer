@@ -82,20 +82,45 @@ export default function AiFlyerFormCompact({
     onSuccess: (data: any) => {
       setIsGenerating(false);
       console.log("Server response:", data);
-      if (data.designs && data.designs.length > 0) {
+      // Enhanced debug logging
+      console.log("Response structure:", {
+        hasData: !!data,
+        hasDesigns: !!(data && data.designs),
+        designCount: data && data.designs ? data.designs.length : 0,
+        firstDesign: data && data.designs && data.designs[0] ? {
+          hasBase64: !!data.designs[0].imageBase64,
+          base64Length: data.designs[0].imageBase64 ? data.designs[0].imageBase64.length : 0,
+          style: data.designs[0].style
+        } : null
+      });
+      
+      if (data && data.designs && data.designs.length > 0) {
+        // Log each design to make sure they have the expected structure
+        data.designs.forEach((design, index) => {
+          console.log(`Design ${index + 1}:`, {
+            id: design.id,
+            hasBase64: !!design.imageBase64,
+            base64Length: design.imageBase64 ? design.imageBase64.length : 0,
+            style: design.style
+          });
+        });
+        
         setDesignSuggestions(data.designs);
         // Show the first design suggestion immediately
         if (data.designs[0]) {
           // Create a GeneratedFlyer object with all required properties
+          const firstDesign = data.designs[0];
+          console.log("Setting first design:", firstDesign);
           setGeneratedFlyer({
-            imageUrl: data.designs[0].imageBase64 || "",
+            imageUrl: firstDesign.imageBase64 || "",
             headline: "AI Generated Design",
-            content: `Design style: ${data.designs[0].style || "Custom"}`,
-            stylePrompt: data.designs[0].style || prompt,
+            content: `Design style: ${firstDesign.style || "Custom"}`,
+            stylePrompt: firstDesign.style || prompt,
             template: "ai"
           });
         }
       } else {
+        console.error("No designs found in response:", data);
         toast({
           title: "Error",
           description: "Failed to generate design suggestions. Please try again.",

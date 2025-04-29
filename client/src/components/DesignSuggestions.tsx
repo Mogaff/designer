@@ -99,9 +99,27 @@ export default function DesignSuggestions({
     );
   }
   
-  if (!designs || designs.length === 0) {
+  // Add more detailed logging about designs
+  if (!designs) {
+    console.error("No designs were passed to DesignSuggestions component");
     return null;
   }
+  
+  if (designs.length === 0) {
+    console.error("Empty designs array passed to DesignSuggestions component");
+    return null;
+  }
+  
+  // Log design info for debugging
+  console.log(`DesignSuggestions: Rendering ${designs.length} designs`);
+  designs.forEach((design, index) => {
+    console.log(`Design ${index + 1}:`, {
+      id: design.id,
+      hasImageBase64: !!design.imageBase64,
+      base64Length: design.imageBase64 ? design.imageBase64.length : 0,
+      style: design.style
+    });
+  });
 
   return (
     <div className="h-full flex flex-col">

@@ -205,14 +205,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create a response with all design images
       const designData = successfulDesigns.map((design, index) => {
         // Convert buffer to base64 for JSON transport
+        const base64Data = design.imageBuffer.toString('base64');
+        log(`Design ${index + 1} - Base64 length: ${base64Data.length}`, "generator");
+        
         return {
-          imageBase64: `data:image/png;base64,${design.imageBuffer.toString('base64')}`,
+          imageBase64: `data:image/png;base64,${base64Data}`,
           style: design.style,
           id: index + 1
         };
       });
       
       log("AI Flyer generation completed", "generator");
+      log(`Successfully prepared ${designData.length} designs for response`, "generator");
+      
+      // Debug logging to ensure the response has the correct format
+      log(`First design - ID: ${designData[0]?.id}, Style: ${designData[0]?.style}, Has ImageBase64: ${!!designData[0]?.imageBase64}`, "generator");
       
       // Subtract credits for the successful generation based on how many designs were generated
       await storage.addCreditsTransaction({
@@ -225,14 +232,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get updated user info
       const updatedUser = await storage.getUser(userId);
       
-      // Send JSON response with all designs and updated credit info
-      res.json({ 
+      // Create the response object
+      const responseData = { 
         designs: designData,
         credits: {
           balance: updatedUser?.credits_balance,
           used: totalRequiredCredits
         }
-      });
+      };
+      
+      log(`Sending response with ${responseData.designs.length} designs`, "generator");
+      
+      // Send JSON response with all designs and updated credit info
+      res.json(responseData);
     } catch (error) {
       log(`Error generating AI flyer: ${error}`, "generator");
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
