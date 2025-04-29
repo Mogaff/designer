@@ -149,7 +149,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         generationOptions.logoBase64 = logoBase64;
       }
       
-      // Generate 4 design variations with distinct professional style instructions
+      // Generate design variations with distinct professional style instructions
       const styleVariations = [
         "with a luxury brand aesthetic using dramatic contrasts and premium typography",
         "with a modern minimalist style emphasizing elegant white space and refined typography",
@@ -158,11 +158,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ];
       
       // Generate designs sequentially to avoid quota limits
-      log("Generating design variations", "generator");
+      log(`Generating ${maxDesigns} design variations (user requested ${numDesigns})`, "generator");
       const successfulDesigns = [];
       
+      // WICHTIG: Nur die Anzahl der Designs generieren, die der Benutzer ausgewählt hat
+      // Beschränke die Schleife auf die vom Benutzer gewünschte Anzahl von Designs
+      const designsToGenerate = Math.min(maxDesigns, styleVariations.length);
+      
       // Try each style variation until we have the requested number of successful designs
-      for (let index = 0; index < styleVariations.length && successfulDesigns.length < maxDesigns; index++) {
+      for (let index = 0; index < designsToGenerate; index++) {
         const styleVariation = styleVariations[index];
         try {
           const variantOptions = {
