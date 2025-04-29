@@ -1,0 +1,59 @@
+Initializing Firebase with standard configuration
+User synced with backend successfully
+Warning: Unknown event handler property &#x60;onOpenChange&#x60;. It will be ignored.
+    at button
+    at _c (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/components/ui/button.tsx:47:11)
+    at SlidingDialogTrigger (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/components/ui/sliding-dialog-new.tsx:47:3)
+    at SlidingDialog (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/components/ui/sliding-dialog-new.tsx:22:3)
+    at SidebarGroupAction (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/components/ui/sidebar.tsx:306:3)
+    at div
+    at SidebarGroupLabel (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/components/ui/sidebar.tsx:242:3)
+    at div
+    at SidebarGroup (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/components/ui/sidebar.tsx:231:3)
+    at BrandKit (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/components/BrandKit.tsx:62:36)
+    at div
+    at SidebarContent (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/components/ui/sidebar.tsx:167:3)
+    at aside
+    at Sidebar (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/components/ui/sidebar.tsx:88:3)
+    at div
+    at div
+    at SidebarProvider (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/components/ui/sidebar.tsx:24:3)
+    at AppLayout (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/components/AppLayout.tsx:43:37)
+    at ProtectedRoute (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/components/ProtectedRoute.tsx:20:42)
+    at Route (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=349a4be2:323:16)
+    at Switch (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=349a4be2:379:17)
+    at Router
+    at UserSettingsProvider (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/contexts/UserSettingsContext.tsx:39:40)
+    at AuthProvider (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/contexts/AuthContext.tsx:41:32)
+    at QueryClientProvider (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=349a4be2:2805:3)
+    at App
+at button
+at _c (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/components/ui/button.tsx:47:11)
+at SlidingDialogTrigger (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/components/ui/sliding-dialog-new.tsx:47:3)
+at SlidingDialog (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/components/ui/sliding-dialog-new.tsx:22:3)
+at SidebarGroupAction (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/components/ui/sidebar.tsx:306:3)
+at div
+at SidebarGroupLabel (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/components/ui/sidebar.tsx:242:3)
+at div
+at SidebarGroup (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/components/ui/sidebar.tsx:231:3)
+at BrandKit (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/components/BrandKit.tsx:62:36)
+at div
+at SidebarContent (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/components/ui/sidebar.tsx:167:3)
+at aside
+at Sidebar (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/components/ui/sidebar.tsx:88:3)
+at div
+at div
+at SidebarProvider (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/components/ui/sidebar.tsx:24:3)
+at AppLayout (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/components/AppLayout.tsx:43:37)
+at ProtectedRoute (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/components/ProtectedRoute.tsx:20:42)
+at Route (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=349a4be2:323:16)
+at Switch (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=349a4be2:379:17)
+at Router
+at UserSettingsProvider (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/contexts/UserSettingsContext.tsx:39:40)
+at AuthProvider (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/src/contexts/AuthContext.tsx:41:32)
+at QueryClientProvider (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=349a4be2:2805:3)
+at App
+at t.value (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
