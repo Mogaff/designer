@@ -208,6 +208,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const base64Data = design.imageBuffer.toString('base64');
         log(`Design ${index + 1} - Base64 length: ${base64Data.length}`, "generator");
         
+        // Check if base64 has the correct format (not numeric values)
+        if (/^\d+,\d+/.test(base64Data.substring(0, 10))) {
+          log(`WARNING: Design ${index + 1} has numeric data instead of base64: ${base64Data.substring(0, 50)}`, "generator");
+        }
+        
         // FIXED: Base64 data is a JPEG from puppeteer screenshot
         return {
           imageBase64: `data:image/jpeg;base64,${base64Data}`,

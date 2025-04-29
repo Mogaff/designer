@@ -159,7 +159,24 @@ export default function DesignSuggestions({
                     src={design.imageBase64} 
                     alt={`Design option ${design.id}`}
                     className="w-full h-full object-cover"
+                    onLoad={(e) => {
+                      console.log(`Design ${design.id} loaded successfully`);
+                    }}
                     onError={(e) => {
+                      // Log the first 100 chars of the image base64 to inspect it
+                      if (design.imageBase64) {
+                        console.error(`Image base64 prefix for design ${design.id}:`, design.imageBase64.substring(0, 100));
+                        
+                        // Check if the image data has comma or other issues
+                        const isValidFormat = design.imageBase64.startsWith('data:image/jpeg;base64,') || 
+                                              design.imageBase64.startsWith('data:image/png;base64,');
+                        console.error(`Image format valid: ${isValidFormat}`);
+
+                        // Check if it appears to have numerical values instead of base64 (common error)
+                        const hasNumbers = /^\d+,\d+/.test(design.imageBase64.substring(23));
+                        console.error(`Image data contains numerical values instead of base64: ${hasNumbers}`);
+                      }
+                      
                       // Fallback if image fails to load
                       console.error(`Image load error for design ${design.id}`);
                       const target = e.target as HTMLImageElement;
