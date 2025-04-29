@@ -128,11 +128,24 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     
     // Add background image if provided
     if (options.backgroundImageBase64) {
+      // Determine the correct media type from the base64 data
+      // This is a basic detection - we check the first characters of the base64 data
+      let mediaType = 'image/jpeg'; // default
+      if (options.backgroundImageBase64.startsWith('/9j/')) {
+        mediaType = 'image/jpeg';
+      } else if (options.backgroundImageBase64.startsWith('iVBOR')) {
+        mediaType = 'image/png';
+      } else if (options.backgroundImageBase64.startsWith('R0lGOD')) {
+        mediaType = 'image/gif';
+      } else if (options.backgroundImageBase64.startsWith('UklGR')) {
+        mediaType = 'image/webp';
+      }
+      
       messageContent.push({
         type: 'image',
         source: {
           type: 'base64',
-          media_type: 'image/jpeg',
+          media_type: mediaType,
           data: options.backgroundImageBase64
         }
       });
@@ -305,7 +318,7 @@ export async function renderFlyerFromClaude(options: GenerationOptions): Promise
             display: flex;
             flex-direction: column;
             justify-content: center;
-            background-image: url('data:image/jpeg;base64,${options.backgroundImageBase64}');
+            background-image: url('data:image/png;base64,${options.backgroundImageBase64}');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
