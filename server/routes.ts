@@ -45,7 +45,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API endpoint to generate multiple flyer designs using Claude AI
   app.post("/api/generate-ai", isAuthenticated, uploadFields, async (req: Request, res: Response) => {
     try {
-      log("AI Flyer generation started", "generator");
+      log("AI Flyer generation started - Phase 1: Design Suggestions", "generator");
       
       const { prompt, configId, designCount, aspectRatio, templateInfo } = req.body;
       const userId = (req.user as any).id;

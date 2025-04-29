@@ -175,29 +175,68 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     const responseText = firstBlock.text;
     
     try {
+      // Log raw response for debugging
+      log(`Claude raw response: ${responseText.substring(0, 200)}...`, "claude");
+      
+      // First try parsing the entire response directly
+      try {
+        const directJson = JSON.parse(responseText);
+        log("Successfully parsed direct JSON response", "claude");
+        return {
+          htmlContent: directJson.htmlContent || "",
+          cssStyles: directJson.cssStyles || ""
+        };
+      } catch (directParseError) {
+        log("Direct JSON parse failed, trying to extract JSON", "claude");
+      }
+      
       // Try to extract JSON from the response
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
+        log("Found JSON match in response", "claude");
         const jsonContent = JSON.parse(jsonMatch[0]);
         return {
           htmlContent: jsonContent.htmlContent || "",
           cssStyles: jsonContent.cssStyles || ""
         };
       }
+      
+      // Fallback: Try to extract HTML content manually
+      log("JSON extraction failed, trying to find HTML directly", "claude");
+      const htmlMatch = responseText.match(/<html[^>]*>[\s\S]*<\/html>/i);
+      if (htmlMatch) {
+        log("Found HTML directly in response", "claude");
+        return {
+          htmlContent: htmlMatch[0],
+          cssStyles: ""
+        };
+      }
+      
+      // Last resort: if there's a <body> tag, treat the whole response as HTML
+      const bodyMatch = responseText.match(/<body[^>]*>[\s\S]*<\/body>/i);
+      if (bodyMatch) {
+        log("Found body tag, using entire response as HTML", "claude");
+        return {
+          htmlContent: bodyMatch[0],
+          cssStyles: ""
+        };
+      }
+      
+      // If we have any HTML tag content, use it
+      if (responseText.includes("<div") || responseText.includes("<section")) {
+        log("Found HTML tags, using response as HTML fragment", "claude");
+        return {
+          htmlContent: responseText,
+          cssStyles: ""
+        };
+      }
+      
+      log("No valid HTML or JSON found in response", "claude");
+      throw new Error("Could not extract valid HTML or JSON from the Claude response");
     } catch (parseError) {
-      log(`Error parsing Claude JSON response: ${parseError}`, "claude");
+      log(`Error parsing Claude response: ${parseError}`, "claude");
+      throw parseError;
     }
-    
-    // Fallback: Try to extract HTML content manually
-    const htmlMatch = responseText.match(/<html[^>]*>[\s\S]*<\/html>/i);
-    if (htmlMatch) {
-      return {
-        htmlContent: htmlMatch[0],
-        cssStyles: ""
-      };
-    }
-    
-    throw new Error("Could not extract valid HTML from the Claude response");
   } catch (error: any) {
     // Log detailed error information
     log(`Error generating content with Claude: ${error}`, "claude");
@@ -484,6 +523,77 @@ export async function renderFlyerFromClaude(options: GenerationOptions): Promise
     
   } catch (error) {
     log(`Error rendering flyer from Claude: ${error}`, "claude");
-    throw error;
+    
+    // Add detailed error info for debugging
+    if (error instanceof Error) {
+      log(`Error details: ${error.message}`, "claude");
+      if (error.stack) {
+        log(`Error stack: ${error.stack}`, "claude");
+      }
+    }
+    
+    // Try to create a basic error image as fallback
+    try {
+      log("Attempting to create error image fallback", "claude");
+      const browser = await puppeteer.launch({
+        headless: true,
+        args: [
+          "--no-sandbox", 
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage"
+        ],
+      });
+      
+      const page = await browser.newPage();
+      await page.setContent(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              height: 100vh;
+              margin: 0;
+              background: #f8f9fa;
+            }
+            .error-container {
+              text-align: center;
+              padding: 2rem;
+              border-radius: 8px;
+              background: white;
+              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+              max-width: 80%;
+            }
+            h1 {
+              color: #dc2626;
+              margin-bottom: 1rem;
+            }
+            p {
+              color: #374151;
+              margin-bottom: 1.5rem;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="error-container">
+            <h1>Design Generation Error</h1>
+            <p>We encountered a problem generating your design. Please try again with a different prompt or options.</p>
+          </div>
+        </body>
+        </html>
+      `);
+      
+      const screenshot = await page.screenshot({ type: 'jpeg', quality: 90 });
+      await browser.close();
+      
+      return screenshot as Buffer;
+    } catch (fallbackError) {
+      log(`Error creating fallback image: ${fallbackError}`, "claude");
+      // If even the fallback fails, rethrow the original error
+      throw error;
+    }
   }
 }
