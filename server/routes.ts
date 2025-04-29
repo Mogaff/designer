@@ -173,7 +173,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           };
           
           log(`Generating design variation ${index + 1}: ${styleVariation}`, "generator");
-          const screenshot = await renderFlyerFromGemini(variantOptions);
+          // Use Claude instead of Gemini for flyer generation
+          const screenshot = await renderFlyerFromClaude(variantOptions);
           successfulDesigns.push({
             imageBuffer: screenshot,
             style: styleVariation
@@ -239,7 +240,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (errorMessage.includes("API quota limit reached")) {
         // Send 429 Too Many Requests status code for quota limit errors
         res.status(429).json({ 
-          message: errorMessage,
+          message: errorMessage.replace("Gemini AI", "Claude AI"),
           quotaExceeded: true
         });
       } else {

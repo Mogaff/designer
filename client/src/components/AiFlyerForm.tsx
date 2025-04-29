@@ -215,7 +215,7 @@ export default function AiFlyerForm({
       if (errorMessage.includes("API quota limit reached")) {
         toast({
           title: "API Quota Limit Reached",
-          description: "The Gemini AI API free tier limit has been reached for today. Please try again tomorrow.",
+          description: "The Claude AI API free tier limit has been reached for today. Please try again tomorrow.",
           variant: "destructive",
           duration: 7000,
         });
