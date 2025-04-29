@@ -5,6 +5,7 @@ import path from "path";
 import fs from "fs";
 import { generateFlyer } from "./flyerGenerator";
 import { renderFlyerFromGemini } from "./geminiFlyer";
+import { renderFlyerFromClaude } from "./claudeFlyer";
 import { generateBackgroundImageHandler } from "./fluxImageService";
 import multer from "multer";
 import { log } from "./vite";
