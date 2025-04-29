@@ -487,7 +487,7 @@ export async function renderFlyerFromClaude(options: GenerationOptions): Promise
       log("Taking screenshot of the Claude-generated flyer", "claude");
       
       // Wait a bit longer for all content and styles to load properly
-      await page.waitForTimeout(500);
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       // Try multiple container selectors that Claude might generate
       const selectors = [
@@ -546,7 +546,7 @@ export async function renderFlyerFromClaude(options: GenerationOptions): Promise
         });
         
         // Take a slight timeout to ensure styles are applied
-        await page.waitForTimeout(100);
+        await new Promise(resolve => setTimeout(resolve, 100));
         
         const screenshot = await page.screenshot({
           type: 'jpeg',

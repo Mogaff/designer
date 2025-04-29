@@ -318,6 +318,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add a test route to verify Claude API is working
   app.get("/api/test-claude", async (req: Request, res: Response) => {
     try {
+      // Import Anthropic directly here to avoid the need for top-level import
+      const Anthropic = (await import('@anthropic-ai/sdk')).default;
       const anthropic = new Anthropic({
         apiKey: process.env.ANTHROPIC_API_KEY,
       });
@@ -332,7 +334,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       // Check for valid response
-      const text = response.content[0].text;
+      const content = response.content[0];
+      const text = 'text' in content ? content.text : JSON.stringify(content);
       log(`Claude API test response: ${text}`, "claude");
       
       res.json({ 
