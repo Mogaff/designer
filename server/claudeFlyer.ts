@@ -486,21 +486,68 @@ export async function renderFlyerFromClaude(options: GenerationOptions): Promise
       // Take screenshot
       log("Taking screenshot of the Claude-generated flyer", "claude");
       
-      // First try to find the flyer-container element
-      const elementHandle = await page.$('.flyer-container');
+      // Wait a bit longer for all content and styles to load properly
+      await page.waitForTimeout(500);
+
+      // Try multiple container selectors that Claude might generate
+      const selectors = [
+        '.flyer-container', 
+        '.main-container', 
+        '.vv-logo-container',
+        '.v-container',
+        '.haitugen-container',
+        '.design-container',
+        '.container',
+        '.content-wrapper',
+        'main',
+        'body > div'
+      ];
       
-      if (elementHandle) {
-        // If flyer-container exists, take a screenshot of that element
-        const screenshot = await elementHandle.screenshot({
-          type: 'jpeg', 
-          quality: 95,
-          omitBackground: false
+      // Try each selector
+      for (const selector of selectors) {
+        const elementHandle = await page.$(selector);
+        if (elementHandle) {
+          log(`Found container with selector: ${selector}`, "claude");
+          try {
+            // Get bounding box for the element
+            const boundingBox = await elementHandle.boundingBox();
+            if (boundingBox && boundingBox.width > 50 && boundingBox.height > 50) {
+              const screenshot = await elementHandle.screenshot({
+                type: 'jpeg', 
+                quality: 95,
+                omitBackground: false
+              });
+              
+              return screenshot as Buffer;
+            }
+          } catch (err) {
+            log(`Error taking screenshot of element with selector ${selector}: ${err}`, "claude");
+          }
+        }
+      }
+      
+      // If no suitable container is found, take a screenshot of the entire page
+      log("No suitable container found, taking screenshot of entire page", "claude");
+      try {
+        // Make sure content is centered nicely
+        await page.addStyleTag({
+          content: `
+            body {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              min-height: 100vh;
+              margin: 0;
+              padding: 0;
+              overflow: hidden;
+              background: #000;
+            }
+          `
         });
         
-        return screenshot as Buffer;
-      } else {
-        // If no flyer-container is found, take a screenshot of the entire page
-        log("No flyer-container element found, taking screenshot of entire page", "claude");
+        // Take a slight timeout to ensure styles are applied
+        await page.waitForTimeout(100);
+        
         const screenshot = await page.screenshot({
           type: 'jpeg',
           quality: 95,
@@ -508,6 +555,9 @@ export async function renderFlyerFromClaude(options: GenerationOptions): Promise
         });
         
         return screenshot as Buffer;
+      } catch (err) {
+        log(`Error taking screenshot of page: ${err}`, "claude");
+        throw err;
       }
     } finally {
       await browser.close();
