@@ -141,60 +141,90 @@ export default function DesignSuggestions({
       </div>
       
       <div className="flex-grow flex flex-col">
-        <div className={`grid ${designs.length <= 2 ? 'grid-cols-1' : 'grid-cols-2'} gap-3 grid-rows-2 h-[400px]`}>
-          {designs.map((design) => (
-            <div 
-              key={design.id}
-              className={`
-                relative overflow-hidden rounded-lg border-2 cursor-pointer transition-all duration-200
-                ${selectedDesign === design.id 
-                  ? 'border-indigo-500 shadow-lg shadow-indigo-500/20' 
-                  : 'border-gray-800/50 hover:border-indigo-500/50'}
-              `}
-              onClick={() => handleSelectDesign(design)}
-            >
-              <div className="relative aspect-square w-full flex items-center justify-center">
-                {design.imageBase64 && (
-                  <img 
-                    src={design.imageBase64} 
-                    alt={`Design option ${design.id}`}
-                    className="w-full h-full object-cover"
-                    onLoad={(e) => {
-                      console.log(`Design ${design.id} loaded successfully`);
-                    }}
-                    onError={(e) => {
-                      // Log the first 100 chars of the image base64 to inspect it
-                      if (design.imageBase64) {
-                        console.error(`Image base64 prefix for design ${design.id}:`, design.imageBase64.substring(0, 100));
-                        
-                        // Check if the image data has comma or other issues
-                        const isValidFormat = design.imageBase64.startsWith('data:image/jpeg;base64,') || 
-                                              design.imageBase64.startsWith('data:image/png;base64,');
-                        console.error(`Image format valid: ${isValidFormat}`);
+        <div className={`grid grid-cols-2 gap-3 h-[400px]`}>
+          {designs.map((design) => {
+            // Extrahiere das Aspect Ratio aus dem Base64-Bild
+            const getAspectRatioClass = () => {
+              // Standardwert, wenn wir das Verhältnis nicht bestimmen können
+              let aspectClass = "aspect-square"; 
+              
+              // Versuche aus dem Style-Text das Aspect Ratio zu extrahieren
+              if (design.style) {
+                if (design.style.includes("9:16") || design.style.includes("story")) {
+                  aspectClass = "aspect-[9/16]";
+                } else if (design.style.includes("16:9") || design.style.includes("landscape")) {
+                  aspectClass = "aspect-[16/9]";
+                } else if (design.style.includes("4:5") || design.style.includes("portrait")) {
+                  aspectClass = "aspect-[4/5]";
+                } else if (design.style.includes("1:1") || design.style.includes("square")) {
+                  aspectClass = "aspect-square";
+                } else if (design.style.includes("A4") || design.style.includes("210:297")) {
+                  aspectClass = "aspect-[210/297]";
+                }
+              }
+              
+              return aspectClass;
+            };
+            
+            return (
+              <div 
+                key={design.id}
+                className={`
+                  relative overflow-hidden rounded-lg border-2 cursor-pointer transition-all duration-200
+                  ${selectedDesign === design.id 
+                    ? 'border-indigo-500 shadow-lg shadow-indigo-500/20' 
+                    : 'border-gray-800/50 hover:border-indigo-500/50'}
+                `}
+                onClick={() => handleSelectDesign(design)}
+              >
+                <div className={`relative ${getAspectRatioClass()} w-full flex items-center justify-center`}>
+                  {design.imageBase64 && (
+                    <img 
+                      src={design.imageBase64} 
+                      alt={`Design option ${design.id}`}
+                      className="w-full h-full object-cover"
+                      onLoad={(e) => {
+                        console.log(`Design ${design.id} loaded successfully`);
+                      }}
+                      onError={(e) => {
+                        // Log the first 100 chars of the image base64 to inspect it
+                        if (design.imageBase64) {
+                          console.error(`Image base64 prefix for design ${design.id}:`, design.imageBase64.substring(0, 100));
+                          
+                          // Check if the image data has comma or other issues
+                          const isValidFormat = design.imageBase64.startsWith('data:image/jpeg;base64,') || 
+                                                design.imageBase64.startsWith('data:image/png;base64,');
+                          console.error(`Image format valid: ${isValidFormat}`);
 
-                        // Check if it appears to have numerical values instead of base64 (common error)
-                        const hasNumbers = /^\d+,\d+/.test(design.imageBase64.substring(23));
-                        console.error(`Image data contains numerical values instead of base64: ${hasNumbers}`);
-                      }
-                      
-                      // Fallback if image fails to load
-                      console.error(`Image load error for design ${design.id}`);
-                      const target = e.target as HTMLImageElement;
-                      target.onerror = null; // Prevent infinite error loop
-                      target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiM0MzM3ZmUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkRlc2lnbiBWb3JzY2hsYWc8L3RleHQ+PC9zdmc+';
-                    }}
-                  />
-                )}
-                
-                {/* Selection indicator */}
-                {selectedDesign === design.id && (
-                  <div className="absolute top-2 right-2 text-indigo-500">
-                    <CheckCircle size={20} />
+                          // Check if it appears to have numerical values instead of base64 (common error)
+                          const hasNumbers = /^\d+,\d+/.test(design.imageBase64.substring(23));
+                          console.error(`Image data contains numerical values instead of base64: ${hasNumbers}`);
+                        }
+                        
+                        // Fallback if image fails to load
+                        console.error(`Image load error for design ${design.id}`);
+                        const target = e.target as HTMLImageElement;
+                        target.onerror = null; // Prevent infinite error loop
+                        target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiM0MzM3ZmUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkRlc2lnbiBWb3JzY2hsYWc8L3RleHQ+PC9zdmc+';
+                      }}
+                    />
+                  )}
+                  
+                  {/* Selection indicator */}
+                  {selectedDesign === design.id && (
+                    <div className="absolute top-2 right-2 text-indigo-500">
+                      <CheckCircle size={20} />
+                    </div>
+                  )}
+                  
+                  {/* Design Style Label */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm p-1.5">
+                    <p className="text-[8px] text-white/90 truncate">{design.style}</p>
                   </div>
-                )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
         
         {selectedDesign !== null && (
