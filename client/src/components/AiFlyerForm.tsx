@@ -5,15 +5,13 @@ import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { GeneratedFlyer, AiFlyerGenerationRequest, DesignSuggestions, DesignVariation, FontSettings, GoogleFont, BrandKit, DesignTemplate } from "@/lib/types";
+import { GeneratedFlyer, AiFlyerGenerationRequest, DesignSuggestions, DesignVariation, FontSettings, GoogleFont, BrandKit } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { ImageIcon, Upload, TypeIcon, Check, PaintBucket, Crown, Sparkles, WandSparkles, Star } from "lucide-react";
+import { ImageIcon, Upload, TypeIcon, Check, PaintBucket, Crown, Sparkles } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import backgroundGradient from "../assets/background-gradient.png";
 import backgroundGradient2 from "../assets/backgroundd-gradient.png";
-import iconUpload from "../assets/iconupload.png";
-import meshGradient from "../assets/image-mesh-gradient (18).png";
 import { useUserSettings } from "@/contexts/UserSettingsContext";
 import { loadGoogleFonts, loadFont } from '@/lib/fontService';
 import PremiumDesignPanel from "./PremiumDesignPanel";
@@ -24,7 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 
 type AiFlyerFormProps = {
   setGeneratedFlyer: (flyer: GeneratedFlyer | null) => void;
@@ -33,8 +30,6 @@ type AiFlyerFormProps = {
   setDesignSuggestions: (suggestions: DesignVariation[] | null) => void;
   aspectRatio: string;
   setAspectRatio: (aspectRatio: string) => void;
-  onOpenBrandKitPanel?: () => void;
-  selectedTemplate?: DesignTemplate;
 };
 
 export default function AiFlyerForm({ 
@@ -43,9 +38,7 @@ export default function AiFlyerForm({
   setIsGenerating,
   setDesignSuggestions,
   aspectRatio,
-  setAspectRatio,
-  onOpenBrandKitPanel,
-  selectedTemplate
+  setAspectRatio
 }: AiFlyerFormProps) {
   const [prompt, setPrompt] = useState("");
   const [backgroundImage, setBackgroundImage] = useState<File | null>(null);
@@ -53,7 +46,6 @@ export default function AiFlyerForm({
   const [logo, setLogo] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [designCount, setDesignCount] = useState<string>("4"); // Default to 4 designs
-  const [generateAiBackground, setGenerateAiBackground] = useState<boolean>(false); // AI background generation toggle
   const [isPremiumDialogOpen, setIsPremiumDialogOpen] = useState(false);
   const [selectedPremiumOption, setSelectedPremiumOption] = useState<string | null>(null);
   const { fontSettings } = useUserSettings(); // Get font settings from context
@@ -95,51 +87,13 @@ export default function AiFlyerForm({
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
-  // Generate AI background image
-  const generateAiBackgroundMutation = useMutation({
-    mutationFn: async (prompt: string) => {
-      const response = await apiRequest("POST", "/api/generate-background", {
-        prompt,
-        imageSize: aspectRatio === "9/16" || aspectRatio === "2/3" ? "portrait_4_3" : 
-                   aspectRatio === "1/1" ? "square" : "landscape_4_3"
-      });
-      return response.json();
-    },
-    onSuccess: (data) => {
-      // Set the background image preview with the generated image URL
-      setBackgroundImagePreview(data.imageUrl);
-      setBackgroundImage(null); // Clear any uploaded file
-      
-      toast({
-        title: "Background Generated",
-        description: "AI background image created successfully! (1 credit used)",
-      });
-    },
-    onError: (error) => {
-      console.error("Error generating AI background:", error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to generate AI background";
-      
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    }
-  });
-
-  // Generate AI flyer designs
   const generateAiFlyerMutation = useMutation({
     mutationFn: async (data: AiFlyerGenerationRequest) => {
       const formData = new FormData();
       formData.append("prompt", data.prompt);
       
-      // Handle background image
-      if (data.backgroundImage instanceof File) {
-        formData.append("backgroundImage", data.backgroundImage, data.backgroundImage.name);
-      } 
-      // If we have a background image preview URL from AI generation, include it
-      else if (backgroundImagePreview && generateAiBackground) {
-        formData.append("backgroundImageUrl", backgroundImagePreview);
+      if (data.backgroundImage) {
+        formData.append("backgroundImage", data.backgroundImage);
       }
       
       if (data.logo) {
@@ -159,9 +113,6 @@ export default function AiFlyerForm({
         formData.append("headingFont", data.fontSettings.headingFont);
         formData.append("bodyFont", data.fontSettings.bodyFont);
       }
-      
-      // Add flag for AI background generation
-      formData.append("generateAiBackground", generateAiBackground.toString());
       
       const response = await apiRequest("POST", "/api/generate-ai", formData);
       return response.json();
@@ -315,6 +266,8 @@ export default function AiFlyerForm({
       return;
     }
     
+    setIsGenerating(true);
+    
     // Use brand kit fonts if available, otherwise use user settings
     const fontsToUse: FontSettings = activeBrandKit 
       ? {
@@ -348,60 +301,14 @@ export default function AiFlyerForm({
       }
     }
     
-    setIsGenerating(true);
-    
-    // Check if we need to generate a background image first
-    if (generateAiBackground && !backgroundImagePreview) {
-      // Generate a background image using the prompt
-      const bgGenPrompt = `High quality background image for a flyer with the theme: ${prompt}`;
-      
-      toast({
-        title: "Generating Background",
-        description: "Creating AI background image first. This will use 1 additional credit.",
-      });
-      
-      // First generate the background image, then the flyer
-      generateAiBackgroundMutation.mutate(bgGenPrompt, {
-        onSuccess: (data) => {
-          // Once the background is generated, generate the flyer
-          generateAiFlyerMutation.mutate({ 
-            prompt: enhancedPrompt, 
-            backgroundImage: backgroundImage || undefined,
-            logo: logo || undefined,
-            designCount: parseInt(designCount),
-            aspectRatio,
-            fontSettings: fontsToUse // Use brand kit fonts if active
-          });
-        },
-        onError: (error) => {
-          // If background generation fails, still try to generate the flyer without background
-          toast({
-            title: "Background generation failed",
-            description: "Continuing with flyer generation without AI background.",
-            variant: "destructive",
-          });
-          
-          generateAiFlyerMutation.mutate({ 
-            prompt: enhancedPrompt, 
-            backgroundImage: backgroundImage || undefined,
-            logo: logo || undefined,
-            designCount: parseInt(designCount),
-            aspectRatio,
-            fontSettings: fontsToUse
-          });
-        }
-      });
-    } else {
-      // No need to generate background image, directly generate the flyer
-      generateAiFlyerMutation.mutate({ 
-        prompt: enhancedPrompt, 
-        backgroundImage: backgroundImage || undefined,
-        logo: logo || undefined,
-        designCount: parseInt(designCount),
-        aspectRatio,
-        fontSettings: fontsToUse // Use brand kit fonts if active
-      });
-    }
+    generateAiFlyerMutation.mutate({ 
+      prompt: enhancedPrompt, 
+      backgroundImage: backgroundImage || undefined,
+      logo: logo || undefined,
+      designCount: parseInt(designCount),
+      aspectRatio,
+      fontSettings: fontsToUse // Use brand kit fonts if active
+    });
   };
 
   const clearBackgroundImage = () => {
@@ -457,11 +364,11 @@ export default function AiFlyerForm({
             {/* Background Image Upload - Fixed size container */}
             <div className="relative w-full h-28 overflow-hidden rounded-xl group transition-all duration-300 border border-gray-800/50 hover:border-indigo-500/50 hover:shadow-md hover:shadow-indigo-500/20">
               {/* Background Gradient Image */}
-              <div className="absolute inset-0 z-0" style={{ overflow: 'hidden' }}>
+              <div className="absolute inset-0 z-0">
                 <img 
                   src={backgroundGradient} 
                   alt="" 
-                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  className="h-full w-full object-cover"
                 />
               </div>
               
@@ -487,15 +394,7 @@ export default function AiFlyerForm({
                   </div>
                 </div>
               ) : (
-                <div 
-                  className="flex items-center justify-center h-full w-full relative z-10 rounded-lg overflow-hidden"
-                  style={{
-                    backgroundImage: `url(${backgroundGradient})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center'
-                  }}
-                >
-                  <div className="absolute inset-0 bg-black/20 z-0" />
+                <div className="flex items-center justify-center h-full w-full relative z-10 rounded-xl backdrop-blur-md">
                   <Input
                     id="background-image-upload"
                     type="file"
@@ -503,39 +402,17 @@ export default function AiFlyerForm({
                     onChange={handleBackgroundImageChange}
                     className="hidden"
                   />
-                  
-                  <div className="z-10 flex flex-col items-center gap-1">
-                    <Upload
-                      className="h-6 w-6 mb-1 text-white opacity-80" 
-                    />
-                    <Button 
-                      type="button" 
-                      variant="ghost"
-                      className="h-8 text-white hover:bg-white/10 rounded-md transition-all"
-                      onClick={() => document.getElementById('background-image-upload')?.click()}
-                    >
-                      Upload Image
-                    </Button>
-                  </div>
-                  
-                  {/* AI Background Generation Option */}
-                  <div className="absolute bottom-0 left-0 right-0 z-20 bg-black/60 backdrop-blur-sm p-2">
-                    <div className="flex items-center gap-1 justify-center">
-                      <Checkbox 
-                        id="generate-ai-bg" 
-                        checked={generateAiBackground}
-                        onCheckedChange={(checked) => setGenerateAiBackground(checked === true)}
-                        className="w-3 h-3 rounded-sm data-[state=checked]:bg-indigo-500"
-                      />
-                      <label 
-                        htmlFor="generate-ai-bg" 
-                        className="text-[10px] text-white leading-tight cursor-pointer flex items-center"
-                      >
-                        <WandSparkles className="h-3 w-3 mr-0.5 text-indigo-300" />
-                        GENERATE WITH AI (1 CREDIT)
-                      </label>
-                    </div>
-                  </div>
+                  <Button 
+                    type="button" 
+                    className="bg-indigo-500/30 backdrop-blur-md text-white rounded-full hover:bg-indigo-500/50 transition-all border border-indigo-500/40 shadow-lg"
+                    onClick={() => document.getElementById('background-image-upload')?.click()}
+                  >
+                    {isMobile ? (
+                      <Upload className="h-4 w-4" />
+                    ) : (
+                      <span className="px-4">Select Image</span>
+                    )}
+                  </Button>
                 </div>
               )}
             </div>
@@ -547,11 +424,11 @@ export default function AiFlyerForm({
             {!activeBrandKit ? (
               <div className="relative w-full h-28 overflow-hidden rounded-xl group transition-all duration-300 border border-gray-800/50 hover:border-indigo-500/50 hover:shadow-md hover:shadow-indigo-500/20">
                 {/* Background Gradient Image */}
-                <div className="absolute inset-0 z-0" style={{ overflow: 'hidden' }}>
+                <div className="absolute inset-0 z-0">
                   <img 
                     src={backgroundGradient2} 
                     alt="" 
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    className="h-full w-full object-cover"
                   />
                 </div>
                 
@@ -577,15 +454,7 @@ export default function AiFlyerForm({
                     </div>
                   </div>
                 ) : (
-                  <div 
-                    className="flex items-center justify-center h-full w-full relative z-10 rounded-lg overflow-hidden"
-                    style={{
-                      backgroundImage: `url(${backgroundGradient})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center'
-                    }}
-                  >
-                    <div className="absolute inset-0 bg-black/20 z-0" />
+                  <div className="flex items-center justify-center h-full w-full relative z-10 rounded-xl backdrop-blur-md">
                     <Input
                       id="logo-upload"
                       type="file"
@@ -593,25 +462,22 @@ export default function AiFlyerForm({
                       onChange={handleLogoChange}
                       className="hidden"
                     />
-                    
-                    <div className="z-10 flex flex-col items-center gap-1">
-                      <Upload
-                        className="h-6 w-6 mb-1 text-white opacity-80" 
-                      />
-                      <Button 
-                        type="button" 
-                        variant="ghost"
-                        className="h-8 text-white hover:bg-white/10 rounded-md transition-all"
-                        onClick={() => document.getElementById('logo-upload')?.click()}
-                      >
-                        Upload Logo
-                      </Button>
-                    </div>
+                    <Button 
+                      type="button" 
+                      className="bg-indigo-500/30 backdrop-blur-md text-white rounded-full hover:bg-indigo-500/50 transition-all border border-indigo-500/40 shadow-lg"
+                      onClick={() => document.getElementById('logo-upload')?.click()}
+                    >
+                      {isMobile ? (
+                        <Upload className="h-4 w-4" />
+                      ) : (
+                        <span className="px-4">Select Logo</span>
+                      )}
+                    </Button>
                   </div>
                 )}
               </div>
             ) : (
-              <div className="relative w-full h-28 overflow-hidden rounded-xl group transition-all duration-300 border border-gray-800/50 bg-black/20" style={{ background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%)' }}>
+              <div className="relative w-full h-28 overflow-hidden rounded-xl group transition-all duration-300 border border-gray-800/50 bg-black/20">
                 <div className="flex flex-col items-center justify-center h-full w-full text-center p-3">
                   <div className="w-12 h-12 rounded-md flex items-center justify-center overflow-hidden mb-2">
                     {activeBrandKit.logo_url ? (
@@ -623,15 +489,6 @@ export default function AiFlyerForm({
                     )}
                   </div>
                   <p className="text-sm text-white/80">Using logo from Brand Kit: <span className="font-medium">{activeBrandKit.name}</span></p>
-                  <Button 
-                    type="button"
-                    variant="outline" 
-                    size="sm"
-                    className="mt-2 text-xs bg-white/10"
-                    onClick={() => onOpenBrandKitPanel && onOpenBrandKitPanel()}
-                  >
-                    Edit Brand Kit
-                  </Button>
                 </div>
               </div>
             )}
@@ -652,7 +509,7 @@ export default function AiFlyerForm({
               onClick={() => setIsPremiumDialogOpen(true)}
             >
               <Sparkles className="h-4 w-4 mr-2 text-amber-400" />
-              {selectedPremiumOption ? `${selectedPremiumOption} Selected` : 'Choose Style'}
+              {selectedPremiumOption ? `${selectedPremiumOption} Selected` : 'Select Design Options'}
             </Button>
           </div>
           
@@ -769,38 +626,13 @@ export default function AiFlyerForm({
         
         {/* Second row with Aspect Ratio */}
         <div className="mb-3">
-          {/* Aspect Ratio Selector with Dropdown Button and Button Grid */}
+          {/* Aspect Ratio Selector */}
           <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="aspectRatio" className="text-xs font-medium text-white/70">
-                Aspect Ratio
-              </Label>
-              
-              <Select
-                value={aspectRatio}
-                onValueChange={setAspectRatio}
-              >
-                <SelectTrigger className="h-7 text-xs bg-indigo-500/40 border-indigo-500/30 text-white rounded-md w-auto px-3 shadow-sm">
-                  <span className="flex items-center gap-1">
-                    <span>Format:</span>
-                    <span className="font-medium">
-                      {aspectRatioOptions.find(option => option.id === aspectRatio)?.label.split(' ')[0] || 'Select'}
-                    </span>
-                  </span>
-                </SelectTrigger>
-                <SelectContent className="max-h-60">
-                  <div className="max-h-60 overflow-y-auto">
-                    {aspectRatioOptions.map((option) => (
-                      <SelectItem key={option.id} value={option.id}>
-                        <span className="text-sm">{option.label}</span>
-                      </SelectItem>
-                    ))}
-                  </div>
-                </SelectContent>
-              </Select>
-            </div>
+            <Label htmlFor="aspectRatio" className="text-xs font-medium text-white/70">
+              Aspect Ratio
+            </Label>
             
-            <div className="overflow-y-auto max-h-40 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent pr-1">
+            <div className="overflow-y-auto max-h-56 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent pr-1">
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
                 {aspectRatioOptions.map((option) => (
                   <button

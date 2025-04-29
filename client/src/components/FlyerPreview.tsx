@@ -21,14 +21,12 @@ type FlyerPreviewProps = {
   generatedFlyer: GeneratedFlyer | null;
   isGenerating: boolean;
   aspectRatio?: string;
-  showProgress?: boolean;
 };
 
 export default function FlyerPreview({ 
   generatedFlyer, 
   isGenerating,
-  aspectRatio: initialAspectRatio,
-  showProgress = false
+  aspectRatio: initialAspectRatio
 }: FlyerPreviewProps) {
   const imageRef = useRef<HTMLImageElement>(null);
   const { toast } = useToast();
@@ -37,11 +35,6 @@ export default function FlyerPreview({
   const [aspectRatio, setAspectRatio] = useState<string>(initialAspectRatio || "profile");
   const [promptCopied, setPromptCopied] = useState(false);
   const [autoSaveAttempted, setAutoSaveAttempted] = useState(false);
-  
-  // Generation progress visualization state
-  const [progressSteps, setProgressSteps] = useState<string[]>([]);
-  const [progressPercent, setProgressPercent] = useState(0);
-  const [showGenerationProgress, setShowGenerationProgress] = useState(false);
   
   type AspectRatioOption = {
     id: string;
@@ -128,68 +121,6 @@ export default function FlyerPreview({
       setAspectRatio(initialAspectRatio);
     }
   }, [initialAspectRatio]);
-
-  // Set up generation progress visualization
-  useEffect(() => {
-    if (showProgress && isGenerating) {
-      setShowGenerationProgress(true);
-      setProgressSteps([
-        "Analyzing request...",
-        "Planning design layout...",
-        "Generating visual elements...",
-        "Applying style adjustments...",
-        "Finalizing design..."
-      ]);
-      
-      // Start at 25% immediately to give a feeling of faster progress
-      setProgressPercent(25);
-      
-      // Accelerated progress simulation - faster initial progress
-      const simulateProgress = () => {
-        // Move quickly to 90% then slow down for the final steps
-        const interval = setInterval(() => {
-          setProgressPercent(prevPercent => {
-            if (prevPercent < 50) {
-              // Move quickly to 50%
-              return prevPercent + 5;
-            } else if (prevPercent < 80) {
-              // Slightly slower to 80%
-              return prevPercent + 3;
-            } else if (prevPercent < 90) {
-              // Even slower to 90%
-              return prevPercent + 1;
-            }
-            // Hold at 90% until generation completes
-            return 90;
-          });
-        }, 100); // Faster interval
-        
-        return interval;
-      };
-      
-      const progressInterval = simulateProgress();
-      
-      return () => {
-        clearInterval(progressInterval);
-      };
-    } else if (!isGenerating && showGenerationProgress) {
-      // When generation completes, quickly show 100%
-      setProgressPercent(100);
-      
-      // After a brief delay, hide the progress indicator
-      const hideTimeout = setTimeout(() => {
-        setShowGenerationProgress(false);
-        setProgressPercent(0);
-      }, 800);
-      
-      return () => {
-        clearTimeout(hideTimeout);
-      };
-    } else if (!showProgress) {
-      setShowGenerationProgress(false);
-      setProgressPercent(0);
-    }
-  }, [showProgress, isGenerating]);
   
   // Speichern wir die letzte Bild-URL, um doppelte Speicherungen zu vermeiden
   const lastSavedImageUrlRef = useRef<string | null>(null);
@@ -306,53 +237,58 @@ export default function FlyerPreview({
 
   return (
     <div className="h-full flex flex-col">
-      <div className="absolute top-2 right-4 z-30 flex gap-1">
-        <Button
-          className="bg-white/10 backdrop-blur-sm border-none text-white h-7 px-2 py-0 text-[10px] hover:bg-white/20"
-          size="sm"
-          onClick={saveDesignToGallery}
-          disabled={!generatedFlyer || isSaving}
-          title="Save to Gallery"
-        >
-          {isSaving ? (
-            <span className="h-3 w-3 animate-spin">⏳</span>
-          ) : (
-            <Check className="h-3 w-3" />
-          )}
-        </Button>
+      <div className="mb-2 flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <h2 className="text-base font-semibold text-white">Preview</h2>
+        </div>
         
-        <Button
-          className="bg-white/10 backdrop-blur-sm border-none text-white h-7 px-2 py-0 text-[10px] hover:bg-white/20"
-          size="sm"
-          onClick={handleDownload}
-          disabled={!generatedFlyer}
-          title="Download"
-        >
-          <Download className="h-3 w-3" />
-        </Button>
-        
-        <Button
-          className="bg-white/10 backdrop-blur-sm border-none text-white h-7 px-2 py-0 text-[10px] hover:bg-white/20"
-          size="sm"
-          onClick={handleShare}
-          disabled={!generatedFlyer}
-          title="Share"
-        >
-          <Share2 className="h-3 w-3" />
-        </Button>
+        <div className="flex space-x-2">
+          <Button
+            className="bg-green-600/70 backdrop-blur-sm border-none text-white h-7 px-3 py-1 text-xs hover:bg-green-600/90"
+            size="sm"
+            onClick={saveDesignToGallery}
+            disabled={!generatedFlyer || isSaving}
+          >
+            {isSaving ? (
+              <span className="h-3 w-3 mr-1 animate-spin">⏳</span>
+            ) : (
+              <Check className="h-3 w-3 mr-1" />
+            )}
+            Save to Gallery
+          </Button>
+          
+          <Button
+            className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-7 px-3 py-1 text-xs hover:bg-indigo-500/30"
+            size="sm"
+            onClick={handleDownload}
+            disabled={!generatedFlyer}
+          >
+            <Download className="h-3 w-3 mr-1" />
+            Download
+          </Button>
+          
+          <Button
+            className="bg-indigo-500/20 backdrop-blur-sm border-none text-white h-7 px-3 py-1 text-xs hover:bg-indigo-500/30"
+            size="sm"
+            onClick={handleShare}
+            disabled={!generatedFlyer}
+          >
+            <Share2 className="h-3 w-3 mr-1" />
+            Share
+          </Button>
+        </div>
       </div>
       
-      <div className="bg-slate-900/70 backdrop-blur-md h-full w-full flex flex-col items-center justify-center relative">
-        {/* Background grid pattern */}
+      <div className="bg-black/40 backdrop-blur-md border border-white/10 flex-grow flex flex-col items-center justify-center relative w-full">
+        {/* Dezentes Rastermuster als Hintergrund */}
         <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none"></div>
-        
         {!generatedFlyer && !isGenerating ? (
           <div className="w-full h-full flex items-center justify-center p-4">
             <div 
-              className="relative flex items-center justify-center overflow-hidden backdrop-blur-md bg-white/5 border border-white/10 mx-auto"
+              className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-900/20 to-purple-900/30 border border-indigo-500/20 mx-auto"
               style={{
-                maxWidth: '80%',
-                maxHeight: '80%',
+                maxWidth: '90%',
+                maxHeight: '90%',
                 padding: '2rem',
                 width: getContainerWidth(aspectRatio),
                 height: getContainerHeight(aspectRatio),
@@ -371,12 +307,12 @@ export default function FlyerPreview({
           </div>
         ) : (
           <div className="w-full h-full flex flex-col">
-            <div className="flex-grow flex items-center justify-center">
+            <div className="flex-grow p-4 flex items-center justify-center">
               <div 
-                className="relative flex items-center justify-center overflow-hidden backdrop-blur-md bg-white/5 border border-white/10 mx-auto"
+                className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-900/20 to-purple-900/30 border border-indigo-500/20 mx-auto"
                 style={{
-                  maxWidth: '80%',
-                  maxHeight: '80%',
+                  maxWidth: '90%',
+                  maxHeight: '90%',
                   padding: '2rem',
                   width: getContainerWidth(aspectRatio), 
                   height: getContainerHeight(aspectRatio)
@@ -389,47 +325,20 @@ export default function FlyerPreview({
                     alignItems: 'center', 
                     width: '100%', 
                     height: '100%',
+                    // Das Seitenverhältnis wird direkt über das Container-Element gesteuert
                   }}>
                     <img 
                       ref={imageRef}
                       src={generatedFlyer.imageUrl} 
                       alt="Generated design" 
                       className="max-w-full max-h-full object-contain"
-                      style={{ maxHeight: '75vh' }}
+                      style={{ maxHeight: '65vh' }}
                     />
                   </div>
                 )}
-                
-                {isGenerating && !showGenerationProgress && (
+                {isGenerating && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <MultiColorLoading className="w-full h-full" />
-                  </div>
-                )}
-                
-                {/* Generation progress visualization */}
-                {isGenerating && showGenerationProgress && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm">
-                    <div className="w-4/5 max-w-md space-y-4">
-                      <h3 className="text-lg font-semibold text-white text-center mb-4">Generating Your Design</h3>
-                      
-                      {/* Progress bar */}
-                      <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-gradient-to-r from-white/70 to-white/40 transition-all duration-300" 
-                          style={{ width: `${progressPercent}%` }}
-                        ></div>
-                      </div>
-                      
-                      {/* Current step text */}
-                      <div className="text-center text-white/90 text-sm">
-                        {progressSteps[Math.min(Math.floor(progressPercent / 20), 4)]}
-                      </div>
-                      
-                      {/* Progress percentage */}
-                      <div className="text-center text-white/80 text-xs">
-                        {progressPercent}% Complete
-                      </div>
-                    </div>
                   </div>
                 )}
                 
@@ -442,28 +351,11 @@ export default function FlyerPreview({
               </div>
             </div>
             
-            {/* Progress steps at the bottom */}
-            {isGenerating && showGenerationProgress && (
-              <div className="p-4 bg-black/30 backdrop-blur-md rounded-md mx-auto mb-4 max-w-2xl">
-                <h4 className="text-xs font-medium text-white/90 mb-2">Design Generation Process</h4>
-                <div className="flex justify-between gap-2">
-                  {progressSteps.map((step, index) => (
-                    <div
-                      key={index}
-                      className={`flex flex-col items-center ${Math.floor(progressPercent / 20) >= index ? 'text-white/90' : 'text-white/40'}`}
-                    >
-                      <div 
-                        className={`w-3 h-3 rounded-full mb-1 ${Math.floor(progressPercent / 20) >= index ? 'bg-white' : 'bg-gray-600'}`}
-                      ></div>
-                      <span className="text-[10px] text-center max-w-[80px]">{step.split("...")[0]}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+
           </div>
         )}
       </div>
+
     </div>
   );
 }

@@ -26,7 +26,9 @@ export async function generateAdScript(options: {
   
   try {
     const systemPrompt = 
-      `You are Claude, an award-winning, highly skilled graphic design expert. You create stunning, modern, and engaging visual designs with a professional polish. Use your artistic judgment and advanced techniques to craft compelling marketing scripts. As a marketing copywriter specializing in concise, high-impact ad scripts, create content that is attention-grabbing, benefit-focused, and includes clear calls-to-action. Integrate marketing psychology and conversion‑focused thinking into your copy so that your script not only sounds great but also drives audience engagement and action. The scripts must be short enough for an 8-second video advertisement (30-40 words maximum).`;
+      `You are an expert marketing copywriter specializing in concise, high-impact ad scripts. 
+      Create scripts that are attention-grabbing, benefit-focused, and include clear calls-to-action.
+      The scripts must be short enough for an 8-second video advertisement (30-40 words maximum).`;
     
     const userPrompt = `Write a short, compelling script for an 8-second vertical video ad with the following details:
       

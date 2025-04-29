@@ -21,16 +21,13 @@ import {
   PaintBucket,
   LogOut,
   PanelLeft,
-  Video,
-  LayoutGrid
+  Video
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import BrandKit from '@/components/BrandKit';
 import { BrandKitPanel } from '@/components/BrandKitPanel';
-import Templates from '@/components/Templates';
-import { DesignTemplate } from '@/lib/types';
 
 type AppLayoutProps = {
   children: React.ReactNode;
@@ -40,20 +37,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const [location] = useLocation();
   const { user, logout } = useAuth();
   const [isBrandKitPanelOpen, setIsBrandKitPanelOpen] = useState(false);
-  
-  // Handle template selection
-  const handleSelectTemplate = (template: DesignTemplate) => {
-    // Navigate to home with template selected
-    window.history.pushState({
-      template: template
-    }, "", "/");
-    
-    // This will be handled by the home page component
-    const templateSelectedEvent = new CustomEvent('template-selected', { 
-      detail: { template } 
-    });
-    window.dispatchEvent(templateSelectedEvent);
-  };
   
   // Display only the initials of the user's name
   const getUserInitials = () => {
@@ -117,11 +100,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
-            
-            <SidebarSeparator className="bg-white/10" />
-            
-            {/* Templates Section */}
-            <Templates onSelectTemplate={handleSelectTemplate} />
             
             <SidebarSeparator className="bg-white/10" />
             
