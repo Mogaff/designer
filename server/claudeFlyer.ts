@@ -479,67 +479,96 @@ export async function renderFlyerFromClaude(options: GenerationOptions): Promise
       
       // Apply different size based on aspect ratio
       if (options.aspectRatio) {
-        log(`Using aspect ratio: ${options.aspectRatio}`, "claude");
+        // Log the aspect ratio and ensure it's a valid string
+        const aspectRatio = String(options.aspectRatio).toLowerCase().trim();
+        log(`Using aspect ratio: ${aspectRatio}`, "claude");
         
-        switch(options.aspectRatio) {
+        // IMPORTANT FIX: Handle both snake_case and kebab-case versions of aspect ratio
+        // Correct string matching to properly identify aspect ratios coming from client
+        switch(aspectRatio) {
           // Square formats
-          case 'profile': // Instagram Profile (1080×1080)
+          case 'profile':
+          case 'square': 
+          case 'square_ad':
+          case 'square-ad':
             viewportWidth = 1080;
             viewportHeight = 1080;
             break;
-          case 'post': // Social Media Post (1200×1200)
+          case 'post':
+          case 'social_post':
+          case 'social-post':
             viewportWidth = 1200;
             viewportHeight = 1200;
             break;
-          case 'square_ad': // Square Ad (250×250)
-            viewportWidth = 250;
-            viewportHeight = 250;
-            break;
             
           // Landscape formats
-          case 'fb_cover': // Facebook Cover (820×312)
+          case 'fb_cover':
+          case 'fb-cover':
+          case 'facebook_cover':
+          case 'facebook-cover':
             viewportWidth = 820;
             viewportHeight = 312;
             break;
-          case 'twitter_header': // Twitter Header (1500×500)
+          case 'twitter_header':
+          case 'twitter-header':
             viewportWidth = 1500;
             viewportHeight = 500;
             break;
-          case 'yt_thumbnail': // YouTube Thumbnail (1280×720)
+          case 'yt_thumbnail':
+          case 'yt-thumbnail':
+          case 'youtube_thumbnail':
+          case 'youtube-thumbnail':
+          case '16:9':
+          case '16-9':
             viewportWidth = 1280;
             viewportHeight = 720;
             break;
-          case 'linkedin_banner': // LinkedIn Banner (1584×396)
+          case 'linkedin_banner':
+          case 'linkedin-banner':
             viewportWidth = 1584;
             viewportHeight = 396;
             break;
-          case 'instream': // Video Ad (1920×1080)
+          case 'instream':
+          case 'landscape':
+          case 'widescreen':
             viewportWidth = 1920;
             viewportHeight = 1080;
             break;
             
           // Portrait formats
-          case 'stories': // Instagram Stories (1080×1920)
+          case 'stories':
+          case 'instagram_stories':
+          case 'instagram-stories':
+          case 'portrait':
             viewportWidth = 1080;
             viewportHeight = 1920;
             break;
-          case 'pinterest': // Pinterest Pin (1000×1500)
+          case 'pinterest':
+          case 'pinterest_pin':
+          case 'pinterest-pin':
             viewportWidth = 1000;
             viewportHeight = 1500;
             break;
             
           // Display Ad formats
-          case 'leaderboard': // Leaderboard Ad (728×90)
+          case 'leaderboard':
+          case 'leaderboard_ad':
+          case 'leaderboard-ad':
             viewportWidth = 728;
             viewportHeight = 90;
             break;
-          case 'skyscraper': // Skyscraper Ad (160×600)
+          case 'skyscraper':
+          case 'skyscraper_ad':
+          case 'skyscraper-ad':
             viewportWidth = 160;
             viewportHeight = 600;
             break;
             
           default:
-            // Default dimensions for other or unknown aspect ratios
+            // If no valid aspect ratio is matched, assume square format
+            log(`No matching aspect ratio found for '${aspectRatio}', defaulting to square`, "claude");
+            viewportWidth = 1024;
+            viewportHeight = 1024;
             break;
         }
       }
