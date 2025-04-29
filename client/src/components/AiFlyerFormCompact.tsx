@@ -261,9 +261,9 @@ export default function AiFlyerFormCompact({
     <div className="h-full flex flex-col">
       {/* Header - Compact */}
       <div className="mb-1.5">
-        <div className="bg-black/50 backdrop-blur-xl rounded-md p-1">
+        <div className="bg-white/10 backdrop-blur-md shadow-lg rounded-md p-1">
           <div className="flex items-center gap-1">
-            <div className="bg-black/60 p-0.5 rounded">
+            <div className="bg-white/15 p-0.5 rounded">
               <WandSparkles className="h-3 w-3 text-white" />
             </div>
             <div>
@@ -277,13 +277,13 @@ export default function AiFlyerFormCompact({
       {/* Brand Kit Badge - Compact */}
       {activeBrandKit && !selectedTemplate && (
         <div className="mb-1.5">
-          <div className="bg-slate-800 border border-slate-700 p-1 rounded-md">
+          <div className="bg-white/10 backdrop-blur-md shadow-lg border border-white/10 p-1 rounded-md">
             <div className="flex items-center gap-1">
-              <div className="h-4 w-4 rounded bg-slate-700 p-0.5 flex items-center justify-center">
+              <div className="h-4 w-4 rounded bg-white/15 p-0.5 flex items-center justify-center">
                 {activeBrandKit.logo_url ? (
                   <img src={activeBrandKit.logo_url} alt="Brand" className="max-h-full max-w-full object-contain" />
                 ) : (
-                  <PaintBucket className="h-2.5 w-2.5 text-slate-400" />
+                  <PaintBucket className="h-2.5 w-2.5 text-white/80" />
                 )}
               </div>
               <div>
@@ -294,7 +294,7 @@ export default function AiFlyerFormCompact({
                     Active
                   </span>
                 </div>
-                <p className="text-[7px] text-white/60">Using brand colors</p>
+                <p className="text-[7px] text-white/70">Using brand colors</p>
               </div>
             </div>
           </div>
@@ -313,7 +313,7 @@ export default function AiFlyerFormCompact({
             placeholder="Describe your design..."
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            className="h-12 resize-none bg-black/50 backdrop-blur-xl border-slate-700 text-white placeholder:text-white/40 rounded-md text-[9px]"
+            className="h-12 resize-none bg-white/10 backdrop-blur-md shadow-lg border-white/10 text-white placeholder:text-white/40 rounded-md text-[9px]"
             required
           />
         </div>
@@ -331,10 +331,10 @@ export default function AiFlyerFormCompact({
               />
               <Label
                 htmlFor="background-image"
-                className="cursor-pointer flex flex-col justify-center items-center aspect-square w-full rounded-md border border-slate-700 bg-black/50 backdrop-blur-xl hover:bg-black/60 transition-colors"
+                className="cursor-pointer flex flex-col justify-center items-center aspect-square w-full rounded-md border border-white/10 bg-white/10 backdrop-blur-md shadow-lg hover:bg-white/15 transition-colors"
               >
                 <Upload className="h-4 w-4 text-white/80" />
-                <span className="text-[7px] text-white/60 mt-1">IMAGE</span>
+                <span className="text-[7px] text-white/70 mt-1">IMAGE</span>
               </Label>
               
               {(backgroundImagePreview || backgroundImage) && (
@@ -369,10 +369,10 @@ export default function AiFlyerFormCompact({
               />
               <Label
                 htmlFor="logo-upload"
-                className="cursor-pointer flex flex-col justify-center items-center aspect-square w-full rounded-md border border-slate-700 bg-black/50 backdrop-blur-xl hover:bg-black/60 transition-colors"
+                className="cursor-pointer flex flex-col justify-center items-center aspect-square w-full rounded-md border border-white/10 bg-white/10 backdrop-blur-md shadow-lg hover:bg-white/15 transition-colors"
               >
                 <Upload className="h-4 w-4 text-white/80" />
-                <span className="text-[7px] text-white/60 mt-1">LOGO</span>
+                <span className="text-[7px] text-white/70 mt-1">LOGO</span>
               </Label>
               
               {(logoPreview || logo) && (
@@ -400,7 +400,7 @@ export default function AiFlyerFormCompact({
           <div className={`${backgroundImage || backgroundImagePreview ? 'opacity-50 pointer-events-none' : ''}`}>
             <div className="relative">
               <Label 
-                className="flex flex-col items-center justify-center cursor-pointer aspect-square w-full rounded-md border border-slate-700 bg-black/50 backdrop-blur-xl hover:bg-black/60 transition-colors"
+                className="flex flex-col items-center justify-center cursor-pointer aspect-square w-full rounded-md border border-white/10 bg-white/10 backdrop-blur-md shadow-lg hover:bg-white/15 transition-colors"
                 onClick={() => setGenerateAiBackground(!generateAiBackground)}
               >
                 <div className="relative">
@@ -409,7 +409,7 @@ export default function AiFlyerFormCompact({
                     <div className="absolute -top-1 -right-1 h-2 w-2 bg-emerald-500 rounded-full border border-white/20"></div>
                   )}
                 </div>
-                <span className="text-[7px] text-white/60 mt-1">AI BG</span>
+                <span className="text-[7px] text-white/70 mt-1">AI BG</span>
               </Label>
             </div>
           </div>
@@ -427,7 +427,7 @@ export default function AiFlyerFormCompact({
               Anzahl Designs
             </Label>
             <Select value={designCount} onValueChange={setDesignCount}>
-              <SelectTrigger className="h-6 bg-black/50 backdrop-blur-xl border-slate-700 text-white text-[8px] rounded-md">
+              <SelectTrigger className="h-6 bg-white/10 backdrop-blur-md shadow-lg border-white/10 text-white text-[8px] rounded-md">
                 <SelectValue placeholder="Anzahl Designs" />
               </SelectTrigger>
               <SelectContent className="bg-slate-900 border-slate-700 text-white rounded-md">
@@ -446,7 +446,7 @@ export default function AiFlyerFormCompact({
               Format
             </Label>
             <Select value={aspectRatio} onValueChange={setAspectRatio}>
-              <SelectTrigger className="h-6 bg-black/50 backdrop-blur-xl border-slate-700 text-white text-[8px] rounded-md">
+              <SelectTrigger className="h-6 bg-white/10 backdrop-blur-md shadow-lg border-white/10 text-white text-[8px] rounded-md">
                 <SelectValue placeholder="Select format" />
               </SelectTrigger>
               <SelectContent className="bg-slate-900 border-slate-700 text-white rounded-md max-h-[200px]">
@@ -466,7 +466,7 @@ export default function AiFlyerFormCompact({
         <div className="mt-auto mb-0">
           <Button
             type="submit"
-            className="w-full h-6 bg-black/50 backdrop-blur-xl hover:bg-black/60 text-white rounded-md text-[9px] font-medium"
+            className="w-full h-6 bg-white/10 backdrop-blur-md shadow-lg hover:bg-white/15 border-white/10 text-white rounded-md text-[9px] font-medium"
             disabled={isGenerating || (!prompt && !selectedTemplate)}
           >
             {isGenerating ? (
