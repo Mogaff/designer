@@ -395,7 +395,7 @@ export default function CanvasEditor({ generatedFlyer, isGenerating, onSave }: C
         <div className="absolute inset-0 flex items-center justify-center">
           <div 
             ref={canvasRef}
-            className="relative backdrop-blur-md bg-white/5 border border-white/10"
+            className="relative backdrop-blur-md bg-white/5 border border-white/10 rounded-lg overflow-hidden"
             style={{ 
               width: '90%', 
               height: '90%',
