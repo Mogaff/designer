@@ -306,40 +306,40 @@ export default function FlyerPreview({
 
   return (
     <div className="h-full flex flex-col">
-      {/* Preview toolbar - Glass Effect Blue Icons */}
-      <div className="absolute top-3 right-4 z-30 flex gap-2">
+      {/* Preview toolbar - Glass Effect Icons */}
+      <div className="absolute top-3 right-4 z-30 flex gap-1.5">
         <Button
           size="sm" 
-          className="bg-blue-400/70 hover:bg-blue-500/70 text-white backdrop-blur-md rounded-full w-10 h-10 p-0 shadow-md border border-white/20"
+          className="bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm rounded-full w-8 h-8 p-0 shadow border border-white/10"
           onClick={saveDesignToGallery}
           disabled={!generatedFlyer || isSaving}
           title="Save"
         >
           {isSaving ? (
-            <span className="h-5 w-5 animate-spin">⏳</span>
+            <span className="h-4 w-4 animate-spin">⏳</span>
           ) : (
-            <Check className="h-5 w-5" />
+            <Check className="h-4 w-4" />
           )}
         </Button>
         
         <Button
           size="sm" 
-          className="bg-blue-400/70 hover:bg-blue-500/70 text-white backdrop-blur-md rounded-full w-10 h-10 p-0 shadow-md border border-white/20"
+          className="bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm rounded-full w-8 h-8 p-0 shadow border border-white/10"
           onClick={handleDownload}
           disabled={!generatedFlyer}
           title="Download"
         >
-          <Download className="h-5 w-5" />
+          <Download className="h-4 w-4" />
         </Button>
         
         <Button
           size="sm" 
-          className="bg-blue-400/70 hover:bg-blue-500/70 text-white backdrop-blur-md rounded-full w-10 h-10 p-0 shadow-md border border-white/20"
+          className="bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm rounded-full w-8 h-8 p-0 shadow border border-white/10"
           onClick={handleShare}
           disabled={!generatedFlyer}
           title="Share"
         >
-          <Share2 className="h-5 w-5" />
+          <Share2 className="h-4 w-4" />
         </Button>
       </div>
       

@@ -186,13 +186,13 @@ Create this as an advertisement design, NOT as a website or HTML.`;
               onValueChange={setActiveTab}
               className="h-full relative"
             >
-              {/* Tab Controls - Glass Blue Pill Design */}
+              {/* Tab Controls - Sleek Glass Pill Design */}
               <div className="absolute top-3 left-2 z-20">
-                <TabsList className="relative backdrop-blur-md bg-blue-400/20 border border-white/20 shadow-md rounded-full h-7 p-0.5 flex items-center overflow-hidden">
+                <TabsList className="relative backdrop-blur-sm bg-white/10 border border-white/10 shadow rounded-full h-7 p-0.5 flex items-center overflow-hidden">
                   <div 
-                    className={`absolute inset-y-0.5 transition-all duration-200 rounded-full bg-blue-400/70 backdrop-blur-md ${activeTab === 'preview' ? 'left-0.5 right-[calc(50%_+_0.5px)]' : 'left-[calc(50%_+_0.5px)] right-0.5'}`}
+                    className={`absolute inset-y-0.5 transition-all duration-200 rounded-full bg-white/20 backdrop-blur-sm ${activeTab === 'preview' ? 'left-0.5 right-[calc(50%_+_0.5px)]' : 'left-[calc(50%_+_0.5px)] right-0.5'}`}
                     style={{
-                      boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.2)',
+                      boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.1)',
                       transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
                     }}
                   ></div>

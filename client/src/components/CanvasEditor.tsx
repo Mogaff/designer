@@ -284,75 +284,75 @@ export default function CanvasEditor({ generatedFlyer, isGenerating, onSave }: C
 
   return (
     <div className="h-full w-full flex flex-col">
-      {/* Top toolbar - Glass Effect Blue Icons */}
-      <div className="absolute top-3 right-4 z-30 flex gap-2">
+      {/* Top toolbar - Glass Effect Icons */}
+      <div className="absolute top-3 right-4 z-30 flex gap-1.5">
         <Button 
           size="sm" 
-          className="bg-blue-400/70 hover:bg-blue-500/70 text-white backdrop-blur-md rounded-full w-10 h-10 p-0 shadow-md border border-white/20"
+          className="bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm rounded-full w-8 h-8 p-0 shadow border border-white/10"
           onClick={() => setShowControls(!showControls)}
           title={showControls ? 'Hide Controls' : 'Show Controls'}
         >
-          {showControls ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+          {showControls ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </Button>
         
         <Button 
           size="sm" 
-          className="bg-blue-400/70 hover:bg-blue-500/70 text-white backdrop-blur-md rounded-full w-10 h-10 p-0 shadow-md border border-white/20"
+          className="bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm rounded-full w-8 h-8 p-0 shadow border border-white/10"
           onClick={saveDesign}
           disabled={isSaving || isGenerating}
           title="Save"
         >
           {isSaving ? (
-            <Loader className="h-5 w-5 animate-spin" />
+            <Loader className="h-4 w-4 animate-spin" />
           ) : (
-            <Save className="h-5 w-5" />
+            <Save className="h-4 w-4" />
           )}
         </Button>
         
         <Button 
           size="sm" 
-          className="bg-blue-400/70 hover:bg-blue-500/70 text-white backdrop-blur-md rounded-full w-10 h-10 p-0 shadow-md border border-white/20"
+          className="bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm rounded-full w-8 h-8 p-0 shadow border border-white/10"
           onClick={downloadDesign}
           disabled={isGenerating}
           title="Download"
         >
-          <Download className="h-5 w-5" />
+          <Download className="h-4 w-4" />
         </Button>
       </div>
       
-      {/* Bottom toolbar - Glass Effect Blue Icons */}
+      {/* Bottom toolbar - Glass Effect Icons */}
       {showControls && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30 flex items-center gap-2">
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30 flex items-center gap-1.5">
           <Button 
             size="sm" 
-            className="bg-blue-400/70 hover:bg-blue-500/70 text-white backdrop-blur-md rounded-full w-10 h-10 p-0 shadow-md border border-white/20"
+            className="bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm rounded-full w-8 h-8 p-0 shadow border border-white/10"
             onClick={() => addElement('text')}
             title="Add Text"
           >
-            <Plus className="h-5 w-5" />
+            <Plus className="h-4 w-4" />
           </Button>
           
           <Button 
             size="sm" 
-            className="bg-blue-400/70 hover:bg-blue-500/70 text-white backdrop-blur-md rounded-full w-10 h-10 p-0 shadow-md border border-white/20"
+            className="bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm rounded-full w-8 h-8 p-0 shadow border border-white/10"
             onClick={() => addElement('shape')}
             title="Add Shape"
           >
-            <Plus className="h-5 w-5" />
+            <Plus className="h-4 w-4" />
           </Button>
           
           <Button 
             size="sm" 
-            className={`rounded-full w-10 h-10 p-0 shadow-md border border-white/20 backdrop-blur-md ${
+            className={`rounded-full w-8 h-8 p-0 shadow border backdrop-blur-sm ${
               !selectedElement || selectedElement === 'background' 
-                ? 'bg-blue-400/30 text-white/40' 
-                : 'bg-blue-400/70 hover:bg-blue-500/70 text-white'
+                ? 'bg-white/5 text-white/20 border-white/5' 
+                : 'bg-white/10 hover:bg-white/20 text-white border-white/10'
             }`}
             onClick={deleteSelectedElement}
             disabled={!selectedElement || selectedElement === 'background'}
             title="Delete"
           >
-            <Trash className="h-5 w-5" />
+            <Trash className="h-4 w-4" />
           </Button>
         </div>
       )}
