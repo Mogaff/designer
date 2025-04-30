@@ -306,44 +306,40 @@ export default function FlyerPreview({
 
   return (
     <div className="h-full flex flex-col">
-      {/* Preview toolbar - matching style with others */}
-      <div className="absolute top-3 right-4 z-30 flex gap-2 backdrop-blur-md bg-black/40 border border-white/10 rounded-full p-1 pr-1.5">
+      {/* Preview toolbar - Glass Effect Blue Icons */}
+      <div className="absolute top-3 right-4 z-30 flex gap-2">
         <Button
-          size="sm"
-          className="text-white hover:bg-white/10 rounded-full h-7 px-3 text-xs"
+          size="sm" 
+          className="bg-blue-400/70 hover:bg-blue-500/70 text-white backdrop-blur-md rounded-full w-10 h-10 p-0 shadow-md border border-white/20"
           onClick={saveDesignToGallery}
           disabled={!generatedFlyer || isSaving}
+          title="Save"
         >
           {isSaving ? (
-            <span className="h-3 w-3 mr-1.5 animate-spin">⏳</span>
+            <span className="h-5 w-5 animate-spin">⏳</span>
           ) : (
-            <Check className="h-3 w-3 mr-1.5" />
+            <Check className="h-5 w-5" />
           )}
-          Save
         </Button>
         
-        <div className="w-px h-5 bg-white/10 my-auto"></div>
-        
         <Button
-          size="sm"
-          className="text-white hover:bg-white/10 rounded-full h-7 px-3 text-xs"
+          size="sm" 
+          className="bg-blue-400/70 hover:bg-blue-500/70 text-white backdrop-blur-md rounded-full w-10 h-10 p-0 shadow-md border border-white/20"
           onClick={handleDownload}
           disabled={!generatedFlyer}
+          title="Download"
         >
-          <Download className="h-3 w-3 mr-1.5" />
-          Download
+          <Download className="h-5 w-5" />
         </Button>
         
-        <div className="w-px h-5 bg-white/10 my-auto"></div>
-        
         <Button
-          size="sm"
-          className="text-white hover:bg-white/10 rounded-full h-7 px-3 text-xs"
+          size="sm" 
+          className="bg-blue-400/70 hover:bg-blue-500/70 text-white backdrop-blur-md rounded-full w-10 h-10 p-0 shadow-md border border-white/20"
           onClick={handleShare}
           disabled={!generatedFlyer}
+          title="Share"
         >
-          <Share2 className="h-3 w-3 mr-1.5" />
-          Share
+          <Share2 className="h-5 w-5" />
         </Button>
       </div>
       
