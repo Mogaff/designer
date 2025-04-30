@@ -79,7 +79,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   return (
     <SidebarProvider defaultCollapsed={true} collapsible={false} as="div">
       <div className="flex min-h-screen">
-        <Sidebar side="left" className="sidebar border-r border-border bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800 text-white">
+        <Sidebar side="left" className="sidebar border-r border-white/10 bg-white/10 backdrop-blur-md shadow-lg text-white">
 
           
           <SidebarContent>
