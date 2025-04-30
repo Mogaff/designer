@@ -42,7 +42,8 @@ const anthropic = new Anthropic({
 });
 
 // Import all our API integrations
-import { imageToVideo } from './veo_api';
+import { imageToVideo as geminiImageToVideo } from './veo_api';
+import { imageToVideo as klingImageToVideo, checkKlingApiKey } from './kling_api';
 import { generateAdScript } from './openai_api';
 import { textToSpeech } from './elevenlabs_api';
 import { combineVideoAudio } from './ffmpeg_utils';
@@ -57,7 +58,8 @@ export async function checkAllApiKeys() {
     gemini: false,
     claude: false,
     openai: false,
-    elevenlabs: false
+    elevenlabs: false,
+    kling: false
   };
   
   try {
@@ -95,6 +97,27 @@ export async function checkAllApiKeys() {
       results.elevenlabs = true;
     } else {
       console.error('✗ ElevenLabs API key is not set');
+    }
+    
+    // Check Kling API key
+    if (process.env.KLING_API_KEY) {
+      const keyLength = process.env.KLING_API_KEY.length;
+      console.log(`✓ Kling API key found (${keyLength} chars): ${process.env.KLING_API_KEY.substring(0, 4)}...${process.env.KLING_API_KEY.substring(keyLength - 4)}`);
+      results.kling = true;
+      
+      // Attempt to validate the Kling API key
+      try {
+        const isValid = await checkKlingApiKey();
+        if (isValid) {
+          console.log('Kling API key validation successful');
+        } else {
+          console.warn('⚠ Kling API key might not be valid or has insufficient permissions');
+        }
+      } catch (error) {
+        console.error('Error validating Kling API key:', error);
+      }
+    } else {
+      console.error('✗ Kling API key is not set');
     }
     
     return results;
@@ -194,8 +217,8 @@ function saveUploadedFiles(files: Express.Multer.File[]): string[] {
  * Process AdBurst Factory request
  * Follows the complete workflow:
  * 1. Upload images
- * 2. Generate video from primary image (Veo 2)
- * 3. Generate script (Claude 3.7)
+ * 2. Generate script with Claude 3.7
+ * 3. Generate video from primary image (Kling or Gemini Veo)
  * 4. Generate voiceover (ElevenLabs)
  * 5. Combine video and audio (FFmpeg)
  * 6. Upload to social media (Buffer)
@@ -249,12 +272,7 @@ export async function processAdBurstRequest(req: Request, res: Response) {
     const imagePaths = saveUploadedFiles(imageFiles);
     console.log('Images saved to:', imagePaths);
     
-    // PARALLEL PROCESSING: Start multiple tasks simultaneously for efficiency
-    
-    // Step 2: Generate video from primary image using Veo 2
-    // Run these processes separately to better handle errors
-    
-    // Step 3: Generate script using Claude 3.7 first - this is more reliable
+    // Step 2: Generate script using Claude 3.7 first - this is more reliable
     console.log('Starting script generation...');
     let script;
     try {
@@ -272,22 +290,58 @@ export async function processAdBurstRequest(req: Request, res: Response) {
       });
     }
     
-    // Step 2: Generate video from primary image using Veo 2
-    console.log('Starting video generation with Veo 2...');
+    // Step 3: Generate video from primary image
+    console.log('Starting video generation...');
     let rawVideoPath;
     try {
-      rawVideoPath = await imageToVideo(imagePaths[0]); // Use the first image for video generation
-      console.log('Video generation complete:', rawVideoPath);
-    } catch (videoError) {
+      // Determine which video generation API to use based on available API keys
+      if (apiKeyStatus.kling) {
+        console.log('Using Kling for video generation...');
+        try {
+          // Generate a prompt based on the product information
+          const videoPrompt = `Professional ${productName} demonstration with smooth camera movement and elegant transitions`;
+          
+          rawVideoPath = await klingImageToVideo(
+            imagePaths[0], // Use the first image for video generation
+            videoPrompt,
+            { aspectRatio: "9:16" } // Vertical video for social media
+          );
+          console.log('Video generation with Kling complete:', rawVideoPath);
+        } catch (error) {
+          const klingError = error as Error;
+          console.error('Error generating video with Kling:', klingError);
+          
+          // If Kling fails but we have Gemini available, try that as fallback
+          if (apiKeyStatus.gemini) {
+            console.log('Falling back to Gemini Veo for video generation...');
+            try {
+              rawVideoPath = await geminiImageToVideo(imagePaths[0]);
+              console.log('Video generation with Gemini Veo complete:', rawVideoPath);
+            } catch (error) {
+              const geminiError = error as Error;
+              throw new Error(`Both Kling and Gemini Veo failed: ${klingError.message} | ${geminiError.message}`);
+            }
+          } else {
+            throw klingError; // Re-throw if we don't have a fallback
+          }
+        }
+      } else if (apiKeyStatus.gemini) {
+        // If no Kling API key, try Gemini Veo
+        console.log('Using Gemini Veo for video generation...');
+        rawVideoPath = await geminiImageToVideo(imagePaths[0]);
+        console.log('Video generation with Gemini Veo complete:', rawVideoPath);
+      } else {
+        throw new Error('No video generation API keys available. Please configure either KLING_API_KEY or GEMINI_API_KEY.');
+      }
+    } catch (error) {
+      const videoError = error as Error;
       console.error('Error generating video:', videoError);
       
       // Return a more useful response with both the script and the error
       // Special handling for API LIMITATION error message
-      const errorMessage = videoError instanceof Error ? videoError.message : 'Unknown error';
+      const errorMessage = videoError.message || 'Unknown error';
       const isApiLimitation = errorMessage.includes('API LIMITATION:');
       
-      // For API limitations, we use a 200 status with success: false
-      // This allows the UI to handle it differently than a server error
       return res.status(isApiLimitation ? 200 : 500).json({
         success: false,
         message: errorMessage,
@@ -298,7 +352,7 @@ export async function processAdBurstRequest(req: Request, res: Response) {
           productName,
           apiStatus: {
             claude: "Success", // Script was generated 
-            geminiVeo: "Unavailable", // Video generation API limitation
+            videoGeneration: "Failed", // Video generation failed
             errorDetails: errorMessage
           }
         }
@@ -307,21 +361,53 @@ export async function processAdBurstRequest(req: Request, res: Response) {
     
     // Step 4: Generate voiceover from script using ElevenLabs
     console.log('Starting voiceover generation with ElevenLabs...');
-    const audioPath = await textToSpeech(script);
-    console.log('Voiceover generation complete:', audioPath);
+    let audioPath;
+    try {
+      audioPath = await textToSpeech(script);
+      console.log('Voiceover generation complete:', audioPath);
+    } catch (error) {
+      const audioError = error as Error;
+      console.error('Error generating audio:', audioError);
+      return res.status(500).json({
+        success: false,
+        message: `Error generating voiceover: ${audioError.message}`,
+        partialResults: {
+          script,
+          videoPath: rawVideoPath,
+          generatedAt: new Date().toISOString(),
+          productName
+        }
+      });
+    }
     
     // Step 5: Combine video with voiceover using FFmpeg
-    // Optional: Add a watermark if available
     console.log('Combining video and audio...');
     const watermarkPath = path.join(process.cwd(), 'temp', 'watermark.png');
     const hasWatermark = fs.existsSync(watermarkPath);
     
-    const outputFileName = await combineVideoAudio(
-      rawVideoPath, 
-      audioPath, 
-      hasWatermark ? watermarkPath : undefined
-    );
-    console.log('Video processing complete:', outputFileName);
+    let outputFileName;
+    try {
+      outputFileName = await combineVideoAudio(
+        rawVideoPath, 
+        audioPath, 
+        hasWatermark ? watermarkPath : undefined
+      );
+      console.log('Video processing complete:', outputFileName);
+    } catch (error) {
+      const ffmpegError = error as Error;
+      console.error('Error combining video and audio:', ffmpegError);
+      return res.status(500).json({
+        success: false,
+        message: `Error processing final video: ${ffmpegError.message}`,
+        partialResults: {
+          script,
+          videoPath: rawVideoPath,
+          audioPath,
+          generatedAt: new Date().toISOString(),
+          productName
+        }
+      });
+    }
     
     // Step 6: Upload to Buffer for social media distribution (optional)
     let bufferData = null;
@@ -329,13 +415,13 @@ export async function processAdBurstRequest(req: Request, res: Response) {
       console.log('Uploading to Buffer for social media...');
       bufferData = await uploadToBuffer(
         path.join(process.cwd(), 'temp', outputFileName),
-        `${productName} - ${script.split('.')[0]}.`, // Use first sentence as caption
+        `${productName} - ${script.split('.')[0]}`, // Use first sentence as caption
         ['instagram', 'tiktok']
       );
       console.log('Buffer upload complete:', bufferData);
-    } catch (bufferError) {
-      console.error('Buffer upload failed (optional step):', bufferError);
-      // Continue without Buffer - it's optional
+    } catch (error) {
+      // Non-critical error, just log it
+      console.error('Buffer upload failed (optional step):', error);
     }
     
     // Provide a video URL pointing to our API
@@ -358,10 +444,12 @@ export async function processAdBurstRequest(req: Request, res: Response) {
       }
     });
   } catch (error) {
-    console.error('Error processing AdBurst request:', error);
+    // This catch will handle any unexpected errors not caught in specific sections
+    const mainError = error as Error;
+    console.error('Unhandled error in processAdBurstRequest:', mainError);
     return res.status(500).json({
       success: false,
-      message: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      message: `Unhandled error: ${mainError.message || 'Unknown error'}`
     });
   }
 }
