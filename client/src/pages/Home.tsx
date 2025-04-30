@@ -186,9 +186,9 @@ Create this as an advertisement design, NOT as a website or HTML.`;
               onValueChange={setActiveTab}
               className="h-full relative"
             >
-              {/* Tab Controls - Sleek Glass Pill Design */}
-              <div className="absolute top-3 left-2 z-20">
-                <TabsList className="relative backdrop-blur-sm bg-white/10 border border-white/10 shadow rounded-full h-7 p-0.5 flex items-center overflow-hidden">
+              {/* Tab Controls - 50% Smaller Sleek Glass Pill Design */}
+              <div className="absolute top-2 left-2 z-20 scale-75 origin-top-left">
+                <TabsList className="relative backdrop-blur-sm bg-white/10 border border-white/10 shadow rounded-full h-5 p-0.5 flex items-center overflow-hidden">
                   <div 
                     className={`absolute inset-y-0.5 transition-all duration-200 rounded-full bg-white/20 backdrop-blur-sm ${activeTab === 'preview' ? 'left-0.5 right-[calc(50%_+_0.5px)]' : 'left-[calc(50%_+_0.5px)] right-0.5'}`}
                     style={{
@@ -198,13 +198,13 @@ Create this as an advertisement design, NOT as a website or HTML.`;
                   ></div>
                   <TabsTrigger 
                     value="preview" 
-                    className="z-10 text-xs px-4 h-6 flex-1 text-white data-[state=active]:text-white data-[state=active]:shadow-none relative overflow-hidden"
+                    className="z-10 text-[10px] px-3 h-4 flex-1 text-white data-[state=active]:text-white data-[state=active]:shadow-none relative overflow-hidden"
                   >
                     <span className="relative z-10">Preview</span>
                   </TabsTrigger>
                   <TabsTrigger 
                     value="canvas" 
-                    className="z-10 text-xs px-4 h-6 flex-1 text-white data-[state=active]:text-white data-[state=active]:shadow-none relative overflow-hidden"
+                    className="z-10 text-[10px] px-3 h-4 flex-1 text-white data-[state=active]:text-white data-[state=active]:shadow-none relative overflow-hidden"
                   >
                     <span className="relative z-10">Editor</span>
                   </TabsTrigger>
