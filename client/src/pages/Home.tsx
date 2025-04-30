@@ -72,8 +72,8 @@ Create this as an advertisement design, NOT as a website or HTML.`;
     <div className="flex flex-col min-h-screen overflow-hidden relative">
       {/* Background gradient image */}
       <div className="absolute inset-0 z-0">
-        <img src={meshGradient} alt="" className="w-full h-full object-cover opacity-80" />
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+        <img src={meshGradient} alt="" className="w-full h-full object-cover opacity-90" />
+        <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
       </div>
       
       <Header />
