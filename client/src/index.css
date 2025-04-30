@@ -2,6 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom animation keyframes */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.15); }
+  50% { box-shadow: 0 0 5px 1px rgba(255, 255, 255, 0.05); }
+}
+
+@keyframes slide-in-spring {
+  0% { transform: translateX(-5px); opacity: 0; }
+  60% { transform: translateX(2px); }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+/* Add custom animation classes */
+.animate-pulse-glow {
+  animation: pulse-glow 2s infinite ease-in-out;
+}
+
+.animate-slide-in-spring {
+  animation: slide-in-spring 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Custom easing */
+.ease-spring {
+  transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
 /* Custom sidebar styles */
 .sidebar-text {
   transition: all 0.3s ease;

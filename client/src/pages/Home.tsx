@@ -186,20 +186,29 @@ Create this as an advertisement design, NOT as a website or HTML.`;
               onValueChange={setActiveTab}
               className="h-full relative"
             >
-              {/* Tab Controls - Thinner */}
-              <div className="absolute top-1 left-2 z-20">
-                <TabsList className="backdrop-blur-md bg-white/5 border border-white/10 p-0.5">
+              {/* Tab Controls - Slim Glass Slider with Animation */}
+              <div className="absolute top-3 left-2 z-20">
+                <TabsList className="relative backdrop-blur-md bg-white/5 border border-white/10 rounded-full h-6 p-0.5 flex items-center animate-pulse-glow">
+                  <div 
+                    className={`absolute inset-y-0.5 transition-all duration-300 ease-spring rounded-full bg-white/15 shadow-inner backdrop-blur-md ${activeTab === 'preview' ? 'left-0.5 right-[calc(50%_+_0.5px)]' : 'left-[calc(50%_+_0.5px)] right-0.5'}`}
+                    style={{
+                      boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.2), 0 1px 2px rgba(0,0,0,0.1)',
+                      transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+                    }}
+                  ></div>
                   <TabsTrigger 
                     value="preview" 
-                    className="text-[10px] py-0.5 px-2 h-5 text-white data-[state=active]:bg-white/20"
+                    className="z-10 text-[10px] px-3 h-5 text-white data-[state=active]:text-white data-[state=active]:shadow-none relative overflow-hidden group hover:opacity-90"
                   >
-                    Preview
+                    <span className="relative z-10">Preview</span>
+                    <span className="absolute inset-0 group-data-[state=active]:opacity-100 opacity-0 transform group-data-[state=active]:scale-100 scale-95 transition-all duration-300 bg-gradient-to-r from-white/5 to-transparent rounded-full"></span>
                   </TabsTrigger>
                   <TabsTrigger 
                     value="canvas" 
-                    className="text-[10px] py-0.5 px-2 h-5 text-white data-[state=active]:bg-white/20"
+                    className="z-10 text-[10px] px-3 h-5 text-white data-[state=active]:text-white data-[state=active]:shadow-none relative overflow-hidden group hover:opacity-90"
                   >
-                    Editor
+                    <span className="relative z-10">Editor</span>
+                    <span className="absolute inset-0 group-data-[state=active]:opacity-100 opacity-0 transform group-data-[state=active]:scale-100 scale-95 transition-all duration-300 bg-gradient-to-r from-white/5 to-transparent rounded-full"></span>
                   </TabsTrigger>
                 </TabsList>
               </div>
