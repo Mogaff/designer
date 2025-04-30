@@ -129,25 +129,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
             <BrandKit onOpenPanel={handleOpenBrandKitPanel} />
           </SidebarContent>
           
-          <SidebarFooter className="border-t border-white/10 p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <Avatar className="h-8 w-8 bg-emerald-700">
-                  {user?.photoURL ? (
-                    <AvatarImage src={user.photoURL} alt={user.displayName || 'User'} />
-                  ) : (
-                    <AvatarFallback>{getUserInitials()}</AvatarFallback>
-                  )}
-                </Avatar>
-                <div className="ml-2 sidebar-text">
-                  <p className="text-sm font-medium text-white">{user?.displayName || user?.email}</p>
-                </div>
-              </div>
-              <Button variant="ghost" size="icon" onClick={logout} className="text-white hover:bg-white/10 sidebar-text">
-                <LogOut className="h-4 w-4" />
-              </Button>
-            </div>
-          </SidebarFooter>
+
         </Sidebar>
         
         <SidebarInset className="flex-1 overflow-auto">
