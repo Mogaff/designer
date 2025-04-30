@@ -6,6 +6,12 @@ import { Loader, Save, Download, Plus, Trash, MoveHorizontal, Share2, Eye, EyeOf
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/contexts/AuthContext';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface CanvasEditorProps {
   generatedFlyer: GeneratedFlyer | null;
@@ -278,79 +284,75 @@ export default function CanvasEditor({ generatedFlyer, isGenerating, onSave }: C
 
   return (
     <div className="h-full w-full flex flex-col">
-      {/* Top toolbar - Consistent button styling */}
-      <div className="absolute top-3 right-4 z-30 flex gap-2 backdrop-blur-md bg-black/40 border border-white/10 rounded-full p-1 pr-1.5">
+      {/* Top toolbar - Glass Effect Blue Icons */}
+      <div className="absolute top-3 right-4 z-30 flex gap-2">
         <Button 
           size="sm" 
-          className="text-white hover:bg-white/10 rounded-full h-7 px-3 text-xs"
+          className="bg-blue-400/70 hover:bg-blue-500/70 text-white backdrop-blur-md rounded-full w-10 h-10 p-0 shadow-md border border-white/20"
           onClick={() => setShowControls(!showControls)}
+          title={showControls ? 'Hide Controls' : 'Show Controls'}
         >
-          {showControls ? <EyeOff className="h-3 w-3 mr-1.5" /> : <Eye className="h-3 w-3 mr-1.5" />}
-          {showControls ? 'Hide Controls' : 'Show Controls'}
+          {showControls ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
         </Button>
         
-        <div className="w-px h-5 bg-white/10 my-auto"></div>
-        
         <Button 
           size="sm" 
-          className="text-white hover:bg-white/10 rounded-full h-7 px-3 text-xs"
+          className="bg-blue-400/70 hover:bg-blue-500/70 text-white backdrop-blur-md rounded-full w-10 h-10 p-0 shadow-md border border-white/20"
           onClick={saveDesign}
           disabled={isSaving || isGenerating}
+          title="Save"
         >
           {isSaving ? (
-            <Loader className="h-3 w-3 mr-1.5 animate-spin" />
+            <Loader className="h-5 w-5 animate-spin" />
           ) : (
-            <Save className="h-3 w-3 mr-1.5" />
+            <Save className="h-5 w-5" />
           )}
-          Save
         </Button>
-        
-        <div className="w-px h-5 bg-white/10 my-auto"></div>
         
         <Button 
           size="sm" 
-          className="text-white hover:bg-white/10 rounded-full h-7 px-3 text-xs"
+          className="bg-blue-400/70 hover:bg-blue-500/70 text-white backdrop-blur-md rounded-full w-10 h-10 p-0 shadow-md border border-white/20"
           onClick={downloadDesign}
           disabled={isGenerating}
+          title="Download"
         >
-          <Download className="h-3 w-3 mr-1.5" />
-          Download
+          <Download className="h-5 w-5" />
         </Button>
       </div>
       
-      {/* Bottom toolbar - visible when controls are enabled - matching top toolbar style */}
+      {/* Bottom toolbar - Glass Effect Blue Icons */}
       {showControls && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30 flex items-center gap-2 backdrop-blur-md bg-black/40 border border-white/10 rounded-full p-1 pr-1.5">
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30 flex items-center gap-2">
           <Button 
             size="sm" 
-            className="text-white hover:bg-white/10 rounded-full h-7 px-3 text-xs"
+            className="bg-blue-400/70 hover:bg-blue-500/70 text-white backdrop-blur-md rounded-full w-10 h-10 p-0 shadow-md border border-white/20"
             onClick={() => addElement('text')}
+            title="Add Text"
           >
-            <Plus className="h-3 w-3 mr-1.5" />
-            Add Text
+            <Plus className="h-5 w-5" />
           </Button>
-          
-          <div className="w-px h-5 bg-white/10 my-auto"></div>
           
           <Button 
             size="sm" 
-            className="text-white hover:bg-white/10 rounded-full h-7 px-3 text-xs"
+            className="bg-blue-400/70 hover:bg-blue-500/70 text-white backdrop-blur-md rounded-full w-10 h-10 p-0 shadow-md border border-white/20"
             onClick={() => addElement('shape')}
+            title="Add Shape"
           >
-            <Plus className="h-3 w-3 mr-1.5" />
-            Add Shape
+            <Plus className="h-5 w-5" />
           </Button>
-          
-          <div className="w-px h-5 bg-white/10 my-auto"></div>
           
           <Button 
             size="sm" 
-            className={`rounded-full h-7 px-3 text-xs ${!selectedElement || selectedElement === 'background' ? 'text-white/40' : 'text-white hover:bg-white/10'}`}
+            className={`rounded-full w-10 h-10 p-0 shadow-md border border-white/20 backdrop-blur-md ${
+              !selectedElement || selectedElement === 'background' 
+                ? 'bg-blue-400/30 text-white/40' 
+                : 'bg-blue-400/70 hover:bg-blue-500/70 text-white'
+            }`}
             onClick={deleteSelectedElement}
             disabled={!selectedElement || selectedElement === 'background'}
+            title="Delete"
           >
-            <Trash className="h-3 w-3 mr-1.5" />
-            Delete
+            <Trash className="h-5 w-5" />
           </Button>
         </div>
       )}
