@@ -74,9 +74,9 @@ export default function Header() {
           </Link>
         </div>
         
-        <div className="flex items-center justify-end w-full">
+        <div className="flex items-center space-x-4">
           
-          {/* Authentication - positioned at the far right */}
+          {/* Authentication - always display with conditional content */}
           {isAuthenticated && user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
