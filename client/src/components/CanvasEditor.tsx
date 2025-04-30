@@ -278,77 +278,78 @@ export default function CanvasEditor({ generatedFlyer, isGenerating, onSave }: C
 
   return (
     <div className="h-full w-full flex flex-col">
-      {/* Top toolbar */}
-      <div className="absolute top-2 right-4 z-30 flex gap-2">
+      {/* Top toolbar - Consistent button styling */}
+      <div className="absolute top-3 right-4 z-30 flex gap-2 backdrop-blur-md bg-black/40 border border-white/10 rounded-full p-1 pr-1.5">
         <Button 
           size="sm" 
-          className="bg-indigo-500/70 text-white hover:bg-indigo-600/70 backdrop-blur-sm h-8"
+          className="text-white hover:bg-white/10 rounded-full h-7 px-3 text-xs"
           onClick={() => setShowControls(!showControls)}
         >
-          {showControls ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}
+          {showControls ? <EyeOff className="h-3 w-3 mr-1.5" /> : <Eye className="h-3 w-3 mr-1.5" />}
           {showControls ? 'Hide Controls' : 'Show Controls'}
         </Button>
         
+        <div className="w-px h-5 bg-white/10 my-auto"></div>
+        
         <Button 
           size="sm" 
-          className="bg-green-600/70 text-white hover:bg-green-700/70 backdrop-blur-sm h-8"
+          className="text-white hover:bg-white/10 rounded-full h-7 px-3 text-xs"
           onClick={saveDesign}
           disabled={isSaving || isGenerating}
         >
           {isSaving ? (
-            <Loader className="h-4 w-4 mr-1 animate-spin" />
+            <Loader className="h-3 w-3 mr-1.5 animate-spin" />
           ) : (
-            <Save className="h-4 w-4 mr-1" />
+            <Save className="h-3 w-3 mr-1.5" />
           )}
           Save
         </Button>
         
+        <div className="w-px h-5 bg-white/10 my-auto"></div>
+        
         <Button 
           size="sm" 
-          className="bg-indigo-500/70 text-white hover:bg-indigo-600/70 backdrop-blur-sm h-8"
+          className="text-white hover:bg-white/10 rounded-full h-7 px-3 text-xs"
           onClick={downloadDesign}
           disabled={isGenerating}
         >
-          <Download className="h-4 w-4 mr-1" />
+          <Download className="h-3 w-3 mr-1.5" />
           Download
         </Button>
       </div>
       
-      {/* Bottom toolbar - visible when controls are enabled */}
+      {/* Bottom toolbar - visible when controls are enabled - matching top toolbar style */}
       {showControls && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30 flex items-center gap-2 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full">
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30 flex items-center gap-2 backdrop-blur-md bg-black/40 border border-white/10 rounded-full p-1 pr-1.5">
           <Button 
             size="sm" 
-            variant="ghost" 
-            className="text-white hover:bg-white/10 rounded-full h-8 px-3"
+            className="text-white hover:bg-white/10 rounded-full h-7 px-3 text-xs"
             onClick={() => addElement('text')}
           >
-            <Plus className="h-3 w-3 mr-1" />
+            <Plus className="h-3 w-3 mr-1.5" />
             Add Text
           </Button>
           
-          <div className="w-px h-5 bg-white/20"></div>
+          <div className="w-px h-5 bg-white/10 my-auto"></div>
           
           <Button 
             size="sm" 
-            variant="ghost" 
-            className="text-white hover:bg-white/10 rounded-full h-8 px-3"
+            className="text-white hover:bg-white/10 rounded-full h-7 px-3 text-xs"
             onClick={() => addElement('shape')}
           >
-            <Plus className="h-3 w-3 mr-1" />
+            <Plus className="h-3 w-3 mr-1.5" />
             Add Shape
           </Button>
           
-          <div className="w-px h-5 bg-white/20"></div>
+          <div className="w-px h-5 bg-white/10 my-auto"></div>
           
           <Button 
             size="sm" 
-            variant="ghost" 
-            className={`rounded-full h-8 px-3 ${!selectedElement || selectedElement === 'background' ? 'text-white/40' : 'text-white hover:bg-white/10'}`}
+            className={`rounded-full h-7 px-3 text-xs ${!selectedElement || selectedElement === 'background' ? 'text-white/40' : 'text-white hover:bg-white/10'}`}
             onClick={deleteSelectedElement}
             disabled={!selectedElement || selectedElement === 'background'}
           >
-            <Trash className="h-3 w-3 mr-1" />
+            <Trash className="h-3 w-3 mr-1.5" />
             Delete
           </Button>
         </div>
