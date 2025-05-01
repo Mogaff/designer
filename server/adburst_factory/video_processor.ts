@@ -268,7 +268,7 @@ export async function concatenateVideoSegments(
   
   // Prepare the filter complex command for transitions
   let filterComplex = '';
-  let outputStreams = [];
+  let outputStreams: string[] = [];
   
   if (includeTransitions && segments.length > 1) {
     // Complex filter graph with crossfade transitions
