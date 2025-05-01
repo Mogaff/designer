@@ -16,6 +16,7 @@ import {
   SelectValue,
   SelectSeparator,
 } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 
 type AiFlyerFormProps = {
@@ -419,25 +420,55 @@ export default function AiFlyerFormCompact({
           {/* Will be handled in the Settings Row */}
         </div>
         
-        {/* Settings Row */}
-        <div className="grid grid-cols-2 gap-1.5">
+        {/* Settings Row - Changed to flex-col for vertical stacking */}
+        <div className="flex flex-col gap-1.5">
           {/* Design Count Selection */}
           <div>
             <Label className="text-[9px] text-white/70 flex items-center gap-1 mb-0.5">
               <Crown className="h-2 w-2" />
               Anzahl Designs
             </Label>
-            <Select value={designCount} onValueChange={setDesignCount}>
-              <SelectTrigger className="h-6 bg-white/10 backdrop-blur-md shadow-lg border-white/10 text-white text-[8px] rounded-md">
-                <SelectValue placeholder="Anzahl Designs" />
-              </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-700 text-white rounded-md">
-                <SelectItem value="1">1 Design</SelectItem>
-                <SelectItem value="2">2 Designs</SelectItem>
-                <SelectItem value="3">3 Designs</SelectItem>
-                <SelectItem value="4">4 Designs</SelectItem>
-              </SelectContent>
-            </Select>
+            {/* Modern design count slider */}
+            <div className="space-y-2">
+              <div className="bg-white/10 backdrop-blur-md shadow-lg rounded-md border border-white/10 p-2">
+                <Slider
+                  value={[parseInt(designCount)]}
+                  min={1}
+                  max={4}
+                  step={1}
+                  onValueChange={(values) => {
+                    setDesignCount(values[0].toString());
+                  }}
+                  className="my-1"
+                />
+                <div className="flex justify-between mt-2">
+                  {[1, 2, 3, 4].map((num) => (
+                    <div 
+                      key={num}
+                      className={`flex flex-col items-center cursor-pointer transition-all duration-200 ${
+                        parseInt(designCount) === num 
+                          ? 'scale-110' 
+                          : 'opacity-50 hover:opacity-80'
+                      }`}
+                      onClick={() => setDesignCount(num.toString())}
+                    >
+                      <div 
+                        className={`w-4 h-4 rounded-[1px] flex items-center justify-center text-[8px] font-medium ${
+                          parseInt(designCount) === num 
+                            ? 'bg-indigo-500 text-white' 
+                            : 'bg-white/20 text-white/70'
+                        }`}
+                      >
+                        {num}
+                      </div>
+                      <span className="text-[7px] text-white/70 mt-0.5">
+                        {num === 1 ? 'Design' : 'Designs'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
           
           {/* Format - Enhanced with Visual Aspect Ratio Gallery */}
@@ -468,13 +499,13 @@ export default function AiFlyerFormCompact({
                         }}
                       >
                         <div 
-                          className={`w-7 h-7 bg-white/5 border overflow-hidden flex items-center justify-center rounded-sm transition-all ${
+                          className={`w-7 h-7 bg-white/5 border overflow-hidden flex items-center justify-center rounded-[1px] transition-all ${
                             aspectRatio === option.id 
                               ? 'border-blue-400 shadow-[0_0_10px_rgba(96,165,250,0.2)]' 
                               : 'border-white/10 group-hover:border-blue-400/50'
                           }`}
                         >
-                          <div className="w-5 h-5 bg-white/20 rounded-sm"></div>
+                          <div className="w-5 h-5 bg-white/20 rounded-[1px]"></div>
                         </div>
                         <span className="text-[7px] mt-0.5 text-white/70 group-hover:text-white">
                           {option.id === 'square' ? '1:1' : option.id.charAt(0).toUpperCase() + option.id.slice(1)}
@@ -503,13 +534,13 @@ export default function AiFlyerFormCompact({
                         }}
                       >
                         <div 
-                          className={`w-8 h-5 bg-white/5 border overflow-hidden flex items-center justify-center rounded-sm transition-all ${
+                          className={`w-10 h-6 bg-white/5 border overflow-hidden flex items-center justify-center rounded-[1px] transition-all ${
                             aspectRatio === option.id 
                               ? 'border-purple-400 shadow-[0_0_10px_rgba(192,132,252,0.2)]' 
                               : 'border-white/10 group-hover:border-purple-400/50'
                           }`}
                         >
-                          <div className="w-6 h-3 bg-white/20 rounded-sm"></div>
+                          <div className="w-8 h-4 bg-white/20 rounded-[1px]"></div>
                         </div>
                         <span className="text-[7px] mt-0.5 text-white/70 group-hover:text-white">
                           {option.id === 'facebook' ? 'FB' : option.id === 'a4landscape' ? 'A4L' : '16:9'}
@@ -538,13 +569,13 @@ export default function AiFlyerFormCompact({
                         }}
                       >
                         <div 
-                          className={`w-5 h-8 bg-white/5 border overflow-hidden flex items-center justify-center rounded-sm transition-all ${
+                          className={`w-6 h-10 bg-white/5 border overflow-hidden flex items-center justify-center rounded-[1px] transition-all ${
                             aspectRatio === option.id 
                               ? 'border-green-400 shadow-[0_0_10px_rgba(74,222,128,0.2)]' 
                               : 'border-white/10 group-hover:border-green-400/50'
                           }`}
                         >
-                          <div className="w-3 h-6 bg-white/20 rounded-sm"></div>
+                          <div className="w-4 h-8 bg-white/20 rounded-[1px]"></div>
                         </div>
                         <span className="text-[7px] mt-0.5 text-white/70 group-hover:text-white">
                           {option.id === 'story' ? 'Story' : option.id === 'a4portrait' ? 'A4P' : '4:5'}
