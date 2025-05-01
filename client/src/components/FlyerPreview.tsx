@@ -510,10 +510,20 @@ export default function FlyerPreview({
                   </div>
                 )}
                 
-                {/* Aspect ratio label */}
+                {/* Enhanced aspect ratio label for generated content */}
                 {!isGenerating && (
-                  <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] px-2 py-1">
-                    {aspectRatioOptions.find(o => o.id === aspectRatio)?.label || aspectRatio}
+                  <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 rounded-md overflow-hidden">
+                    <div className="flex flex-col">
+                      <div className="bg-indigo-500/30 px-2 py-0.5 text-[10px] font-medium">
+                        {aspectRatioOptions.find(o => o.id === aspectRatio)?.label || aspectRatio}
+                      </div>
+                      <div className="px-2 py-0.5 text-[8px] text-white/60 flex items-center">
+                        <span className="mr-1"><Ratio className="h-2 w-2" /></span>
+                        <span>
+                          {getContainerWidth(aspectRatio)} × {getContainerHeight(aspectRatio)}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
