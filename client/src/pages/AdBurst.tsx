@@ -94,9 +94,13 @@ export default function AdBurst() {
     setProgress(0);
     
     const formData = new FormData();
-    files.forEach(file => formData.append('images', file));
-    formData.append('prompt', prompt);
-    formData.append('callToAction', callToAction);
+    // Backend expects images with specific field names (image1, image2, etc.)
+    files.forEach((file, index) => {
+      formData.append(`image${index + 1}`, file);
+    });
+    formData.append('productName', 'Product');  // Adding a default product name
+    formData.append('productDescription', prompt);
+    formData.append('targetAudience', callToAction);
     formData.append('aspectRatio', aspectRatio);
     
     try {
