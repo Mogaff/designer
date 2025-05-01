@@ -89,22 +89,22 @@ export default function FlyerPreview({
       height = 1;
     }
     
-    // Base size for different aspect ratio categories
-    let baseSize = 500; // Default base size
+    // Base size for different aspect ratio categories - INCREASED MAY 1, 2025
+    let baseSize = 800; // Default base size - INCREASED FROM 500
     
     // Adjust the base size for extreme aspect ratios
     if (ratio === 'leaderboard') {
-      baseSize = 728; // Special case for leaderboard ad
+      baseSize = 1200; // Special case for leaderboard ad - INCREASED FROM 728 
     } else if (width/height >= 3) {
-      baseSize = 800; // Extra wide formats (banners)
+      baseSize = 1300; // Extra wide formats (banners) - INCREASED FROM 800
     } else if (height/width >= 3) {
-      baseSize = 350; // Extra tall formats (skyscraper)
+      baseSize = 600; // Extra tall formats (skyscraper) - INCREASED FROM 350
     } else if (width/height > 1.2) {
-      baseSize = 600; // Landscape formats
+      baseSize = 1000; // Landscape formats - INCREASED FROM 600
     } else if (height/width > 1.2) {
-      baseSize = 450; // Portrait formats
+      baseSize = 800; // Portrait formats - INCREASED FROM 450
     } else {
-      baseSize = 500; // Square-ish formats
+      baseSize = 800; // Square-ish formats - INCREASED FROM 500
     }
     
     // Calculate dimensions while maintaining aspect ratio
@@ -364,9 +364,9 @@ export default function FlyerPreview({
             <div 
               className="relative flex items-center justify-center overflow-hidden backdrop-blur-md bg-white/5 border border-white/10 mx-auto rounded-lg"
               style={{
-                maxWidth: '90%',
-                maxHeight: '90%',
-                padding: '1rem',
+                maxWidth: '95%',
+                maxHeight: '95%',
+                padding: '0.5rem',
                 width: getContainerWidth(aspectRatio),
                 height: getContainerHeight(aspectRatio),
               }}
@@ -388,9 +388,9 @@ export default function FlyerPreview({
               <div 
                 className="relative flex items-center justify-center overflow-hidden backdrop-blur-md bg-white/5 border border-white/10 mx-auto rounded-lg"
                 style={{
-                  maxWidth: '90%', 
-                  maxHeight: '90%',
-                  padding: '1rem',
+                  maxWidth: '95%', 
+                  maxHeight: '95%',
+                  padding: '0.5rem',
                   width: getContainerWidth(aspectRatio), 
                   height: getContainerHeight(aspectRatio)
                 }}
@@ -408,7 +408,7 @@ export default function FlyerPreview({
                       src={generatedFlyer.imageUrl} 
                       alt="Generated design" 
                       className="max-w-full max-h-full object-contain"
-                      style={{ maxHeight: '75vh' }}
+                      style={{ maxHeight: '85vh' }}
                     />
                   </div>
                 )}
