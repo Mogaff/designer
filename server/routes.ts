@@ -47,7 +47,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       log("AI Flyer generation started - Phase 1: Design Suggestions", "generator");
       
-      const { prompt, configId, designCount, aspectRatio, templateInfo } = req.body;
+      const { prompt, configId, designCount, aspectRatio, templateInfo, brand_kit_id } = req.body;
       const userId = (req.user as any).id;
       
       // Parse template information if provided
@@ -148,10 +148,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         generationOptions.backgroundImageBase64 = backgroundImageBase64;
       }
       
+      // First check for uploaded logo
       if (files && files.logo && files.logo[0]) {
         log("Logo image received for AI generation", "generator");
         const logoBase64 = files.logo[0].buffer.toString('base64');
         generationOptions.logoBase64 = logoBase64;
+      }
+      // If brand_kit_id is provided, check for logo in the brand kit
+      else if (brand_kit_id) {
+        const brandKitId = parseInt(brand_kit_id);
+        if (!isNaN(brandKitId)) {
+          log(`Looking for logo in brand kit ID: ${brandKitId}`, "generator");
+          const brandKit = await storage.getBrandKit(brandKitId, userId);
+          
+          if (brandKit && brandKit.logo_url) {
+            log("Found logo in brand kit, including it in generation", "generator");
+            // If logo URL starts with data:, it's already base64
+            if (brandKit.logo_url.startsWith('data:')) {
+              // Extract the base64 part after the comma
+              const logoBase64 = brandKit.logo_url.split(',')[1];
+              if (logoBase64) {
+                generationOptions.logoBase64 = logoBase64;
+              }
+            }
+          }
+        }
       }
       
       // Generate design variations with distinct professional style instructions
