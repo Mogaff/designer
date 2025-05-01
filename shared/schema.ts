@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, jsonb, varchar, date } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -66,6 +66,41 @@ export const userCreations = pgTable("user_creations", {
   body_font: text("body_font"),
 });
 
+export const competitorAds = pgTable("competitor_ads", {
+  id: serial("id").primaryKey(),
+  platform: text("platform").notNull(), // "Meta" or "Google"
+  brand: text("brand").notNull(),
+  headline: text("headline"),
+  body: text("body"),
+  image_url: text("image_url"),
+  thumbnail_url: text("thumbnail_url"),
+  cta: text("cta"),
+  start_date: date("start_date"),
+  platform_details: text("platform_details"),
+  style_description: text("style_description"),
+  ad_id: text("ad_id"),
+  page_id: text("page_id"),
+  snapshot_url: text("snapshot_url"),
+  created_at: timestamp("created_at").defaultNow(),
+  fetched_by_user_id: integer("fetched_by_user_id").references(() => users.id),
+  industry: text("industry"),
+  tags: text("tags").array(),
+  is_active: boolean("is_active").default(true).notNull(),
+  metadata: jsonb("metadata"),
+});
+
+export const adSearchQueries = pgTable("ad_search_queries", {
+  id: serial("id").primaryKey(),
+  user_id: integer("user_id").references(() => users.id).notNull(),
+  query_type: text("query_type").notNull(), // 'brand', 'keyword', 'industry' 
+  query_text: text("query_text").notNull(),
+  platforms: text("platforms").array(), // ['meta', 'google']
+  created_at: timestamp("created_at").defaultNow(),
+  results_count: integer("results_count").default(0),
+  status: text("status").default("completed"), // 'completed', 'failed', 'in_progress'
+  error_message: text("error_message"),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -131,3 +166,38 @@ export type BrandKit = typeof brandKits.$inferSelect;
 
 export type InsertUserCreation = z.infer<typeof insertUserCreationSchema>;
 export type UserCreation = typeof userCreations.$inferSelect;
+
+export const insertCompetitorAdSchema = createInsertSchema(competitorAds).pick({
+  platform: true,
+  brand: true,
+  headline: true,
+  body: true,
+  image_url: true,
+  thumbnail_url: true,
+  cta: true,
+  start_date: true,
+  platform_details: true,
+  style_description: true,
+  ad_id: true,
+  page_id: true,
+  snapshot_url: true,
+  fetched_by_user_id: true,
+  industry: true,
+  tags: true,
+  is_active: true,
+  metadata: true,
+});
+export type InsertCompetitorAd = z.infer<typeof insertCompetitorAdSchema>;
+export type CompetitorAd = typeof competitorAds.$inferSelect;
+
+export const insertAdSearchQuerySchema = createInsertSchema(adSearchQueries).pick({
+  user_id: true,
+  query_type: true,
+  query_text: true,
+  platforms: true,
+  results_count: true,
+  status: true,
+  error_message: true,
+});
+export type InsertAdSearchQuery = z.infer<typeof insertAdSearchQuerySchema>;
+export type AdSearchQuery = typeof adSearchQueries.$inferSelect;
