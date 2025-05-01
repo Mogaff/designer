@@ -445,7 +445,13 @@ export default function AiFlyerFormCompact({
               <ImageIcon className="h-2 w-2" />
               Format
             </Label>
-            <Select value={aspectRatio} onValueChange={setAspectRatio}>
+            <Select 
+              value={aspectRatio} 
+              onValueChange={(newValue) => {
+                console.log("AiFlyerFormCompact: Changing aspect ratio from", aspectRatio, "to", newValue);
+                setAspectRatio(newValue);
+              }}
+            >
               <SelectTrigger className="h-6 bg-white/10 backdrop-blur-md shadow-lg border-white/10 text-white text-[8px] rounded-md">
                 <SelectValue placeholder="Select format" />
               </SelectTrigger>

@@ -139,7 +139,15 @@ export default function FlyerPreview({
   useEffect(() => {
     // Always update when initialAspectRatio changes, regardless of whether it has a value
     // This ensures the preview container shape updates immediately when a new aspect ratio is selected
-    setAspectRatio(initialAspectRatio || "profile");
+    console.log("FlyerPreview: aspectRatio prop changed to:", initialAspectRatio);
+    console.log("Previous local aspectRatio state was:", aspectRatio);
+    
+    // Force an update even if the value is the same (for debugging)
+    setAspectRatio(prev => {
+      const newValue = initialAspectRatio || "profile";
+      console.log("Setting new aspectRatio state to:", newValue);
+      return newValue;
+    });
   }, [initialAspectRatio]);
 
   // Set up generation progress visualization
@@ -369,7 +377,9 @@ export default function FlyerPreview({
                 padding: '0.5rem',
                 width: getContainerWidth(aspectRatio),
                 height: getContainerHeight(aspectRatio),
+                transition: 'width 0.5s, height 0.5s', // Add transition for visual feedback
               }}
+              data-aspect-ratio={aspectRatio} // Add data attribute for debugging
             >
               <div className="flex flex-col items-center justify-center text-center">
                 <img src={iconUpload} alt="Upload icon" className="h-20 w-20 mb-3" />
