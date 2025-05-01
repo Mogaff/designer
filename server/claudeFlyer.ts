@@ -166,45 +166,23 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     
     // Add logo if provided
     if (options.logoBase64) {
-      // Determine the image type from the base64 data for Claude API
-      // Claude 3.7 accepts: 'image/jpeg', 'image/png', 'image/gif', 'image/webp'
-      let mediaType = 'image/png'; // Default to PNG if we can't detect
+      log('[claude] Preparing logo for Claude API', 'claude');
       
       try {
-        // Check for PNG signature bytes (first few bytes)
-        const firstBytes = Buffer.from(options.logoBase64.substring(0, 8), 'base64');
-        if (firstBytes[0] === 0x89 && firstBytes[1] === 0x50 && firstBytes[2] === 0x4E && firstBytes[3] === 0x47) {
-          mediaType = 'image/png';
-          console.log('[claude] Logo detected as PNG format');
-        } 
-        // Check for JPEG signature (first few bytes)
-        else if (firstBytes[0] === 0xFF && firstBytes[1] === 0xD8) {
-          mediaType = 'image/jpeg';
-          console.log('[claude] Logo detected as JPEG format');
-        }
-        // Add other format detections if needed (GIF, WebP, etc.)
-        else {
-          console.log('[claude] Could not detect image format from bytes, using default: image/png');
+        // Skip logo if it appears too large or potentially invalid
+        if (options.logoBase64.length > 10000000) { // 10MB limit
+          log('[claude] Logo is too large, skipping', 'claude');
+        } else {
+          // Try a different approach - instead of including the logo directly in Claude API
+          // Let's just provide Claude with instructions to design a space for a logo
+          messageContent.push({
+            type: 'text',
+            text: "IMPORTANT: Include a space for a LOGO in your flyer design. The logo should be prominently displayed, typically at the top or in a strategic position that complements the overall layout. Design the layout with a placeholder for the logo, and I will insert the actual logo later."
+          });
         }
       } catch (error) {
-        console.log('[claude] Error detecting image format, using default: image/png', error);
+        log(`[claude] Error handling logo, skipping: ${error}`, 'claude');
       }
-      
-      console.log(`[claude] Using media_type: ${mediaType} for logo`);
-      
-      messageContent.push({
-        type: 'image',
-        source: {
-          type: 'base64',
-          media_type: mediaType,
-          data: options.logoBase64
-        }
-      });
-      
-      messageContent.push({
-        type: 'text',
-        text: "IMPORTANT: Use the above image as a LOGO in your flyer design. This is a company or event logo that should be prominently displayed in the design, typically at the top or in a strategic position that complements the overall layout. I will provide you with CSS to properly size and position it."
-      });
     }
 
     // Generate content using Claude with explicit JSON response format
@@ -388,26 +366,123 @@ export async function renderFlyerFromClaude(options: GenerationOptions): Promise
         `;
         
     // Add logo styling if a logo was provided
-    const logoStyle = options.logoBase64
-      ? `
-          /* Logo styling */
-          .logo-container {
-            display: inline-block;
-            position: relative;
-          }
-          .logo-image {
-            max-width: 100%;
-            height: auto;
-          }
-          #company-logo {
-            content: url('data:image/png;base64,${options.logoBase64}');
-            max-width: 200px;
-            max-height: 100px;
-            object-fit: contain;
-          }
-        `
-      : '';
+    let logoStyle = '';
+    
+    if (options.logoBase64) {
+      // Try to detect the image type from data URL if present in the brand kit
+      let logoDataType = 'image/png'; // Default type
+      
+      if (options.logoBase64.startsWith('/9j/')) {
+        logoDataType = 'image/jpeg';
+        log('[claude] Logo appears to be JPEG based on base64 start pattern', 'claude');
+      } else if (options.logoBase64.startsWith('iVBOR')) {
+        logoDataType = 'image/png';
+        log('[claude] Logo appears to be PNG based on base64 start pattern', 'claude');
+      } else if (options.logoBase64.startsWith('R0lGOD')) {
+        logoDataType = 'image/gif';
+        log('[claude] Logo appears to be GIF based on base64 start pattern', 'claude');
+      } else if (options.logoBase64.startsWith('UklGR')) {
+        logoDataType = 'image/webp';
+        log('[claude] Logo appears to be WebP based on base64 start pattern', 'claude');
+      } else {
+        log('[claude] Could not detect logo format from base64 pattern, using PNG as default', 'claude');
+      }
+      
+      log(`[claude] Using ${logoDataType} for logo in HTML`, 'claude');
+      
+      logoStyle = `
+        /* Logo styling */
+        .logo-container {
+          display: inline-block;
+          position: relative;
+        }
+        .logo-image {
+          max-width: 100%;
+          height: auto;
+        }
+        .logo-placeholder {
+          height: 100px;
+          width: 200px;
+          background-color: rgba(200, 200, 200, 0.2);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          border: 2px dashed rgba(255, 255, 255, 0.3);
+          margin: 1rem auto;
+          border-radius: 8px;
+        }
+        #company-logo {
+          max-width: 200px;
+          max-height: 100px;
+          object-fit: contain;
+        }
+      `;
+    }
         
+    // Process HTML content to insert the actual logo if we have logoBase64
+    let processedHtmlContent = htmlContent;
+    
+    if (options.logoBase64) {
+      // Try to find a placeholder for the logo (Claude was instructed to create one)
+      const logoPlaceholderRegex = /<div[^>]*class="[^"]*logo[^"]*"[^>]*>.*?<\/div>/i;
+      const logoContainerRegex = /<div[^>]*class="[^"]*logo-container[^"]*"[^>]*>.*?<\/div>/i;
+      const logoImgRegex = /<img[^>]*id="(company-logo|logo)"[^>]*>/i;
+      
+      // Determine the correct image URL format with detected type
+      let logoDataType = 'image/png'; // Default type
+      
+      if (options.logoBase64.startsWith('/9j/')) {
+        logoDataType = 'image/jpeg';
+      } else if (options.logoBase64.startsWith('iVBOR')) {
+        logoDataType = 'image/png';
+      } else if (options.logoBase64.startsWith('R0lGOD')) {
+        logoDataType = 'image/gif';
+      } else if (options.logoBase64.startsWith('UklGR')) {
+        logoDataType = 'image/webp';
+      }
+      
+      const logoImgHtml = `<img id="company-logo" src="data:${logoDataType};base64,${options.logoBase64}" alt="Company Logo" class="logo-image" style="max-width: 200px; max-height: 100px; object-fit: contain;">`;
+      
+      // Try to replace logo placeholders in different ways
+      if (processedHtmlContent.match(logoPlaceholderRegex)) {
+        processedHtmlContent = processedHtmlContent.replace(logoPlaceholderRegex, `<div class="logo-container">${logoImgHtml}</div>`);
+        log('[claude] Replaced logo placeholder with actual logo', 'claude');
+      } else if (processedHtmlContent.match(logoContainerRegex)) {
+        processedHtmlContent = processedHtmlContent.replace(logoContainerRegex, `<div class="logo-container">${logoImgHtml}</div>`);
+        log('[claude] Replaced logo container with actual logo', 'claude');
+      } else if (processedHtmlContent.match(logoImgRegex)) {
+        processedHtmlContent = processedHtmlContent.replace(logoImgRegex, logoImgHtml);
+        log('[claude] Replaced logo img with actual logo', 'claude');
+      } else {
+        // If no placeholder found, try to insert logo at the top of the content
+        log('[claude] No logo placeholder found, trying to insert at top of content', 'claude');
+        
+        // Look for a header or the first div in the content
+        const headerRegex = /<header[^>]*>|<div[^>]*class="[^"]*header[^"]*"[^>]*>/i;
+        const firstDivRegex = /<div[^>]*>/i;
+        
+        if (processedHtmlContent.match(headerRegex)) {
+          const headerMatch = headerRegex.exec(processedHtmlContent);
+          if (headerMatch) {
+            const insertPos = headerMatch.index + headerMatch[0].length;
+            processedHtmlContent = processedHtmlContent.slice(0, insertPos) + 
+              `<div class="logo-container" style="margin: 1rem auto; text-align: center;">${logoImgHtml}</div>` + 
+              processedHtmlContent.slice(insertPos);
+            log('[claude] Inserted logo after header', 'claude');
+          }
+        } else if (processedHtmlContent.match(firstDivRegex)) {
+          const divMatch = firstDivRegex.exec(processedHtmlContent);
+          if (divMatch) {
+            const insertPos = divMatch.index + divMatch[0].length;
+            processedHtmlContent = processedHtmlContent.slice(0, insertPos) + 
+              `<div class="logo-container" style="margin: 1rem auto; text-align: center;">${logoImgHtml}</div>` + 
+              processedHtmlContent.slice(insertPos);
+            log('[claude] Inserted logo after first div', 'claude');
+          }
+        }
+      }
+    }
+    
     const fullHtml = `
       <!DOCTYPE html>
       <html lang="en">
@@ -465,7 +540,7 @@ export async function renderFlyerFromClaude(options: GenerationOptions): Promise
         </style>
       </head>
       <body>
-        ${htmlContent}
+        ${processedHtmlContent}
       </body>
       </html>
     `;
