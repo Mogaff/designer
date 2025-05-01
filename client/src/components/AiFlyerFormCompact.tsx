@@ -430,7 +430,7 @@ export default function AiFlyerFormCompact({
             </Label>
             {/* Modern design count slider */}
             <div className="space-y-2">
-              <div className="bg-white/10 backdrop-blur-md shadow-lg rounded-md border border-white/10 p-2">
+              <div className="bg-white/10 backdrop-blur-md shadow-lg rounded-md border border-white/10 px-2 py-1.5">
                 <Slider
                   value={[parseInt(designCount)]}
                   min={1}
@@ -439,29 +439,29 @@ export default function AiFlyerFormCompact({
                   onValueChange={(values) => {
                     setDesignCount(values[0].toString());
                   }}
-                  className="my-1"
+                  className="mb-2"
                 />
-                <div className="flex justify-between mt-2">
+                <div className="flex justify-between">
                   {[1, 2, 3, 4].map((num) => (
                     <div 
                       key={num}
-                      className={`flex flex-col items-center cursor-pointer transition-all duration-200 ${
+                      className={`flex flex-col items-center cursor-pointer transition-all duration-150 ${
                         parseInt(designCount) === num 
-                          ? 'scale-110' 
-                          : 'opacity-50 hover:opacity-80'
+                          ? 'scale-105' 
+                          : 'opacity-60 hover:opacity-90'
                       }`}
                       onClick={() => setDesignCount(num.toString())}
                     >
                       <div 
-                        className={`w-4 h-4 rounded-[1px] flex items-center justify-center text-[8px] font-medium ${
+                        className={`w-3.5 h-3.5 rounded-[1px] flex items-center justify-center text-[7px] font-medium ${
                           parseInt(designCount) === num 
-                            ? 'bg-indigo-500 text-white' 
-                            : 'bg-white/20 text-white/70'
+                            ? 'bg-indigo-500 text-white shadow-sm' 
+                            : 'bg-white/10 text-white/70 border border-white/10'
                         }`}
                       >
                         {num}
                       </div>
-                      <span className="text-[7px] text-white/70 mt-0.5">
+                      <span className="text-[6px] text-white/70 mt-0.5">
                         {num === 1 ? 'Design' : 'Designs'}
                       </span>
                     </div>
