@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { GeneratedFlyer, BrandKit } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
@@ -413,28 +413,13 @@ export default function FlyerPreview({
         
         
         {!generatedFlyer && !isGenerating ? (
-          <div className="w-full h-full flex items-center justify-center p-4">
-            <div 
-              className="relative flex items-center justify-center overflow-hidden backdrop-blur-md bg-white/5 border border-white/10 mx-auto rounded-lg"
-              style={{
-                maxWidth: '95%',
-                maxHeight: '95%',
-                padding: '0.5rem',
-                width: getContainerWidth(aspectRatio),
-                height: getContainerHeight(aspectRatio),
-                transition: 'width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, transform 0.3s ease', 
-                boxShadow: aspectRatioChanged ? '0 0 30px rgba(255, 255, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.25) inset' : '0 0 20px rgba(255, 255, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.15) inset',
-                transform: aspectRatioChanged ? 'scale(1.02)' : 'scale(1)'
-              }}
-              data-aspect-ratio={aspectRatio} // Add data attribute for debugging
-            >
-              <div className="flex flex-col items-center justify-center text-center">
-                <img src={iconUpload} alt="Upload icon" className="h-20 w-20 mb-3" />
-                <h3 className="text-base font-medium text-white/90">Your design will appear here</h3>
-              </div>
-              
-              {/* Enhanced aspect ratio label for empty state */}
-              <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 rounded-md overflow-hidden">
+          <div className="w-full h-full flex items-center justify-center">
+            {/* Import the demo for the grid layout as a placeholder */}
+            <div className="w-full h-full relative overflow-hidden">
+              {/* Dynamic Aspect Ratio Display */}
+              <div
+                className="absolute bottom-4 right-4 z-50 bg-black/60 backdrop-blur-sm text-white/80 rounded-md overflow-hidden shadow-lg"
+              >
                 <div className="flex flex-col">
                   <div className="bg-indigo-500/30 px-2 py-0.5 text-[10px] font-medium">
                     {aspectRatioOptions.find(o => o.id === aspectRatio)?.label || aspectRatio}
@@ -446,6 +431,11 @@ export default function FlyerPreview({
                     </span>
                   </div>
                 </div>
+              </div>
+              
+              {/* Layout Grid will use all the available space */}
+              <div className="w-full h-full">
+                <LayoutGridDemo />
               </div>
             </div>
           </div>
