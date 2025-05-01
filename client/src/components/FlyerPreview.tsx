@@ -433,9 +433,59 @@ export default function FlyerPreview({
                 </div>
               </div>
               
-              {/* Layout Grid will use all the available space */}
-              <div className="w-full h-full">
-                <LayoutGridDemo />
+              {/* Simple animated grid layout for previews */}
+              <div className="w-full h-full grid grid-cols-2 gap-4 p-4">
+                {/* Square Format preview */}
+                <div className="aspect-square overflow-hidden rounded-lg relative group cursor-pointer">
+                  <img 
+                    src="https://images.unsplash.com/photo-1476231682828-37e571bc172f?q=80&w=1200&auto=format&fit=crop" 
+                    alt="Square Format" 
+                    className="object-cover w-full h-full transition-all duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-4 opacity-80 group-hover:opacity-100 transition-opacity">
+                    <p className="font-bold text-xl text-white mb-1">Square Format</p>
+                    <p className="text-sm text-white/80">Perfect for social media posts and profile images</p>
+                  </div>
+                </div>
+                
+                {/* Portrait Format preview */}
+                <div className="aspect-[3/4] overflow-hidden rounded-lg relative group cursor-pointer">
+                  <img 
+                    src="https://images.unsplash.com/photo-1464457312035-3d7d0e0c058e?q=80&w=1200&auto=format&fit=crop" 
+                    alt="Portrait Format" 
+                    className="object-cover w-full h-full transition-all duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-4 opacity-80 group-hover:opacity-100 transition-opacity">
+                    <p className="font-bold text-xl text-white mb-1">Portrait Format</p>
+                    <p className="text-sm text-white/80">Ideal for flyers, posters, and stories</p>
+                  </div>
+                </div>
+                
+                {/* Landscape Format preview */}
+                <div className="aspect-video overflow-hidden rounded-lg relative group cursor-pointer">
+                  <img 
+                    src="https://images.unsplash.com/photo-1588880331179-bc9b93a8cb5e?q=80&w=1200&auto=format&fit=crop" 
+                    alt="Landscape Format" 
+                    className="object-cover w-full h-full transition-all duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-4 opacity-80 group-hover:opacity-100 transition-opacity">
+                    <p className="font-bold text-xl text-white mb-1">Landscape Format</p>
+                    <p className="text-sm text-white/80">Perfect for web banners and video thumbnails</p>
+                  </div>
+                </div>
+                
+                {/* Banner Format preview */}
+                <div className="aspect-[21/9] overflow-hidden rounded-lg relative group cursor-pointer">
+                  <img 
+                    src="https://images.unsplash.com/photo-1475070929565-c985b496cb9f?q=80&w=1200&auto=format&fit=crop" 
+                    alt="Banner Format" 
+                    className="object-cover w-full h-full transition-all duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-4 opacity-80 group-hover:opacity-100 transition-opacity">
+                    <p className="font-bold text-xl text-white mb-1">Banner Format</p>
+                    <p className="text-sm text-white/80">Ideal for headers and media covers</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

@@ -9,7 +9,7 @@ const DesignPlaceholders = {
   banner: "https://images.unsplash.com/photo-1475070929565-c985b496cb9f?q=80&w=1200&auto=format&fit=crop"
 };
 
-export function LayoutGridDemo() {
+export default function LayoutGridDemo() {
   return (
     <div className="h-full w-full">
       <LayoutGrid cards={cards} />
