@@ -71,55 +71,68 @@ export default function FlyerPreview({
     { id: "skyscraper", label: "Skyscraper Ad (160×600)", value: "160/600" },
   ];
   
-  // Funktionen zur Berechnung der Container-Dimensionen basierend auf dem Seitenverhältnis
-  const getContainerWidth = (ratio: string): string => {
-    // Verschiedene Breiten je nach Seitenverhältnis
-    switch(ratio) {
-      case 'profile':
-      case 'post':
-      case 'square_ad':
-        return '400px'; // Quadratisch
-      case 'fb_cover':
-      case 'twitter_header':
-      case 'linkedin_banner':
-      case 'yt_thumbnail':
-      case 'instream':
-        return '600px'; // Landscape/Querformat
-      case 'stories':
-      case 'pinterest':
-      case 'skyscraper':
-        return '300px'; // Hochformat
-      case 'leaderboard':
-        return '500px'; // Spezielle Werbebanner
-      default:
-        return '400px'; // Standard
+  // FIXED MAY 1, 2025: Improved container dimensions calculation to correctly maintain aspect ratios
+  // Get the selected aspect ratio value (e.g. "16/9", "1/1", etc.)
+  const getAspectRatioValue = (ratio: string): string => {
+    const option = aspectRatioOptions.find(o => o.id === ratio);
+    return option?.value || "1/1"; // Default to square if not found
+  };
+  
+  // Calculate width and height while maintaining the proper aspect ratio
+  const getContainerDimensions = (ratio: string): { width: string, height: string } => {
+    const ratioValue = getAspectRatioValue(ratio);
+    let [width, height] = ratioValue.split('/').map(Number);
+    
+    // Ensure values are valid numbers
+    if (!width || !height) {
+      width = 1;
+      height = 1;
     }
+    
+    // Base size for different aspect ratio categories
+    let baseSize = 500; // Default base size
+    
+    // Adjust the base size for extreme aspect ratios
+    if (ratio === 'leaderboard') {
+      baseSize = 728; // Special case for leaderboard ad
+    } else if (width/height >= 3) {
+      baseSize = 800; // Extra wide formats (banners)
+    } else if (height/width >= 3) {
+      baseSize = 350; // Extra tall formats (skyscraper)
+    } else if (width/height > 1.2) {
+      baseSize = 600; // Landscape formats
+    } else if (height/width > 1.2) {
+      baseSize = 450; // Portrait formats
+    } else {
+      baseSize = 500; // Square-ish formats
+    }
+    
+    // Calculate dimensions while maintaining aspect ratio
+    let calcWidth, calcHeight;
+    
+    if (width >= height) {
+      // Landscape or square: fix width, calculate height
+      calcWidth = baseSize;
+      calcHeight = Math.round(baseSize * (height/width));
+    } else {
+      // Portrait: fix height, calculate width
+      calcHeight = baseSize;
+      calcWidth = Math.round(baseSize * (width/height));
+    }
+    
+    return {
+      width: `${calcWidth}px`,
+      height: `${calcHeight}px`
+    };
+  };
+  
+  // Helper functions that use the container dimensions calculation
+  const getContainerWidth = (ratio: string): string => {
+    return getContainerDimensions(ratio).width;
   };
 
   const getContainerHeight = (ratio: string): string => {
-    // Höhe basierend auf Seitenverhältnis
-    switch(ratio) {
-      case 'profile':
-      case 'post':
-      case 'square_ad':
-        return '400px'; // Quadratisch 1:1
-      case 'yt_thumbnail':
-      case 'instream': 
-        return '337px'; // 16:9 Verhältnis (600 × 9/16)
-      case 'fb_cover':
-      case 'twitter_header':
-      case 'linkedin_banner':
-        return '200px'; // Querformat Banner
-      case 'stories':
-      case 'pinterest':
-        return '533px'; // Hochformat 9:16 oder 2:3
-      case 'leaderboard':
-        return '80px'; // Leaderboard 728×90
-      case 'skyscraper':
-        return '600px'; // Skyscraper 160×600
-      default:
-        return '400px'; // Standard
-    }
+    return getContainerDimensions(ratio).height;
   };
   
   // Update aspectRatio when prop changes
@@ -351,9 +364,9 @@ export default function FlyerPreview({
             <div 
               className="relative flex items-center justify-center overflow-hidden backdrop-blur-md bg-white/5 border border-white/10 mx-auto rounded-lg"
               style={{
-                maxWidth: '80%',
-                maxHeight: '80%',
-                padding: '2rem',
+                maxWidth: '90%',
+                maxHeight: '90%',
+                padding: '1rem',
                 width: getContainerWidth(aspectRatio),
                 height: getContainerHeight(aspectRatio),
               }}
@@ -375,9 +388,9 @@ export default function FlyerPreview({
               <div 
                 className="relative flex items-center justify-center overflow-hidden backdrop-blur-md bg-white/5 border border-white/10 mx-auto rounded-lg"
                 style={{
-                  maxWidth: '80%',
-                  maxHeight: '80%',
-                  padding: '2rem',
+                  maxWidth: '90%', 
+                  maxHeight: '90%',
+                  padding: '1rem',
                   width: getContainerWidth(aspectRatio), 
                   height: getContainerHeight(aspectRatio)
                 }}
