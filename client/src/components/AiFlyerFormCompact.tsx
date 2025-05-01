@@ -7,7 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { GeneratedFlyer, AiFlyerGenerationRequest, DesignVariation, BrandKit, DesignTemplate } from "@/lib/types";
 import { Input } from "@/components/ui/input";
-import { ImageIcon, Upload, TypeIcon, Check, PaintBucket, Crown, WandSparkles } from "lucide-react";
+import { ImageIcon, Upload, TypeIcon, Check, PaintBucket, Crown, WandSparkles, LightbulbIcon } from "lucide-react";
+import CompetitorInspirationPanel from "@/components/CompetitorInspirationPanel";
 import { 
   Select,
   SelectContent,
@@ -49,6 +50,7 @@ export default function AiFlyerFormCompact({
   const [logo, setLogo] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>("");
   const [generateAiBackground, setGenerateAiBackground] = useState<boolean>(false);
+  const [isInspirationPanelOpen, setIsInspirationPanelOpen] = useState<boolean>(false);
   
   // State für die Anzahl der zu generierenden Designs
   const [designCount, setDesignCount] = useState<string>("4"); // Default ist jetzt 4 Designs
@@ -174,6 +176,17 @@ export default function AiFlyerFormCompact({
       URL.revokeObjectURL(logoPreview);
     }
     setLogoPreview("");
+  };
+
+  // Handle enhanced prompt from competitor inspiration
+  const handleEnhancePrompt = (enhancedPrompt: string) => {
+    setPrompt(enhancedPrompt);
+    setIsInspirationPanelOpen(false);
+    
+    toast({
+      title: "Prompt Enhanced",
+      description: "Your prompt has been enhanced with competitor ad inspiration",
+    });
   };
   
   // Handle form submission
@@ -306,10 +319,35 @@ export default function AiFlyerFormCompact({
       <form onSubmit={handleSubmit} className="space-y-1.5 flex-grow flex flex-col">
         {/* Creative Brief */}
         <div>
-          <Label htmlFor="prompt" className="text-[9px] text-white/70 flex items-center gap-1 mb-0.5">
-            <TypeIcon className="h-2 w-2" />
-            Creative Brief
-          </Label>
+          <div className="flex items-center justify-between mb-0.5">
+            <Label htmlFor="prompt" className="text-[9px] text-white/70 flex items-center gap-1">
+              <TypeIcon className="h-2 w-2" />
+              Creative Brief
+            </Label>
+            
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => setIsInspirationPanelOpen(!isInspirationPanelOpen)}
+              className="h-4 text-[8px] px-1 py-0 text-indigo-300 hover:text-indigo-200 hover:bg-indigo-500/20"
+            >
+              <LightbulbIcon className="h-2 w-2 mr-0.5" />
+              {isInspirationPanelOpen ? "Hide inspiration" : "Get inspiration"}
+            </Button>
+          </div>
+          
+          {/* Competitor Inspiration Panel */}
+          {isInspirationPanelOpen && (
+            <div className="mb-1 p-1 rounded-md border border-indigo-500/30 bg-indigo-500/10 backdrop-blur-sm">
+              <CompetitorInspirationPanel 
+                onEnhancePrompt={handleEnhancePrompt}
+                originalPrompt={prompt}
+                isOpen={isInspirationPanelOpen}
+              />
+            </div>
+          )}
+          
           <Textarea
             id="prompt"
             placeholder="Describe your design..."
