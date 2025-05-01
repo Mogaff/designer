@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { FileVideo, Download, Upload, Share2, Trash2, ImageIcon, PaintBucket, Check, WandSparkles, Video } from "lucide-react";
+import { FileVideo, FileText, Download, Upload, Share2, Trash2, ImageIcon, PaintBucket, Check, WandSparkles, Video } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { Separator } from "@/components/ui/separator";
@@ -18,6 +18,14 @@ interface AdBurstResponse {
   message: string;
   videoUrl?: string;
   script?: string;
+  metadata?: {
+    productName: string;
+    generatedAt: string;
+    videoLength: string;
+    aspectRatio: string;
+    imagesUsed: number;
+    scriptWordCount: number;
+  };
 }
 
 export default function AdBurst() {
@@ -366,52 +374,87 @@ export default function AdBurst() {
       {/* Main Content Area - Video Preview */}
       <div className="flex-1 p-6 overflow-hidden">
         {result && result.success ? (
-          <div className="w-full h-full flex flex-col items-center justify-center">
-            <div className="max-w-xl w-full space-y-6">
-              <div className="text-xl font-semibold text-white flex items-center mb-2">
-                <Video className="h-5 w-5 mr-2 text-indigo-400" />
-                Your Ad Video is Ready!
-              </div>
-              
-              <div className="aspect-[9/16] w-full max-w-md mx-auto bg-black/30 rounded-lg overflow-hidden shadow-xl border border-white/10">
-                {result.videoUrl && (
-                  <video 
-                    src={result.videoUrl} 
-                    controls 
-                    autoPlay
-                    className="w-full h-full"
-                  >
-                    Your browser does not support the video tag.
-                  </video>
-                )}
-              </div>
-              
-              <div className="flex justify-center gap-4 mt-4">
-                {result.videoUrl && (
-                  <Button
-                    size="default"
-                    className="bg-indigo-500/40 hover:bg-indigo-500/60 backdrop-blur-md text-white border border-indigo-500/40 shadow-md transition-all"
-                    onClick={() => window.open(result.videoUrl, '_blank')}
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Download Video
-                  </Button>
-                )}
+          <div className="w-full h-full">
+            <div className="text-xl font-semibold text-white flex items-center mb-4">
+              <Video className="h-5 w-5 mr-2 text-indigo-400" />
+              Your Ad Video is Ready!
+            </div>
+            
+            <div className="flex flex-wrap gap-6">
+              {/* Video Column */}
+              <div className="flex-shrink-0">
+                <div className="aspect-[9/16] w-full max-w-[300px] bg-black/30 rounded-lg overflow-hidden shadow-xl border border-white/10">
+                  {result.videoUrl && (
+                    <video 
+                      src={result.videoUrl} 
+                      controls 
+                      autoPlay
+                      className="w-full h-full"
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  )}
+                </div>
                 
-                <Button
-                  variant="outline"
-                  size="default"
-                  className="bg-white/10 hover:bg-white/15 border-white/20 text-white backdrop-blur-sm"
-                >
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Share to Socials
-                </Button>
+                <div className="flex gap-2 mt-3">
+                  {result.videoUrl && (
+                    <Button
+                      size="sm"
+                      className="bg-indigo-500/40 hover:bg-indigo-500/60 backdrop-blur-md text-white border border-indigo-500/40 shadow-md transition-all flex-1"
+                      onClick={() => window.open(result.videoUrl, '_blank')}
+                    >
+                      <Download className="h-3.5 w-3.5 mr-1.5" />
+                      Download
+                    </Button>
+                  )}
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-white/10 hover:bg-white/15 border-white/20 text-white backdrop-blur-sm flex-1"
+                  >
+                    <Share2 className="h-3.5 w-3.5 mr-1.5" />
+                    Share
+                  </Button>
+                </div>
               </div>
               
+              {/* Script Column */}
               {result.script && (
-                <div className="p-4 bg-white/10 backdrop-blur-sm rounded-lg max-h-[150px] overflow-y-auto border border-white/10 shadow-md">
-                  <p className="font-medium mb-1 text-white">Generated Script:</p>
-                  <p className="text-white/80 whitespace-pre-line">{result.script}</p>
+                <div className="flex-1 min-w-[280px] max-w-[400px]">
+                  <div className="p-4 h-full bg-white/10 backdrop-blur-sm rounded-lg overflow-y-auto border border-white/10 shadow-md">
+                    <p className="font-medium mb-2 text-white text-sm flex items-center">
+                      <FileText className="h-4 w-4 mr-1.5 text-indigo-400" />
+                      Generated Script
+                    </p>
+                    <div className="max-h-[330px] overflow-y-auto pr-2">
+                      <p className="text-white/80 whitespace-pre-line text-sm leading-relaxed">{result.script}</p>
+                    </div>
+                    
+                    {/* Additional metadata */}
+                    {result.metadata && (
+                      <div className="mt-4 pt-3 border-t border-white/10">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="text-xs">
+                            <p className="text-white/50">Video Length</p>
+                            <p className="text-white/80">{result.metadata.videoLength}</p>
+                          </div>
+                          <div className="text-xs">
+                            <p className="text-white/50">Word Count</p>
+                            <p className="text-white/80">{result.metadata.scriptWordCount} words</p>
+                          </div>
+                          <div className="text-xs">
+                            <p className="text-white/50">Format</p>
+                            <p className="text-white/80">{result.metadata.aspectRatio}</p>
+                          </div>
+                          <div className="text-xs">
+                            <p className="text-white/50">Generated</p>
+                            <p className="text-white/80">{new Date(result.metadata.generatedAt).toLocaleString()}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
