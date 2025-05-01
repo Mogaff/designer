@@ -330,7 +330,7 @@ export default function AiFlyerFormCompact({
               size="sm"
               variant="ghost"
               onClick={() => setIsInspirationPanelOpen(!isInspirationPanelOpen)}
-              className="h-4 text-[8px] px-1 py-0 text-blue-500 hover:text-blue-600 hover:bg-blue-50 bg-white shadow-sm border border-slate-200"
+              className="h-4 text-[8px] px-1 py-0 text-white/80 hover:text-white hover:bg-white/10 bg-white/5 backdrop-blur-md shadow-sm border border-white/10"
             >
               <Lightbulb className="h-2 w-2 mr-0.5" />
               {isInspirationPanelOpen ? "Hide inspiration" : "Get inspiration"}
@@ -339,7 +339,7 @@ export default function AiFlyerFormCompact({
           
           {/* Competitor Inspiration Panel */}
           {isInspirationPanelOpen && (
-            <div className="mb-1 p-1 rounded-md border border-slate-200 bg-white shadow-sm">
+            <div className="mb-1 p-1 rounded-md border border-white/10 bg-white/5 backdrop-blur-md shadow-sm">
               <CompetitorInspirationPanel 
                 onEnhancePrompt={handleEnhancePrompt}
                 originalPrompt={prompt}

@@ -178,16 +178,16 @@ export default function CompetitorInspirationPanel({
   if (!isOpen) return null;
   
   return (
-    <div className="flex flex-col gap-1">
-      <h3 className="text-[10px] font-medium flex items-center gap-1 text-slate-700">
-        <Lightbulb className="h-2 w-2 text-amber-500" />
+    <div className="flex flex-col gap-1 text-white">
+      <h3 className="text-[10px] font-medium flex items-center gap-1">
+        <Lightbulb className="h-2 w-2 text-amber-400" />
         Competitor Ad Inspiration
       </h3>
       
       <Tabs defaultValue="search" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 h-5 bg-slate-100">
-          <TabsTrigger value="search" className="text-[8px] h-5 data-[state=active]:bg-white">Search Ads</TabsTrigger>
-          <TabsTrigger value="quick" className="text-[8px] h-5 data-[state=active]:bg-white">Quick Inspiration</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 h-5 bg-white/10 backdrop-blur-md shadow-sm border border-white/10">
+          <TabsTrigger value="search" className="text-[8px] h-5 data-[state=active]:bg-white/10 data-[state=active]:text-white">Search Ads</TabsTrigger>
+          <TabsTrigger value="quick" className="text-[8px] h-5 data-[state=active]:bg-white/10 data-[state=active]:text-white">Quick Inspiration</TabsTrigger>
         </TabsList>
         
         <TabsContent value="search" className="mt-1">
@@ -197,13 +197,13 @@ export default function CompetitorInspirationPanel({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search competitor ads..."
-                className="h-5 text-[8px] py-0 px-1 bg-white border-slate-200"
+                className="h-5 text-[8px] py-0 px-1 bg-white/10 backdrop-blur-md border-white/10 text-white placeholder:text-white/40"
               />
             </div>
             <select
               value={searchType}
               onChange={(e) => setSearchType(e.target.value as any)}
-              className="h-5 text-[8px] py-0 px-1 bg-white border border-slate-200 rounded-md text-slate-700"
+              className="h-5 text-[8px] py-0 px-1 bg-white/10 backdrop-blur-md border border-white/10 rounded-md text-white"
             >
               <option value="keyword">Keyword</option>
               <option value="brand">Brand</option>
@@ -211,7 +211,7 @@ export default function CompetitorInspirationPanel({
             </select>
             <Button 
               type="submit" 
-              className="h-5 text-[8px] py-0 px-1 bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900"
+              className="h-5 text-[8px] py-0 px-1 bg-white/10 backdrop-blur-md hover:bg-white/15"
               disabled={isSearching || !searchQuery.trim()}
             >
               {isSearching ? <Loader className="h-2 w-2 animate-spin" /> : <Search className="h-2 w-2" />}
@@ -221,15 +221,15 @@ export default function CompetitorInspirationPanel({
           {/* Results section */}
           <div className="space-y-1 max-h-20 overflow-y-auto">
             {results.length === 0 && !isSearching && (
-              <p className="text-[8px] text-center text-slate-500 py-1">
+              <p className="text-[8px] text-center text-white/60 py-1">
                 Search for competitor ads to get inspiration
               </p>
             )}
             
             {isSearching && (
               <div className="flex items-center justify-center py-2">
-                <Loader className="h-3 w-3 animate-spin text-blue-500" />
-                <span className="ml-1 text-[8px] text-slate-500">Searching...</span>
+                <Loader className="h-3 w-3 animate-spin text-indigo-400" />
+                <span className="ml-1 text-[8px] text-white/60">Searching...</span>
               </div>
             )}
             
@@ -238,18 +238,18 @@ export default function CompetitorInspirationPanel({
                 key={ad.id} 
                 className={`p-1 rounded border ${
                   selectedAds.includes(ad.id) 
-                    ? 'border-blue-200 bg-blue-50' 
-                    : 'border-slate-200 bg-white'
+                    ? 'border-indigo-500/40 bg-indigo-500/20 backdrop-blur-md' 
+                    : 'border-white/10 bg-white/5 backdrop-blur-md'
                 } cursor-pointer`}
                 onClick={() => toggleSelectAd(ad.id)}
               >
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <h4 className="text-[8px] font-medium text-slate-800">{ad.brand}</h4>
-                    <p className="text-[7px] text-slate-600">{ad.headline || ad.body?.substring(0, 50) || 'No text'}</p>
+                    <h4 className="text-[8px] font-medium">{ad.brand}</h4>
+                    <p className="text-[7px] text-white/70">{ad.headline || ad.body?.substring(0, 50) || 'No text'}</p>
                   </div>
                   {ad.imageUrl && (
-                    <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0 bg-slate-100">
+                    <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0 bg-black/20">
                       <img 
                         src={ad.imageUrl} 
                         alt={ad.brand} 
@@ -271,14 +271,14 @@ export default function CompetitorInspirationPanel({
               <Button 
                 size="sm" 
                 variant="outline" 
-                className="h-5 text-[8px] py-0 px-1 border-slate-200 text-slate-700"
+                className="h-5 text-[8px] py-0 px-1 border-white/10 text-white/80 bg-white/5 backdrop-blur-md"
                 onClick={() => setSelectedAds(results.map(ad => ad.id))}
               >
                 Select All
               </Button>
               <Button 
                 size="sm" 
-                className="h-5 text-[8px] py-0 px-1 bg-blue-500 hover:bg-blue-600"
+                className="h-5 text-[8px] py-0 px-1 bg-indigo-500/80 hover:bg-indigo-500"
                 disabled={selectedAds.length === 0}
                 onClick={() => {
                   enhanceMutation.mutate({
@@ -296,7 +296,7 @@ export default function CompetitorInspirationPanel({
         </TabsContent>
         
         <TabsContent value="quick" className="space-y-1 mt-1">
-          <p className="text-[8px] text-slate-600">
+          <p className="text-[8px] text-white/70">
             Get instant inspiration from competitor ads without reviewing individual results
           </p>
           
@@ -305,12 +305,12 @@ export default function CompetitorInspirationPanel({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Enter brand, keyword, or industry..."
-              className="h-5 text-[8px] py-0 px-1 bg-white border-slate-200"
+              className="h-5 text-[8px] py-0 px-1 bg-white/10 backdrop-blur-md border-white/10 text-white placeholder:text-white/40"
             />
             <select
               value={searchType}
               onChange={(e) => setSearchType(e.target.value as any)}
-              className="h-5 text-[8px] py-0 px-1 bg-white border border-slate-200 rounded-md text-slate-700"
+              className="h-5 text-[8px] py-0 px-1 bg-white/10 backdrop-blur-md border border-white/10 rounded-md text-white"
             >
               <option value="keyword">Keyword</option>
               <option value="brand">Brand</option>
@@ -320,7 +320,7 @@ export default function CompetitorInspirationPanel({
           
           <Button 
             onClick={getQuickInspiration}
-            className="w-full h-5 text-[8px] py-0 bg-blue-500 hover:bg-blue-600"
+            className="w-full h-5 text-[8px] py-0 bg-indigo-500/80 hover:bg-indigo-500"
             disabled={enhanceMutation.isPending || !searchQuery.trim()}
           >
             {enhanceMutation.isPending ? (
