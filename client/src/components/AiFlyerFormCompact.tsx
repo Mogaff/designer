@@ -478,138 +478,76 @@ export default function AiFlyerFormCompact({
               Format
             </Label>
             
-            {/* Visual Aspect Ratio Gallery */}
-            <div className="mb-1.5 overflow-x-auto">
-              <div className="flex gap-1.5 py-1">
-                {/* Square Group */}
-                <div className="border-l-2 border-blue-400/30 pl-1 flex gap-1.5">
-                  {aspectRatioOptions.filter(o => o.id === 'square' || o.id === 'post' || o.id === 'profile')
-                    .map(option => (
-                      <button
-                        key={option.id}
-                        type="button"
-                        className={`flex flex-col items-center group transition-all duration-200 ${
-                          aspectRatio === option.id 
-                            ? 'scale-110 opacity-100' 
-                            : 'opacity-70 hover:opacity-100'
-                        }`}
-                        onClick={() => {
-                          console.log("AiFlyerFormCompact: Changing aspect ratio from", aspectRatio, "to", option.id);
-                          setAspectRatio(option.id);
-                        }}
-                      >
-                        <div 
-                          className={`w-7 h-7 bg-white/5 border overflow-hidden flex items-center justify-center rounded-[1px] transition-all ${
-                            aspectRatio === option.id 
-                              ? 'border-blue-400 shadow-[0_0_10px_rgba(96,165,250,0.2)]' 
-                              : 'border-white/10 group-hover:border-blue-400/50'
-                          }`}
-                        >
-                          <div className="w-5 h-5 bg-white/20 rounded-[1px]"></div>
-                        </div>
-                        <span className="text-[7px] mt-0.5 text-white/70 group-hover:text-white">
-                          {option.id === 'square' ? '1:1' : option.id.charAt(0).toUpperCase() + option.id.slice(1)}
-                        </span>
-                      </button>
-                    ))
-                  }
-                </div>
-                
-                {/* Landscape Group */}
-                <div className="border-l-2 border-purple-400/30 pl-1 flex gap-1.5">
-                  {aspectRatioOptions.filter(o => 
-                      o.id === 'landscape' || o.id === 'facebook' || o.id === 'a4landscape'
-                    ).map(option => (
-                      <button
-                        key={option.id}
-                        type="button"
-                        className={`flex flex-col items-center group transition-all duration-200 ${
-                          aspectRatio === option.id 
-                            ? 'scale-110 opacity-100' 
-                            : 'opacity-70 hover:opacity-100'
-                        }`}
-                        onClick={() => {
-                          console.log("AiFlyerFormCompact: Changing aspect ratio from", aspectRatio, "to", option.id);
-                          setAspectRatio(option.id);
-                        }}
-                      >
-                        <div 
-                          className={`w-10 h-6 bg-white/5 border overflow-hidden flex items-center justify-center rounded-[1px] transition-all ${
-                            aspectRatio === option.id 
-                              ? 'border-purple-400 shadow-[0_0_10px_rgba(192,132,252,0.2)]' 
-                              : 'border-white/10 group-hover:border-purple-400/50'
-                          }`}
-                        >
-                          <div className="w-8 h-4 bg-white/20 rounded-[1px]"></div>
-                        </div>
-                        <span className="text-[7px] mt-0.5 text-white/70 group-hover:text-white">
-                          {option.id === 'facebook' ? 'FB' : option.id === 'a4landscape' ? 'A4L' : '16:9'}
-                        </span>
-                      </button>
-                    ))
-                  }
-                </div>
-                
-                {/* Portrait Group */}
-                <div className="border-l-2 border-green-400/30 pl-1 flex gap-1.5">
-                  {aspectRatioOptions.filter(o => 
-                      o.id === 'portrait' || o.id === 'story' || o.id === 'a4portrait'
-                    ).map(option => (
-                      <button
-                        key={option.id}
-                        type="button"
-                        className={`flex flex-col items-center group transition-all duration-200 ${
-                          aspectRatio === option.id 
-                            ? 'scale-110 opacity-100' 
-                            : 'opacity-70 hover:opacity-100'
-                        }`}
-                        onClick={() => {
-                          console.log("AiFlyerFormCompact: Changing aspect ratio from", aspectRatio, "to", option.id);
-                          setAspectRatio(option.id);
-                        }}
-                      >
-                        <div 
-                          className={`w-6 h-10 bg-white/5 border overflow-hidden flex items-center justify-center rounded-[1px] transition-all ${
-                            aspectRatio === option.id 
-                              ? 'border-green-400 shadow-[0_0_10px_rgba(74,222,128,0.2)]' 
-                              : 'border-white/10 group-hover:border-green-400/50'
-                          }`}
-                        >
-                          <div className="w-4 h-8 bg-white/20 rounded-[1px]"></div>
-                        </div>
-                        <span className="text-[7px] mt-0.5 text-white/70 group-hover:text-white">
-                          {option.id === 'story' ? 'Story' : option.id === 'a4portrait' ? 'A4P' : '4:5'}
-                        </span>
-                      </button>
-                    ))
-                  }
+            {/* Format Gallery with Dropdown */}
+            <div className="flex flex-col">
+              <div className="h-6 bg-white/10 backdrop-blur-md shadow-lg border border-white/10 text-white text-[8px] rounded-md px-2 py-1.5 mb-1.5">
+                <Select 
+                  value={aspectRatio} 
+                  onValueChange={(newValue) => {
+                    console.log("AiFlyerFormCompact: Changing aspect ratio from", aspectRatio, "to", newValue);
+                    setAspectRatio(newValue);
+                  }}
+                >
+                  <SelectTrigger className="h-full bg-transparent p-0 border-0 shadow-none text-white">
+                    <SelectValue placeholder="Select Format" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-slate-700 text-white rounded-md max-h-[200px]">
+                    {/* Square Group */}
+                    <SelectItem value="square-group" disabled className="text-[8px] font-medium text-white/50 text-center">
+                      Square Formats
+                    </SelectItem>
+                    {aspectRatioOptions.filter(o => o.id === 'square' || o.id === 'post' || o.id === 'profile')
+                      .map(option => (
+                        <SelectItem key={option.id} value={option.id} className="text-[8px]">
+                          {option.label}
+                        </SelectItem>
+                      ))
+                    }
+                    <SelectSeparator />
+                    
+                    {/* Landscape Group */}
+                    <SelectItem value="landscape-group" disabled className="text-[8px] font-medium text-white/50 text-center">
+                      Landscape Formats
+                    </SelectItem>
+                    {aspectRatioOptions.filter(o => o.id === 'landscape' || o.id === 'facebook' || o.id === 'a4landscape')
+                      .map(option => (
+                        <SelectItem key={option.id} value={option.id} className="text-[8px]">
+                          {option.label}
+                        </SelectItem>
+                      ))
+                    }
+                    <SelectSeparator />
+                    
+                    {/* Portrait Group */}
+                    <SelectItem value="portrait-group" disabled className="text-[8px] font-medium text-white/50 text-center">
+                      Portrait Formats
+                    </SelectItem>
+                    {aspectRatioOptions.filter(o => o.id === 'portrait' || o.id === 'story' || o.id === 'a4portrait')
+                      .map(option => (
+                        <SelectItem key={option.id} value={option.id} className="text-[8px]">
+                          {option.label}
+                        </SelectItem>
+                      ))
+                    }
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Format Preview - Shows the current selected format */}
+              <div className="flex items-center justify-center">
+                <div className={`
+                  relative 
+                  ${aspectRatio === 'square' ? 'w-8 h-8' : 
+                    aspectRatio === 'landscape' || aspectRatio === 'facebook' || aspectRatio === 'a4landscape' ? 'w-10 h-6' : 
+                    'w-6 h-10'}
+                  bg-white/5 border border-white/20 overflow-hidden flex items-center justify-center rounded-[1px]
+                `}>
+                  <div className="text-[6px] text-white/70 text-center">
+                    {aspectRatioOptions.find(o => o.id === aspectRatio)?.value || '1:1'}
+                  </div>
                 </div>
               </div>
             </div>
-            
-            {/* Keep the original dropdown as well for advanced options */}
-            <Select 
-              value={aspectRatio} 
-              onValueChange={(newValue) => {
-                console.log("AiFlyerFormCompact: Changing aspect ratio from", aspectRatio, "to", newValue);
-                setAspectRatio(newValue);
-              }}
-            >
-              <SelectTrigger className="h-6 bg-white/10 backdrop-blur-md shadow-lg border-white/10 text-white text-[8px] rounded-md">
-                <SelectValue placeholder="More formats..." />
-              </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-700 text-white rounded-md max-h-[200px]">
-                <SelectItem value="custom" disabled className="text-[8px] font-medium text-white/50">
-                  All Formats
-                </SelectItem>
-                <SelectSeparator />
-                {aspectRatioOptions.map((option) => (
-                  <SelectItem key={option.id} value={option.id} className="text-[8px]">
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
         </div>
         
