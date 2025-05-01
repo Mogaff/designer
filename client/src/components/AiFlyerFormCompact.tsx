@@ -595,16 +595,26 @@ export default function AiFlyerFormCompact({
                 setAspectRatio(newValue);
               }}
             >
-              <SelectTrigger className="h-6 bg-white/10 backdrop-blur-md shadow-lg border-white/10 text-white text-[8px] rounded-md">
-                <SelectValue placeholder="More formats..." />
-              </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-700 text-white rounded-md max-h-[200px]">
-                <SelectItem value="custom" disabled className="text-[8px] font-medium text-white/50">
+              <div className="relative">
+                <Label className="text-[9px] text-white/70 flex items-center gap-1 mb-0.5">
+                  <ImageIcon className="h-2 w-2" />
+                  More Formats
+                </Label>
+                <SelectTrigger className="h-6 bg-white/10 backdrop-blur-md shadow-lg border-white/10 text-white text-[8px] rounded-md">
+                  <SelectValue placeholder="More formats..." />
+                </SelectTrigger>
+              </div>
+              <SelectContent className="bg-white/10 backdrop-blur-md border-white/10 text-white rounded-md max-h-[200px]">
+                <SelectItem value="custom" disabled className="text-[8px] font-medium text-white/70 bg-white/5">
                   All Formats
                 </SelectItem>
-                <SelectSeparator />
+                <SelectSeparator className="bg-white/10" />
                 {aspectRatioOptions.map((option) => (
-                  <SelectItem key={option.id} value={option.id} className="text-[8px]">
+                  <SelectItem 
+                    key={option.id} 
+                    value={option.id} 
+                    className="text-[8px] data-[highlighted]:bg-white/20 data-[highlighted]:text-white"
+                  >
                     {option.label}
                   </SelectItem>
                 ))}
