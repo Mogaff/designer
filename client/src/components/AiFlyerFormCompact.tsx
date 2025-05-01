@@ -601,7 +601,7 @@ export default function AiFlyerFormCompact({
                   More Formats
                 </Label>
                 <SelectTrigger className="h-6 bg-white/10 backdrop-blur-md shadow-lg border-white/10 text-white text-[8px] rounded-md">
-                  <SelectValue placeholder="More formats..." />
+                  <SelectValue />
                 </SelectTrigger>
               </div>
               <SelectContent className="bg-white/10 backdrop-blur-md border-white/10 text-white rounded-md max-h-[200px]">
