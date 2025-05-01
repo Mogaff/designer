@@ -49,6 +49,7 @@ import { generateAdScript } from './openai_api';
 import { textToSpeech } from './elevenlabs_api';
 import { combineVideoAudio } from './ffmpeg_utils';
 import { uploadToBuffer } from './buffer_api';
+import { createMultiImageVideo } from './video_processor';
 
 /**
  * Check API keys for all services
@@ -152,43 +153,60 @@ export async function checkAllApiKeys() {
 
 /**
  * Generate script using Claude 3.7
- * Direct implementation without fallbacks as per requirements
+ * Supports both short (8-second) and long (up to 20-second) scripts
  */
 async function generateScript(options: {
   productName: string;
   productDescription?: string;
   targetAudience?: string;
+  duration?: number;
 }): Promise<string> {
-  // Use Claude 3.7 directly without fallbacks
-  console.log('Generating script with Claude 3.7...');
+  // Determine script length based on duration
+  const duration = options.duration || 8; // Default to 8 seconds if not specified
+  const isLongScript = duration > 10; // Consider anything over 10 seconds as "long"
+  
+  console.log(`Generating ${isLongScript ? 'long' : 'short'} script with Claude 3.7 for ${duration} seconds...`);
   
   try {
-    const systemPrompt = `You are Claude, an award-winning, highly skilled graphic design expert. You create stunning, modern, and engaging visual designs with a professional polish. 
+    const systemPrompt = `You are Claude, an award-winning, highly skilled marketing copywriter specializing in premium, emotionally engaging social media video scripts for vertical video advertisements.
 
-Use your artistic judgment and advanced techniques to craft beautiful layouts and compelling marketing copy: employ excellent typography, harmonious color schemes, and clear visual hierarchy. Every design and copy should be on-brand and sophisticated, striking the right tone for its target audience.
+Use your advanced techniques to craft compelling marketing copy with excellent rhythm, flow, and narrative structure. Every script should be on-brand and sophisticated, striking the right tone for its target audience.
 
-As a marketing copywriter specializing in premium, emotionally engaging social media video scripts, your specialty is creating concise, high-impact scripts for short-form vertical video advertisements.
-
-Integrate marketing psychology and conversion‑focused thinking into your copy choices so that your text not only sounds great but also drives audience engagement and action. Stay current with copywriting trends to keep your work fresh, yet always ensure the final result feels timeless and persuasive.
+Integrate marketing psychology and conversion-focused thinking into your copy choices so that your text not only sounds great but also drives audience engagement and action. Stay current with copywriting trends to keep your work fresh, yet always ensure the final result feels timeless and persuasive.
 
 Craft scripts that are:
 - Attention-grabbing from the first line
 - Emotionally resonant and premium in tone
 - Clear with a specific benefit focus
+- Structured with a coherent beginning, middle, and end
 - Ending with a compelling call-to-action
-- Perfect for reading aloud in exactly 8 seconds (30-40 words max)
+- Perfect for reading aloud at a natural, professional pace
 - Designed for maximum conversion and audience engagement`;
       
-    const userPrompt = `Create a premium 8-second vertical video ad script for:
+    // Customize the user prompt based on script length
+    const wordCount = isLongScript ? 
+      "65-80 words (for a 20-second video)" : 
+      "30-40 words (for an 8-second video)";
+    
+    const structureGuidance = isLongScript ?
+      `- Structure the script with a clear introduction (hook), middle section (key benefits/features), and conclusion (call-to-action)
+      - Include 3-4 distinct points or features that can be highlighted in different segments
+      - Create natural transition points between ideas (approximately every 5 seconds)` :
+      `- Keep the script concise and impactful
+      - Focus on a single key benefit or feature
+      - Maintain a quick, engaging pace`;
+      
+    const userPrompt = `Create a premium ${duration}-second vertical video ad script for:
         
       PRODUCT: ${options.productName}
       ${options.productDescription ? `DESCRIPTION: ${options.productDescription}` : ''}
       ${options.targetAudience ? `TARGET AUDIENCE: ${options.targetAudience}` : ''}
       
       CRITICAL REQUIREMENTS:
-      - Must be exactly 30-40 words (for an 8-second video)
+      - Must be exactly ${wordCount}
       - Start with an emotional hook or surprising statement
       - Include aspirational language that conveys premium quality
+      ${structureGuidance}
       - End with a clear, specific call-to-action
       - Use natural, conversational language that flows well when spoken
       - Maintain a sophisticated, luxury tone
@@ -297,14 +315,20 @@ export async function processAdBurstRequest(req: Request, res: Response) {
     
     // Step 2: Generate script using Claude 3.7 first - this is more reliable
     console.log('Starting script generation...');
+    
+    // Get the target duration from request or use default
+    const targetDuration = req.body.videoDuration ? 
+      parseInt(req.body.videoDuration, 10) : 20; // Default to 20 seconds
+    
     let script;
     try {
       script = await generateScript({
         productName,
         productDescription,
-        targetAudience
+        targetAudience,
+        duration: targetDuration // Pass the duration to generate script of appropriate length
       });
-      console.log('Script generation complete:', script);
+      console.log(`Script generation complete for ${targetDuration}-second video:`, script);
     } catch (scriptError) {
       console.error('Error generating script:', scriptError);
       return res.status(500).json({
@@ -313,100 +337,128 @@ export async function processAdBurstRequest(req: Request, res: Response) {
       });
     }
     
-    // Step 3: Generate video from primary image
-    console.log('Starting video generation...');
+    // Step 3: Generate multi-image video from all uploaded images
+    console.log('Starting multi-image video generation...');
     let rawVideoPath;
     try {
-      // Determine which video generation API to use based on available API keys
-      // Prioritize Fal AI Image-to-Video model first, then Kling, then Gemini as fallback
+      // Check if we have Fal AI API key for image-to-video conversion
       if (apiKeyStatus.fal) {
-        console.log('Using Fal AI Image-to-Video for video generation...');
+        console.log('Using Multi-Image Video Processor with Fal AI...');
         try {
+          // Get the target duration from request or use default
+          const targetDuration = req.body.videoDuration ? 
+            parseInt(req.body.videoDuration, 10) : 20; // Default to 20 seconds
+            
+          // Process all images into a combined video
+          rawVideoPath = await createMultiImageVideo(
+            imagePaths, 
+            {
+              productName,
+              productDescription,
+              targetAudience,
+              totalDuration: targetDuration
+            }
+          );
+          console.log('Multi-image video generation complete:', rawVideoPath);
+        } catch (videoError) {
+          console.error('Error generating multi-image video:', videoError);
+          
+          // Fallback to single-image approach if multi-image processing fails
+          console.log('Falling back to single-image video generation...');
+          
           // Generate a prompt based on the product information
-          const videoPrompt = `Professional ${productName} demonstration with smooth camera movement and elegant transitions. Elegant and premium product showcase with cinematic quality.`;
+          const singleVideoPrompt = `Professional ${productName} demonstration with smooth camera movement and elegant transitions. Elegant and premium product showcase with cinematic quality.`;
           
-          rawVideoPath = await falImageToVideo(
-            imagePaths[0], // Use the first image for video generation
-            videoPrompt,
-            { aspectRatio: "9:16" } // Vertical video for social media
-          );
-          console.log('Video generation with Fal AI complete:', rawVideoPath);
-        } catch (falError) {
-          console.error('Error generating video with Fal AI:', falError);
-          
-          // Try Kling as fallback option 1
-          if (apiKeyStatus.kling) {
-            console.log('Falling back to Kling for video generation...');
-            try {
-              rawVideoPath = await klingImageToVideo(
-                imagePaths[0],
-                videoPrompt,
-                { aspectRatio: "9:16" }
-              );
-              console.log('Video generation with Kling complete:', rawVideoPath);
-            } catch (klingError) {
-              console.error('Error generating video with Kling fallback:', klingError);
-              
-              // Try Gemini as fallback option 2
-              if (apiKeyStatus.gemini) {
-                console.log('Falling back to Gemini Veo as final option...');
-                try {
-                  rawVideoPath = await geminiImageToVideo(imagePaths[0]);
-                  console.log('Video generation with Gemini Veo complete:', rawVideoPath);
-                } catch (geminiError) {
-                  throw new Error(`All video generation methods failed: Fal AI: ${falError instanceof Error ? falError.message : 'Unknown error'} | Kling: ${klingError instanceof Error ? klingError.message : 'Unknown error'} | Gemini: ${geminiError instanceof Error ? geminiError.message : 'Unknown error'}`);
+          try {
+            // Try with Fal AI image-to-video
+            rawVideoPath = await falImageToVideo(
+              imagePaths[0], // Use the first image for video generation
+              singleVideoPrompt,
+              { aspectRatio: "9:16" } // Vertical video for social media
+            );
+            console.log('Fallback video generation with Fal AI complete:', rawVideoPath);
+          } catch (falError) {
+            console.error('Error with fallback Fal AI video generation:', falError);
+            
+            // Try Kling as second fallback
+            if (apiKeyStatus.kling) {
+              console.log('Trying Kling as second fallback...');
+              try {
+                rawVideoPath = await klingImageToVideo(
+                  imagePaths[0],
+                  singleVideoPrompt,
+                  { aspectRatio: "9:16" }
+                );
+                console.log('Video generation with Kling complete:', rawVideoPath);
+              } catch (klingError) {
+                console.error('Error with Kling fallback:', klingError);
+                
+                // Try Gemini as final fallback
+                if (apiKeyStatus.gemini) {
+                  console.log('Trying Gemini Veo as final fallback...');
+                  try {
+                    rawVideoPath = await geminiImageToVideo(imagePaths[0]);
+                    console.log('Video generation with Gemini Veo complete:', rawVideoPath);
+                  } catch (geminiError) {
+                    throw new Error(`All video generation methods failed: Multi-image: ${videoError instanceof Error ? videoError.message : 'Unknown error'} | Fal AI: ${falError instanceof Error ? falError.message : 'Unknown error'} | Kling: ${klingError instanceof Error ? klingError.message : 'Unknown error'} | Gemini: ${geminiError instanceof Error ? geminiError.message : 'Unknown error'}`);
+                  }
+                } else {
+                  throw new Error(`Multiple video generation methods failed: ${falError instanceof Error ? falError.message : 'Unknown error'} | ${klingError instanceof Error ? klingError.message : 'Unknown error'}`);
                 }
-              } else {
-                throw new Error(`Both Fal AI and Kling failed: ${falError instanceof Error ? falError.message : 'Unknown error'} | ${klingError instanceof Error ? klingError.message : 'Unknown error'}`);
               }
+            } else if (apiKeyStatus.gemini) {
+              // If no Kling API key, try Gemini directly
+              console.log('Trying Gemini Veo as fallback...');
+              try {
+                rawVideoPath = await geminiImageToVideo(imagePaths[0]);
+                console.log('Video generation with Gemini Veo complete:', rawVideoPath);
+              } catch (geminiError) {
+                throw new Error(`Multiple video generation methods failed: ${videoError instanceof Error ? videoError.message : 'Unknown error'} | ${falError instanceof Error ? falError.message : 'Unknown error'} | ${geminiError instanceof Error ? geminiError.message : 'Unknown error'}`);
+              }
+            } else {
+              throw falError; // Re-throw if we don't have any other fallbacks
             }
-          } else if (apiKeyStatus.gemini) {
-            // If no Kling API key, try Gemini directly
-            console.log('Falling back to Gemini Veo for video generation...');
-            try {
-              rawVideoPath = await geminiImageToVideo(imagePaths[0]);
-              console.log('Video generation with Gemini Veo complete:', rawVideoPath);
-            } catch (geminiError) {
-              throw new Error(`Both Fal AI and Gemini Veo failed: ${falError instanceof Error ? falError.message : 'Unknown error'} | ${geminiError instanceof Error ? geminiError.message : 'Unknown error'}`);
-            }
-          } else {
-            throw falError; // Re-throw if we don't have a fallback
           }
         }
-      } else if (apiKeyStatus.kling) {
-        // If no Fal AI key, try Kling
-        console.log('Using Kling for video generation...');
-        const videoPrompt = `Professional ${productName} demonstration with smooth camera movement and elegant transitions. Elegant and premium product showcase with cinematic quality.`;
-        try {
-          rawVideoPath = await klingImageToVideo(
-            imagePaths[0],
-            videoPrompt,
-            { aspectRatio: "9:16" }
-          );
-          console.log('Video generation with Kling complete:', rawVideoPath);
-        } catch (klingError) {
-          console.error('Error generating video with Kling:', klingError);
-          
-          // Try Gemini as fallback
-          if (apiKeyStatus.gemini) {
-            console.log('Falling back to Gemini Veo for video generation...');
-            try {
-              rawVideoPath = await geminiImageToVideo(imagePaths[0]);
-              console.log('Video generation with Gemini Veo complete:', rawVideoPath);
-            } catch (geminiError) {
-              throw new Error(`Both Kling and Gemini Veo failed: ${klingError instanceof Error ? klingError.message : 'Unknown error'} | ${geminiError instanceof Error ? geminiError.message : 'Unknown error'}`);
-            }
-          } else {
-            throw klingError; // Re-throw if we don't have a fallback
-          }
-        }
-      } else if (apiKeyStatus.gemini) {
-        // If no Fal AI or Kling key, try Gemini
-        console.log('Using Gemini Veo for video generation...');
-        rawVideoPath = await geminiImageToVideo(imagePaths[0]);
-        console.log('Video generation with Gemini Veo complete:', rawVideoPath);
       } else {
-        throw new Error('No video generation API keys available. Please configure FAL_KEY, KLING_API_KEY, or GEMINI_API_KEY.');
+        // No Fal AI API key, try with other providers directly
+        console.log('Fal AI API key not available, using alternative video generation...');
+        
+        if (apiKeyStatus.kling) {
+          // Try with Kling
+          console.log('Using Kling for video generation...');
+          const videoPrompt = `Professional ${productName} demonstration with smooth camera movement and elegant transitions. Elegant and premium product showcase with cinematic quality.`;
+          try {
+            rawVideoPath = await klingImageToVideo(
+              imagePaths[0],
+              videoPrompt,
+              { aspectRatio: "9:16" }
+            );
+            console.log('Video generation with Kling complete:', rawVideoPath);
+          } catch (klingError) {
+            console.error('Error generating video with Kling:', klingError);
+            
+            // Try Gemini as fallback
+            if (apiKeyStatus.gemini) {
+              console.log('Falling back to Gemini Veo for video generation...');
+              try {
+                rawVideoPath = await geminiImageToVideo(imagePaths[0]);
+                console.log('Video generation with Gemini Veo complete:', rawVideoPath);
+              } catch (geminiError) {
+                throw new Error(`Both Kling and Gemini Veo failed: ${klingError instanceof Error ? klingError.message : 'Unknown error'} | ${geminiError instanceof Error ? geminiError.message : 'Unknown error'}`);
+              }
+            } else {
+              throw klingError; // Re-throw if we don't have a fallback
+            }
+          }
+        } else if (apiKeyStatus.gemini) {
+          // If no Kling API key, try Gemini
+          console.log('Using Gemini Veo for video generation...');
+          rawVideoPath = await geminiImageToVideo(imagePaths[0]);
+          console.log('Video generation with Gemini Veo complete:', rawVideoPath);
+        } else {
+          throw new Error('No video generation API keys available. Please configure FAL_KEY, KLING_API_KEY, or GEMINI_API_KEY.');
+        }
       }
     } catch (error) {
       const videoError = error as Error;
@@ -508,14 +560,16 @@ export async function processAdBurstRequest(req: Request, res: Response) {
       videoUrl,
       script,
       message: 'Ad generated successfully with full AdBurst Factory workflow',
-      processingTime: '~90 seconds', // Approximate time taken
+      processingTime: targetDuration <= 10 ? '~90 seconds' : '~2-3 minutes', // Estimated time based on duration
       socialMedia: bufferData || 'Not available',
       // Include metadata for front-end display
       metadata: {
         productName,
         generatedAt: new Date().toISOString(),
-        videoLength: '8 seconds',
+        videoLength: `${targetDuration} seconds`,
         aspectRatio: '9:16 (vertical)',
+        imagesUsed: imagePaths.length,
+        scriptWordCount: script.split(/\s+/).length
       }
     });
   } catch (error) {
