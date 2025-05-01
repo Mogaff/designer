@@ -230,7 +230,7 @@ export default function AdBurst() {
             </div>
             
             <div 
-              className="border border-dashed border-indigo-500/40 bg-indigo-500/5 hover:bg-indigo-500/10 rounded-lg p-4 text-center transition-colors cursor-pointer"
+              className="border border-dashed border-indigo-500/40 bg-white/10 hover:bg-white/15 backdrop-blur-sm rounded-lg p-4 text-center transition-colors cursor-pointer"
               onClick={() => fileInputRef.current?.click()}
             >
               <input
@@ -309,7 +309,7 @@ export default function AdBurst() {
                   value={callToAction}
                   onChange={(e) => setCallToAction(e.target.value)}
                   disabled={loading}
-                  className="bg-black/20 border-white/10 focus:border-indigo-500 text-white"
+                  className="bg-white/10 border-white/10 focus:border-indigo-500 text-white backdrop-blur-sm h-9"
                 />
               </div>
               
@@ -320,7 +320,7 @@ export default function AdBurst() {
                   onValueChange={setAspectRatio}
                   disabled={loading}
                 >
-                  <SelectTrigger className="bg-black/20 border-white/10 focus:border-indigo-500 text-white">
+                  <SelectTrigger className="bg-white/10 border-white/10 focus:border-indigo-500 text-white backdrop-blur-sm h-9">
                     <SelectValue placeholder="Select ratio" />
                   </SelectTrigger>
                   <SelectContent>
@@ -350,8 +350,8 @@ export default function AdBurst() {
           <Button
             type="submit"
             disabled={loading || files.length < 3}
-            className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white"
-            size="lg"
+            className="w-full bg-indigo-500/40 hover:bg-indigo-500/60 backdrop-blur-md text-white border border-indigo-500/40 shadow-md transition-all"
+            size="default"
           >
             <WandSparkles className="h-4 w-4 mr-2" />
             {loading ? 'Processing Video...' : 'Generate Video Ad'}
@@ -365,7 +365,7 @@ export default function AdBurst() {
       
       {/* Results Display */}
       {result && result.success && (
-        <div className="mt-6 space-y-4 border border-indigo-500/30 bg-indigo-500/5 rounded-lg p-4">
+        <div className="mt-6 space-y-4 border border-indigo-500/30 bg-white/10 backdrop-blur-sm rounded-lg p-4">
           <div className="text-sm font-medium text-white flex items-center">
             <Video className="h-4 w-4 mr-2 text-indigo-400" />
             Your Ad Video is Ready!
@@ -406,7 +406,7 @@ export default function AdBurst() {
           </div>
           
           {result.script && (
-            <div className="mt-4 text-xs text-white/80 p-3 bg-black/20 rounded-md max-h-[120px] overflow-y-auto">
+            <div className="mt-4 text-xs text-white/80 p-3 bg-white/10 backdrop-blur-sm rounded-md max-h-[120px] overflow-y-auto border border-white/10">
               <p className="font-medium mb-1">Generated Script:</p>
               <p className="whitespace-pre-line">{result.script}</p>
             </div>
