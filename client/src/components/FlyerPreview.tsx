@@ -53,16 +53,25 @@ export default function FlyerPreview({
     // Square formats
     { id: "profile", label: "Instagram Profile (1080×1080)", value: "1/1" },
     { id: "post", label: "Social Media Post (1200×1200)", value: "1/1" },
+    { id: "square", label: "Square (1:1)", value: "1/1" },
+    
+    // Portrait formats
+    { id: "portrait", label: "Portrait (4:5)", value: "4/5" },
+    { id: "stories", label: "Instagram Stories (1080×1920)", value: "9/16" },
+    { id: "story", label: "Story (9:16)", value: "9/16" },
+    { id: "a4portrait", label: "A4 Portrait", value: "210/297" },
     
     // Landscape formats
+    { id: "landscape", label: "Landscape (16:9)", value: "16/9" },
+    { id: "facebook", label: "FB Cover", value: "851/315" },
     { id: "fb_cover", label: "Facebook Cover (820×312)", value: "820/312" },
     { id: "twitter_header", label: "Twitter Header (1500×500)", value: "3/1" },
     { id: "yt_thumbnail", label: "YouTube Thumbnail (1280×720)", value: "16/9" },
     { id: "linkedin_banner", label: "LinkedIn Banner (1584×396)", value: "4/1" },
+    { id: "a4landscape", label: "A4 Landscape", value: "297/210" },
     
     // Video/Ad formats
     { id: "instream", label: "Video Ad (1920×1080)", value: "16/9" },
-    { id: "stories", label: "Instagram Stories (1080×1920)", value: "9/16" },
     { id: "pinterest", label: "Pinterest Pin (1000×1500)", value: "2/3" },
     
     // Display Ad formats
@@ -80,13 +89,18 @@ export default function FlyerPreview({
   
   // Calculate width and height while maintaining the proper aspect ratio
   const getContainerDimensions = (ratio: string): { width: string, height: string } => {
+    console.log(`Calculating dimensions for aspect ratio: ${ratio}`);
     const ratioValue = getAspectRatioValue(ratio);
+    console.log(`Aspect ratio value from lookup: ${ratioValue}`);
+    
     let [width, height] = ratioValue.split('/').map(Number);
+    console.log(`Raw width/height parsed: ${width}, ${height}`);
     
     // Ensure values are valid numbers
     if (!width || !height) {
       width = 1;
       height = 1;
+      console.log(`Invalid width/height, defaulting to 1:1`);
     }
     
     // Base size for different aspect ratio categories - INCREASED MAY 1, 2025
@@ -94,17 +108,23 @@ export default function FlyerPreview({
     
     // Adjust the base size for extreme aspect ratios
     if (ratio === 'leaderboard') {
-      baseSize = 1200; // Special case for leaderboard ad - INCREASED FROM 728 
+      baseSize = 1200; // Special case for leaderboard ad - INCREASED FROM 728
+      console.log(`Using leaderboard special case, baseSize: ${baseSize}`);
     } else if (width/height >= 3) {
       baseSize = 1300; // Extra wide formats (banners) - INCREASED FROM 800
+      console.log(`Using extra wide format, baseSize: ${baseSize}`);
     } else if (height/width >= 3) {
       baseSize = 600; // Extra tall formats (skyscraper) - INCREASED FROM 350
+      console.log(`Using extra tall format, baseSize: ${baseSize}`);
     } else if (width/height > 1.2) {
       baseSize = 1000; // Landscape formats - INCREASED FROM 600
+      console.log(`Using landscape format, baseSize: ${baseSize}`);
     } else if (height/width > 1.2) {
       baseSize = 800; // Portrait formats - INCREASED FROM 450
+      console.log(`Using portrait format, baseSize: ${baseSize}`);
     } else {
       baseSize = 800; // Square-ish formats - INCREASED FROM 500
+      console.log(`Using square format, baseSize: ${baseSize}`);
     }
     
     // Calculate dimensions while maintaining aspect ratio
@@ -114,11 +134,15 @@ export default function FlyerPreview({
       // Landscape or square: fix width, calculate height
       calcWidth = baseSize;
       calcHeight = Math.round(baseSize * (height/width));
+      console.log(`Landscape calculation: ${calcWidth}px × ${calcHeight}px`);
     } else {
       // Portrait: fix height, calculate width
       calcHeight = baseSize;
       calcWidth = Math.round(baseSize * (width/height));
+      console.log(`Portrait calculation: ${calcWidth}px × ${calcHeight}px`);
     }
+    
+    console.log(`Final dimensions for ${ratio}: ${calcWidth}px × ${calcHeight}px`);
     
     return {
       width: `${calcWidth}px`,
@@ -378,6 +402,7 @@ export default function FlyerPreview({
                 width: getContainerWidth(aspectRatio),
                 height: getContainerHeight(aspectRatio),
                 transition: 'width 0.5s, height 0.5s', // Add transition for visual feedback
+                boxShadow: '0 0 20px rgba(255, 255, 255, 0.1)' // Add some glow to make it more visible
               }}
               data-aspect-ratio={aspectRatio} // Add data attribute for debugging
             >
@@ -402,8 +427,10 @@ export default function FlyerPreview({
                   maxHeight: '95%',
                   padding: '0.5rem',
                   width: getContainerWidth(aspectRatio), 
-                  height: getContainerHeight(aspectRatio)
+                  height: getContainerHeight(aspectRatio),
+                  transition: 'width 0.5s, height 0.5s' // Add transition for visual feedback
                 }}
+                data-aspect-ratio={aspectRatio} // Add data attribute for debugging
               >
                 {generatedFlyer && (
                   <div style={{ 
