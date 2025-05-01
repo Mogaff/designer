@@ -1,9 +1,10 @@
 import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { GeneratedFlyer } from "@/lib/types";
+import { GeneratedFlyer, BrandKit } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
-import { Download, Share2, Ratio, Check, Copy } from "lucide-react";
+import { Download, Share2, Ratio, Check, Copy, Palette, PaintBucket } from "lucide-react";
 import { MultiColorLoading } from "@/components/ui/multi-color-loading";
+import { useQuery } from "@tanstack/react-query";
 import iconUpload from "../assets/iconupload.png";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/contexts/AuthContext";
@@ -46,6 +47,12 @@ export default function FlyerPreview({
   // Animation states
   const [aspectRatioChanged, setAspectRatioChanged] = useState(false);
   const prevAspectRatioRef = useRef<string>(aspectRatio);
+  
+  // Query for active brand kit to show indicator
+  const { data: activeBrandKitData } = useQuery<{ brandKit: BrandKit }>({
+    queryKey: ['/api/brand-kits/active'],
+    enabled: isAuthenticated,
+  });
   
   type AspectRatioOption = {
     id: string;
@@ -522,6 +529,44 @@ export default function FlyerPreview({
                         <span>
                           {getContainerWidth(aspectRatio)} × {getContainerHeight(aspectRatio)}
                         </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Brand Kit Indicator - only show when active and not generating */}
+                {!isGenerating && activeBrandKitData?.brandKit && (
+                  <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white/80 rounded-md overflow-hidden animate-fadeIn">
+                    <div className="flex items-center px-2 py-1 gap-1">
+                      <div className="h-4 w-4 rounded bg-white/15 p-0.5 flex items-center justify-center">
+                        {activeBrandKitData.brandKit.logo_url ? (
+                          <img 
+                            src={activeBrandKitData.brandKit.logo_url} 
+                            alt="Brand" 
+                            className="max-h-full max-w-full object-contain" 
+                          />
+                        ) : (
+                          <PaintBucket className="h-2.5 w-2.5 text-white/80" />
+                        )}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-[9px] text-white/90">{activeBrandKitData.brandKit.name}</span>
+                          <span className="inline-flex items-center px-1 py-0 rounded-sm text-[7px] bg-green-900/30 text-green-400">
+                            <Check className="mr-0.5 h-1.5 w-1.5" />
+                            Applied
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 text-[7px] text-white/70">
+                          <div 
+                            className="h-2 w-2 rounded-full" 
+                            style={{ backgroundColor: activeBrandKitData.brandKit.primary_color || '#ffffff' }}
+                          ></div>
+                          <div 
+                            className="h-2 w-2 rounded-full" 
+                            style={{ backgroundColor: activeBrandKitData.brandKit.secondary_color || '#cccccc' }}
+                          ></div>
+                        </div>
                       </div>
                     </div>
                   </div>
