@@ -94,10 +94,13 @@ export async function generateVideo(
     
     // Generate a plain colored video with FFmpeg
     const baseVideoPath = path.join(tempDir, `base-${uuidv4()}.mp4`);
-    const ffmpegCmd = `ffmpeg -f lavfi -i color=c=gray:s=1080x1920:d=1 -c:v libx264 -pix_fmt yuv420p ${baseVideoPath}`;
+    const ffmpegCmd = `ffmpeg -f lavfi -i color=c=gray:s=1080x1920:d=1 -c:v libx264 -pix_fmt yuv420p "${baseVideoPath}"`;
     
     try {
-      require('child_process').execSync(ffmpegCmd);
+      // Use the Node.js child_process module correctly
+      const { execSync } = await import('child_process');
+      console.log('Executing FFmpeg command:', ffmpegCmd);
+      execSync(ffmpegCmd);
       console.log('Created base video:', baseVideoPath);
     } catch (ffmpegError) {
       console.error('Error creating base video:', ffmpegError);
@@ -298,10 +301,14 @@ export async function imageToVideo(
     // This is because Fal AI's ltx-video model expects a video input for extending
     // We'll create a 1-second static video from our image
     const tempVideoPath = path.join(process.cwd(), 'temp', `temp-${uuidv4()}.mp4`);
-    const ffmpegCmd = `ffmpeg -loop 1 -i ${imagePath} -c:v libx264 -t 1 -pix_fmt yuv420p -vf "scale=1080:1920" ${tempVideoPath}`;
+    // Make sure to properly escape the file paths for the shell
+    const ffmpegCmd = `ffmpeg -loop 1 -i "${imagePath}" -c:v libx264 -t 1 -pix_fmt yuv420p -vf "scale=1080:1920" "${tempVideoPath}"`;
     
     try {
-      require('child_process').execSync(ffmpegCmd);
+      // Use the Node.js child_process module correctly
+      const { execSync } = await import('child_process');
+      console.log('Executing FFmpeg command:', ffmpegCmd);
+      execSync(ffmpegCmd);
       console.log('Created temporary video from image:', tempVideoPath);
     } catch (ffmpegError) {
       console.error('Error creating temporary video from image:', ffmpegError);
