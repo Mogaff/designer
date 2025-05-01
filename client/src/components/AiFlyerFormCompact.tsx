@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { GeneratedFlyer, AiFlyerGenerationRequest, DesignVariation, BrandKit, DesignTemplate } from "@/lib/types";
 import { Input } from "@/components/ui/input";
-import { ImageIcon, Upload, TypeIcon, Check, PaintBucket, Crown, WandSparkles, LightbulbIcon } from "lucide-react";
+import { ImageIcon, Upload, TypeIcon, Check, PaintBucket, Crown, WandSparkles, Lightbulb } from "lucide-react";
 import CompetitorInspirationPanel from "@/components/CompetitorInspirationPanel";
 import { 
   Select,
@@ -330,16 +330,16 @@ export default function AiFlyerFormCompact({
               size="sm"
               variant="ghost"
               onClick={() => setIsInspirationPanelOpen(!isInspirationPanelOpen)}
-              className="h-4 text-[8px] px-1 py-0 text-indigo-300 hover:text-indigo-200 hover:bg-indigo-500/20"
+              className="h-4 text-[8px] px-1 py-0 text-blue-500 hover:text-blue-600 hover:bg-blue-50 bg-white shadow-sm border border-slate-200"
             >
-              <LightbulbIcon className="h-2 w-2 mr-0.5" />
+              <Lightbulb className="h-2 w-2 mr-0.5" />
               {isInspirationPanelOpen ? "Hide inspiration" : "Get inspiration"}
             </Button>
           </div>
           
           {/* Competitor Inspiration Panel */}
           {isInspirationPanelOpen && (
-            <div className="mb-1 p-1 rounded-md border border-indigo-500/30 bg-indigo-500/10 backdrop-blur-sm">
+            <div className="mb-1 p-1 rounded-md border border-slate-200 bg-white shadow-sm">
               <CompetitorInspirationPanel 
                 onEnhancePrompt={handleEnhancePrompt}
                 originalPrompt={prompt}

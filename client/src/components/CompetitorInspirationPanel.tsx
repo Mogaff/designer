@@ -1,31 +1,32 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
-import { useToast } from '@/hooks/use-toast';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, ArrowRight, Sparkles, SearchIcon, ImageIcon, BookOpenIcon } from 'lucide-react';
+import { Loader, Search, Zap, ArrowRight, Lightbulb } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
-type CompetitorAd = {
-  id: number;
-  platform: string;
-  brand: string;
-  headline: string | null;
-  body: string | null;
-  image_url: string | null;
-  cta: string | null;
-  style_description: string | null;
-};
-
-type CompetitorInspirationPanelProps = {
+interface CompetitorInspirationPanelProps {
   onEnhancePrompt: (enhancedPrompt: string) => void;
   originalPrompt: string;
   isOpen: boolean;
+}
+
+type AdSearchResult = {
+  id: number;
+  platform: string;
+  brand: string;
+  headline: string;
+  body: string;
+  cta: string;
+  imageUrl?: string;
+  style_description?: string;
 };
 
 export default function CompetitorInspirationPanel({
@@ -33,232 +34,304 @@ export default function CompetitorInspirationPanel({
   originalPrompt,
   isOpen
 }: CompetitorInspirationPanelProps) {
-  const [queryType, setQueryType] = useState<'brand' | 'industry' | 'keyword'>('industry');
-  const [queryText, setQueryText] = useState('');
-  const [inspirationEnabled, setInspirationEnabled] = useState(false);
-  const [selectedAds, setSelectedAds] = useState<CompetitorAd[]>([]);
   const { toast } = useToast();
-
-  // If the user hasn't entered anything in the query text field,
-  // we can extract keywords from their original prompt
-  useEffect(() => {
-    if (!queryText && originalPrompt) {
-      // Try to extract industry or business type from the prompt
-      const industries = [
-        'tech', 'fashion', 'food', 'beauty', 'fitness', 'travel',
-        'automotive', 'finance', 'real estate', 'education', 'healthcare'
-      ];
-      
-      const promptLower = originalPrompt.toLowerCase();
-      const foundIndustry = industries.find(industry => promptLower.includes(industry));
-      
-      if (foundIndustry) {
-        setQueryText(foundIndustry);
-        setQueryType('industry');
-      }
-    }
-  }, [originalPrompt, queryText]);
-
-  const searchAdsMutation = useMutation({
-    mutationFn: async () => {
-      const response = await apiRequest('POST', '/api/ad-inspiration/search', {
-        query: queryText,
-        queryType,
-        limit: 5
-      });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchType, setSearchType] = useState<'brand' | 'keyword' | 'industry'>('keyword');
+  const [results, setResults] = useState<AdSearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [selectedAds, setSelectedAds] = useState<number[]>([]);
+  
+  // Search for competitor ads
+  const searchMutation = useMutation({
+    mutationFn: async (searchData: { query: string; type: string }) => {
+      const response = await apiRequest(
+        'GET', 
+        `/api/ad-inspiration/search?query=${encodeURIComponent(searchData.query)}&queryType=${searchData.type}&platforms=meta,google&limit=10`,
+        null
+      );
       return response.json();
     },
     onSuccess: (data) => {
+      setIsSearching(false);
       if (data.ads && data.ads.length > 0) {
+        setResults(data.ads);
         toast({
-          title: 'Found competitor ads',
-          description: `Found ${data.count} ads for ${queryType}: "${queryText}"`,
+          title: 'Search complete',
+          description: `Found ${data.count} competitor ads matching "${searchQuery}"`,
         });
-        setSelectedAds(data.ads);
       } else {
+        setResults([]);
         toast({
           title: 'No ads found',
-          description: `Couldn't find any ads for ${queryType}: "${queryText}"`,
+          description: `No ads found for "${searchQuery}". Try a different search term.`,
+          variant: 'destructive',
+        });
+      }
+    },
+    onError: (error) => {
+      setIsSearching(false);
+      toast({
+        title: 'Search failed',
+        description: `Error searching for competitor ads: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        variant: 'destructive',
+      });
+    }
+  });
+  
+  // Enhance the prompt with inspiration from selected ads
+  const enhanceMutation = useMutation({
+    mutationFn: async (data: { 
+      keyword?: string;
+      brand?: string;
+      industry?: string;
+      limit?: number;
+    }) => {
+      const response = await apiRequest('POST', '/api/ad-inspiration/inspire', data);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (data.styleInspiration || data.copyInspiration) {
+        // Create an enhanced prompt using the original and the inspiration
+        const enhancedPrompt = originalPrompt ? 
+          `${originalPrompt}\n\n---- Inspired by competitors ----\n${data.styleInspiration || ''}\n\n${data.copyInspiration || ''}` :
+          `${data.styleInspiration || ''}\n\n${data.copyInspiration || ''}`;
+        
+        // Call the callback with the enhanced prompt
+        onEnhancePrompt(enhancedPrompt);
+        
+        toast({
+          title: 'Prompt enhanced',
+          description: `Enhanced your prompt with inspiration from ${data.count} competitor ads`,
+        });
+      } else {
+        toast({
+          title: 'No inspiration found',
+          description: 'Could not find useful inspiration from competitor ads',
           variant: 'destructive',
         });
       }
     },
     onError: (error) => {
       toast({
-        title: 'Error searching ads',
-        description: error instanceof Error ? error.message : 'Failed to search for competitor ads',
+        title: 'Failed to enhance prompt',
+        description: `Error enhancing prompt: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: 'destructive',
       });
     }
   });
-
-  const enhancePromptMutation = useMutation({
-    mutationFn: async () => {
-      const response = await apiRequest('POST', '/api/generate-with-inspiration', {
-        promptText: originalPrompt,
-        industry: queryType === 'industry' ? queryText : undefined,
-        brand: queryType === 'brand' ? queryText : undefined,
-        useCompetitorInsights: true
-      });
-      return response.json();
-    },
-    onSuccess: (data) => {
-      if (data.enhancedPrompt) {
-        toast({
-          title: 'Prompt enhanced',
-          description: 'Your prompt has been enhanced with competitor insights',
-        });
-        onEnhancePrompt(data.enhancedPrompt);
-      }
-    },
-    onError: (error) => {
+  
+  // Handle search form submission
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) {
       toast({
-        title: 'Error enhancing prompt',
-        description: error instanceof Error ? error.message : 'Failed to enhance prompt',
+        title: 'Empty search',
+        description: 'Please enter a search term',
         variant: 'destructive',
       });
+      return;
     }
-  });
-
+    
+    setIsSearching(true);
+    setResults([]);
+    searchMutation.mutate({ 
+      query: searchQuery.trim(),
+      type: searchType
+    });
+  };
+  
+  // Toggle ad selection
+  const toggleSelectAd = (adId: number) => {
+    setSelectedAds(prev => 
+      prev.includes(adId) 
+        ? prev.filter(id => id !== adId) 
+        : [...prev, adId]
+    );
+  };
+  
+  // Get quick inspiration based on the current search query
+  const getQuickInspiration = () => {
+    if (!searchQuery.trim()) {
+      toast({
+        title: 'No search term',
+        description: 'Please enter a search term first',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    const data: any = { limit: 5 };
+    
+    // Map the search type to the API parameter
+    if (searchType === 'keyword') {
+      data.keyword = searchQuery.trim();
+    } else if (searchType === 'brand') {
+      data.brand = searchQuery.trim();
+    } else if (searchType === 'industry') {
+      data.industry = searchQuery.trim();
+    }
+    
+    enhanceMutation.mutate(data);
+  };
+  
+  // Only show the component when it's open (this is controlled by the parent)
   if (!isOpen) return null;
-
+  
   return (
-    <div className="space-y-4 bg-indigo-900/20 p-3 rounded-lg border border-indigo-500/30 mb-3">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-white flex items-center">
-          <Sparkles className="h-4 w-4 mr-2 text-indigo-400" />
-          Competitor Ad Inspiration
-        </h3>
-        <div className="flex items-center space-x-2">
-          <Label htmlFor="enable-inspiration" className="text-xs text-white/70">
-            Use competitor insights
-          </Label>
-          <Checkbox 
-            id="enable-inspiration" 
-            checked={inspirationEnabled}
-            onCheckedChange={(checked) => setInspirationEnabled(checked as boolean)}
-            className="data-[state=checked]:bg-indigo-500"
-          />
-        </div>
-      </div>
-
-      {inspirationEnabled && (
-        <>
-          <div className="grid grid-cols-3 gap-2">
-            <Select value={queryType} onValueChange={(val) => setQueryType(val as 'brand' | 'industry' | 'keyword')}>
-              <SelectTrigger className="bg-white/10 border-white/10 text-white text-xs">
-                <SelectValue placeholder="Search type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="industry">Industry</SelectItem>
-                <SelectItem value="brand">Brand Name</SelectItem>
-                <SelectItem value="keyword">Keyword</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            <div className="col-span-2 flex items-center space-x-1">
-              <Input 
-                placeholder={`Enter ${queryType}`}
-                value={queryText}
-                onChange={(e) => setQueryText(e.target.value)}
-                className="bg-white/10 border-white/10 text-white text-xs h-9"
+    <div className="flex flex-col gap-1">
+      <h3 className="text-[10px] font-medium flex items-center gap-1 text-slate-700">
+        <Lightbulb className="h-2 w-2 text-amber-500" />
+        Competitor Ad Inspiration
+      </h3>
+      
+      <Tabs defaultValue="search" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 h-5 bg-slate-100">
+          <TabsTrigger value="search" className="text-[8px] h-5 data-[state=active]:bg-white">Search Ads</TabsTrigger>
+          <TabsTrigger value="quick" className="text-[8px] h-5 data-[state=active]:bg-white">Quick Inspiration</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="search" className="mt-1">
+          <form onSubmit={handleSearch} className="flex gap-1 mb-1">
+            <div className="flex-1">
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search competitor ads..."
+                className="h-5 text-[8px] py-0 px-1 bg-white border-slate-200"
               />
-              <Button 
-                type="button" 
-                size="sm" 
-                onClick={() => searchAdsMutation.mutate()}
-                disabled={searchAdsMutation.isPending || !queryText.trim()}
-                className="h-9 bg-indigo-600 hover:bg-indigo-700"
+            </div>
+            <select
+              value={searchType}
+              onChange={(e) => setSearchType(e.target.value as any)}
+              className="h-5 text-[8px] py-0 px-1 bg-white border border-slate-200 rounded-md text-slate-700"
+            >
+              <option value="keyword">Keyword</option>
+              <option value="brand">Brand</option>
+              <option value="industry">Industry</option>
+            </select>
+            <Button 
+              type="submit" 
+              className="h-5 text-[8px] py-0 px-1 bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900"
+              disabled={isSearching || !searchQuery.trim()}
+            >
+              {isSearching ? <Loader className="h-2 w-2 animate-spin" /> : <Search className="h-2 w-2" />}
+            </Button>
+          </form>
+          
+          {/* Results section */}
+          <div className="space-y-1 max-h-20 overflow-y-auto">
+            {results.length === 0 && !isSearching && (
+              <p className="text-[8px] text-center text-slate-500 py-1">
+                Search for competitor ads to get inspiration
+              </p>
+            )}
+            
+            {isSearching && (
+              <div className="flex items-center justify-center py-2">
+                <Loader className="h-3 w-3 animate-spin text-blue-500" />
+                <span className="ml-1 text-[8px] text-slate-500">Searching...</span>
+              </div>
+            )}
+            
+            {results.map((ad) => (
+              <div 
+                key={ad.id} 
+                className={`p-1 rounded border ${
+                  selectedAds.includes(ad.id) 
+                    ? 'border-blue-200 bg-blue-50' 
+                    : 'border-slate-200 bg-white'
+                } cursor-pointer`}
+                onClick={() => toggleSelectAd(ad.id)}
               >
-                {searchAdsMutation.isPending ? 
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div> :
-                  <SearchIcon className="h-4 w-4" />
-                }
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h4 className="text-[8px] font-medium text-slate-800">{ad.brand}</h4>
+                    <p className="text-[7px] text-slate-600">{ad.headline || ad.body?.substring(0, 50) || 'No text'}</p>
+                  </div>
+                  {ad.imageUrl && (
+                    <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0 bg-slate-100">
+                      <img 
+                        src={ad.imageUrl} 
+                        alt={ad.brand} 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Actions */}
+          {results.length > 0 && (
+            <div className="flex justify-between mt-1">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="h-5 text-[8px] py-0 px-1 border-slate-200 text-slate-700"
+                onClick={() => setSelectedAds(results.map(ad => ad.id))}
+              >
+                Select All
+              </Button>
+              <Button 
+                size="sm" 
+                className="h-5 text-[8px] py-0 px-1 bg-blue-500 hover:bg-blue-600"
+                disabled={selectedAds.length === 0}
+                onClick={() => {
+                  enhanceMutation.mutate({
+                    keyword: searchType === 'keyword' ? searchQuery : undefined,
+                    brand: searchType === 'brand' ? searchQuery : undefined,
+                    industry: searchType === 'industry' ? searchQuery : undefined,
+                  });
+                }}
+              >
+                <ArrowRight className="h-2 w-2 mr-0.5" />
+                Enhance Prompt
               </Button>
             </div>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="quick" className="space-y-1 mt-1">
+          <p className="text-[8px] text-slate-600">
+            Get instant inspiration from competitor ads without reviewing individual results
+          </p>
+          
+          <div className="flex gap-1">
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Enter brand, keyword, or industry..."
+              className="h-5 text-[8px] py-0 px-1 bg-white border-slate-200"
+            />
+            <select
+              value={searchType}
+              onChange={(e) => setSearchType(e.target.value as any)}
+              className="h-5 text-[8px] py-0 px-1 bg-white border border-slate-200 rounded-md text-slate-700"
+            >
+              <option value="keyword">Keyword</option>
+              <option value="brand">Brand</option>
+              <option value="industry">Industry</option>
+            </select>
           </div>
-
-          {/* Search results and selected ads */}
-          <div className="space-y-3">
-            {searchAdsMutation.isPending ? (
-              <div className="space-y-2">
-                <Skeleton className="h-20 w-full bg-white/5" />
-                <Skeleton className="h-20 w-full bg-white/5" />
-              </div>
-            ) : selectedAds.length > 0 ? (
-              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                {selectedAds.map(ad => (
-                  <Card key={ad.id} className="bg-white/5 border-white/10">
-                    <CardContent className="p-3">
-                      <div className="flex items-start gap-3">
-                        {ad.image_url ? (
-                          <div className="w-16 h-16 flex-shrink-0 rounded overflow-hidden bg-black/20">
-                            <img 
-                              src={ad.image_url} 
-                              alt={ad.headline || 'Ad image'} 
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).onerror = null;
-                                (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiMzMzMiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+';
-                              }}
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-16 h-16 flex-shrink-0 rounded bg-black/20 flex items-center justify-center">
-                            <ImageIcon className="h-6 w-6 text-white/30" />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <h4 className="text-xs font-medium text-white truncate">{ad.brand}</h4>
-                            <span className="text-[10px] text-white/50">{ad.platform}</span>
-                          </div>
-                          {ad.headline && (
-                            <p className="text-xs text-white/80 truncate font-medium">{ad.headline}</p>
-                          )}
-                          {ad.body && (
-                            <p className="text-[10px] text-white/60 line-clamp-2">{ad.body}</p>
-                          )}
-                          {ad.style_description && (
-                            <div className="mt-1 text-[10px] text-indigo-300 line-clamp-1 flex items-center">
-                              <BookOpenIcon className="h-3 w-3 mr-1 inline" />
-                              <span className="italic">{ad.style_description}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : searchAdsMutation.isSuccess && selectedAds.length === 0 ? (
-              <div className="text-center py-4">
-                <AlertCircle className="h-6 w-6 mx-auto mb-2 text-white/50" />
-                <p className="text-xs text-white/70">No ads found. Try a different search term.</p>
-              </div>
-            ) : null}
-          </div>
-
-          <Button
-            type="button"
-            onClick={() => enhancePromptMutation.mutate()}
-            disabled={enhancePromptMutation.isPending || !queryText.trim()}
-            className="w-full bg-indigo-500/50 hover:bg-indigo-600 text-white text-xs h-8"
+          
+          <Button 
+            onClick={getQuickInspiration}
+            className="w-full h-5 text-[8px] py-0 bg-blue-500 hover:bg-blue-600"
+            disabled={enhanceMutation.isPending || !searchQuery.trim()}
           >
-            {enhancePromptMutation.isPending ? (
-              <>
-                <span>Enhancing prompt</span>
-                <div className="ml-2 h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-              </>
+            {enhanceMutation.isPending ? (
+              <Loader className="h-2 w-2 animate-spin mr-1" />
             ) : (
-              <>
-                <span>Enhance prompt with competitor insights</span>
-                <ArrowRight className="h-3.5 w-3.5 ml-1" />
-              </>
+              <Zap className="h-2 w-2 mr-1" />
             )}
+            Get Quick Inspiration
           </Button>
-        </>
-      )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
