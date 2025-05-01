@@ -140,8 +140,8 @@ export default function DesignSuggestions({
         </div>
       </div>
       
-      <div className="flex-grow flex flex-col">
-        <div className={`grid ${designs.length > 1 ? 'grid-cols-2' : 'grid-cols-1'} gap-3 max-h-[75vh] overflow-auto p-1`}>
+      <div className="flex-grow flex flex-col items-center justify-center">
+        <div className={`grid ${designs.length > 1 ? 'grid-cols-2' : 'grid-cols-1'} gap-3 max-h-[75vh] overflow-auto p-1 mx-auto`}>
           {designs.map((design) => {
             // Extrahiere das Aspect Ratio aus der URL
             const getAspectRatioClass = () => {
@@ -221,8 +221,8 @@ export default function DesignSuggestions({
                 className={`
                   relative overflow-hidden rounded-lg border-2 cursor-pointer transition-all duration-200
                   ${selectedDesign === design.id 
-                    ? 'border-indigo-500 shadow-lg shadow-indigo-500/20' 
-                    : 'border-gray-800/50 hover:border-indigo-500/50'}
+                    ? 'border-indigo-500 shadow-lg shadow-indigo-500/30' 
+                    : 'border-gray-800/50 hover:border-indigo-500/50 shadow shadow-white/5 hover:shadow-indigo-500/10'}
                 `}
                 onClick={() => handleSelectDesign(design)}
               >

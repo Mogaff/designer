@@ -95,7 +95,7 @@ export default function AiFlyerFormCompact({
       
       if (data && data.designs && data.designs.length > 0) {
         // Log each design to make sure they have the expected structure
-        data.designs.forEach((design, index) => {
+        data.designs.forEach((design: DesignVariation, index: number) => {
           console.log(`Design ${index + 1}:`, {
             id: design.id,
             hasBase64: !!design.imageBase64,

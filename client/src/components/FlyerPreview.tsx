@@ -428,7 +428,8 @@ export default function FlyerPreview({
                   padding: '0.5rem',
                   width: getContainerWidth(aspectRatio), 
                   height: getContainerHeight(aspectRatio),
-                  transition: 'width 0.5s, height 0.5s' // Add transition for visual feedback
+                  transition: 'width 0.5s, height 0.5s', // Add transition for visual feedback
+                  boxShadow: '0 0 20px rgba(255, 255, 255, 0.1)' // Add some glow to make it more visible
                 }}
                 data-aspect-ratio={aspectRatio} // Add data attribute for debugging
               >
