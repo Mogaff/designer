@@ -34,7 +34,7 @@ export function registerCompetitorAdRoutes(app: any) {
       }
       
       // Get the user ID from the authenticated session
-      const userId = req.user?.id;
+      const userId = (req.user as any)?.id;
       
       if (!userId) {
         return res.status(401).json({ error: 'User must be authenticated' });
@@ -68,7 +68,7 @@ export function registerCompetitorAdRoutes(app: any) {
   // Get recent ad searches for the authenticated user
   app.get('/api/ad-inspiration/recent-searches', isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const userId = req.user?.id;
+      const userId = (req.user as any)?.id;
       
       if (!userId) {
         return res.status(401).json({ error: 'User must be authenticated' });
@@ -154,7 +154,7 @@ export function registerCompetitorAdRoutes(app: any) {
         return res.status(400).json({ error: 'Must provide at least one of: industry, brand, or keyword' });
       }
       
-      const userId = req.user?.id;
+      const userId = (req.user as any)?.id;
       
       if (!userId) {
         return res.status(401).json({ error: 'User must be authenticated' });
@@ -227,7 +227,7 @@ export function registerAdInspirationIntegrationRoutes(app: any) {
         });
       }
       
-      const userId = req.user?.id;
+      const userId = (req.user as any)?.id;
       
       if (!userId) {
         return res.status(401).json({ error: 'User must be authenticated' });
