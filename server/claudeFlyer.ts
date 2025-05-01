@@ -166,11 +166,37 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     
     // Add logo if provided
     if (options.logoBase64) {
+      // Determine the image type from the base64 data for Claude API
+      // Claude 3.7 accepts: 'image/jpeg', 'image/png', 'image/gif', 'image/webp'
+      let mediaType = 'image/png'; // Default to PNG if we can't detect
+      
+      try {
+        // Check for PNG signature bytes (first few bytes)
+        const firstBytes = Buffer.from(options.logoBase64.substring(0, 8), 'base64');
+        if (firstBytes[0] === 0x89 && firstBytes[1] === 0x50 && firstBytes[2] === 0x4E && firstBytes[3] === 0x47) {
+          mediaType = 'image/png';
+          console.log('[claude] Logo detected as PNG format');
+        } 
+        // Check for JPEG signature (first few bytes)
+        else if (firstBytes[0] === 0xFF && firstBytes[1] === 0xD8) {
+          mediaType = 'image/jpeg';
+          console.log('[claude] Logo detected as JPEG format');
+        }
+        // Add other format detections if needed (GIF, WebP, etc.)
+        else {
+          console.log('[claude] Could not detect image format from bytes, using default: image/png');
+        }
+      } catch (error) {
+        console.log('[claude] Error detecting image format, using default: image/png', error);
+      }
+      
+      console.log(`[claude] Using media_type: ${mediaType} for logo`);
+      
       messageContent.push({
         type: 'image',
         source: {
           type: 'base64',
-          media_type: 'image/jpeg',
+          media_type: mediaType,
           data: options.logoBase64
         }
       });
@@ -374,7 +400,7 @@ export async function renderFlyerFromClaude(options: GenerationOptions): Promise
             height: auto;
           }
           #company-logo {
-            content: url('data:image/jpeg;base64,${options.logoBase64}');
+            content: url('data:image/png;base64,${options.logoBase64}');
             max-width: 200px;
             max-height: 100px;
             object-fit: contain;
