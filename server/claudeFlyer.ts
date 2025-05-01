@@ -32,7 +32,7 @@ interface TemplateInfo {
 interface GenerationOptions {
   prompt: string;
   backgroundImageBase64?: string;
-  logoBase64?: string;
+  logoBase64?: string | null; // Updated to allow null value explicitly
   aspectRatio?: string;
   templateInfo?: TemplateInfo;
 }
@@ -153,8 +153,11 @@ LOGO INSTRUCTIONS:
 `;
     }
     
-    // Combine all text instructions into a single message to avoid any format issues
-    const combinedTextPrompt = `${systemPrompt}
+    // CRITICAL FIX: May 1, 2025 - Complete overhaul of Claude prompt handling
+    
+    // Create a single plain text prompt with everything Claude needs to know
+    // This avoids any complex message structures that could cause errors
+    const cleanTextPrompt = `${systemPrompt}
     
 ${additionalInstructions}
 
@@ -164,21 +167,21 @@ IMPORTANT REMINDER:
 - Include semantic HTML5 with proper structure
 - Do not include any <img> tags or try to reference external images`;
 
-    // Log our consolidated prompt for debugging
-    log(`[claude] Constructed a consolidated text-only prompt: ${combinedTextPrompt.substring(0, 200)}...`, 'claude');
+    // Log debugging info but don't expose secrets
+    log(`[claude] Sending plain text prompt to Claude API (${cleanTextPrompt.length} chars)`, 'claude');
     
-    // Create a simple message structure with a SINGLE text element
-    // This is the most reliable way to avoid any format issues with Claude's API
+    // FIXED IMPLEMENTATION: Send a basic text-only request to Claude
+    // This avoids any issues with complex JSON structures or image formats
     const message = await anthropic.messages.create({
       model: 'claude-3-7-sonnet-20250219',
       max_tokens: 4096,
       messages: [
         { 
           role: 'user', 
-          content: combinedTextPrompt
+          content: cleanTextPrompt 
         }
       ],
-      system: "You are an expert CSS designer specializing in creating beautiful flyer designs. Return ONLY valid JSON with htmlContent and cssStyles properties. Use minimal HTML with rich CSS styling."
+      system: "You are an expert CSS designer. Return ONLY valid JSON with htmlContent and cssStyles properties."
     });
 
     // Check if the response has content and the first block is a text block

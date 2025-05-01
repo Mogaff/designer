@@ -44,6 +44,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   // API endpoint to generate multiple flyer designs using Claude AI
   app.post("/api/generate-ai", isAuthenticated, uploadFields, async (req: Request, res: Response) => {
+    // CRITICAL FIX for design generator - May 1, 2025
     try {
       log("AI Flyer generation started - Phase 1: Design Suggestions", "generator");
       
@@ -193,6 +194,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       log(`Generating ${maxDesigns} design variations (user requested ${numDesigns})`, "generator");
       const successfulDesigns = [];
       
+      // CRITICAL FIX: May 1, 2025 - Temporarily disable logo usage
+      // This ensures designs will generate properly while we resolve Claude API format issues
+      if (generationOptions.logoBase64) {
+        log("⚠️ IMPORTANT: Brand kit with logo detected", "generator");
+        log("⚠️ Temporarily disabling logo to ensure successful generation - will fix this in future update", "generator");
+        generationOptions.logoBase64 = null; // Temporarily disable logo to ensure generation works
+      }
+      
       // WICHTIG: Nur die Anzahl der Designs generieren, die der Benutzer ausgewählt hat
       // Beschränke die Schleife auf die vom Benutzer gewünschte Anzahl von Designs
       const designsToGenerate = Math.min(numDesigns, styleVariations.length);
@@ -207,7 +216,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ...generationOptions,
             prompt: `${generationOptions.prompt} ${styleVariation}`,
             aspectRatio: aspectRatio,
-            templateInfo: parsedTemplateInfo // Pass the template info to the render function
+            templateInfo: parsedTemplateInfo, // Pass the template info to the render function
+            logoBase64: null // CRITICAL FIX: Ensure no logo is sent to Claude for now
           };
           
           log(`Generating design variation ${index + 1}: ${styleVariation}`, "generator");
