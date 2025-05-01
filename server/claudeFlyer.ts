@@ -128,39 +128,21 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     
     // Add background image if provided
     if (options.backgroundImageBase64) {
-      // Determine the correct media type from the base64 data
-      // This is a basic detection - we check the first characters of the base64 data
-      let mediaType = 'image/jpeg'; // default
-      if (options.backgroundImageBase64.startsWith('/9j/')) {
-        mediaType = 'image/jpeg';
-      } else if (options.backgroundImageBase64.startsWith('iVBOR')) {
-        mediaType = 'image/png';
-      } else if (options.backgroundImageBase64.startsWith('R0lGOD')) {
-        mediaType = 'image/gif';
-      } else if (options.backgroundImageBase64.startsWith('UklGR')) {
-        mediaType = 'image/webp';
-      }
+      log('[claude] Background image found, will use text-only description mode', 'claude');
       
-      messageContent.push({
-        type: 'image',
-        source: {
-          type: 'base64',
-          media_type: mediaType,
-          data: options.backgroundImageBase64
-        }
-      });
-      
+      // Change approach: don't send actual image data to Claude, just describe it
       messageContent.push({
         type: 'text',
-        text: `IMPORTANT: Use the above image as the BACKGROUND of your flyer design. 
+        text: `IMPORTANT: I'll provide instructions for a flyer that will have a background image added later.
 
-1. I will automatically set this image as the background of the .flyer-container element
-2. Do NOT use an <img> tag to reference this background
-3. Create CSS elements that overlay this background image - think of this as you designing a layer on top of the existing background
-4. Use appropriate text colors that contrast well with the image colors
-5. Add semi-transparent colored overlays when needed (using divs with background: rgba()) to improve readability
-6. Consider the mood and colors in the image when choosing your design style
-7. Keep all your elements inside the .flyer-container div`
+1. Design a beautiful flyer layout with text, shapes and styling elements
+2. Don't worry about the background - I will automatically apply a background image
+3. Use a .flyer-container as your main container element
+4. Make sure your design has good contrast that would work against a dark or colorful background 
+5. Create semi-transparent colored overlays (using divs with background: rgba()) to improve text readability
+6. Add gradients, shadows, and modern styling to create a premium look
+7. Keep all your elements inside the .flyer-container div
+8. Leave appropriate margins around the edges for visual balance`
       });
     }
     
@@ -305,6 +287,26 @@ export async function renderFlyerFromClaude(options: GenerationOptions): Promise
     
     // Create a complete HTML document with the generated content
     // Add background image styling if an image was provided
+    // Determine the correct media type for background image
+    let backgroundMediaType = 'image/jpeg'; // default
+    if (options.backgroundImageBase64) {
+      if (options.backgroundImageBase64.startsWith('/9j/')) {
+        backgroundMediaType = 'image/jpeg';
+        log('[claude] Background appears to be JPEG based on base64 start pattern', 'claude');
+      } else if (options.backgroundImageBase64.startsWith('iVBOR')) {
+        backgroundMediaType = 'image/png';
+        log('[claude] Background appears to be PNG based on base64 start pattern', 'claude');
+      } else if (options.backgroundImageBase64.startsWith('R0lGOD')) {
+        backgroundMediaType = 'image/gif';
+        log('[claude] Background appears to be GIF based on base64 start pattern', 'claude');
+      } else if (options.backgroundImageBase64.startsWith('UklGR')) {
+        backgroundMediaType = 'image/webp';
+        log('[claude] Background appears to be WebP based on base64 start pattern', 'claude');
+      } else {
+        log('[claude] Could not detect background format from base64, using JPEG as default', 'claude');
+      }
+    }
+    
     const backgroundStyle = options.backgroundImageBase64 
       ? `
           body {
@@ -322,7 +324,7 @@ export async function renderFlyerFromClaude(options: GenerationOptions): Promise
             display: flex;
             flex-direction: column;
             justify-content: center;
-            background-image: url('data:image/jpeg;base64,${options.backgroundImageBase64}');
+            background-image: url('data:${backgroundMediaType};base64,${options.backgroundImageBase64}');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
