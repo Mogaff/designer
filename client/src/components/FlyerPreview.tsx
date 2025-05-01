@@ -137,9 +137,9 @@ export default function FlyerPreview({
   
   // Update aspectRatio when prop changes
   useEffect(() => {
-    if (initialAspectRatio) {
-      setAspectRatio(initialAspectRatio);
-    }
+    // Always update when initialAspectRatio changes, regardless of whether it has a value
+    // This ensures the preview container shape updates immediately when a new aspect ratio is selected
+    setAspectRatio(initialAspectRatio || "profile");
   }, [initialAspectRatio]);
 
   // Set up generation progress visualization
