@@ -170,9 +170,12 @@ export default function AdBurst() {
   };
 
   return (
-    <div className="max-w-[400px] px-2 py-4 h-full overflow-y-auto">
+    <div className="w-[280px] h-full overflow-y-auto rounded-lg bg-white/5 backdrop-blur-lg border border-white/10 px-4 py-5 relative">
       <div className="mb-2">
-        <h2 className="text-base font-semibold text-white">Create Video Ad</h2>
+        <h2 className="text-base font-semibold text-white flex items-center gap-2">
+          <Video className="h-4 w-4 text-indigo-400" />
+          AI Video Studio
+        </h2>
       </div>
       
       {/* Brand Kit Badge */}
@@ -293,7 +296,7 @@ export default function AdBurst() {
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 disabled={loading}
-                className="bg-black/20 border-white/10 focus:border-indigo-500 text-white min-h-[80px]"
+                className="bg-white/10 border-white/10 focus:border-indigo-500 text-white min-h-[80px] backdrop-blur-sm"
               />
             </div>
             
