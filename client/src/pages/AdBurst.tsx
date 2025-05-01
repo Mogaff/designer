@@ -170,7 +170,7 @@ export default function AdBurst() {
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="max-w-[400px] px-2 py-4 h-full overflow-y-auto">
       <div className="mb-2">
         <h2 className="text-base font-semibold text-white">Create Video Ad</h2>
       </div>
