@@ -1,7 +1,5 @@
 import { useState, useRef } from 'react';
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,9 +7,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { FileVideo, Download, Upload, Share2, Trash2 } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
+import { FileVideo, Download, Upload, Share2, Trash2, ImageIcon, PaintBucket, Check, WandSparkles, Video } from "lucide-react";
+import { queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/contexts/AuthContext";
+import { Separator } from "@/components/ui/separator";
+import { useQuery } from "@tanstack/react-query";
+import { BrandKit } from "@/lib/types";
 
 interface AdBurstResponse {
   success: boolean;
@@ -32,15 +33,23 @@ export default function AdBurst() {
   const [progress, setProgress] = useState<number>(0);
   const [result, setResult] = useState<AdBurstResponse | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Get active brand kit for styling consistency with design dashboard
+  const { data: activeBrandKitData } = useQuery<{ brandKit: BrandKit }>({
+    queryKey: ['/api/brand-kits/active'],
+    refetchOnWindowFocus: false,
+  });
+  
+  const activeBrandKit = activeBrandKitData?.brandKit;
 
   // Function to handle file selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
     
-    if (selectedFiles.length !== 3) {
+    if (selectedFiles.length < 3 || selectedFiles.length > 5) {
       toast({
         title: "Error",
-        description: "Please select exactly 3 product images.",
+        description: "Please select 3-5 product images.",
         variant: "destructive"
       });
       return;
@@ -77,10 +86,10 @@ export default function AdBurst() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (files.length !== 3) {
+    if (files.length < 3 || files.length > 5) {
       toast({
         title: "Error",
-        description: "Please select exactly 3 product images.",
+        description: "Please select 3-5 product images.",
         variant: "destructive"
       });
       return;
@@ -95,10 +104,10 @@ export default function AdBurst() {
       
       console.log('Preparing form data for submission...');
       
-      // Append the three image files with specific keys as expected by the server
-      formData.append('image1', files[0]);
-      formData.append('image2', files[1]);
-      formData.append('image3', files[2]);
+      // Append image files with proper indices
+      files.forEach((file, index) => {
+        formData.append(`image${index + 1}`, file);
+      });
       
       console.log('Files attached:', files.map(f => f.name).join(', '));
       
@@ -161,268 +170,246 @@ export default function AdBurst() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
+    <div className="h-full flex flex-col">
+      <div className="mb-2">
+        <h2 className="text-base font-semibold text-white">Create Video Ad</h2>
+      </div>
       
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="max-w-5xl mx-auto">
-          <h1 className="text-3xl font-bold mb-2 text-white">AdBurst Factory</h1>
-          <p className="text-lg text-white/70 mb-8">
-            Generate 8-second vertical ads from your product images using AI
-          </p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-2">
-              <Card className="bg-slate-900/50 border-slate-800 text-white backdrop-blur-md">
-                <CardHeader>
-                  <CardTitle>Upload Your Product Images</CardTitle>
-                  <CardDescription className="text-slate-400">
-                    Select exactly 3 product images to create your ad video
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleSubmit}>
-                    <div className="space-y-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="file-upload">Product Images (exactly 3)</Label>
-                        <div 
-                          className="border-2 border-dashed border-slate-700 rounded-lg p-6 text-center hover:bg-slate-800/50 transition-colors cursor-pointer"
-                          onClick={() => fileInputRef.current?.click()}
-                        >
-                          <input
-                            id="file-upload"
-                            ref={fileInputRef}
-                            type="file"
-                            multiple
-                            accept="image/*"
-                            className="hidden"
-                            onChange={handleFileChange}
-                            disabled={loading}
-                          />
-                          <Upload className="h-10 w-10 mx-auto mb-2 text-slate-500" />
-                          <p className="text-sm text-slate-400">
-                            Drag and drop your images here, or click to browse
-                          </p>
-                          <p className="text-xs text-slate-500 mt-1">
-                            PNG, JPG, or WEBP (Max 10MB each)
-                          </p>
-                        </div>
-                        
-                        {files.length > 0 && (
-                          <div className="mt-4">
-                            <div className="flex justify-between items-center mb-2">
-                              <h3 className="text-sm font-medium">Selected Images ({files.length}/3)</h3>
-                              <Button 
-                                type="button" 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={clearFiles}
-                                disabled={loading}
-                              >
-                                <Trash2 className="h-4 w-4 mr-1" />
-                                Clear All
-                              </Button>
-                            </div>
-                            
-                            <div className="grid grid-cols-3 gap-3">
-                              {files.map((file, index) => (
-                                <div key={index} className="relative group">
-                                  <img
-                                    src={URL.createObjectURL(file)}
-                                    alt={`Preview ${index + 1}`}
-                                    className="h-24 w-full object-cover rounded-md"
-                                  />
-                                  <button
-                                    type="button"
-                                    className="absolute top-1 right-1 bg-black/50 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                    onClick={() => removeFile(index)}
-                                    disabled={loading}
-                                  >
-                                    <Trash2 className="h-3 w-3 text-white" />
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="prompt">Product Description (optional)</Label>
-                        <Textarea
-                          id="prompt"
-                          placeholder="Describe your product and target audience..."
-                          value={prompt}
-                          onChange={(e) => setPrompt(e.target.value)}
-                          disabled={loading}
-                          className="bg-slate-800/50 border-slate-700 focus:border-indigo-600"
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="callToAction">Call to Action (optional)</Label>
-                        <Input
-                          id="callToAction"
-                          placeholder="e.g., 'Shop Now', 'Learn More'"
-                          value={callToAction}
-                          onChange={(e) => setCallToAction(e.target.value)}
-                          disabled={loading}
-                          className="bg-slate-800/50 border-slate-700 focus:border-indigo-600"
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="aspectRatio">Aspect Ratio</Label>
-                        <Select
-                          value={aspectRatio}
-                          onValueChange={setAspectRatio}
-                          disabled={loading}
-                        >
-                          <SelectTrigger className="bg-slate-800/50 border-slate-700 focus:border-indigo-600">
-                            <SelectValue placeholder="Select aspect ratio" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="vertical">Vertical (9:16) - For Stories/Reels</SelectItem>
-                            <SelectItem value="square">Square (1:1) - For Instagram Feed</SelectItem>
-                            <SelectItem value="horizontal">Horizontal (16:9) - For YouTube</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      {loading && (
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-xs text-slate-400">
-                            <span>Processing...</span>
-                            <span>{progress}%</span>
-                          </div>
-                          <Progress value={progress} className="h-2" />
-                        </div>
-                      )}
-                      
-                      <Button
-                        type="submit"
-                        disabled={loading || files.length !== 3}
-                        className="w-full"
-                      >
-                        <FileVideo className="h-4 w-4 mr-2" />
-                        {loading ? 'Generating Ad...' : 'Generate Ad Video'}
-                      </Button>
-                    </div>
-                  </form>
-                </CardContent>
-              </Card>
-            </div>
-            
-            <div>
-              <Card className="bg-slate-900/50 border-slate-800 text-white backdrop-blur-md">
-                <CardHeader>
-                  <CardTitle>How It Works</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-3">
-                      <div className="bg-indigo-600/20 rounded-full p-2 text-indigo-400">
-                        <span className="font-bold">1</span>
-                      </div>
-                      <div>
-                        <h3 className="font-medium">Upload Images</h3>
-                        <p className="text-sm text-slate-400">Select exactly 3 product images</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-start gap-3">
-                      <div className="bg-indigo-600/20 rounded-full p-2 text-indigo-400">
-                        <span className="font-bold">2</span>
-                      </div>
-                      <div>
-                        <h3 className="font-medium">AI Processing</h3>
-                        <p className="text-sm text-slate-400">We use Gemini Veo 2, GPT-4o, and ElevenLabs</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-start gap-3">
-                      <div className="bg-indigo-600/20 rounded-full p-2 text-indigo-400">
-                        <span className="font-bold">3</span>
-                      </div>
-                      <div>
-                        <h3 className="font-medium">Get Your Ad</h3>
-                        <p className="text-sm text-slate-400">Download your 8-second vertical ad video</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-start gap-3">
-                      <div className="bg-indigo-600/20 rounded-full p-2 text-indigo-400">
-                        <span className="font-bold">4</span>
-                      </div>
-                      <div>
-                        <h3 className="font-medium">Share on Social</h3>
-                        <p className="text-sm text-slate-400">Your video is ready to share via Buffer</p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {result && result.success && (
-                <Card className="bg-slate-900/50 border-slate-800 text-white backdrop-blur-md mt-6">
-                  <CardHeader>
-                    <CardTitle>Your Ad Is Ready!</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {result.videoUrl && (
-                      <div className="mb-4">
-                        <video 
-                          src={result.videoUrl} 
-                          controls 
-                          className="w-full rounded-md bg-black"
-                        >
-                          Your browser does not support the video tag.
-                        </video>
-                      </div>
-                    )}
-                    
-                    {result.script && (
-                      <div className="p-3 bg-slate-800 rounded-md mb-4">
-                        <h3 className="text-sm font-medium text-slate-300 mb-1">Ad Script:</h3>
-                        <p className="text-sm text-white/70 italic">"{result.script}"</p>
-                      </div>
-                    )}
-                    
-                    <Button
-                      className="w-full"
-                      onClick={() => window.open(result.videoUrl, '_blank')}
-                      disabled={!result.videoUrl}
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Download Video
-                    </Button>
-                    
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => {
-                        // Reset the form and result
-                        setResult(null);
-                        setFiles([]);
-                        setPrompt('');
-                        setCallToAction('');
-                        if (fileInputRef.current) {
-                          fileInputRef.current.value = '';
-                        }
-                      }}
-                    >
-                      <Upload className="h-4 w-4 mr-2" />
-                      Create New Ad
-                    </Button>
-                  </CardContent>
-                </Card>
+      {/* Brand Kit Badge */}
+      {activeBrandKit && (
+        <div className="mb-3 p-2 rounded-lg border border-indigo-500/30 bg-indigo-500/10 backdrop-blur-sm">
+          <div className="flex items-center gap-2">
+            <div className="flex-shrink-0 h-8 w-8 rounded bg-white/10 p-1 flex items-center justify-center overflow-hidden">
+              {activeBrandKit.logo_url ? (
+                <img src={activeBrandKit.logo_url} alt="Brand Logo" className="max-h-full max-w-full object-contain" />
+              ) : (
+                <PaintBucket className="h-4 w-4 text-indigo-400" />
               )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-medium text-white truncate">{activeBrandKit.name}</h3>
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-300 border border-green-500/30">
+                  <Check className="mr-1 h-3 w-3" />
+                  Active
+                </span>
+              </div>
+              <p className="text-xs text-white/60 truncate">Using brand colors and style</p>
             </div>
           </div>
         </div>
-      </main>
+      )}
       
-      <Footer />
+      <p className="text-xs text-white/70 mb-4">
+        AdBurst Factory creates engaging 8-20 second video ads from your product images using AI. Perfect for Instagram Reels and TikTok.
+      </p>
+      
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Main content area */}
+        <div className="space-y-5">
+          {/* Image upload section */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <Label htmlFor="file-upload" className="text-sm font-medium text-white">Product Images (3-5 images)</Label>
+              {files.length > 0 && (
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={clearFiles}
+                  disabled={loading}
+                  className="h-7 px-2 text-xs text-white/70 hover:text-white"
+                >
+                  <Trash2 className="h-3 w-3 mr-1" />
+                  Clear
+                </Button>
+              )}
+            </div>
+            
+            <div 
+              className="border border-dashed border-indigo-500/40 bg-indigo-500/5 hover:bg-indigo-500/10 rounded-lg p-4 text-center transition-colors cursor-pointer"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <input
+                id="file-upload"
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileChange}
+                disabled={loading}
+              />
+              
+              <div className="flex flex-col items-center justify-center py-4">
+                <ImageIcon className="h-8 w-8 text-indigo-400 mb-2" />
+                <p className="text-sm font-medium text-white mb-1">
+                  Upload product images
+                </p>
+                <p className="text-xs text-white/60">
+                  Select 3-5 high-quality product images
+                </p>
+              </div>
+            </div>
+            
+            {files.length > 0 && (
+              <div className="mt-3">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-xs font-medium text-white/80">Selected Images ({files.length}/5)</h3>
+                </div>
+                
+                <div className="grid grid-cols-5 gap-2">
+                  {files.map((file, index) => (
+                    <div key={index} className="relative group rounded-md overflow-hidden border border-indigo-500/20">
+                      <img
+                        src={URL.createObjectURL(file)}
+                        alt={`Preview ${index + 1}`}
+                        className="h-16 w-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        className="absolute top-1 right-1 bg-black/50 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => removeFile(index)}
+                        disabled={loading}
+                      >
+                        <Trash2 className="h-3 w-3 text-white" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <Separator className="bg-white/10" />
+          
+          {/* Product Info Section */}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="prompt" className="text-sm font-medium text-white">Product Description</Label>
+              <Textarea
+                id="prompt"
+                placeholder="Describe your product, its key features, and target audience..."
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                disabled={loading}
+                className="bg-black/20 border-white/10 focus:border-indigo-500 text-white min-h-[80px]"
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="callToAction" className="text-sm font-medium text-white">Call to Action</Label>
+                <Input
+                  id="callToAction"
+                  placeholder="e.g., 'Shop Now', 'Learn More'"
+                  value={callToAction}
+                  onChange={(e) => setCallToAction(e.target.value)}
+                  disabled={loading}
+                  className="bg-black/20 border-white/10 focus:border-indigo-500 text-white"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="aspectRatio" className="text-sm font-medium text-white">Aspect Ratio</Label>
+                <Select
+                  value={aspectRatio}
+                  onValueChange={setAspectRatio}
+                  disabled={loading}
+                >
+                  <SelectTrigger className="bg-black/20 border-white/10 focus:border-indigo-500 text-white">
+                    <SelectValue placeholder="Select ratio" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="vertical">Vertical (9:16) - Stories/Reels</SelectItem>
+                    <SelectItem value="square">Square (1:1) - Feed</SelectItem>
+                    <SelectItem value="horizontal">Horizontal (16:9) - YouTube</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+          
+          <Separator className="bg-white/10" />
+          
+          {/* Processing indicator */}
+          {loading && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-xs text-white/70">
+                <span>Processing video...</span>
+                <span>{progress}%</span>
+              </div>
+              <Progress value={progress} className="h-2" />
+            </div>
+          )}
+          
+          {/* Generate button */}
+          <Button
+            type="submit"
+            disabled={loading || files.length < 3}
+            className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white"
+            size="lg"
+          >
+            <WandSparkles className="h-4 w-4 mr-2" />
+            {loading ? 'Processing Video...' : 'Generate Video Ad'}
+          </Button>
+          
+          <div className="text-center text-xs text-white/60">
+            Using 1 credit to generate a professional-quality video ad
+          </div>
+        </div>
+      </form>
+      
+      {/* Results Display */}
+      {result && result.success && (
+        <div className="mt-6 space-y-4 border border-indigo-500/30 bg-indigo-500/5 rounded-lg p-4">
+          <div className="text-sm font-medium text-white flex items-center">
+            <Video className="h-4 w-4 mr-2 text-indigo-400" />
+            Your Ad Video is Ready!
+          </div>
+          
+          <div className="aspect-[9/16] max-w-[280px] mx-auto bg-black rounded-lg overflow-hidden">
+            {result.videoUrl && (
+              <video 
+                src={result.videoUrl} 
+                controls 
+                className="w-full h-full"
+              >
+                Your browser does not support the video tag.
+              </video>
+            )}
+          </div>
+          
+          <div className="flex justify-center gap-2 mt-2">
+            {result.videoUrl && (
+              <Button
+                size="sm"
+                className="text-xs"
+                onClick={() => window.open(result.videoUrl, '_blank')}
+              >
+                <Download className="h-3 w-3 mr-1" />
+                Download
+              </Button>
+            )}
+            
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs"
+            >
+              <Share2 className="h-3 w-3 mr-1" />
+              Share to Socials
+            </Button>
+          </div>
+          
+          {result.script && (
+            <div className="mt-4 text-xs text-white/80 p-3 bg-black/20 rounded-md max-h-[120px] overflow-y-auto">
+              <p className="font-medium mb-1">Generated Script:</p>
+              <p className="whitespace-pre-line">{result.script}</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
