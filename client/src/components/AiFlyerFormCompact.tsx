@@ -430,7 +430,7 @@ export default function AiFlyerFormCompact({
             </Label>
             {/* Modern design count slider */}
             <div className="space-y-2">
-              <div className="bg-white/10 backdrop-blur-md shadow-lg rounded-md border border-white/10 px-2 py-1.5">
+              <div className="bg-white/10 backdrop-blur-md shadow-lg rounded-md border border-white/10 px-3 py-2.5">
                 <Slider
                   value={[parseInt(designCount)]}
                   min={1}
@@ -439,7 +439,7 @@ export default function AiFlyerFormCompact({
                   onValueChange={(values) => {
                     setDesignCount(values[0].toString());
                   }}
-                  className="mb-2"
+                  className="mb-3 mt-1"
                 />
                 <div className="flex justify-between">
                   {[1, 2, 3, 4].map((num) => (
