@@ -212,24 +212,24 @@ Create this as an advertisement design, NOT as a website or HTML.`;
               </div>
               
               {/* Workspace - Full Screen Canvas */}
-              <div className="h-full relative">
-                {/* Always visible preview container */}
-                <div className={`h-full absolute inset-0 z-10 transition-opacity duration-300 ${activeTab === 'preview' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+              <div className="h-full">
+                {/* Preview Area */}
+                <TabsContent value="preview" className="h-full m-0 p-0 data-[state=inactive]:hidden data-[state=active]:block">
                   <FlyerPreview 
                     generatedFlyer={generatedFlyer} 
                     isGenerating={isGenerating}
                     aspectRatio={aspectRatio}
                     showProgress={true}
                   />
-                </div>
+                </TabsContent>
                 
                 {/* Canvas Editor Area */}
-                <div className={`h-full absolute inset-0 z-20 transition-opacity duration-300 ${activeTab === 'canvas' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                <TabsContent value="canvas" className="h-full m-0 p-0 data-[state=inactive]:hidden data-[state=active]:block">
                   <CanvasEditor 
                     generatedFlyer={generatedFlyer}
                     isGenerating={isGenerating}
                   />
-                </div>
+                </TabsContent>
               </div>
             </Tabs>
           </div>

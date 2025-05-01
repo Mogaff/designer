@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { GeneratedFlyer, BrandKit } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
@@ -413,13 +413,28 @@ export default function FlyerPreview({
         
         
         {!generatedFlyer && !isGenerating ? (
-          <div className="w-full h-full flex items-center justify-center">
-            {/* Import the demo for the grid layout as a placeholder */}
-            <div className="w-full h-full relative overflow-hidden">
-              {/* Dynamic Aspect Ratio Display */}
-              <div
-                className="absolute bottom-4 right-4 z-50 bg-black/60 backdrop-blur-sm text-white/80 rounded-md overflow-hidden shadow-lg"
-              >
+          <div className="w-full h-full flex items-center justify-center p-4">
+            <div 
+              className="relative flex items-center justify-center overflow-hidden backdrop-blur-md bg-white/5 border border-white/10 mx-auto rounded-lg"
+              style={{
+                maxWidth: '95%',
+                maxHeight: '95%',
+                padding: '0.5rem',
+                width: getContainerWidth(aspectRatio),
+                height: getContainerHeight(aspectRatio),
+                transition: 'width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, transform 0.3s ease', 
+                boxShadow: aspectRatioChanged ? '0 0 30px rgba(255, 255, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.25) inset' : '0 0 20px rgba(255, 255, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.15) inset',
+                transform: aspectRatioChanged ? 'scale(1.02)' : 'scale(1)'
+              }}
+              data-aspect-ratio={aspectRatio} // Add data attribute for debugging
+            >
+              <div className="flex flex-col items-center justify-center text-center">
+                <img src={iconUpload} alt="Upload icon" className="h-20 w-20 mb-3" />
+                <h3 className="text-base font-medium text-white/90">Your design will appear here</h3>
+              </div>
+              
+              {/* Enhanced aspect ratio label for empty state */}
+              <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 rounded-md overflow-hidden">
                 <div className="flex flex-col">
                   <div className="bg-indigo-500/30 px-2 py-0.5 text-[10px] font-medium">
                     {aspectRatioOptions.find(o => o.id === aspectRatio)?.label || aspectRatio}
@@ -430,102 +445,6 @@ export default function FlyerPreview({
                       {getContainerWidth(aspectRatio)} × {getContainerHeight(aspectRatio)}
                     </span>
                   </div>
-                </div>
-              </div>
-              
-              {/* Simple animated grid layout for previews */}
-              <div className="w-full h-full grid grid-cols-2 gap-4 p-4">
-                {/* Selected format indicator text */}
-                <div className="absolute top-2 left-2 z-50 bg-black/60 backdrop-blur-sm text-white/90 rounded-md px-2 py-1 text-xs">
-                  <span className="mr-1 inline-block h-2 w-2 rounded-full bg-green-400"></span>
-                  {aspectRatioOptions.find(o => o.id === aspectRatio)?.label || "Custom Format"}
-                </div>
-                {/* Square Format preview */}
-                <div 
-                  className={`aspect-square overflow-hidden rounded-lg relative group cursor-pointer transform transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] ${['square', 'profile', 'post'].includes(aspectRatio) ? 'ring-2 ring-indigo-500 ring-offset-2 ring-offset-black' : ''}`}
-                  onClick={() => setAspectRatio('square')}
-                >
-                  <img 
-                    src="https://images.unsplash.com/photo-1476231682828-37e571bc172f?q=80&w=1200&auto=format&fit=crop" 
-                    alt="Square Format" 
-                    className="object-cover w-full h-full transition-all duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-4 opacity-80 group-hover:opacity-100 transition-opacity">
-                    <p className="font-bold text-xl text-white mb-1">Square Format</p>
-                    <p className="text-sm text-white/80">Perfect for social media posts and profile images</p>
-                  </div>
-                  <div className="absolute top-3 right-3 bg-white/20 backdrop-blur-md px-2 py-1 rounded text-[10px] text-white/90 opacity-0 group-hover:opacity-100 transition-opacity">1:1</div>
-                  {['square', 'profile', 'post'].includes(aspectRatio) && (
-                    <div className="absolute top-3 left-3 bg-indigo-500 text-white rounded-full p-1">
-                      <Check className="h-3 w-3" />
-                    </div>
-                  )}
-                </div>
-                
-                {/* Portrait Format preview */}
-                <div 
-                  className={`aspect-[3/4] overflow-hidden rounded-lg relative group cursor-pointer transform transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] ${['portrait', 'stories', 'story', 'a4portrait'].includes(aspectRatio) ? 'ring-2 ring-indigo-500 ring-offset-2 ring-offset-black' : ''}`}
-                  onClick={() => setAspectRatio('portrait')}
-                >
-                  <img 
-                    src="https://images.unsplash.com/photo-1464457312035-3d7d0e0c058e?q=80&w=1200&auto=format&fit=crop" 
-                    alt="Portrait Format" 
-                    className="object-cover w-full h-full transition-all duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-4 opacity-80 group-hover:opacity-100 transition-opacity">
-                    <p className="font-bold text-xl text-white mb-1">Portrait Format</p>
-                    <p className="text-sm text-white/80">Ideal for flyers, posters, and stories</p>
-                  </div>
-                  <div className="absolute top-3 right-3 bg-white/20 backdrop-blur-md px-2 py-1 rounded text-[10px] text-white/90 opacity-0 group-hover:opacity-100 transition-opacity">3:4</div>
-                  {['portrait', 'stories', 'story', 'a4portrait'].includes(aspectRatio) && (
-                    <div className="absolute top-3 left-3 bg-indigo-500 text-white rounded-full p-1">
-                      <Check className="h-3 w-3" />
-                    </div>
-                  )}
-                </div>
-                
-                {/* Landscape Format preview */}
-                <div 
-                  className={`aspect-video overflow-hidden rounded-lg relative group cursor-pointer transform transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] ${['landscape', 'instream', 'yt_thumbnail'].includes(aspectRatio) ? 'ring-2 ring-indigo-500 ring-offset-2 ring-offset-black' : ''}`}
-                  onClick={() => setAspectRatio('landscape')}
-                >
-                  <img 
-                    src="https://images.unsplash.com/photo-1588880331179-bc9b93a8cb5e?q=80&w=1200&auto=format&fit=crop" 
-                    alt="Landscape Format" 
-                    className="object-cover w-full h-full transition-all duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-4 opacity-80 group-hover:opacity-100 transition-opacity">
-                    <p className="font-bold text-xl text-white mb-1">Landscape Format</p>
-                    <p className="text-sm text-white/80">Perfect for web banners and video thumbnails</p>
-                  </div>
-                  <div className="absolute top-3 right-3 bg-white/20 backdrop-blur-md px-2 py-1 rounded text-[10px] text-white/90 opacity-0 group-hover:opacity-100 transition-opacity">16:9</div>
-                  {['landscape', 'instream', 'yt_thumbnail'].includes(aspectRatio) && (
-                    <div className="absolute top-3 left-3 bg-indigo-500 text-white rounded-full p-1">
-                      <Check className="h-3 w-3" />
-                    </div>
-                  )}
-                </div>
-                
-                {/* Banner Format preview */}
-                <div 
-                  className={`aspect-[21/9] overflow-hidden rounded-lg relative group cursor-pointer transform transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] ${['fb_cover', 'facebook', 'twitter_header', 'linkedin_banner'].includes(aspectRatio) ? 'ring-2 ring-indigo-500 ring-offset-2 ring-offset-black' : ''}`}
-                  onClick={() => setAspectRatio('fb_cover')}
-                >
-                  <img 
-                    src="https://images.unsplash.com/photo-1475070929565-c985b496cb9f?q=80&w=1200&auto=format&fit=crop" 
-                    alt="Banner Format" 
-                    className="object-cover w-full h-full transition-all duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-4 opacity-80 group-hover:opacity-100 transition-opacity">
-                    <p className="font-bold text-xl text-white mb-1">Banner Format</p>
-                    <p className="text-sm text-white/80">Ideal for headers and media covers</p>
-                  </div>
-                  <div className="absolute top-3 right-3 bg-white/20 backdrop-blur-md px-2 py-1 rounded text-[10px] text-white/90 opacity-0 group-hover:opacity-100 transition-opacity">21:9</div>
-                  {['fb_cover', 'facebook', 'twitter_header', 'linkedin_banner'].includes(aspectRatio) && (
-                    <div className="absolute top-3 left-3 bg-indigo-500 text-white rounded-full p-1">
-                      <Check className="h-3 w-3" />
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
