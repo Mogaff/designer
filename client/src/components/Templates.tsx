@@ -6,7 +6,7 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from "@/components/ui/button";
 import { Plus, LayoutGrid } from "lucide-react";
-import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import TemplateGallery from "./TemplateGallery";
 import { DesignTemplate } from "@/lib/types";
 
@@ -65,11 +65,11 @@ export default function Templates({ onSelectTemplate }: TemplatesProps) {
               aria-label="Design Templates Gallery" 
               aria-describedby="gallery-desc"
             >
-              {/* Add DialogTitle to fix accessibility warning (can hide it visually) */}
+              {/* Add DialogTitle and DialogDescription to fix accessibility warnings (can hide them visually) */}
               <DialogTitle className="sr-only">Design Templates Gallery</DialogTitle>
-              <div id="gallery-desc" className="sr-only">
+              <DialogDescription className="sr-only" id="gallery-desc">
                 Select a design template to start your project with predefined styles and layouts
-              </div>
+              </DialogDescription>
               <TemplateGallery 
                 onSelectTemplate={handleTemplateSelect} 
                 onClose={() => setIsGalleryOpen(false)} 

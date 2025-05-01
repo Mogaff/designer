@@ -335,7 +335,7 @@ export default function TemplateGallery({ onSelectTemplate, onClose }: TemplateG
         </div>
       </div>
       
-      <ScrollArea className="flex-grow h-[calc(100vh-320px)] overflow-auto" type="always">
+      <ScrollArea className="flex-grow max-h-[60vh] min-h-[300px] overflow-auto" type="always">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-4">
           {filteredTemplates.map(template => (
             <div 
