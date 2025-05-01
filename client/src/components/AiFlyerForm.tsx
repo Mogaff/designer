@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { GeneratedFlyer, AiFlyerGenerationRequest, DesignSuggestions, DesignVariation, FontSettings, GoogleFont, BrandKit, DesignTemplate } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { ImageIcon, Upload, TypeIcon, Check, PaintBucket, Crown, Sparkles, WandSparkles, Star } from "lucide-react";
+import { ImageIcon, Upload, TypeIcon, Check, PaintBucket, Crown, Sparkles, WandSparkles, Star, LightbulbIcon } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import backgroundGradient from "../assets/background-gradient.png";
 import backgroundGradient2 from "../assets/backgroundd-gradient.png";
@@ -17,6 +17,7 @@ import meshGradient from "../assets/image-mesh-gradient (18).png";
 import { useUserSettings } from "@/contexts/UserSettingsContext";
 import { loadGoogleFonts, loadFont } from '@/lib/fontService';
 import PremiumDesignPanel from "./PremiumDesignPanel";
+import CompetitorInspirationPanel from "./CompetitorInspirationPanel";
 import { 
   Select,
   SelectContent,
@@ -56,6 +57,7 @@ export default function AiFlyerForm({
   const [generateAiBackground, setGenerateAiBackground] = useState<boolean>(false); // AI background generation toggle
   const [isPremiumDialogOpen, setIsPremiumDialogOpen] = useState(false);
   const [selectedPremiumOption, setSelectedPremiumOption] = useState<string | null>(null);
+  const [isInspirationPanelOpen, setIsInspirationPanelOpen] = useState(false);
   const { fontSettings } = useUserSettings(); // Get font settings from context
   
   // Get active brand kit
@@ -412,6 +414,17 @@ export default function AiFlyerForm({
   const clearLogo = () => {
     setLogo(null);
     setLogoPreview(null);
+  };
+  
+  // Handler for enhanced prompts from competitor inspiration
+  const handleEnhancePrompt = (enhancedPrompt: string) => {
+    setPrompt(enhancedPrompt);
+    setIsInspirationPanelOpen(false);
+    
+    toast({
+      title: "Prompt Enhanced",
+      description: "Your prompt has been enhanced with competitor ad inspiration",
+    });
   };
 
   return (
@@ -864,9 +877,30 @@ export default function AiFlyerForm({
         
         {/* Prompt Input with Generate Button */}
         <div className="space-y-1">
-          <Label htmlFor="prompt" className="text-xs font-medium text-white/70">
-            Prompt
-          </Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="prompt" className="text-xs font-medium text-white/70 flex items-center">
+              Prompt
+            </Label>
+            
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => setIsInspirationPanelOpen(!isInspirationPanelOpen)}
+              className="h-6 text-xs px-2 text-indigo-300 hover:text-indigo-200 hover:bg-indigo-500/20"
+            >
+              <LightbulbIcon className="h-3.5 w-3.5 mr-1" />
+              {isInspirationPanelOpen ? "Hide inspiration" : "Get competitor inspiration"}
+            </Button>
+          </div>
+          
+          {/* Competitor Inspiration Panel */}
+          <CompetitorInspirationPanel 
+            onEnhancePrompt={handleEnhancePrompt}
+            originalPrompt={prompt}
+            isOpen={isInspirationPanelOpen}
+          />
+          
           <div className="relative">
             <Textarea
               id="prompt"

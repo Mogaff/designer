@@ -132,8 +132,8 @@ export async function scrapeGoogleAdsForAdvertiser(
           brand: document.querySelector('.advertiser-name')?.textContent?.trim() || 'Unknown',
           headline,
           body,
-          imageUrl,
-          thumbnailUrl: imageUrl, // Use same image for thumbnail
+          imageUrl: imageUrl === null ? undefined : imageUrl, // Convert null to undefined for type compatibility
+          thumbnailUrl: imageUrl === null ? undefined : imageUrl, // Use same image for thumbnail
           cta,
           adId,
           platformDetails: platform,
