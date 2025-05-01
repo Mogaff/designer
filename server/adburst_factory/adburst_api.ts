@@ -16,7 +16,7 @@ const upload = multer({
   storage,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
-    files: 3 // Maximum 3 files
+    files: 5 // Maximum 5 files (for longer videos)
   },
   fileFilter: (req, file, cb) => {
     // Accept only image files
@@ -28,11 +28,13 @@ const upload = multer({
   }
 });
 
-// Middleware to handle file uploads
+// Middleware to handle file uploads (supporting up to 5 images for longer videos)
 const uploadMiddleware = upload.fields([
   { name: 'image1', maxCount: 1 },
   { name: 'image2', maxCount: 1 },
-  { name: 'image3', maxCount: 1 }
+  { name: 'image3', maxCount: 1 },
+  { name: 'image4', maxCount: 1 },  // Optional for longer videos
+  { name: 'image5', maxCount: 1 }   // Optional for longer videos
 ]);
 
 // Initialize Anthropic client
@@ -289,7 +291,7 @@ export async function processAdBurstRequest(req: Request, res: Response) {
     if (!files || !files.image1 || !files.image2 || !files.image3) {
       return res.status(400).json({ 
         success: false,
-        message: 'Please upload exactly 3 image files (image1, image2, image3)' 
+        message: 'Please upload at least 3 required image files (image1, image2, image3)' 
       });
     }
     
@@ -297,13 +299,23 @@ export async function processAdBurstRequest(req: Request, res: Response) {
     const imageFiles = [
       ...files.image1,
       ...files.image2,
-      ...files.image3
+      ...files.image3,
+      ...(files.image4 || []),  // Optional 4th image
+      ...(files.image5 || [])   // Optional 5th image
     ];
     
-    if (imageFiles.length !== 3) {
+    // Check if we have enough images (3-5)
+    if (imageFiles.length < 3) {
       return res.status(400).json({ 
         success: false,
-        message: 'Please upload exactly 3 image files' 
+        message: 'Please upload at least 3 image files' 
+      });
+    }
+    
+    if (imageFiles.length > 5) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Maximum 5 image files allowed' 
       });
     }
     
