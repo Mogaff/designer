@@ -29,12 +29,14 @@ const upload = multer({
 });
 
 // Middleware to handle file uploads (supporting up to 5 images for longer videos)
+// Allow both individual image fields and array of images
 const uploadMiddleware = upload.fields([
   { name: 'image1', maxCount: 1 },
   { name: 'image2', maxCount: 1 },
   { name: 'image3', maxCount: 1 },
   { name: 'image4', maxCount: 1 },  // Optional for longer videos
-  { name: 'image5', maxCount: 1 }   // Optional for longer videos
+  { name: 'image5', maxCount: 1 },  // Optional for longer videos
+  { name: 'images', maxCount: 5 }   // Alternative format: array of images
 ]);
 
 // Initialize Anthropic client
@@ -288,21 +290,36 @@ export async function processAdBurstRequest(req: Request, res: Response) {
     // Get uploaded files from multer
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
     
-    if (!files || !files.image1 || !files.image2 || !files.image3) {
+    // Log what we received to help debug
+    console.log('Received files with these keys:', Object.keys(files));
+    
+    // Support both "image1" format and "images" format
+    if (!files || (
+        !files.image1 && !files.image2 && !files.image3 && !files.images
+      )) {
       return res.status(400).json({ 
         success: false,
-        message: 'Please upload at least 3 required image files (image1, image2, image3)' 
+        message: 'Please upload at least 3 required image files' 
       });
     }
     
     // Combine all images into a single array
-    const imageFiles = [
-      ...files.image1,
-      ...files.image2,
-      ...files.image3,
-      ...(files.image4 || []),  // Optional 4th image
-      ...(files.image5 || [])   // Optional 5th image
-    ];
+    let imageFiles: Express.Multer.File[] = [];
+    
+    // Check if we're using the "image1, image2, etc." naming pattern
+    if (files.image1) {
+      imageFiles = [
+        ...files.image1,
+        ...(files.image2 || []),
+        ...(files.image3 || []),
+        ...(files.image4 || []),  // Optional 4th image
+        ...(files.image5 || [])   // Optional 5th image
+      ];
+    }
+    // Check if we're using the "images" array naming pattern
+    else if (files.images) {
+      imageFiles = [...files.images];
+    }
     
     // Check if we have enough images (3-5)
     if (imageFiles.length < 3) {

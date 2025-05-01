@@ -94,14 +94,29 @@ export default function AdBurst() {
     setProgress(0);
     
     const formData = new FormData();
+    
+    // Log what we're sending to help debug
+    console.log(`Uploading ${files.length} images`);
+    
     // Backend expects images with specific field names (image1, image2, etc.)
     files.forEach((file, index) => {
+      console.log(`Adding image${index + 1}: ${file.name} (${file.size} bytes)`);
       formData.append(`image${index + 1}`, file);
     });
-    formData.append('productName', 'Product');  // Adding a default product name
+    
+    // Add product information
+    const productName = 'Product';  // Default product name
+    formData.append('productName', productName);
     formData.append('productDescription', prompt);
     formData.append('targetAudience', callToAction);
     formData.append('aspectRatio', aspectRatio);
+    
+    console.log('Form data prepared:', {
+      productName,
+      productDescription: prompt,
+      targetAudience: callToAction,
+      aspectRatio
+    });
     
     try {
       // Set up progress monitoring
@@ -112,15 +127,18 @@ export default function AdBurst() {
         });
       }, 1000);
       
+      console.log('Sending request to /api/adburst...');
       const response = await fetch('/api/adburst', {
         method: 'POST',
         body: formData,
       });
       
       clearInterval(progressInterval);
+      console.log(`Request completed with status: ${response.status}`);
       
       if (response.ok) {
         const data = await response.json();
+        console.log('Success response:', data);
         setProgress(100);
         setResult(data);
         toast({
@@ -129,6 +147,7 @@ export default function AdBurst() {
         });
       } else {
         const errorData = await response.json();
+        console.error('Error response:', errorData);
         toast({
           title: "Error",
           description: errorData.message || "Failed to generate ad video",
@@ -136,6 +155,7 @@ export default function AdBurst() {
         });
       }
     } catch (error) {
+      console.error('Exception during request:', error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : 'Failed to generate ad video',
