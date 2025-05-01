@@ -158,7 +158,7 @@ export function transformMetaAds(metaAds: MetaAdData[], userId?: number, industr
       image_url: imageUrl || null,
       thumbnail_url: imageUrl || null, // Use same image for thumbnail
       cta: ad.call_to_action || null,
-      start_date: startDate || null,
+      start_date: startDate ? startDate.toISOString().split('T')[0] : null, // Convert Date to string format YYYY-MM-DD
       platform_details: ad.placements ? ad.placements.join(', ') : null,
       ad_id: ad.id || null,
       page_id: ad.page_id || null,

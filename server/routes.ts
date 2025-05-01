@@ -14,6 +14,7 @@ import { hashPassword, isAuthenticated } from "./auth";
 import { insertUserSchema, insertDesignConfigSchema, insertUserCreditsSchema, insertUserCreationSchema, insertBrandKitSchema } from "@shared/schema";
 import { createCheckoutSession, verifyCheckoutSession, handleStripeWebhook, CREDIT_PACKAGES } from "./stripe";
 import { registerAdBurstApiRoutes } from "./adburst_factory/adburst_api";
+import { registerCompetitorAdRoutes, registerAdInspirationIntegrationRoutes } from "./competitor_ads/routes";
 
 // Using the built-in type definitions from @types/multer
 
@@ -34,6 +35,10 @@ const uploadFields = upload.fields([
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize and register the AdBurst Factory routes
   registerAdBurstApiRoutes(app);
+  
+  // Register the competitor ad search and inspiration routes
+  registerCompetitorAdRoutes(app);
+  registerAdInspirationIntegrationRoutes(app);
   
   // Add route for generating background images with Flux AI
   app.post("/api/generate-background", isAuthenticated, generateBackgroundImageHandler);
@@ -199,7 +204,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (generationOptions.logoBase64) {
         log("⚠️ IMPORTANT: Brand kit with logo detected", "generator");
         log("⚠️ Temporarily disabling logo to ensure successful generation - will fix this in future update", "generator");
-        generationOptions.logoBase64 = null; // Temporarily disable logo to ensure generation works
+        generationOptions.logoBase64 = ""; // Temporarily disable logo to ensure generation works
       }
       
       // WICHTIG: Nur die Anzahl der Designs generieren, die der Benutzer ausgewählt hat
@@ -217,7 +222,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             prompt: `${generationOptions.prompt} ${styleVariation}`,
             aspectRatio: aspectRatio,
             templateInfo: parsedTemplateInfo, // Pass the template info to the render function
-            logoBase64: null // CRITICAL FIX: Ensure no logo is sent to Claude for now
+            logoBase64: "" // CRITICAL FIX: Ensure no logo is sent to Claude for now
           };
           
           log(`Generating design variation ${index + 1}: ${styleVariation}`, "generator");
