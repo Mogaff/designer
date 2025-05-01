@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   SidebarGroup, 
   SidebarGroupLabel, 
@@ -6,7 +6,7 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from "@/components/ui/button";
 import { Plus, LayoutGrid } from "lucide-react";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
 import TemplateGallery from "./TemplateGallery";
 import { DesignTemplate } from "@/lib/types";
 
@@ -16,6 +16,21 @@ interface TemplatesProps {
 
 export default function Templates({ onSelectTemplate }: TemplatesProps) {
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+
+  // Handle ESC key press to close the gallery
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isGalleryOpen) {
+        setIsGalleryOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleEscKey);
+    
+    return () => {
+      window.removeEventListener('keydown', handleEscKey);
+    };
+  }, [isGalleryOpen]);
 
   const handleTemplateSelect = (template: DesignTemplate) => {
     onSelectTemplate(template);
@@ -50,6 +65,8 @@ export default function Templates({ onSelectTemplate }: TemplatesProps) {
               aria-label="Design Templates Gallery" 
               aria-describedby="gallery-desc"
             >
+              {/* Add DialogTitle to fix accessibility warning (can hide it visually) */}
+              <DialogTitle className="sr-only">Design Templates Gallery</DialogTitle>
               <div id="gallery-desc" className="sr-only">
                 Select a design template to start your project with predefined styles and layouts
               </div>

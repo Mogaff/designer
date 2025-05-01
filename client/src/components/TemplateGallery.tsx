@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -220,6 +220,20 @@ export default function TemplateGallery({ onSelectTemplate, onClose }: TemplateG
   const [showNewOnly, setShowNewOnly] = useState(false);
   const [showTrendingOnly, setShowTrendingOnly] = useState(false);
 
+  // Handle ESC key for accessibility
+  useEffect(() => {
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    
+    return () => {
+      window.removeEventListener('keydown', handleEsc);
+    };
+  }, [onClose]);
+
   // Get unique categories
   const categories = Array.from(new Set(DESIGN_TEMPLATES.map(template => template.category)));
 
@@ -242,7 +256,15 @@ export default function TemplateGallery({ onSelectTemplate, onClose }: TemplateG
     <div className="flex flex-col h-full bg-black/5 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden">
       <div className="flex items-center justify-between p-4 border-b border-white/10">
         <h2 className="text-lg font-semibold text-white">Design Templates</h2>
-        {/* Der X-Button wird nun automatisch von der DialogContent-Komponente bereitgestellt */}
+        <Button 
+          onClick={onClose}
+          variant="ghost" 
+          size="icon" 
+          className="h-8 w-8 rounded-full text-white hover:bg-white/10"
+          aria-label="Close template gallery"
+        >
+          <X className="h-4 w-4" />
+        </Button>
       </div>
       
       <div className="p-4 border-b border-white/10 space-y-3">
@@ -313,7 +335,7 @@ export default function TemplateGallery({ onSelectTemplate, onClose }: TemplateG
         </div>
       </div>
       
-      <ScrollArea className="flex-grow overflow-auto">
+      <ScrollArea className="flex-grow h-[calc(100vh-320px)] overflow-auto" type="always">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-4">
           {filteredTemplates.map(template => (
             <div 
