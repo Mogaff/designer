@@ -1,0 +1,241 @@
+Implementing Competitor Ad Fetch & Inspiration Feature
+Overview
+This feature will enable the AI design tool to research competitors’ ads and use them as inspiration. The Replit agent will connect to Meta’s Ad Library and Google’s Ads Transparency Center to:
+Search for ads by competitor names, keywords, or industries (e.g. “Nike”, “fitness ads”, “eco-friendly skincare”).
+Extract key information from those ads, including visual style descriptors, ad copy (headlines, body text, calls-to-action), and meta-data (start date, platform, variants, etc.).
+Provide this data to Claude as context so that Claude can generate new marketing visuals and copy that mimic high-performing techniques from competitor ads.
+By mining competitor ads for design patterns and messaging, Claude can be prompted to “Based on these styles and messaging, create a new ad for [our brand/product] that blends these high-performing techniques.” This ensures the AI’s output stays on-trend with industry best practices.
+Data Sources for Ads
+We will use two primary sources of competitor ad data:
+Meta Ad Library (Facebook/Instagram) – A public repository of all active ads across Meta platforms​
+privyr.com
+. It provides details like the ad creative content, advertiser Page, dates, and placements (Facebook, Instagram, etc.)​
+facebook.com
+. Meta offers an official API for this library (with authentication).
+Google Ads Transparency Center – A web tool launched in 2023 that lists ads run by verified advertisers on Google’s platforms (Search, YouTube, Display, etc.), covering currently active ads and those from the last ~30 days​
+scrapeless.com
+. There is no public API for this; access requires scraping the web interface.
+Each source has different capabilities and limitations:
+Meta’s library allows searching by keyword or advertiser name​
+solopreneurtools.io
+ and shows when ads started running and on which platforms (FB/IG)​
+solopreneurtools.io
+. Performance data (spend, impressions) is only available for political/issue ads or certain regions​
+facebook.com
+.
+Google’s center lets you search by advertiser or website name (not arbitrary keywords)​
+solopreneurtools.io
+ and filter by platform or ad format. It displays the ad creatives and copy, but does not show detailed performance metrics or exact start dates for most ads​
+solopreneurtools.io
+.
+Accessing Meta’s Ad Library (API Approach)
+Meta provides an official Graph API endpoint for the Ad Library. Using this API is preferred for reliability (requires a Meta developer account and access token):
+Authentication: Ensure the agent has a valid access token with permissions to use the Ad Library API. (Note: Meta may require identity verification if querying political/issue ads​
+facebook.com
+, but for commercial ads delivered in the EU, an authorized app token is sufficient.)
+Querying Ads: Use the ads_archive endpoint with appropriate parameters. For example:
+search_terms: The keyword or advertiser name to search for. This finds ads containing those terms (in ad text or Page name)​
+facebook.com
+. Alternatively, use search_page_ids to directly query a specific Page ID for a known competitor​
+facebook.com
+.
+ad_active_status: Set to ACTIVE (default) to get currently running ads​
+facebook.com
+.
+ad_reached_countries: For commercial ads, you may need to specify an EU country (e.g. "GB" for United Kingdom) because the API only returns non-political ads that ran in the EU in the past year​
+facebook.com
+. This ensures we retrieve competitor ads (assuming they have served ads in that region).
+Other filters: You can narrow by date range (ad_delivery_date_min/max) if looking for recent ads​
+facebook.com
+, or by platform (media_type or placement if supported).
+Data Returned: The Ad Library API returns a JSON with basic info. All ads include a unique ad_snapshot_url (a link to view the ad creative), the advertiser page_name and page_id, and the ad_delivery_start_time and ad_delivery_stop_time if applicable​
+facebook.com
+. For example, an API query might return data like:
+json
+Kopieren
+{
+  "data": [
+    {
+      "page_id": "123456",
+      "page_name": "Nike",
+      "ad_snapshot_url": "https://www.facebook.com/ads/archive/render_ad/?id=XYZ...",
+      "ad_delivery_start_time": "2024-03-15",
+      "ad_creative_body_text": "Get 20% off all running gear. Limited time.",
+      "ad_creative_link_title": "Train Like A Pro",
+      "ad_creative_link_description": null,
+      "placements": ["Facebook", "Instagram"]
+    },
+    ...
+  ]
+}
+Note: We must specify fields like ad_creative_body_text, ad_creative_link_title, etc., in the API request to get the ad copy content (otherwise the snapshot URL alone is returned). The example above illustrates the kind of info we can extract (start date, text, etc.). Meta’s data will let us identify the headline (e.g. link title “Train Like A Pro”), the body text, and possibly the CTA if included as button text (often accessible via the snapshot or as part of the ad creative data).
+Handling Creative Media: The ad_snapshot_url can be used to retrieve the ad’s image or video. The agent could fetch this URL (which renders an HTML snapshot of the ad) and parse out the image URL or embed code. In practice, it may be easiest to use a headless browser to load the snapshot and take a screenshot of the ad. However, for our purposes (extracting design insights), we might not need the exact image file — a description of it suffices. (More on image analysis below.)
+Alternative (Scraping UI): If API access is not available or if ads fall outside API coverage (e.g. non-EU ads), the agent can fall back to scraping the public Ad Library web interface​
+privyr.com
+. This would involve:
+Navigating to the Ad Library web page (e.g. facebook.com/ads/library) with a specific country and category selected (e.g. United States and All Ads category).
+Entering the competitor’s name or keyword in the search bar and loading the results.
+Extracting the list of ads shown, along with their text and meta-info (the UI displays the ad copy, and a hover or click reveals the start date and platform).
+Tools like Puppeteer (to simulate a real browser and handle dynamic content) combined with Cheerio (for parsing the resulting HTML) can be used for this automation. There are also third-party scrapers (e.g. Apify’s Facebook Ad Library Scraper​
+apify.com
+) that could be leveraged, but a custom Puppeteer script gives more control.
+Accessing Google’s Ads Transparency Center (Scraping Approach)
+Google’s Ads Transparency Center does not offer an official API, so the agent must resort to scraping the web interface (while adhering to usage policies). Key steps and considerations:
+Search Method: The Transparency Center requires searching by advertiser name or website URL, not arbitrary keywords​
+solopreneurtools.io
+​
+solopreneurtools.io
+. This means if the user provides a generic term like “fitness ads,” the agent should first identify relevant advertisers (e.g. Nike, Adidas, local gym brands) or domain names related to that term. (One strategy is to maintain a mapping of industry keywords to known top brands, or use Google Search API to find companies in that niche, then use their names in the Ads Center search.)
+Automating Search: Use a headless browser (Puppeteer) to navigate to adstransparency.google.com. No login is required to view ads, but we can set the region if needed (e.g. ?region=US for United States). Once on the page:
+Locate the search bar (which says “Search by advertiser or website name”​
+adstransparency.google.com
+) and input the query (competitor name or site). The agent may simulate keystrokes and pressing Enter, then wait for results to load.
+If multiple advertisers match the query, the agent may need to click the correct one (for example, searching "Nike" might bring up “Nike, Inc.” as an advertiser entry). Each advertiser has a unique ID (format like ARxxxxxxxxxxxx in the URL)​
+serpapi.com
+; capturing this ID is useful for direct access. For instance, navigating directly to https://adstransparency.google.com/advertiser/AR17828074650563772417 would bring up Tesla’s ads​
+serpapi.com
+. The agent can extract this ID from the search results page HTML via Cheerio.
+Extracting Ad Data: Once on an advertiser’s page, the list of ads can be scrolled. The agent should scrape details for each ad:
+Ad creative preview: There may be a thumbnail or snapshot (image or video preview). Extract the image URL or video title if available. (E.g. for a YouTube ad, a thumbnail image URL and the video headline will be present.) For display ads, an image URL might be directly accessible.
+Ad text/copy: If it’s a search ad, the text includes headlines and description lines. If it’s a YouTube/video ad, there might be a title and perhaps a short description. The agent should capture whatever text is shown for the ad.
+CTA and Destination: The Transparency Center might show the call-to-action (like “Shop Now”) or the destination domain of the ad. If present, record the CTA text and landing page domain.
+Meta information: Google’s interface provides limited meta-data. It typically shows the platform (e.g. an icon or label for YouTube vs. Search Network) and possibly the date range the ad was seen. For example, political ads list start and end dates, but for commercial ads the Transparency Center does not explicitly list start dates​
+solopreneurtools.io
+. It may only indicate if an ad is “Active” or show “Last seen on [date]” if recently inactive. We will capture any date info available (or mark it as unknown if not provided).
+Pagination/Load More: If the advertiser has many ads, the page might load them in batches (infinite scroll). The Puppeteer script should scroll and/or click “Load more” until all relevant ads are loaded, to gather a comprehensive list.
+Parsing HTML: Use Cheerio (a jQuery-like HTML parser for Node.js) on the page’s HTML to extract the structured data. Identify consistent CSS selectors or DOM structures for the ad cards. (For example, each ad card might be a <div> with class containing “ad-container”, inside which text elements and images can be found.) Using Cheerio, pluck out the text for headline, body, etc., and the src of any image tags.
+Rate Limiting: Implement delays and possibly random pauses when scraping to avoid triggering Google’s anti-scraping measures. Since we might scrape multiple advertisers (especially for broad industry keywords), consider spacing out requests or caching results (discussed later).
+Note: There are third-party services (SerpApi, Apify, etc.) that offer Google Ads Transparency Center data via API by doing the scraping for you​
+serpapi.com
+. For example, SerpApi’s service allows querying by advertiser ID or name and returns JSON. While integrating such a service is an option, here we focus on a self-contained approach using Puppeteer/Cheerio.
+Data Extraction and Structuring
+After fetching raw data from Meta and Google, the agent will parse and structure it into a unified format. We define a JSON schema for ad entries, for example:
+json
+Kopieren
+{
+  "platform": "Meta",               // "Meta" or "Google"
+  "brand": "Nike",                 // Advertiser/brand name
+  "headline": "Train Like A Pro",  // Main headline or title of the ad
+  "body": "Get 20% off all running gear. Limited time.",  // Main ad copy text
+  "imageUrl": "https://facebook.com/ads/creative123.jpg", // URL to the ad's image or thumbnail
+  "cta": "Shop Now",               // Call-to-action text (if available)
+  "startDate": "2024-03-15",       // Start date of the ad (if known)
+  "platformDetails": "Facebook & Instagram", // (Optional) specific platforms the ad ran on
+  "styleDescription": "Bold typography, red and black color scheme, athlete imagery" // Visual/style notes
+}
+Each ad object contains the key information needed by Claude. A few notes on populating these fields:
+platform: Simply “Meta” for ads from Facebook/IG via Meta’s library, or “Google” for ads from Google’s Transparency Center. (You could further distinguish “Google-YouTube” vs “Google-Search” in platformDetails if desired.)
+brand: The competitor or advertiser name. This will be the Page name for Meta ads​
+facebook.com
+, and the advertiser’s name (or website) for Google ads. The agent will have this from the query context or from the page data (e.g. the header of the advertiser page).
+headline: For Meta, if the ad has a headline text (often the bold title or link title in the ad creative​
+solopreneurtools.io
+), use that. If not, sometimes the first line of the body or the prominent text in the image can serve as a “headline.” For Google, use the title of the ad:
+Search ads: use the first headline (or concatenate multiple headlines if applicable).
+YouTube ads: use the video title as the headline.
+Display ads: if they have a caption or title, extract it; if not, the agent might treat the visible text as body and leave headline blank or use the product name if discernible.
+body: The main descriptive text of the ad. For Facebook, this is the ad copy text (often the text above the image/video in feed). For Google Search ads, this would be the description text. For a video ad, if a description is given in the Transparency listing, use it; otherwise, there may be no separate body text beyond the headline.
+imageUrl: A direct URL to the creative asset if possible. On Meta, the snapshot HTML contains the image source (which we can pull). On Google, for image ads and video thumbnails, we can get the image URL. (These can later be used to download images or for Claude to see, if needed.) If direct URL is hard to get, we could store a screenshot link instead.
+cta: The call-to-action text, such as “Shop Now”, “Learn More”, “Sign Up”. For Meta ads, if the ad has a CTA button, the text might be included in the snapshot data. If not readily available, the agent could infer it (for example, many e-commerce ads use “Shop Now”). For Google ads, the CTA might not be explicitly stated unless it’s part of the ad (e.g., some YouTube ads have overlay buttons). If unavailable, this field can be null or omitted.
+startDate: The date the ad began running. Meta’s data provides ad_delivery_start_time​
+facebook.com
+ which we can use. Google’s Transparency Center does not list start dates for commercial ads​
+solopreneurtools.io
+. If the ad is active, we might not have this date (we could approximate if the ad was first seen within the last 30 days window). If an ad is inactive, Google might show “last active on [date]”, which isn’t exactly the start but an end date. We will include whatever date info is available. If unknown, use null or leave the field out.
+platformDetails: This could optionally note specific platforms/networks. For Meta, the API’s placements or the snapshot will tell if it ran on Facebook, Instagram, Messenger, etc. For Google, the agent can deduce from context: e.g. if the ad is a YouTube video ad, or a Search text ad, etc. Including this can help Claude understand the context (e.g. an ad on YouTube might have different style than a search ad).
+styleDescription: A human-readable summary of the visual style and design elements. This is crucial for Claude to understand the look and feel. The agent will generate this by analyzing the creative:
+Check the image (or video thumbnail) for dominant colors, subject matter, and layout. This might involve using an image analysis library or an AI vision service. For example, if the image URL is accessible, the agent could load it and find that it contains “an athlete running on a track with bold red and black branding.” We then summarize that as “Bold typography, red and black color scheme, athlete imagery.”
+If programmatic image analysis is challenging, another approach is to leverage Claude (or another AI) to describe the image. For instance, the agent could feed Claude a description of the image (from OCR or metadata) or use any available alt text from the ad (Meta sometimes provides accessibility data).
+At minimum, the agent can use known brand cues (Nike ads often have athletic imagery and bold text, skincare ads often use soft colors and clean layouts, etc.) to fill this field. It doesn’t need to be perfect; Claude can refine it further if needed.
+By structuring the data in JSON, we maintain a clear and machine-readable format that can be easily fed into Claude or used for logging.
+Implementation: fetchAdsByKeyword(keyword) Function
+We will create a function fetchAdsByKeyword that orchestrates the above steps and returns a list of ad objects from both Meta and Google sources. Below is a high-level outline (in pseudo-code/JavaScript for clarity):
+js
+Kopieren
+async function fetchAdsByKeyword(keyword) {
+  const results = [];
+
+  // 1. Fetch from Meta Ad Library
+  try {
+    const metaAds = await fetchFromMetaAdLibrary(keyword);
+    // `metaAds` should be an array of ad objects structured as defined above.
+    results.push(...metaAds);
+  } catch (err) {
+    console.error(`Meta Ad Library fetch failed for "${keyword}":`, err);
+    // Proceed even if Meta fetch fails (maybe competitor isn’t advertising on Meta)
+  }
+
+  // 2. Fetch from Google Ads Transparency
+  try {
+    const googleAds = await fetchFromGoogleAdsTransparency(keyword);
+    results.push(...googleAds);
+  } catch (err) {
+    console.error(`Google Ads Transparency fetch failed for "${keyword}":`, err);
+  }
+
+  // 3. Cache the result (to avoid re-fetching this keyword too soon)
+  cacheResults(keyword, results);
+
+  return results;
+}
+In the above:
+fetchFromMetaAdLibrary(keyword): This function will handle the Graph API calls or UI scraping for Meta. If using the API, it might:
+Use the Graph API search to find a Page by name if the keyword is a brand (e.g., “Nike” -> get Page ID).
+Query the ads_archive endpoint with search_page_ids or search_terms.
+For each ad in the response, build an ad object with fields: platform “Meta”, brand (Page name), headline/body from the creative text fields, imageUrl from snapshot, CTA if available, startDate from ad_delivery_start_time, platformDetails (from placements or we can set “Facebook/Instagram”), and styleDescription (perhaps generated via another helper that downloads the image and analyzes it).
+If using scraping instead, fetchFromMetaAdLibrary would launch Puppeteer to the Ad Library web, perform the search, and parse results similarly, then construct the objects.
+fetchFromGoogleAdsTransparency(keyword): This function encapsulates the scraping logic for Google:
+Launch Puppeteer to the Ads Transparency Center.
+Search for the keyword (if the keyword is not an advertiser name, this function might internally map it to a list of related advertisers to try). For a direct brand name, go straight to searching that name.
+Parse the results page or advertiser page for ads. Extract needed fields as described. Construct ad objects with platform “Google”, brand (advertiser name), and fill headline, body, imageUrl, CTA, startDate (likely null or “unknown” if not provided), platformDetails (e.g. “YouTube Video Ad” or “Google Search Ad”), and styleDescription (derived from the creative).
+Return the array of ad objects.
+cacheResults(keyword, results): A simple caching mechanism (e.g., an in-memory object or a database) to store the results for a given keyword/competitor for some time (perhaps a few hours or a day). This prevents hitting the APIs/websites repeatedly for the same query and helps avoid rate limits or captchas. The cache could use the keyword as key, and store the array plus a timestamp. Next time fetchAdsByKeyword is called, it can first check the cache and return the cached data if it’s fresh, otherwise proceed to fetch anew.
+Example Usage:
+If the user prompts the tool with, say, “Show me ideas for ads like what Nike is doing in running shoes.”, the system would call fetchAdsByKeyword("Nike"). Suppose Nike has recent ads in the libraries, the function might return something like:
+js
+Kopieren
+[
+  {
+    platform: "Meta",
+    brand: "Nike",
+    headline: "Train Like A Pro",
+    body: "Get 20% off all running gear. Limited time.",
+    imageUrl: "https://.../nike_ad1.jpg",
+    cta: "Shop Now",
+    startDate: "2024-03-15",
+    platformDetails: "Facebook & Instagram",
+    styleDescription: "Bold typography, red and black color scheme, athlete imagery"
+  },
+  {
+    platform: "Google",
+    brand: "Nike",
+    headline: "Nike Running Shoes Sale",
+    body: "Discover the latest Nike running collection at 20% off. Shop now and run with the best.",
+    imageUrl: "https://.../nike_google_ad.png",
+    cta: "Shop Now",
+    startDate: null,
+    platformDetails: "Google Search Ad",
+    styleDescription: "Text-focused search ad with compelling offer and brand mention"
+  },
+  ... // possibly more objects from each platform
+]
+The structure matches the specified schema. (In reality, Google Search ads might have up to three short headlines; we might combine them or just pick one as representative. And the imageUrl for a search ad might be irrelevant since it’s text-only, so that could be null or omitted.)
+Feeding Data to Claude for Ad Generation
+With the structured ads data in hand, the final step is to use it to prompt Claude. We will provide Claude with a summary of the competitor ads’ key elements and then ask Claude to generate a new ad. For example, the prompt to Claude could be:
+System/Admin (to Claude): You are an advertising creative assistant. You have data on high-performing ads from competitors, including their style and messaging.
+User (to Claude): Based on these styles and messaging, create a new ad for [OurBrand]’s [Product] that blends these high-performing techniques. The ad should have a similar tone and visual style. Here are the reference ads:
+Nike (Meta) – Style: Bold typography, red/black colors, athlete imagery. Headline: “Train Like A Pro.” Body: “Get 20% off all running gear. Limited time.” CTA: Shop Now.
+Nike (Google) – Style: Text-focused, simple, emphasis on discount. Headline: “Nike Running Shoes Sale.” Body: “Discover the latest Nike running collection at 20% off...”. CTA: Shop Now.
+(… list a few key ads …)
+Now create a new ad concept for our brand, [OurBrand] [Product], incorporating a bold athletic visual style and a promotional tone similar to the above. Provide a headline, body text, CTA, and a brief description of the visual.*
+Claude will use the provided examples as inspiration and generate an ad creative suggestion. Because we preserved the important elements (tone, wording style, colors, layout cues), Claude can mix and match those patterns in a fresh way. For instance, it might produce: “Push Your Limits – Train with [OurBrand]! | Gear up with the best [Product] and save 25% today. Don’t miss out – get yours now. [Shop Now]” along with a note that the visual could feature an athlete against [OurBrand]’s color scheme, etc. When feeding the data to Claude, keep these tips in mind:
+Select the most relevant ads: If our search pulled in many ads, we don’t need to show all to Claude (to save token space and avoid confusion). We can filter to maybe 3-5 ads that best represent the styles we want to emulate. Perhaps prioritize ads with high apparent engagement (if known) or the newest ones.
+Describe rather than raw JSON: While Claude can read JSON, it’s more effective to convert the structured data into a natural language summary or bullet points (as shown above). Emphasize the creative aspects: color, imagery, tone of voice, calls-to-action. This is what Claude will latch onto when generating.
+Maintain brand separation: Make sure to tell Claude the new ad is for [User’s Brand], which is different from the competitor. The context is inspiration, not copying the competitor’s branding. Claude should blend techniques (e.g. similar upbeat tone or layout) but with the user’s brand name and unique selling points.
+Logging, Error Handling, and Caching
+To ensure robust operation in production:
+Error Logging: The agent should log any failures encountered during fetching. For example, if the Meta API call returns an error (network issue or rate limit or no results), catch it and log a warning. Similarly log errors in the Puppeteer scraping (e.g., if a page element wasn’t found or a navigation timed out). This will help in debugging issues with specific queries or changes in external site structure.
+Graceful Fallbacks: If one source fails (say Google scraping fails due to a site change or Captcha), the function should still return whatever data was obtained from the other source, rather than failing everything. Partial data is still useful to Claude. Possibly notify the user (or developer) that one source couldn’t be fetched, so they know coverage might be incomplete.
+Caching: As mentioned, implement caching of results for recent queries. Many users might ask about the same big brands (e.g. “Nike”, “Adidas”) repeatedly. We don’t want to hit the Meta API or Google site fresh each time. We can cache by keyword/brand for a certain TTL (time-to-live). For example, store Nike’s ads for 24 hours. On a new request for “Nike”, if cache is fresh, use that instead of fetching again. This reduces load and avoids rate limiting. Just ensure the cache invalidation so data isn’t too stale (ads change frequently).
+Rate Limits & Throttling: The Meta Ad Library API has rate limits (depending on the app’s permissions). We should space out API calls and possibly batch multiple keywords if needed. For Google scraping, heavy access could trigger blocks, so random delays, user-agent rotation (if possible), and not querying too fast will help.
+Respect Terms of Service: Scraping should be done responsibly, in line with legal and ethical guidelines. Since the Ads Transparency Center is meant for public transparency, accessing it programmatically for research is generally acceptable, but we should avoid scraping user-specific data or anything not intended for public view. Always review Google’s terms for any restrictions on automated access to that tool. (If unclear, using an API service that has taken on that compliance could be an alternative.)
