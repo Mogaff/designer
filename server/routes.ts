@@ -47,7 +47,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       log("AI Flyer generation started - Phase 1: Design Suggestions", "generator");
       
-      const { prompt, configId, designCount, aspectRatio, templateInfo, brand_kit_id } = req.body;
+      // Extract parameters from request body
+      // Note: Client might use either designCount or design_count, so we check for both
+      const { prompt, configId, designCount, design_count, aspectRatio, templateInfo, brand_kit_id } = req.body;
       const userId = (req.user as any).id;
       
       // Parse template information if provided
@@ -63,7 +65,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Parse designCount (default to 4 if not specified or invalid)
       // Das designCount kommt aus dem premium option in frontend (1, 4, 8, 12)
-      const numDesigns = parseInt(designCount) || 4;
+      // We handle both camelCase (designCount) and snake_case (design_count) versions
+      const parsedDesignCount = design_count || designCount;
+      const numDesigns = parseInt(parsedDesignCount) || 4;
+      log(`Parsed design count: ${numDesigns} (from input: ${parsedDesignCount})`, "generator");
       
       // WICHTIG: numDesigns wird als die tatsächliche Anzahl der zu generierenden Designs verwendet
       // Stellen Sie sicher, dass es mindestens 1 ist, aber keine Obergrenze mehr (für Premium-Optionen)
