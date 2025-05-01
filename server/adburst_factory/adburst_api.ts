@@ -44,7 +44,7 @@ const anthropic = new Anthropic({
 // Import all our API integrations
 import { imageToVideo as geminiImageToVideo } from './veo_api';
 import { imageToVideo as klingImageToVideo, checkKlingApiKey } from './kling_api';
-import { imageToVideo as falImageToVideo, checkFalApiKey } from './fal_ltx_api';
+import { imageToVideo as falImageToVideo, checkFalApiKey } from './fal_i2v_api';
 import { generateAdScript } from './openai_api';
 import { textToSpeech } from './elevenlabs_api';
 import { combineVideoAudio } from './ffmpeg_utils';
@@ -318,9 +318,9 @@ export async function processAdBurstRequest(req: Request, res: Response) {
     let rawVideoPath;
     try {
       // Determine which video generation API to use based on available API keys
-      // Prioritize Fal AI LTX model for higher quality video generation
+      // Prioritize Fal AI Image-to-Video model first, then Kling, then Gemini as fallback
       if (apiKeyStatus.fal) {
-        console.log('Using Fal AI LTX for video generation...');
+        console.log('Using Fal AI Image-to-Video for video generation...');
         try {
           // Generate a prompt based on the product information
           const videoPrompt = `Professional ${productName} demonstration with smooth camera movement and elegant transitions. Elegant and premium product showcase with cinematic quality.`;
@@ -330,24 +330,44 @@ export async function processAdBurstRequest(req: Request, res: Response) {
             videoPrompt,
             { aspectRatio: "9:16" } // Vertical video for social media
           );
-          console.log('Video generation with Fal AI LTX complete:', rawVideoPath);
-        } catch (error) {
-          const falError = error as Error;
-          console.error('Error generating video with Fal AI LTX:', falError);
+          console.log('Video generation with Fal AI complete:', rawVideoPath);
+        } catch (falError) {
+          console.error('Error generating video with Fal AI:', falError);
           
-          // Try Kling as fallback
+          // Try Kling as fallback option 1
           if (apiKeyStatus.kling) {
             console.log('Falling back to Kling for video generation...');
             try {
-              const fallbackPrompt = `Professional ${productName} demonstration with smooth camera movement and elegant transitions`;
               rawVideoPath = await klingImageToVideo(
                 imagePaths[0],
-                fallbackPrompt,
+                videoPrompt,
                 { aspectRatio: "9:16" }
               );
               console.log('Video generation with Kling complete:', rawVideoPath);
             } catch (klingError) {
-              throw new Error(`Both Fal AI LTX and Kling failed: ${falError.message} | ${klingError instanceof Error ? klingError.message : 'Unknown error'}`);
+              console.error('Error generating video with Kling fallback:', klingError);
+              
+              // Try Gemini as fallback option 2
+              if (apiKeyStatus.gemini) {
+                console.log('Falling back to Gemini Veo as final option...');
+                try {
+                  rawVideoPath = await geminiImageToVideo(imagePaths[0]);
+                  console.log('Video generation with Gemini Veo complete:', rawVideoPath);
+                } catch (geminiError) {
+                  throw new Error(`All video generation methods failed: Fal AI: ${falError instanceof Error ? falError.message : 'Unknown error'} | Kling: ${klingError instanceof Error ? klingError.message : 'Unknown error'} | Gemini: ${geminiError instanceof Error ? geminiError.message : 'Unknown error'}`);
+                }
+              } else {
+                throw new Error(`Both Fal AI and Kling failed: ${falError instanceof Error ? falError.message : 'Unknown error'} | ${klingError instanceof Error ? klingError.message : 'Unknown error'}`);
+              }
+            }
+          } else if (apiKeyStatus.gemini) {
+            // If no Kling API key, try Gemini directly
+            console.log('Falling back to Gemini Veo for video generation...');
+            try {
+              rawVideoPath = await geminiImageToVideo(imagePaths[0]);
+              console.log('Video generation with Gemini Veo complete:', rawVideoPath);
+            } catch (geminiError) {
+              throw new Error(`Both Fal AI and Gemini Veo failed: ${falError instanceof Error ? falError.message : 'Unknown error'} | ${geminiError instanceof Error ? geminiError.message : 'Unknown error'}`);
             }
           } else {
             throw falError; // Re-throw if we don't have a fallback
@@ -356,15 +376,37 @@ export async function processAdBurstRequest(req: Request, res: Response) {
       } else if (apiKeyStatus.kling) {
         // If no Fal AI key, try Kling
         console.log('Using Kling for video generation...');
-        const fallbackPrompt = `Professional ${productName} demonstration with smooth camera movement and elegant transitions`;
-        rawVideoPath = await klingImageToVideo(
-          imagePaths[0],
-          fallbackPrompt,
-          { aspectRatio: "9:16" }
-        );
-        console.log('Video generation with Kling complete:', rawVideoPath);
+        const videoPrompt = `Professional ${productName} demonstration with smooth camera movement and elegant transitions. Elegant and premium product showcase with cinematic quality.`;
+        try {
+          rawVideoPath = await klingImageToVideo(
+            imagePaths[0],
+            videoPrompt,
+            { aspectRatio: "9:16" }
+          );
+          console.log('Video generation with Kling complete:', rawVideoPath);
+        } catch (klingError) {
+          console.error('Error generating video with Kling:', klingError);
+          
+          // Try Gemini as fallback
+          if (apiKeyStatus.gemini) {
+            console.log('Falling back to Gemini Veo for video generation...');
+            try {
+              rawVideoPath = await geminiImageToVideo(imagePaths[0]);
+              console.log('Video generation with Gemini Veo complete:', rawVideoPath);
+            } catch (geminiError) {
+              throw new Error(`Both Kling and Gemini Veo failed: ${klingError instanceof Error ? klingError.message : 'Unknown error'} | ${geminiError instanceof Error ? geminiError.message : 'Unknown error'}`);
+            }
+          } else {
+            throw klingError; // Re-throw if we don't have a fallback
+          }
+        }
+      } else if (apiKeyStatus.gemini) {
+        // If no Fal AI or Kling key, try Gemini
+        console.log('Using Gemini Veo for video generation...');
+        rawVideoPath = await geminiImageToVideo(imagePaths[0]);
+        console.log('Video generation with Gemini Veo complete:', rawVideoPath);
       } else {
-        throw new Error('No video generation API keys available. Please configure FAL_KEY or KLING_API_KEY.');
+        throw new Error('No video generation API keys available. Please configure FAL_KEY, KLING_API_KEY, or GEMINI_API_KEY.');
       }
     } catch (error) {
       const videoError = error as Error;
