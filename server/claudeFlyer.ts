@@ -123,58 +123,62 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
       "cssStyles": "any custom CSS styles needed to create advanced effects"
     }`;
 
-    // Prepare image content if provided
-    let messageContent: any[] = [{ type: 'text', text: systemPrompt }];
+    // CRITICAL FIX: Use a completely different approach for messaging Claude
+    // We create a SINGLE text message with all instructions
+    // This avoids any issues with message array structure that might cause problems
+    log('[claude] Creating a single consolidated text-only message', 'claude');
     
-    // Add background image if provided
+    // Create additional instructions based on what we have available
+    let additionalInstructions = "";
+    
+    // Add background image instructions if provided
     if (options.backgroundImageBase64) {
-      log('[claude] Background image found, will use text-only description mode', 'claude');
-      
-      // Change approach: don't send actual image data to Claude, just describe it
-      messageContent.push({
-        type: 'text',
-        text: `IMPORTANT: I'll provide instructions for a flyer that will have a background image added later.
-
-1. Design a beautiful flyer layout with text, shapes and styling elements
-2. Don't worry about the background - I will automatically apply a background image
-3. Use a .flyer-container as your main container element
-4. Make sure your design has good contrast that would work against a dark or colorful background 
-5. Create semi-transparent colored overlays (using divs with background: rgba()) to improve text readability
-6. Add gradients, shadows, and modern styling to create a premium look
-7. Keep all your elements inside the .flyer-container div
-8. Leave appropriate margins around the edges for visual balance`
-      });
+      additionalInstructions += `
+BACKGROUND IMAGE INSTRUCTIONS:
+1. I will automatically apply a background image to your design - do NOT include any image tags
+2. Design your flyer to work well with a background image underneath
+3. Create semi-transparent colored overlays (using divs with rgba backgrounds) for text readability
+4. Use contrasting colors that will be visible against various background colors
+`;
     }
     
-    // Add logo if provided
+    // Add logo instructions if provided
     if (options.logoBase64) {
-      log('[claude] Preparing logo for Claude API', 'claude');
-      
-      try {
-        // Skip logo if it appears too large or potentially invalid
-        if (options.logoBase64.length > 10000000) { // 10MB limit
-          log('[claude] Logo is too large, skipping', 'claude');
-        } else {
-          // Try a different approach - instead of including the logo directly in Claude API
-          // Let's just provide Claude with instructions to design a space for a logo
-          messageContent.push({
-            type: 'text',
-            text: "IMPORTANT: Include a space for a LOGO in your flyer design. The logo should be prominently displayed, typically at the top or in a strategic position that complements the overall layout. Design the layout with a placeholder for the logo, and I will insert the actual logo later."
-          });
-        }
-      } catch (error) {
-        log(`[claude] Error handling logo, skipping: ${error}`, 'claude');
-      }
+      additionalInstructions += `
+LOGO INSTRUCTIONS:
+1. Include a prominent space for a LOGO in your design
+2. Add a div with class="logo-placeholder" where the logo should appear
+3. The logo will be automatically inserted later - do NOT try to include it directly
+4. Position the logo in a strategic location that enhances the overall design (typically near the top)
+`;
     }
+    
+    // Combine all text instructions into a single message to avoid any format issues
+    const combinedTextPrompt = `${systemPrompt}
+    
+${additionalInstructions}
 
-    // Generate content using Claude with explicit JSON response format
+IMPORTANT REMINDER:
+- Return ONLY valid JSON with htmlContent and cssStyles properties
+- Use clean HTML structure with a .flyer-container as the main container
+- Include semantic HTML5 with proper structure
+- Do not include any <img> tags or try to reference external images`;
+
+    // Log our consolidated prompt for debugging
+    log(`[claude] Constructed a consolidated text-only prompt: ${combinedTextPrompt.substring(0, 200)}...`, 'claude');
+    
+    // Create a simple message structure with a SINGLE text element
+    // This is the most reliable way to avoid any format issues with Claude's API
     const message = await anthropic.messages.create({
       model: 'claude-3-7-sonnet-20250219',
       max_tokens: 4096,
       messages: [
-        { role: 'user', content: messageContent }
+        { 
+          role: 'user', 
+          content: combinedTextPrompt
+        }
       ],
-      system: "You are an expert CSS designer specializing in overlaying designs on background images. Return ONLY valid JSON with htmlContent and cssStyles properties. Use minimal HTML with rich CSS styling."
+      system: "You are an expert CSS designer specializing in creating beautiful flyer designs. Return ONLY valid JSON with htmlContent and cssStyles properties. Use minimal HTML with rich CSS styling."
     });
 
     // Check if the response has content and the first block is a text block
