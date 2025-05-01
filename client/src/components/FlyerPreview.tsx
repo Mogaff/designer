@@ -43,6 +43,10 @@ export default function FlyerPreview({
   const [progressPercent, setProgressPercent] = useState(0);
   const [showGenerationProgress, setShowGenerationProgress] = useState(false);
   
+  // Animation states
+  const [aspectRatioChanged, setAspectRatioChanged] = useState(false);
+  const prevAspectRatioRef = useRef<string>(aspectRatio);
+  
   type AspectRatioOption = {
     id: string;
     label: string;
@@ -170,6 +174,16 @@ export default function FlyerPreview({
     setAspectRatio(prev => {
       const newValue = initialAspectRatio || "profile";
       console.log("Setting new aspectRatio state to:", newValue);
+      
+      // If the aspect ratio has changed, trigger animation
+      if (prev !== newValue && prevAspectRatioRef.current !== newValue) {
+        setAspectRatioChanged(true);
+        // Reset animation state after a delay
+        setTimeout(() => setAspectRatioChanged(false), 700);
+      }
+      
+      // Update the ref
+      prevAspectRatioRef.current = newValue;
       return newValue;
     });
   }, [initialAspectRatio]);
@@ -401,8 +415,9 @@ export default function FlyerPreview({
                 padding: '0.5rem',
                 width: getContainerWidth(aspectRatio),
                 height: getContainerHeight(aspectRatio),
-                transition: 'width 0.5s, height 0.5s', // Add transition for visual feedback
-                boxShadow: '0 0 20px rgba(255, 255, 255, 0.1)' // Add some glow to make it more visible
+                transition: 'width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, transform 0.3s ease', 
+                boxShadow: aspectRatioChanged ? '0 0 30px rgba(255, 255, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.25) inset' : '0 0 20px rgba(255, 255, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.15) inset',
+                transform: aspectRatioChanged ? 'scale(1.02)' : 'scale(1)'
               }}
               data-aspect-ratio={aspectRatio} // Add data attribute for debugging
             >
@@ -411,9 +426,19 @@ export default function FlyerPreview({
                 <h3 className="text-base font-medium text-white/90">Your design will appear here</h3>
               </div>
               
-              {/* Aspect ratio label for empty state */}
-              <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 text-[10px] px-2 py-1">
-                {aspectRatioOptions.find(o => o.id === aspectRatio)?.label || aspectRatio}
+              {/* Enhanced aspect ratio label for empty state */}
+              <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 rounded-md overflow-hidden">
+                <div className="flex flex-col">
+                  <div className="bg-indigo-500/30 px-2 py-0.5 text-[10px] font-medium">
+                    {aspectRatioOptions.find(o => o.id === aspectRatio)?.label || aspectRatio}
+                  </div>
+                  <div className="px-2 py-0.5 text-[8px] text-white/60 flex items-center">
+                    <span className="mr-1"><Ratio className="h-2 w-2" /></span>
+                    <span>
+                      {getContainerWidth(aspectRatio)} × {getContainerHeight(aspectRatio)}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -428,8 +453,9 @@ export default function FlyerPreview({
                   padding: '0.5rem',
                   width: getContainerWidth(aspectRatio), 
                   height: getContainerHeight(aspectRatio),
-                  transition: 'width 0.5s, height 0.5s', // Add transition for visual feedback
-                  boxShadow: '0 0 20px rgba(255, 255, 255, 0.1)' // Add some glow to make it more visible
+                  transition: 'width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, transform 0.3s ease', 
+                  boxShadow: aspectRatioChanged ? '0 0 30px rgba(255, 255, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.25) inset' : '0 0 20px rgba(255, 255, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.15) inset',
+                  transform: aspectRatioChanged ? 'scale(1.02)' : 'scale(1)'
                 }}
                 data-aspect-ratio={aspectRatio} // Add data attribute for debugging
               >
