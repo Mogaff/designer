@@ -185,36 +185,38 @@ export default function CompetitorInspirationPanel({
       </h3>
       
       <Tabs defaultValue="search" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 h-5 bg-white/10 backdrop-blur-md shadow-sm border border-white/10">
-          <TabsTrigger value="search" className="text-[8px] h-5 data-[state=active]:bg-white/10 data-[state=active]:text-white">Search Ads</TabsTrigger>
-          <TabsTrigger value="quick" className="text-[8px] h-5 data-[state=active]:bg-white/10 data-[state=active]:text-white">Quick Inspiration</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 h-5 bg-white/10 backdrop-blur-md shadow-sm border border-white/10 rounded-md p-0.5 gap-1">
+          <TabsTrigger value="search" className="text-[8px] h-4 rounded-sm data-[state=active]:bg-white/20 data-[state=active]:text-white data-[state=active]:shadow-sm">Search Ads</TabsTrigger>
+          <TabsTrigger value="quick" className="text-[8px] h-4 rounded-sm data-[state=active]:bg-white/20 data-[state=active]:text-white data-[state=active]:shadow-sm">Quick Inspiration</TabsTrigger>
         </TabsList>
         
         <TabsContent value="search" className="mt-1">
           <form onSubmit={handleSearch} className="flex gap-1 mb-1">
-            <div className="flex-1">
+            <div className="flex-1 relative">
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search competitor ads..."
-                className="h-5 text-[8px] py-0 px-1 bg-white/10 backdrop-blur-md border-white/10 text-white placeholder:text-white/40"
+                className="h-5 text-[8px] py-0 px-2 bg-white/10 backdrop-blur-md border-white/10 text-white placeholder:text-white/40 rounded-full"
               />
             </div>
-            <select
-              value={searchType}
-              onChange={(e) => setSearchType(e.target.value as any)}
-              className="h-5 text-[8px] py-0 px-1 bg-white/10 backdrop-blur-md border border-white/10 rounded-md text-white"
-            >
-              <option value="keyword">Keyword</option>
-              <option value="brand">Brand</option>
-              <option value="industry">Industry</option>
-            </select>
+            <div>
+              <select
+                value={searchType}
+                onChange={(e) => setSearchType(e.target.value as any)}
+                className="h-5 text-[8px] py-0 px-1.5 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-white"
+              >
+                <option value="keyword">Keyword</option>
+                <option value="brand">Brand</option>
+                <option value="industry">Industry</option>
+              </select>
+            </div>
             <Button 
               type="submit" 
-              className="h-5 text-[8px] py-0 px-1 bg-white/10 backdrop-blur-md hover:bg-white/15"
+              className="h-5 w-5 p-0 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md hover:bg-white/15"
               disabled={isSearching || !searchQuery.trim()}
             >
-              {isSearching ? <Loader className="h-2 w-2 animate-spin" /> : <Search className="h-2 w-2" />}
+              {isSearching ? <Loader className="h-2 w-2 animate-spin" /> : <Search className="h-2.5 w-2.5" />}
             </Button>
           </form>
           
@@ -301,26 +303,30 @@ export default function CompetitorInspirationPanel({
           </p>
           
           <div className="flex gap-1">
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Enter brand, keyword, or industry..."
-              className="h-5 text-[8px] py-0 px-1 bg-white/10 backdrop-blur-md border-white/10 text-white placeholder:text-white/40"
-            />
-            <select
-              value={searchType}
-              onChange={(e) => setSearchType(e.target.value as any)}
-              className="h-5 text-[8px] py-0 px-1 bg-white/10 backdrop-blur-md border border-white/10 rounded-md text-white"
-            >
-              <option value="keyword">Keyword</option>
-              <option value="brand">Brand</option>
-              <option value="industry">Industry</option>
-            </select>
+            <div className="flex-1 relative">
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Enter brand, keyword, or industry..."
+                className="h-5 text-[8px] py-0 px-2 bg-white/10 backdrop-blur-md border-white/10 text-white placeholder:text-white/40 rounded-full"
+              />
+            </div>
+            <div>
+              <select
+                value={searchType}
+                onChange={(e) => setSearchType(e.target.value as any)}
+                className="h-5 text-[8px] py-0 px-1.5 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-white"
+              >
+                <option value="keyword">Keyword</option>
+                <option value="brand">Brand</option>
+                <option value="industry">Industry</option>
+              </select>
+            </div>
           </div>
           
           <Button 
             onClick={getQuickInspiration}
-            className="w-full h-5 text-[8px] py-0 bg-indigo-500/80 hover:bg-indigo-500"
+            className="w-full h-5 text-[8px] py-0 rounded-full bg-indigo-500/50 hover:bg-indigo-500/70"
             disabled={enhanceMutation.isPending || !searchQuery.trim()}
           >
             {enhanceMutation.isPending ? (
