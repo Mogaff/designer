@@ -160,16 +160,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const bgImages = files.background_image;
         log(`${bgImages.length} Background image(s) received for AI generation${createCarousel ? ' in carousel mode' : ''}`, "generator");
         
-        // For now, just use the first image for generation
-        // In future versions, we'll use all images in carousel mode
+        // For all cases, use the first image as the primary reference image
         const backgroundImageBase64 = bgImages[0].buffer.toString('base64');
         generationOptions.backgroundImageBase64 = backgroundImageBase64;
         
-        // If we have multiple images and carousel mode is enabled, process them differently
-        // This is a placeholder for future enhancement
+        // If we have multiple images and carousel mode is enabled, store all images separately
         if (createCarousel && bgImages.length > 1) {
           log(`Carousel mode with ${bgImages.length} images - will apply consistent style across all images`, "generator");
-          // The actual multi-image processing will happen in the future implementation
+          // Store all uploaded images for later use in the carousel
         }
       }
       
@@ -221,44 +219,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
         generationOptions.logoBase64 = ""; // Temporarily disable logo to ensure generation works
       }
       
-      // WICHTIG: Nur die Anzahl der Designs generieren, die der Benutzer ausgewählt hat
-      // Beschränke die Schleife auf die vom Benutzer gewünschte Anzahl von Designs
-      const designsToGenerate = Math.min(numDesigns, styleVariations.length);
-      
-      log(`Will generate exactly ${designsToGenerate} designs (user requested: ${numDesigns})`, "generator");
-      
-      // Try each style variation until we have the requested number of successful designs
-      for (let index = 0; index < designsToGenerate; index++) {
-        const styleVariation = styleVariations[index];
-        try {
-          const variantOptions = {
-            ...generationOptions,
-            prompt: `${generationOptions.prompt} ${styleVariation}`,
-            aspectRatio: aspectRatio,
-            templateInfo: parsedTemplateInfo, // Pass the template info to the render function
-            logoBase64: "" // CRITICAL FIX: Ensure no logo is sent to Claude for now
-          };
-          
-          log(`Generating design variation ${index + 1}: ${styleVariation}`, "generator");
-          // Use Claude AI instead of Gemini for flyer generation (upgraded on April 29, 2025)
-          // Claude 3.7 Sonnet is the latest model with enhanced image generation capabilities
-          const screenshot = await renderFlyerFromClaude(variantOptions);
-          successfulDesigns.push({
-            imageBuffer: screenshot,
-            style: styleVariation
-          });
-          
-          // Minimal delay between requests to avoid hitting rate limits
-          if (index < styleVariations.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 50)); // Reduced delay from 200ms to 50ms
+      // Determine how to proceed based on carousel mode and available images
+      if (createCarousel && files && files.background_image && files.background_image.length > 1) {
+        // Carousel mode with multiple images - use a consistent style
+        log(`Carousel mode active with ${files.background_image.length} images`, "generator");
+        
+        // Choose a single style variation for all images to maintain consistency
+        const styleIndex = 0; // Always use the first style for all carousel images
+        const styleVariation = styleVariations[styleIndex];
+        
+        // Process each image with the same style
+        for (let imgIndex = 0; imgIndex < files.background_image.length; imgIndex++) {
+          try {
+            // For each image, create variant options with the same style
+            const currentImageBase64 = files.background_image[imgIndex].buffer.toString('base64');
+            
+            const variantOptions = {
+              ...generationOptions,
+              backgroundImageBase64: currentImageBase64, // Use the current image
+              prompt: `${generationOptions.prompt} ${styleVariation}`, // Same style
+              aspectRatio: aspectRatio,
+              templateInfo: parsedTemplateInfo,
+              logoBase64: "" // CRITICAL FIX: Ensure no logo is sent to Claude for now
+            };
+            
+            log(`Generating carousel image ${imgIndex + 1} with consistent style: ${styleVariation}`, "generator");
+            
+            // Use Claude AI for each image
+            const screenshot = await renderFlyerFromClaude(variantOptions);
+            successfulDesigns.push({
+              imageBuffer: screenshot,
+              style: styleVariation,
+              carouselIndex: imgIndex // Track which image in carousel
+            });
+            
+            // Minimal delay between requests
+            if (imgIndex < files.background_image.length - 1) {
+              await new Promise(resolve => setTimeout(resolve, 100));
+            }
+          } catch (error) {
+            log(`Error generating carousel image ${imgIndex + 1}: ${error}`, "generator");
+            // If quota error, stop processing
+            const errorMessage = String(error);
+            if (errorMessage.includes("API quota limit reached") || errorMessage.includes("429 Too Many Requests")) {
+              log("Stopping carousel generation due to API quota limits", "generator");
+              break;
+            }
           }
-        } catch (error) {
-          log(`Error generating design variation ${index + 1}: ${error}`, "generator");
-          // If this is a quota error, stop trying more variations
-          const errorMessage = String(error);
-          if (errorMessage.includes("API quota limit reached") || errorMessage.includes("429 Too Many Requests")) {
-            log("Stopping design generation due to API quota limits", "generator");
-            break;
+        }
+      } else {
+        // Standard mode - generate different style variations
+        const designsToGenerate = Math.min(numDesigns, styleVariations.length);
+        
+        log(`Will generate exactly ${designsToGenerate} designs (user requested: ${numDesigns})`, "generator");
+        
+        // Try each style variation until we have the requested number of successful designs
+        for (let index = 0; index < designsToGenerate; index++) {
+          const styleVariation = styleVariations[index];
+          try {
+            const variantOptions = {
+              ...generationOptions,
+              prompt: `${generationOptions.prompt} ${styleVariation}`,
+              aspectRatio: aspectRatio,
+              templateInfo: parsedTemplateInfo, // Pass the template info to the render function
+              logoBase64: "" // CRITICAL FIX: Ensure no logo is sent to Claude for now
+            };
+            
+            log(`Generating design variation ${index + 1}: ${styleVariation}`, "generator");
+            // Use Claude AI instead of Gemini for flyer generation (upgraded on April 29, 2025)
+            // Claude 3.7 Sonnet is the latest model with enhanced image generation capabilities
+            const screenshot = await renderFlyerFromClaude(variantOptions);
+            successfulDesigns.push({
+              imageBuffer: screenshot,
+              style: styleVariation
+            });
+            
+            // Minimal delay between requests to avoid hitting rate limits
+            if (index < styleVariations.length - 1) {
+              await new Promise(resolve => setTimeout(resolve, 50)); // Reduced delay from 200ms to 50ms
+            }
+          } catch (error) {
+            log(`Error generating design variation ${index + 1}: ${error}`, "generator");
+            // If this is a quota error, stop trying more variations
+            const errorMessage = String(error);
+            if (errorMessage.includes("API quota limit reached") || errorMessage.includes("429 Too Many Requests")) {
+              log("Stopping design generation due to API quota limits", "generator");
+              break;
+            }
           }
         }
       }
