@@ -165,8 +165,8 @@ export default function AiFlyerForm({
       // Add flag for AI background generation
       formData.append("generateAiBackground", generateAiBackground.toString());
       
-      const response = await apiRequest("POST", "/api/generate-ai", formData);
-      return response.json();
+      // apiRequest already returns parsed JSON, no need to call .json() again
+      return await apiRequest("POST", "/api/generate-ai", formData);
     },
     onSuccess: (data: DesignSuggestions) => {
       // Store all designs in state for display
