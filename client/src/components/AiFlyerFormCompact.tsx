@@ -21,6 +21,71 @@ import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 
+// Helper function to compress and resize images before upload
+const compressImage = async (file: File, maxWidth = 1200, maxHeight = 1200, quality = 0.8): Promise<File> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        // Calculate new dimensions while maintaining aspect ratio
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round(height * maxWidth / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round(width * maxHeight / height);
+            height = maxHeight;
+          }
+        }
+        
+        // Create canvas and context
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        
+        if (!ctx) {
+          reject(new Error("Could not get canvas context"));
+          return;
+        }
+        
+        // Draw image to canvas with new dimensions
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Get data URL and convert back to File
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            reject(new Error("Canvas to Blob conversion failed"));
+            return;
+          }
+          
+          // Create new file from blob
+          const compressedFile = new File([blob], file.name, {
+            type: 'image/jpeg',
+            lastModified: Date.now(),
+          });
+          
+          resolve(compressedFile);
+        }, 'image/jpeg', quality);
+      };
+      img.onerror = (error) => {
+        reject(error);
+      };
+    };
+    reader.onerror = (error) => {
+      reject(error);
+    };
+  });
+};
+
 type AiFlyerFormProps = {
   setGeneratedFlyer: (flyer: GeneratedFlyer | null) => void;
   isGenerating: boolean;
@@ -148,35 +213,65 @@ export default function AiFlyerFormCompact({
   });
   
   // Handle file changes (background image)
-  const handleBackgroundImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleBackgroundImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
     // Reset previous images
     clearBackgroundImage();
     
     if (e.target.files && e.target.files.length > 0) {
-      if (createCarousel && e.target.files.length > 1) {
-        // Handle multiple files for carousel mode
-        const files = Array.from(e.target.files);
-        setMultipleImages(files);
+      try {
+        if (createCarousel && e.target.files.length > 1) {
+          // Show loading toast
+          toast({
+            title: "Processing images",
+            description: "Compressing multiple images for carousel..."
+          });
+          
+          // Handle multiple files for carousel mode
+          const files = Array.from(e.target.files);
+          
+          // Compress all files in parallel
+          const compressedFiles = await Promise.all(
+            files.map(file => compressImage(file, 1200, 1200, 0.7))
+          );
+          
+          // Update state with compressed files
+          setMultipleImages(compressedFiles);
+          
+          // Create previews for all images
+          const previews = compressedFiles.map(file => URL.createObjectURL(file));
+          setMultipleImagePreviews(previews);
+          
+          // Set the first image as the main image for backward compatibility
+          setBackgroundImage(compressedFiles[0]);
+          setBackgroundImagePreview(previews[0]);
+          
+          // Show success toast
+          toast({
+            title: "Images ready",
+            description: `${compressedFiles.length} images prepared for carousel`,
+          });
+        } else {
+          // Handle single file for normal mode
+          const file = e.target.files[0];
+          const compressedFile = await compressImage(file, 1200, 1200, 0.8);
+          
+          setBackgroundImage(compressedFile);
+          setBackgroundImagePreview(URL.createObjectURL(compressedFile));
+          
+          // Clear multiple images if any
+          setMultipleImages([]);
+          setMultipleImagePreviews([]);
+        }
         
-        // Create previews for all images
-        const previews = files.map(file => URL.createObjectURL(file));
-        setMultipleImagePreviews(previews);
-        
-        // Set the first image as the main image for backward compatibility
-        setBackgroundImage(files[0]);
-        setBackgroundImagePreview(previews[0]);
-      } else {
-        // Handle single file for normal mode
-        const file = e.target.files[0];
-        setBackgroundImage(file);
-        setBackgroundImagePreview(URL.createObjectURL(file));
-        
-        // Clear multiple images if any
-        setMultipleImages([]);
-        setMultipleImagePreviews([]);
+        setGenerateAiBackground(false); // Disable AI background when user uploads an image
+      } catch (error) {
+        console.error("Error compressing images:", error);
+        toast({
+          title: "Error",
+          description: "Failed to process image files. Please try again with smaller images.",
+          variant: "destructive",
+        });
       }
-      
-      setGenerateAiBackground(false); // Disable AI background when user uploads an image
     }
   };
   
@@ -198,11 +293,23 @@ export default function AiFlyerFormCompact({
   };
   
   // Handle file changes (logo)
-  const handleLogoChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleLogoChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setLogo(file);
-      setLogoPreview(URL.createObjectURL(file));
+      try {
+        const file = e.target.files[0];
+        // Compress logo with higher quality but smaller dimensions
+        const compressedFile = await compressImage(file, 800, 800, 0.9);
+        
+        setLogo(compressedFile);
+        setLogoPreview(URL.createObjectURL(compressedFile));
+      } catch (error) {
+        console.error("Error compressing logo:", error);
+        toast({
+          title: "Error",
+          description: "Failed to process logo. Please try again with a smaller image.",
+          variant: "destructive",
+        });
+      }
     }
   };
   
@@ -599,6 +706,15 @@ export default function AiFlyerFormCompact({
                   <p className="text-[7px] text-white/60 mt-0.5">
                     Generate designs with consistent style
                   </p>
+                  
+                  {/* Additional info for carousel mode */}
+                  {createCarousel && (
+                    <div className="mt-2 p-1.5 rounded-sm bg-indigo-900/20 border border-indigo-500/20">
+                      <p className="text-[7px] text-indigo-300">
+                        <span className="font-medium">Carousel Mode:</span> Select multiple images to create a series of designs with consistent style. Images will be automatically compressed.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
