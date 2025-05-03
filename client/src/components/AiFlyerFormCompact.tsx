@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 
 type AiFlyerFormProps = {
   setGeneratedFlyer: (flyer: GeneratedFlyer | null) => void;
@@ -515,6 +516,24 @@ export default function AiFlyerFormCompact({
                       </span>
                     </div>
                   ))}
+                </div>
+                
+                {/* Carousel Toggle */}
+                <div className="mt-3 border-t border-white/10 pt-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="carousel-toggle" className="text-[9px] text-white/80 flex items-center gap-1">
+                      Create Carousel
+                    </Label>
+                    <Switch
+                      id="carousel-toggle"
+                      checked={createCarousel}
+                      onCheckedChange={setCreateCarousel}
+                      className="data-[state=checked]:bg-indigo-500"
+                    />
+                  </div>
+                  <p className="text-[7px] text-white/60 mt-0.5">
+                    Generate designs with consistent style
+                  </p>
                 </div>
               </div>
             </div>
