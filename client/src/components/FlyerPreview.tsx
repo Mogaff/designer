@@ -490,38 +490,51 @@ export default function FlyerPreview({
                   </div>
                 )}
                 
-                {/* Rotating border animation while generating */}
+                {/* Border light animation while generating */}
                 {isGenerating && showGenerationProgress && (
                   <div className="absolute inset-0 pointer-events-none">
-                    {/* Inner content overlay */}
-                    <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
+                    {/* Inner content overlay - very light */}
+                    <div className="absolute inset-0 bg-black/5 backdrop-blur-[1px]"></div>
                     
-                    {/* Rotating border effect */}
-                    <div className="absolute inset-[3px] rounded-lg" style={{
-                      border: '3px solid rgba(255, 255, 255, 0.2)',
-                      animation: 'border-beam 4s linear infinite',
+                    {/* Border light effect */}
+                    <div className="absolute inset-0 rounded-lg" style={{
+                      border: '2px solid transparent',
+                      backgroundImage: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.8) 50%, transparent 100%)',
+                      backgroundSize: '200% 100%',
+                      animation: 'border-light 2s linear infinite',
+                      WebkitMask: 'linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)',
+                      WebkitMaskComposite: 'xor',
+                      maskComposite: 'exclude',
                     }}></div>
                     
-                    {/* Light points on corners */}
-                    <div className="absolute top-[-3px] left-[-3px] w-3 h-3 bg-blue-400 rounded-full" style={{
-                      animation: 'corner-pulse 2s infinite ease-in-out',
-                      boxShadow: '0 0 10px 2px rgba(99, 102, 241, 0.6)'
-                    }}></div>
-                    <div className="absolute top-[-3px] right-[-3px] w-3 h-3 bg-indigo-400 rounded-full" style={{
-                      animation: 'corner-pulse 2s infinite ease-in-out',
-                      animationDelay: '0.5s',
-                      boxShadow: '0 0 10px 2px rgba(99, 102, 241, 0.6)'
-                    }}></div>
-                    <div className="absolute bottom-[-3px] left-[-3px] w-3 h-3 bg-blue-400 rounded-full" style={{
-                      animation: 'corner-pulse 2s infinite ease-in-out',
-                      animationDelay: '1s',
-                      boxShadow: '0 0 10px 2px rgba(99, 102, 241, 0.6)'
-                    }}></div>
-                    <div className="absolute bottom-[-3px] right-[-3px] w-3 h-3 bg-indigo-400 rounded-full" style={{
-                      animation: 'corner-pulse 2s infinite ease-in-out',
-                      animationDelay: '1.5s',
-                      boxShadow: '0 0 10px 2px rgba(99, 102, 241, 0.6)'
-                    }}></div>
+                    {/* Corner illumination */}
+                    <div className="absolute top-[-2px] left-[-2px] w-4 h-4">
+                      <div className="absolute inset-0 rounded-tl-lg" style={{
+                        background: 'radial-gradient(circle at 0% 0%, rgba(255, 255, 255, 0.8) 0%, transparent 70%)',
+                        animation: 'corner-pulse 2s infinite ease-in-out'
+                      }}></div>
+                    </div>
+                    <div className="absolute top-[-2px] right-[-2px] w-4 h-4">
+                      <div className="absolute inset-0 rounded-tr-lg" style={{
+                        background: 'radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.8) 0%, transparent 70%)',
+                        animation: 'corner-pulse 2s infinite ease-in-out',
+                        animationDelay: '0.5s'
+                      }}></div>
+                    </div>
+                    <div className="absolute bottom-[-2px] left-[-2px] w-4 h-4">
+                      <div className="absolute inset-0 rounded-bl-lg" style={{
+                        background: 'radial-gradient(circle at 0% 100%, rgba(255, 255, 255, 0.8) 0%, transparent 70%)',
+                        animation: 'corner-pulse 2s infinite ease-in-out',
+                        animationDelay: '1s'
+                      }}></div>
+                    </div>
+                    <div className="absolute bottom-[-2px] right-[-2px] w-4 h-4">
+                      <div className="absolute inset-0 rounded-br-lg" style={{
+                        background: 'radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.8) 0%, transparent 70%)',
+                        animation: 'corner-pulse 2s infinite ease-in-out',
+                        animationDelay: '1.5s'
+                      }}></div>
+                    </div>
                   </div>
                 )}
                 
