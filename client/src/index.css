@@ -16,13 +16,32 @@
 
 @keyframes border-beam {
   0% { 
-    background-position: 200% 0;
-    opacity: 0.3;
+    transform: rotate(0deg);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 5px 1px rgba(255, 255, 255, 0.2);
+  }
+  25% {
+    border-color: rgba(99, 102, 241, 0.6);
+    box-shadow: 0 0 10px 2px rgba(99, 102, 241, 0.4);
+  }
+  50% { 
+    border-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 15px 3px rgba(255, 255, 255, 0.5);
+  }
+  75% {
+    border-color: rgba(99, 102, 241, 0.6);
+    box-shadow: 0 0 10px 2px rgba(99, 102, 241, 0.4);
   }
   100% { 
-    background-position: -200% 0;
-    opacity: 1;
+    transform: rotate(360deg);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 5px 1px rgba(255, 255, 255, 0.2);
   }
+}
+
+@keyframes corner-pulse {
+  0%, 100% { transform: scale(0.8); opacity: 0.4; }
+  50% { transform: scale(1.5); opacity: 1; }
 }
 
 @keyframes pulse {

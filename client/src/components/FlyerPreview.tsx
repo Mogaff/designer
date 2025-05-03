@@ -490,15 +490,37 @@ export default function FlyerPreview({
                   </div>
                 )}
                 
-                {/* Beaming border animation while generating - minimal version */}
+                {/* Rotating border animation while generating */}
                 {isGenerating && showGenerationProgress && (
                   <div className="absolute inset-0 pointer-events-none">
-                    <div className="absolute inset-0 border-4 border-transparent" style={{
-                      background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent) border-box',
-                      WebkitMask: 'linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)',
-                      WebkitMaskComposite: 'xor',
-                      maskComposite: 'exclude',
-                      animation: 'border-beam 2s linear infinite',
+                    {/* Inner content overlay */}
+                    <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
+                    
+                    {/* Rotating border effect */}
+                    <div className="absolute inset-[3px] rounded-lg" style={{
+                      border: '3px solid rgba(255, 255, 255, 0.2)',
+                      animation: 'border-beam 4s linear infinite',
+                    }}></div>
+                    
+                    {/* Light points on corners */}
+                    <div className="absolute top-[-3px] left-[-3px] w-3 h-3 bg-blue-400 rounded-full" style={{
+                      animation: 'corner-pulse 2s infinite ease-in-out',
+                      boxShadow: '0 0 10px 2px rgba(99, 102, 241, 0.6)'
+                    }}></div>
+                    <div className="absolute top-[-3px] right-[-3px] w-3 h-3 bg-indigo-400 rounded-full" style={{
+                      animation: 'corner-pulse 2s infinite ease-in-out',
+                      animationDelay: '0.5s',
+                      boxShadow: '0 0 10px 2px rgba(99, 102, 241, 0.6)'
+                    }}></div>
+                    <div className="absolute bottom-[-3px] left-[-3px] w-3 h-3 bg-blue-400 rounded-full" style={{
+                      animation: 'corner-pulse 2s infinite ease-in-out',
+                      animationDelay: '1s',
+                      boxShadow: '0 0 10px 2px rgba(99, 102, 241, 0.6)'
+                    }}></div>
+                    <div className="absolute bottom-[-3px] right-[-3px] w-3 h-3 bg-indigo-400 rounded-full" style={{
+                      animation: 'corner-pulse 2s infinite ease-in-out',
+                      animationDelay: '1.5s',
+                      boxShadow: '0 0 10px 2px rgba(99, 102, 241, 0.6)'
                     }}></div>
                   </div>
                 )}
