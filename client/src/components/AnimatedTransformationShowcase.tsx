@@ -140,7 +140,7 @@ export function AnimatedTransformationShowcase({
       <div className="relative w-full h-full">
         {designs.map((design, index) => (
           <div
-            key={`design-${design.id || index}`}
+            key={`design-${index}`}
             className="absolute inset-0 w-full h-full transition-opacity duration-300"
             style={{ 
               opacity: index === 0 ? 1 : 0,

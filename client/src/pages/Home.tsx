@@ -7,6 +7,7 @@ import DesignSuggestions from "@/components/DesignSuggestions";
 import SimpleGallery from "@/components/SimpleGallery";
 import CanvasEditor from "@/components/CanvasEditor";
 import { BrandKitPanel } from "@/components/BrandKitPanel";
+import { AnimatedTransformationShowcase } from "@/components/AnimatedTransformationShowcase";
 import { useState, useEffect } from "react";
 import { GeneratedFlyer, DesignVariation, DesignTemplate } from "@/lib/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,6 +24,7 @@ export default function Home() {
   const [isBrandKitPanelOpen, setIsBrandKitPanelOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<DesignTemplate | null>(null);
   const [isCarouselView, setIsCarouselView] = useState(false);
+  const [showTransformation, setShowTransformation] = useState(false);
   const { toast } = useToast();
   
   // Listen for template selection events from sidebar
@@ -80,6 +82,63 @@ Create this as an advertisement design, NOT as a website or HTML.`;
       <Header />
       
       <main className="w-full flex-grow flex p-3 relative z-10">
+        {/* Animation Transformation Showcase Modal */}
+        {showTransformation && designSuggestions && designSuggestions.length > 1 && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-gray-900/90 border border-indigo-500/30 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+              <div className="p-3 border-b border-indigo-500/30 flex justify-between items-center">
+                <h3 className="text-white font-medium text-sm">Design Transformation Showcase</h3>
+                <button 
+                  className="h-8 w-8 p-0 rounded-full hover:bg-white/10 flex items-center justify-center"
+                  onClick={() => setShowTransformation(false)}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white/70 hover:text-white">
+                    <path d="M18 6 6 18"></path><path d="m6 6 12 12"></path>
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="p-4 flex-grow flex flex-col">
+                <p className="text-white/70 text-xs mb-4">
+                  Watch as your image transforms between different design styles. This visualization showcases the AI's ability to reimagine your content in multiple ways.
+                </p>
+                
+                <div className="flex-grow relative rounded-lg overflow-hidden">
+                  <AnimatedTransformationShowcase 
+                    designs={designSuggestions}
+                    aspectRatio={aspectRatio}
+                    isActive={showTransformation}
+                    onComplete={() => {
+                      // Optional: do something when animation completes
+                    }}
+                  />
+                </div>
+                
+                <div className="mt-4 text-center">
+                  <p className="text-white/60 text-[10px]">
+                    Cycling through {designSuggestions.length} unique design variations
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Watch Transformation Button (appears when designs are showing) */}
+        {!isGenerating && designSuggestions && designSuggestions.length > 1 && !isCarouselView && (
+          <div className="absolute top-0 right-0 z-30 p-2">
+            <button
+              onClick={() => setShowTransformation(true)}
+              className="flex items-center gap-1.5 text-xs py-1.5 px-3 bg-indigo-500/40 hover:bg-indigo-500/60 text-white rounded-full backdrop-blur-sm border border-indigo-500/30"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              Watch Design Transformation
+            </button>
+          </div>
+        )}
+        
         {/* Main Content Area - Full Browser Width */}
         <div className="flex flex-col lg:flex-row w-full h-[calc(100vh-80px)] gap-3 mt-10">
           {/* Left Sidebar - Contains Design Creation and Tabs */}
