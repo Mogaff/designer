@@ -27,6 +27,15 @@ export default function Home() {
   const [showTransformation, setShowTransformation] = useState(false);
   const { toast } = useToast();
   
+  // Make state variables available to other components via window object
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.designSuggestions = designSuggestions;
+      window.setShowTransformation = setShowTransformation;
+      window.isCarouselView = isCarouselView;
+    }
+  }, [designSuggestions, setShowTransformation, isCarouselView]);
+
   // Listen for template selection events from sidebar
   useEffect(() => {
     const handleTemplateSelected = (event: any) => {
@@ -124,20 +133,7 @@ Create this as an advertisement design, NOT as a website or HTML.`;
           </div>
         )}
         
-        {/* Watch Transformation Button (appears when designs are showing) */}
-        {!isGenerating && designSuggestions && designSuggestions.length > 1 && !isCarouselView && (
-          <div className="absolute top-0 right-0 z-30 p-2">
-            <button
-              onClick={() => setShowTransformation(true)}
-              className="flex items-center gap-1.5 text-xs py-1.5 px-3 bg-indigo-500/40 hover:bg-indigo-500/60 text-white rounded-full backdrop-blur-sm border border-indigo-500/30"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="5 3 19 12 5 21 5 3"></polygon>
-              </svg>
-              Watch Design Transformation
-            </button>
-          </div>
-        )}
+        {/* Watch Transformation Button removed from here - now in FlyerPreview */}
         
         {/* Main Content Area - Full Browser Width */}
         <div className="flex flex-col lg:flex-row w-full h-[calc(100vh-80px)] gap-3 mt-10">

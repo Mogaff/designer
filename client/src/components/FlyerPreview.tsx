@@ -536,19 +536,41 @@ export default function FlyerPreview({
                 
                 {/* Enhanced aspect ratio label for generated content */}
                 {!isGenerating && (
-                  <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 rounded-md overflow-hidden">
-                    <div className="flex flex-col">
-                      <div className="bg-indigo-500/30 px-2 py-0.5 text-[10px] font-medium">
-                        {aspectRatioOptions.find(o => o.id === aspectRatio)?.label || aspectRatio}
+                  <>
+                    {/* Transformation button - added as requested */}
+                    {typeof window !== 'undefined' && window.designSuggestions && window.designSuggestions.length > 1 && !window.isCarouselView && (
+                      <div className="absolute top-2 right-2 z-10">
+                        <button
+                          onClick={() => {
+                            if (typeof window.setShowTransformation === 'function') {
+                              window.setShowTransformation(true);
+                            }
+                          }}
+                          className="flex items-center gap-1.5 text-xs py-1.5 px-3 bg-indigo-500/60 hover:bg-indigo-500/80 text-white rounded-md backdrop-blur-sm border border-indigo-500/30 shadow-lg shadow-indigo-500/20"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                          </svg>
+                          Watch Design Transformation
+                        </button>
                       </div>
-                      <div className="px-2 py-0.5 text-[8px] text-white/60 flex items-center">
-                        <span className="mr-1"><Ratio className="h-2 w-2" /></span>
-                        <span>
-                          {getContainerWidth(aspectRatio)} × {getContainerHeight(aspectRatio)}
-                        </span>
+                    )}
+
+                    {/* Aspect Ratio Label */}
+                    <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white/80 rounded-md overflow-hidden">
+                      <div className="flex flex-col">
+                        <div className="bg-indigo-500/30 px-2 py-0.5 text-[10px] font-medium">
+                          {aspectRatioOptions.find(o => o.id === aspectRatio)?.label || aspectRatio}
+                        </div>
+                        <div className="px-2 py-0.5 text-[8px] text-white/60 flex items-center">
+                          <span className="mr-1"><Ratio className="h-2 w-2" /></span>
+                          <span>
+                            {getContainerWidth(aspectRatio)} × {getContainerHeight(aspectRatio)}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </>
                 )}
                 
                 {/* Brand Kit Indicator - only show when active and not generating */}
