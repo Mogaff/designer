@@ -54,6 +54,7 @@ export type AiFlyerGenerationRequest = {
   aspectRatio?: string;
   fontSettings?: FontSettings;
   templateInfo?: TemplateInfo;
+  createCarousel?: boolean;
 };
 
 export interface BrandKit {

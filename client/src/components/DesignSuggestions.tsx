@@ -1,25 +1,34 @@
 import { DesignVariation } from "@/lib/types";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { GeneratedFlyer } from "@/lib/types";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { MultiColorLoading } from "@/components/ui/multi-color-loading";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { 
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious
+} from "@/components/ui/carousel";
 
 type DesignSuggestionsProps = {
   designs: DesignVariation[] | null;
   isGenerating: boolean;
   setGeneratedFlyer: (flyer: GeneratedFlyer | null) => void;
   setDesignSuggestions: (suggestions: DesignVariation[] | null) => void;
+  isCarousel?: boolean;
 };
 
 export default function DesignSuggestions({ 
   designs, 
   isGenerating, 
   setGeneratedFlyer,
-  setDesignSuggestions
+  setDesignSuggestions,
+  isCarousel = false
 }: DesignSuggestionsProps) {
   const [selectedDesign, setSelectedDesign] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -121,160 +130,180 @@ export default function DesignSuggestions({
     });
   });
 
+  // This function gets the aspect ratio class based on the design style or URL
+  const getAspectRatioClass = (design: DesignVariation) => {
+    // Standardwert, wenn wir das Verhältnis nicht bestimmen können
+    let aspectClass = "aspect-square"; 
+    
+    // Hole das aktuelle Aspect Ratio aus der URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedAspectRatio = urlParams.get('aspectRatio') || '';
+    
+    // Bestimme den CSS-Class basierend auf dem Aspect Ratio
+    switch(selectedAspectRatio) {
+      // Square formats
+      case 'profile':
+      case 'post':
+      case 'square_ad':
+        aspectClass = "aspect-square";
+        break;
+        
+      // Landscape formats  
+      case 'fb_cover':
+      case 'facebook_cover':
+        aspectClass = "aspect-[820/312]";
+        break;
+      case 'twitter_header':
+        aspectClass = "aspect-[3/1]";
+        break;
+      case 'yt_thumbnail':
+      case 'instream':
+        aspectClass = "aspect-[16/9]";
+        break;
+      case 'linkedin_banner':
+        aspectClass = "aspect-[4/1]";
+        break;
+        
+      // Portrait formats
+      case 'stories':
+        aspectClass = "aspect-[9/16]";
+        break;
+      case 'pinterest':
+        aspectClass = "aspect-[2/3]";
+        break;
+        
+      // Special formats
+      case 'leaderboard':
+        aspectClass = "aspect-[728/90]";
+        break;
+      case 'skyscraper':
+        aspectClass = "aspect-[160/600]";
+        break;
+      default:
+        // Fallback: Versuche aus dem Style-Text das Aspect Ratio zu extrahieren
+        if (design.style) {
+          if (design.style.includes("9:16") || design.style.includes("story")) {
+            aspectClass = "aspect-[9/16]";
+          } else if (design.style.includes("16:9") || design.style.includes("landscape")) {
+            aspectClass = "aspect-[16/9]";
+          } else if (design.style.includes("4:5") || design.style.includes("portrait")) {
+            aspectClass = "aspect-[4/5]";
+          } else if (design.style.includes("1:1") || design.style.includes("square")) {
+            aspectClass = "aspect-square";
+          } else if (design.style.includes("A4") || design.style.includes("210:297")) {
+            aspectClass = "aspect-[210/297]";
+          }
+        }
+    }
+    
+    return aspectClass;
+  };
+  
+  // Function to render a single design item (used by both grid and carousel)
+  const renderDesignItem = (design: DesignVariation) => {
+    return (
+      <div 
+        className={`
+          relative overflow-hidden rounded-lg border-2 cursor-pointer transition-all duration-200
+          ${selectedDesign === design.id 
+            ? 'border-indigo-500 shadow-lg shadow-indigo-500/30' 
+            : 'border-gray-800/50 hover:border-indigo-500/50 shadow shadow-white/5 hover:shadow-indigo-500/10'}
+        `}
+        onClick={() => handleSelectDesign(design)}
+      >
+        <div className={`relative ${getAspectRatioClass(design)} w-full flex items-center justify-center`}>
+          {design.imageBase64 && (
+            <img 
+              src={design.imageBase64} 
+              alt={`Design option ${design.id}`}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                console.error(`Image load error for design ${design.id}`);
+                const target = e.target as HTMLImageElement;
+                target.onerror = null; // Prevent infinite error loop
+                target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiM0MzM3ZmUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkRlc2lnbiBWb3JzY2hsYWc8L3RleHQ+PC9zdmc+';
+              }}
+            />
+          )}
+          
+          {/* Selection indicator */}
+          {selectedDesign === design.id && (
+            <div className="absolute top-2 right-2 text-indigo-500">
+              <CheckCircle size={20} />
+            </div>
+          )}
+          
+          {/* Design Style Label */}
+          <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm p-1.5">
+            <p className="text-[8px] text-white/90 truncate">{design.style}</p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="h-full flex flex-col">
       <div className="mb-4">
-        <h2 className="text-base font-semibold text-white">Design Suggestions</h2>
+        <h2 className="text-base font-semibold text-white">
+          {isCarousel ? "Carousel Designs" : "Design Suggestions"}
+        </h2>
         <p className="text-xs text-white/70 mb-3">
-          Select one of the design variations below
+          {isCarousel 
+            ? "Swipe through the carousel to view all designs" 
+            : "Select one of the design variations below"
+          }
         </p>
         
-        {/* Explanation of the two-step process */}
+        {/* Explanation of process */}
         <div className="p-3 bg-indigo-500/20 border border-indigo-500/30 rounded-lg shadow-md mb-2">
-          <h3 className="font-medium text-white text-sm mb-1">Design Generation Process:</h3>
+          <h3 className="font-medium text-white text-sm mb-1">
+            {isCarousel ? "Carousel Design Process:" : "Design Generation Process:"}
+          </h3>
           <p className="text-white/80 text-xs">
-            <span className="font-medium text-indigo-300">Step 1:</span> Preview designs generated by Claude AI
-            <br/>
-            <span className="font-medium text-indigo-300">Step 2:</span> Select your favorite to continue to the editor for further customization
+            {isCarousel ? (
+              <>
+                <span className="font-medium text-indigo-300">Step 1:</span> Browse through the carousel of generated designs
+                <br/>
+                <span className="font-medium text-indigo-300">Step 2:</span> Each design maintains a consistent style across the carousel
+              </>
+            ) : (
+              <>
+                <span className="font-medium text-indigo-300">Step 1:</span> Preview designs generated by Claude AI
+                <br/>
+                <span className="font-medium text-indigo-300">Step 2:</span> Select your favorite to continue to the editor for customization
+              </>
+            )}
           </p>
         </div>
       </div>
       
       <div className="flex-grow flex flex-col items-center justify-center">
-        <div className={`grid ${designs.length > 1 ? 'grid-cols-2' : 'grid-cols-1'} gap-3 max-h-[75vh] overflow-auto p-1 mx-auto`}>
-          {designs.map((design) => {
-            // Extrahiere das Aspect Ratio aus der URL
-            const getAspectRatioClass = () => {
-              // Standardwert, wenn wir das Verhältnis nicht bestimmen können
-              let aspectClass = "aspect-square"; 
-              
-              // Hole das aktuelle Aspect Ratio aus der URL
-              const urlParams = new URLSearchParams(window.location.search);
-              const selectedAspectRatio = urlParams.get('aspectRatio') || '';
-              
-              console.log(`Current URL aspect ratio: ${selectedAspectRatio}`);
-              
-              // Bestimme den CSS-Class basierend auf dem Aspect Ratio
-              switch(selectedAspectRatio) {
-                // Square formats
-                case 'profile':
-                case 'post':
-                case 'square_ad':
-                  aspectClass = "aspect-square";
-                  break;
-                  
-                // Landscape formats  
-                case 'fb_cover':
-                case 'facebook_cover':
-                  aspectClass = "aspect-[820/312]";
-                  break;
-                case 'twitter_header':
-                  aspectClass = "aspect-[3/1]";
-                  break;
-                case 'yt_thumbnail':
-                case 'instream':
-                  aspectClass = "aspect-[16/9]";
-                  break;
-                case 'linkedin_banner':
-                  aspectClass = "aspect-[4/1]";
-                  break;
-                  
-                // Portrait formats
-                case 'stories':
-                  aspectClass = "aspect-[9/16]";
-                  break;
-                case 'pinterest':
-                  aspectClass = "aspect-[2/3]";
-                  break;
-                  
-                // Special formats
-                case 'leaderboard':
-                  aspectClass = "aspect-[728/90]";
-                  break;
-                case 'skyscraper':
-                  aspectClass = "aspect-[160/600]";
-                  break;
-                default:
-                  // Fallback: Versuche aus dem Style-Text das Aspect Ratio zu extrahieren
-                  if (design.style) {
-                    if (design.style.includes("9:16") || design.style.includes("story")) {
-                      aspectClass = "aspect-[9/16]";
-                    } else if (design.style.includes("16:9") || design.style.includes("landscape")) {
-                      aspectClass = "aspect-[16/9]";
-                    } else if (design.style.includes("4:5") || design.style.includes("portrait")) {
-                      aspectClass = "aspect-[4/5]";
-                    } else if (design.style.includes("1:1") || design.style.includes("square")) {
-                      aspectClass = "aspect-square";
-                    } else if (design.style.includes("A4") || design.style.includes("210:297")) {
-                      aspectClass = "aspect-[210/297]";
-                    }
-                  }
-              }
-              
-              console.log(`Using aspect class: ${aspectClass} for design ${design.id}`);
-              return aspectClass;
-            };
-            
-            return (
-              <div 
-                key={design.id}
-                className={`
-                  relative overflow-hidden rounded-lg border-2 cursor-pointer transition-all duration-200
-                  ${selectedDesign === design.id 
-                    ? 'border-indigo-500 shadow-lg shadow-indigo-500/30' 
-                    : 'border-gray-800/50 hover:border-indigo-500/50 shadow shadow-white/5 hover:shadow-indigo-500/10'}
-                `}
-                onClick={() => handleSelectDesign(design)}
-              >
-                <div className={`relative ${getAspectRatioClass()} w-full flex items-center justify-center`}>
-                  {design.imageBase64 && (
-                    <img 
-                      src={design.imageBase64} 
-                      alt={`Design option ${design.id}`}
-                      className="w-full h-full object-cover"
-                      onLoad={(e) => {
-                        console.log(`Design ${design.id} loaded successfully`);
-                      }}
-                      onError={(e) => {
-                        // Log the first 100 chars of the image base64 to inspect it
-                        if (design.imageBase64) {
-                          console.error(`Image base64 prefix for design ${design.id}:`, design.imageBase64.substring(0, 100));
-                          
-                          // Check if the image data has comma or other issues
-                          const isValidFormat = design.imageBase64.startsWith('data:image/jpeg;base64,') || 
-                                                design.imageBase64.startsWith('data:image/png;base64,');
-                          console.error(`Image format valid: ${isValidFormat}`);
-
-                          // Check if it appears to have numerical values instead of base64 (common error)
-                          const hasNumbers = /^\d+,\d+/.test(design.imageBase64.substring(23));
-                          console.error(`Image data contains numerical values instead of base64: ${hasNumbers}`);
-                        }
-                        
-                        // Fallback if image fails to load
-                        console.error(`Image load error for design ${design.id}`);
-                        const target = e.target as HTMLImageElement;
-                        target.onerror = null; // Prevent infinite error loop
-                        target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiM0MzM3ZmUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkRlc2lnbiBWb3JzY2hsYWc8L3RleHQ+PC9zdmc+';
-                      }}
-                    />
-                  )}
-                  
-                  {/* Selection indicator */}
-                  {selectedDesign === design.id && (
-                    <div className="absolute top-2 right-2 text-indigo-500">
-                      <CheckCircle size={20} />
-                    </div>
-                  )}
-                  
-                  {/* Design Style Label */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm p-1.5">
-                    <p className="text-[8px] text-white/90 truncate">{design.style}</p>
-                  </div>
-                </div>
+        {isCarousel ? (
+          /* Carousel View */
+          <Carousel className="w-full max-w-md">
+            <CarouselContent>
+              {designs.map((design) => (
+                <CarouselItem key={design.id}>
+                  {renderDesignItem(design)}
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <div className="flex justify-center mt-2">
+              <CarouselPrevious className="relative -left-0 right-auto mx-2" />
+              <CarouselNext className="relative left-0 right-auto mx-2" />
+            </div>
+          </Carousel>
+        ) : (
+          /* Grid View */
+          <div className={`grid ${designs.length > 1 ? 'grid-cols-2' : 'grid-cols-1'} gap-3 max-h-[75vh] overflow-auto p-1 mx-auto`}>
+            {designs.map((design) => (
+              <div key={design.id}>
+                {renderDesignItem(design)}
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        )}
         
         {selectedDesign !== null && (
           <Button

@@ -56,6 +56,7 @@ export default function AiFlyerForm({
   const [logo, setLogo] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>("");
   const [generateAiBackground, setGenerateAiBackground] = useState<boolean>(false);
+  const [createCarousel, setCreateCarousel] = useState<boolean>(false);
   
   // State for premium design options
   const [isPremiumDialogOpen, setIsPremiumDialogOpen] = useState<boolean>(false);
@@ -199,6 +200,9 @@ export default function AiFlyerForm({
     
     // Include flag for AI background generation
     formData.append("generate_ai_background", generateAiBackground ? "true" : "false");
+    
+    // Include flag for creating carousel
+    formData.append("create_carousel", createCarousel ? "true" : "false");
     
     // Include active brand kit ID if available
     if (activeBrandKit && !selectedTemplate) {
@@ -461,7 +465,7 @@ export default function AiFlyerForm({
           </div>
           
           {/* Brand Kit Logo Option */}
-          {activeBrandKit && activeBrandKit.logo_url && (
+          {activeBrandKit && activeBrandKit.logo_url ? (
             <div 
               onClick={() => {
                 setLogoPreview(activeBrandKit.logo_url || "");
@@ -478,6 +482,21 @@ export default function AiFlyerForm({
                 <span className="text-[9px] text-white/90">Use brand logo</span>
               </div>
             </div>
+          ) : (
+            <Label className="flex items-center h-6 rounded-md border border-slate-700 bg-slate-800 p-1 cursor-pointer">
+              <div className="flex items-center gap-1.5">
+                <Checkbox 
+                  id="createCarousel" 
+                  checked={createCarousel}
+                  onCheckedChange={(checked) => setCreateCarousel(!!checked)}
+                  className="h-2.5 w-2.5 border-slate-600"
+                />
+                <div className="flex items-center gap-1">
+                  <ImageIcon className="h-2.5 w-2.5 text-white/70" />
+                  <span className="text-[9px] text-white/90">Create Carousel</span>
+                </div>
+              </div>
+            </Label>
           )}
         </div>
         
