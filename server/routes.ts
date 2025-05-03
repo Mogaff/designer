@@ -32,14 +32,7 @@ const uploadFields = upload.fields([
   { name: 'logo', maxCount: 1 }
 ]);
 
-// Import Replit Auth setup
-import { setupAuth as setupReplitAuth } from "./replitAuth";
-
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Initialize Replit Auth routes if DATABASE_URL is available
-  if (process.env.DATABASE_URL) {
-    await setupReplitAuth(app);
-  }
   // Initialize and register the AdBurst Factory routes
   registerAdBurstApiRoutes(app);
   

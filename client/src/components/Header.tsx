@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { LogIn, LogOut, User, CreditCard, Star, DollarSign, Images, Settings as SettingsIcon } from "lucide-react";
-import { FcGoogle } from 'react-icons/fc';
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -152,33 +151,12 @@ export default function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="text-white hover:text-white hover:bg-white/10 bg-transparent border-white/20">
-                  <LogIn className="h-4 w-4 mr-1" />
-                  Login
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <Link href="/login" className="w-full">
-                  <DropdownMenuItem>
-                    <FcGoogle className="h-4 w-4 mr-2" />
-                    Login with Google
-                  </DropdownMenuItem>
-                </Link>
-                <Link href="/api/replit/login" className="w-full">
-                  <DropdownMenuItem>
-                    <svg className="mr-2 h-4 w-4" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M1.5 1.5H10.5V4.5H1.5V1.5Z" fill="currentColor" />
-                      <path d="M10.5 4.5H7.5V10.5H10.5V4.5Z" fill="currentColor" />
-                      <path d="M1.5 4.5H4.5V7.5H1.5V4.5Z" fill="currentColor" />
-                      <path d="M4.5 7.5H7.5V10.5H4.5V7.5Z" fill="currentColor" />
-                    </svg>
-                    Login with Replit
-                  </DropdownMenuItem>
-                </Link>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Link href="/login">
+              <Button variant="outline" size="sm" className="text-white hover:text-white hover:bg-white/10 bg-transparent border-white/20">
+                <LogIn className="h-4 w-4 mr-1" />
+                Login with Google
+              </Button>
+            </Link>
           )}
         </div>
       </div>

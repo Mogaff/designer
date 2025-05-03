@@ -1,30 +1,15 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb, varchar, date, index } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, jsonb, varchar, date } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-
-// Session storage table for Replit Auth
-export const sessions = pgTable(
-  "sessions",
-  {
-    sid: varchar("sid").primaryKey(),
-    sess: jsonb("sess").notNull(),
-    expire: timestamp("expire").notNull(),
-  },
-  (table) => [index("IDX_session_expire").on(table.expire)],
-);
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   firebase_uid: text("firebase_uid").unique(),
-  replit_id: text("replit_id").unique(), // Added for Replit Auth
   email: text("email"),
   display_name: text("display_name"),
   photo_url: text("photo_url"),
-  first_name: text("first_name"),
-  last_name: text("last_name"),
-  bio: text("bio"),
   created_at: timestamp("created_at").defaultNow(),
   credits_balance: integer("credits_balance").default(10).notNull(),
   is_premium: boolean("is_premium").default(false).notNull(),
@@ -120,13 +105,9 @@ export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
   firebase_uid: true,
-  replit_id: true,
   email: true,
   display_name: true,
   photo_url: true,
-  first_name: true,
-  last_name: true,
-  bio: true,
 });
 
 export const insertUserCreditsSchema = createInsertSchema(userCredits).pick({
