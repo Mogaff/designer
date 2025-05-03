@@ -14,9 +14,18 @@
   100% { transform: translateX(0); opacity: 1; }
 }
 
+@keyframes border-beam {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 @keyframes border-light {
   0% {
-    background-position: 0% 0%;
+    background-position: -100% 0%;
   }
   100% {
     background-position: 200% 0%;

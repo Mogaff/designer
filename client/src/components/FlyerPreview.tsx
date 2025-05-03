@@ -496,16 +496,26 @@ export default function FlyerPreview({
                     {/* Inner content overlay - very light */}
                     <div className="absolute inset-0 bg-black/5 backdrop-blur-[1px]"></div>
                     
-                    {/* Border light effect */}
-                    <div className="absolute inset-0 rounded-lg" style={{
-                      border: '2px solid transparent',
-                      backgroundImage: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.8) 50%, transparent 100%)',
-                      backgroundSize: '200% 100%',
-                      animation: 'border-light 2s linear infinite',
-                      WebkitMask: 'linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)',
-                      WebkitMaskComposite: 'xor',
-                      maskComposite: 'exclude',
-                    }}></div>
+                    {/* Light beam that rotates around border */}
+                    <div className="absolute inset-0 rounded-lg overflow-hidden">
+                      {/* Outer container that rotates */}
+                      <div className="absolute inset-[-5px]" style={{
+                        animation: 'border-beam 4s linear infinite',
+                      }}>
+                        {/* Light ray */}
+                        <div className="absolute top-0 left-1/2 w-[50px] h-[500%]" style={{
+                          background: 'linear-gradient(0deg, transparent, rgba(255, 255, 255, 0.7) 50%, transparent)',
+                          transform: 'translateX(-50%) rotate(0deg)',
+                          transformOrigin: 'center 5px',
+                        }}></div>
+                      </div>
+
+                      {/* Static illuminated border */}
+                      <div className="absolute inset-0 rounded-lg" style={{
+                        border: '2px solid rgba(255, 255, 255, 0.1)',
+                        boxShadow: '0 0 5px rgba(255, 255, 255, 0.2), inset 0 0 3px rgba(255, 255, 255, 0.2)'
+                      }}></div>
+                    </div>
                     
                     {/* Corner illumination */}
                     <div className="absolute top-[-2px] left-[-2px] w-4 h-4">
