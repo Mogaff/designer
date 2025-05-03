@@ -490,16 +490,33 @@ export default function FlyerPreview({
                   </div>
                 )}
                 
-                {/* Generation progress visualization */}
+                {/* Beaming border animation while generating */}
                 {isGenerating && showGenerationProgress && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm">
-                    <div className="w-4/5 max-w-md space-y-4">
+                  <div 
+                    className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden"
+                    style={{
+                      animation: 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }}
+                  >
+                    {/* Animated border effect */}
+                    <div className="absolute inset-0 pointer-events-none">
+                      <div className="absolute inset-0 border-4 border-transparent" style={{
+                        background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent) border-box',
+                        WebkitMask: 'linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)',
+                        WebkitMaskComposite: 'xor',
+                        maskComposite: 'exclude',
+                        animation: 'border-beam 2s linear infinite',
+                      }}></div>
+                    </div>
+                    
+                    {/* Content overlay */}
+                    <div className="z-10 w-4/5 max-w-md space-y-4 bg-black/50 backdrop-blur-sm p-4 rounded-lg">
                       <h3 className="text-lg font-semibold text-white text-center mb-4">Generating Your Design</h3>
                       
                       {/* Progress bar */}
                       <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
                         <div 
-                          className="h-full bg-gradient-to-r from-white/70 to-white/40 transition-all duration-300" 
+                          className="h-full bg-gradient-to-r from-indigo-400 to-purple-500 transition-all duration-300" 
                           style={{ width: `${progressPercent}%` }}
                         ></div>
                       </div>
