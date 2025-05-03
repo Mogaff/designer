@@ -336,11 +336,8 @@ export default function Gallery() {
                                 className="h-8 w-8 text-white/70 hover:text-white hover:bg-transparent"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  // Edit action would go here
-                                  toast({
-                                    title: "Edit feature",
-                                    description: "Edit functionality coming soon!"
-                                  });
+                                  // Navigate to the design editor with this creation's ID
+                                  window.location.href = `/editor/${creation.id}`;
                                 }}
                               >
                                 <Edit className="h-4 w-4" />
@@ -475,6 +472,21 @@ export default function Gallery() {
                   
                   {/* Rechts ausgerichtete Aktionsbuttons */}
                   <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-indigo-700/50 bg-indigo-500/10 text-white hover:bg-indigo-500/20"
+                      onClick={() => {
+                        if (selectedCreation) {
+                          setPreviewOpen(false); // Close the dialog
+                          // Navigate to editor
+                          window.location.href = `/editor/${selectedCreation.id}`;
+                        }
+                      }}
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      Edit Design
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
