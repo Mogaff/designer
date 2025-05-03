@@ -472,6 +472,42 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db.select().from(users).where(eq(users.firebase_uid, firebaseUid));
     return user || undefined;
   }
+  
+  async getUserByReplitId(replitId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.replit_id, replitId));
+    return user || undefined;
+  }
+  
+  async upsertUser(insertUser: InsertUser): Promise<User> {
+    try {
+      // Check if the user exists by replit_id
+      if (insertUser.replit_id) {
+        const existingUser = await this.getUserByReplitId(insertUser.replit_id);
+        if (existingUser) {
+          // Update the user with any new data
+          const [updatedUser] = await db
+            .update(users)
+            .set({
+              email: insertUser.email ?? existingUser.email,
+              display_name: insertUser.display_name ?? existingUser.display_name,
+              photo_url: insertUser.photo_url ?? existingUser.photo_url,
+              first_name: insertUser.first_name ?? existingUser.first_name,
+              last_name: insertUser.last_name ?? existingUser.last_name,
+              bio: insertUser.bio ?? existingUser.bio,
+            })
+            .where(eq(users.id, existingUser.id))
+            .returning();
+          return updatedUser;
+        }
+      }
+      
+      // If we didn't find a user or couldn't update, create a new one
+      return await this.createUser(insertUser);
+    } catch (error) {
+      console.error('Error upserting user:', error);
+      throw new Error(`Failed to upsert user: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     try {

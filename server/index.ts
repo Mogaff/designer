@@ -4,18 +4,25 @@ import { setupVite, serveStatic, log } from "./vite";
 import session from "express-session";
 import passport from "./auth";
 import MemoryStore from "memorystore";
+import { getSession as getReplitSession, setupAuth as setupReplitAuth } from "./replitAuth";
+import connectPg from "connect-pg-simple";
 
 const app = express();
 // Increase JSON payload limit to 50MB to accommodate large image data
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
-// Create memory store for sessions
-const MemoryStoreClass = MemoryStore(session);
-
-// Configure session middleware
-app.use(
-  session({
+// Choose session store based on presence of DATABASE_URL
+let sessionMiddleware;
+if (process.env.DATABASE_URL) {
+  // Use PostgreSQL session store when DATABASE_URL is available
+  log("Using PostgreSQL session store");
+  sessionMiddleware = getReplitSession();
+} else {
+  // Fall back to memory store
+  log("Using memory session store");
+  const MemoryStoreClass = MemoryStore(session);
+  sessionMiddleware = session({
     secret: "flyer-generator-secret",
     resave: false,
     saveUninitialized: false,
@@ -26,8 +33,11 @@ app.use(
       secure: process.env.NODE_ENV === "production",
       maxAge: 24 * 60 * 60 * 1000 // 24 hours
     }
-  })
-);
+  });
+}
+
+// Apply session middleware
+app.use(sessionMiddleware);
 
 // Initialize Passport and session
 app.use(passport.initialize());
