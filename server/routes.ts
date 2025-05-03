@@ -227,18 +227,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // For carousel mode, use a completely different approach with explicit consistency instructions
         // Don't use any predefined style variations, instead explicitly ask for consistency
         
-        // Create a common design brief for all images in the carousel
+        // Define a set of fixed colors to use for all carousel designs
+        const fixedColors = {
+          primary: "#3B72C0",    // Blue
+          secondary: "#E5A823",  // Gold/Yellow
+          accent: "#1D364D",     // Dark Blue
+          text: "#FFFFFF",       // White
+          background: "#080F18"  // Very Dark Blue
+        };
+        
+        // Create a common design brief for all images in the carousel with FIXED colors
         const carouselPrompt = `${generationOptions.prompt} 
         
-IMPORTANT: This is for a CAROUSEL of multiple related images. Create a CONSISTENT DESIGN SYSTEM with:
-- Use the same fonts, typography style, and text positioning across all designs
-- Maintain the same color palette and visual style throughout all slides
-- Keep consistent layout structure, margins, and spacing for all slides
-- Apply identical design elements, borders, and decorations to all slides
-- Make sure brand elements appear in the same position and style in every slide
-- The goal is to make all slides look like they belong to the same cohesive series`;
+CRITICAL: This is for a CAROUSEL of multiple images. You MUST use this EXACT FIXED COLOR PALETTE for ALL designs:
+- Primary Color: ${fixedColors.primary} (Blue)
+- Secondary Color: ${fixedColors.secondary} (Gold/Yellow)
+- Accent Color: ${fixedColors.accent} (Dark Blue)
+- Text Color: ${fixedColors.text} (White)
+- Background Color: ${fixedColors.background} (Very Dark Blue)
+
+CREATE IDENTICAL DESIGN ELEMENTS FOR ALL SLIDES:
+- Use EXACTLY the same fonts, styles, and text positions on all slides
+- Apply the EXACT same color palette defined above to all slides
+- Maintain identical layout structure and spacing across all designs
+- Use the same styling for borders, overlays, and decorative elements
+- Position brand elements in the exact same location on every slide
+- DO NOT DEVIATE from this color palette or design system
+
+The finished carousel should look like ONE unified design campaign where only the background image changes.`;
+        
+        // Define a common CSS style that will be used for all carousel images
+        const commonCss = `
+.flyer-container {
+  width: 800px;
+  height: 800px;
+  overflow: hidden;
+  position: relative;
+  font-family: "Montserrat", sans-serif;
+  color: ${fixedColors.text};
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(8,15,24,0.7) 0%, rgba(29,54,77,0.6) 100%);
+  z-index: 1;
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+  padding: 40px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 48px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: ${fixedColors.text};
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.subtitle {
+  font-size: 24px;
+  font-weight: 500;
+  color: ${fixedColors.secondary};
+  margin-bottom: 8px;
+}
+
+.accent-bar {
+  height: 4px;
+  width: 120px;
+  background-color: ${fixedColors.primary};
+  margin: 16px auto;
+}
+
+.footer {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.cta-button {
+  display: inline-block;
+  background-color: ${fixedColors.primary};
+  color: ${fixedColors.text};
+  padding: 12px 30px;
+  border-radius: 30px;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 16px;
+  margin-top: 20px;
+  box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
+}`;
         
         // Process each image with this consistent approach
+        // We'll store the first image's HTML/CSS to reuse for subsequent images
+        let firstImageHtml = '';
+        let firstImageCss = '';
+        
         for (let imgIndex = 0; imgIndex < files.background_image.length; imgIndex++) {
           try {
             // For each image, create variant options with the consistency instructions
@@ -246,28 +344,73 @@ IMPORTANT: This is for a CAROUSEL of multiple related images. Create a CONSISTEN
             
             // For the first image, use slightly different instructions to establish the design system
             const isFirstImage = imgIndex === 0;
-            const carouselImagePrompt = isFirstImage
-              ? `${carouselPrompt}\n\nThis is the FIRST IMAGE in the carousel. Establish a strong, distinctive design system that will work well across all images in the series.`
-              : `${carouselPrompt}\n\nThis is slide #${imgIndex + 1} in the carousel. STRICTLY follow the same design system as established in the first slide.`;
             
-            const variantOptions = {
-              ...generationOptions,
-              backgroundImageBase64: currentImageBase64, // Use the current image
-              prompt: carouselImagePrompt, // Use the carousel-specific prompt
-              aspectRatio: aspectRatio,
-              templateInfo: parsedTemplateInfo,
-              logoBase64: "" // CRITICAL FIX: Ensure no logo is sent to Claude for now
-            };
-            
-            log(`Generating carousel image ${imgIndex + 1} with consistent design system`, "generator");
-            
-            // Use Claude AI for each image
-            const screenshot = await renderFlyerFromClaude(variantOptions);
-            successfulDesigns.push({
-              imageBuffer: screenshot,
-              style: "Carousel design with consistent style system",
-              carouselIndex: imgIndex // Track which image in carousel
-            });
+            if (isFirstImage) {
+              // First image - create the design system
+              const firstImagePrompt = `${carouselPrompt}
+              
+This is the FIRST IMAGE in the carousel. Create the design system that will be used for ALL images.
+Include the background image provided, but create a design that will work with other images too.
+USE THIS EXACT CSS in your design to ensure consistency:
+
+\`\`\`css
+${commonCss}
+\`\`\`
+
+YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
+              
+              const variantOptions = {
+                ...generationOptions,
+                backgroundImageBase64: currentImageBase64,
+                prompt: firstImagePrompt,
+                aspectRatio: aspectRatio,
+                templateInfo: parsedTemplateInfo,
+                logoBase64: "" // CRITICAL FIX: Ensure no logo is sent to Claude for now
+              };
+              
+              log(`Generating first carousel image with base design system`, "generator");
+              
+              // Generate the first design
+              const screenshot = await renderFlyerFromClaude(variantOptions);
+              successfulDesigns.push({
+                imageBuffer: screenshot,
+                style: "Carousel design with consistent style system",
+                carouselIndex: imgIndex
+              });
+              
+            } else {
+              // Subsequent images - use exact same design system as first image
+              const subsequentImagePrompt = `${carouselPrompt}
+              
+This is slide #${imgIndex + 1} in the carousel. YOU MUST use the EXACT SAME design system as the first slide.
+Only change the background image, keep EVERYTHING else identical - same colors, text layout, styling, and elements.
+USE THIS EXACT CSS in your design to ensure consistency:
+
+\`\`\`css
+${commonCss}
+\`\`\`
+
+YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
+              
+              const variantOptions = {
+                ...generationOptions,
+                backgroundImageBase64: currentImageBase64,
+                prompt: subsequentImagePrompt,
+                aspectRatio: aspectRatio,
+                templateInfo: parsedTemplateInfo,
+                logoBase64: "" // CRITICAL FIX: Ensure no logo is sent to Claude for now
+              };
+              
+              log(`Generating carousel image ${imgIndex + 1} using consistent design system`, "generator");
+              
+              // Generate subsequent design
+              const screenshot = await renderFlyerFromClaude(variantOptions);
+              successfulDesigns.push({
+                imageBuffer: screenshot,
+                style: "Carousel design with consistent style system",
+                carouselIndex: imgIndex
+              });
+            }
             
             // Minimal delay between requests
             if (imgIndex < files.background_image.length - 1) {
