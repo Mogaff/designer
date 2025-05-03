@@ -1,0 +1,207 @@
+/* Editor specific styles for the enhanced design editor */
+
+.editor-container {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+.editor-canvas {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.screenshot-mode .editor-handle,
+.screenshot-mode .editor-outline {
+  display: none !important;
+}
+
+.editor-element {
+  position: absolute;
+  cursor: move;
+}
+
+.editor-element:hover {
+  outline: 1px dashed rgba(255, 255, 255, 0.5);
+}
+
+.editor-element.selected {
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+.editor-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: white;
+  border-radius: 50%;
+}
+
+.editor-handle.resize {
+  cursor: nwse-resize;
+}
+
+.editor-handle.rotate {
+  cursor: pointer;
+}
+
+.editor-toolbar {
+  display: flex;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border-radius: 50px;
+  padding: 4px 8px;
+  margin: 4px;
+}
+
+.editor-toolbar-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  border: none;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.editor-toolbar-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.editor-toolbar-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.editor-panel {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  color: white;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+
+.editor-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.editor-panel-title {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.editor-panel-section {
+  margin-bottom: 16px;
+}
+
+.editor-panel-section-title {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 8px;
+}
+
+.editor-control-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.editor-font-preview {
+  padding: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  margin-bottom: 8px;
+  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.editor-template-item {
+  cursor: pointer;
+  border-radius: 4px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.editor-template-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.editor-template-thumbnail {
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  width: 100%;
+}
+
+.editor-template-name {
+  padding: 4px;
+  font-size: 10px;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* WYSIWYG Editor Overrides */
+.sun-editor {
+  border-radius: 4px !important;
+  overflow: hidden !important;
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.sun-editor .se-toolbar {
+  outline: none !important;
+  background: rgba(30, 30, 30, 0.95) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.sun-editor .se-btn-tray {
+  background: transparent !important;
+}
+
+.sun-editor .se-btn {
+  color: white !important;
+  border-color: transparent !important;
+}
+
+.sun-editor .se-btn:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.sun-editor .se-wrapper {
+  background: rgba(20, 20, 20, 0.8) !important;
+}
+
+.sun-editor .se-wrapper-inner {
+  background: transparent !important;
+  border: none !important;
+}
+
+.sun-editor .se-wrapper-wysiwyg {
+  color: white !important;
+}
+
+.sun-editor .se-resizing-bar {
+  background: rgba(30, 30, 30, 0.95) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}

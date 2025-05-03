@@ -8,6 +8,8 @@ export interface GeneratedFlyer {
   template: string;
   fontSettings?: FontSettings;
   metadata?: Record<string, any>;
+  favorite?: boolean;
+  created_at?: string;
 }
 
 export interface DesignVariation {

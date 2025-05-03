@@ -9,6 +9,7 @@ import Pricing from "@/pages/Pricing";
 import Gallery from "@/pages/Gallery";
 import Settings from "@/pages/Settings";
 import AdBurst from "@/pages/AdBurst";
+import DesignEditor from "@/pages/DesignEditor";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { UserSettingsProvider } from "@/contexts/UserSettingsContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -21,6 +22,13 @@ function Router() {
     <Switch>
       {/* Login is the only route that doesn't require authentication */}
       <Route path="/login" component={Login} />
+      
+      {/* Editor page without the sidebar layout */}
+      <Route path="/editor/:id?">
+        <ProtectedRoute>
+          <DesignEditor />
+        </ProtectedRoute>
+      </Route>
       
       {/* All other routes require authentication and use the AppLayout */}
       <Route path="/">

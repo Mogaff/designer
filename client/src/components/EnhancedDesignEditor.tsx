@@ -15,6 +15,7 @@ import html2canvas from 'html2canvas';
 import WebFont from 'webfontloader';
 import SunEditor from 'suneditor-react';
 import 'suneditor/dist/css/suneditor.min.css';
+import '@/components/ui/editor.css';
 import { 
   Popover,
   PopoverContent,
