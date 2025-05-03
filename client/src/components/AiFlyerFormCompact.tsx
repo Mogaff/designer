@@ -55,6 +55,8 @@ export default function AiFlyerFormCompact({
   const [generateAiBackground, setGenerateAiBackground] = useState<boolean>(false);
   const [isInspirationPanelOpen, setIsInspirationPanelOpen] = useState<boolean>(false);
   const [createCarousel, setCreateCarousel] = useState<boolean>(false);
+  const [multipleImages, setMultipleImages] = useState<File[]>([]);
+  const [multipleImagePreviews, setMultipleImagePreviews] = useState<string[]>([]);
   
   // State für die Anzahl der zu generierenden Designs
   const [designCount, setDesignCount] = useState<string>("4"); // Default ist jetzt 4 Designs
@@ -147,21 +149,52 @@ export default function AiFlyerFormCompact({
   
   // Handle file changes (background image)
   const handleBackgroundImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setBackgroundImage(file);
-      setBackgroundImagePreview(URL.createObjectURL(file));
+    // Reset previous images
+    clearBackgroundImage();
+    
+    if (e.target.files && e.target.files.length > 0) {
+      if (createCarousel && e.target.files.length > 1) {
+        // Handle multiple files for carousel mode
+        const files = Array.from(e.target.files);
+        setMultipleImages(files);
+        
+        // Create previews for all images
+        const previews = files.map(file => URL.createObjectURL(file));
+        setMultipleImagePreviews(previews);
+        
+        // Set the first image as the main image for backward compatibility
+        setBackgroundImage(files[0]);
+        setBackgroundImagePreview(previews[0]);
+      } else {
+        // Handle single file for normal mode
+        const file = e.target.files[0];
+        setBackgroundImage(file);
+        setBackgroundImagePreview(URL.createObjectURL(file));
+        
+        // Clear multiple images if any
+        setMultipleImages([]);
+        setMultipleImagePreviews([]);
+      }
+      
       setGenerateAiBackground(false); // Disable AI background when user uploads an image
     }
   };
   
   // Clear background image
   const clearBackgroundImage = () => {
+    // Clear single image
     setBackgroundImage(null);
     if (backgroundImagePreview) {
       URL.revokeObjectURL(backgroundImagePreview);
     }
     setBackgroundImagePreview("");
+    
+    // Clear multiple images
+    multipleImagePreviews.forEach(preview => {
+      URL.revokeObjectURL(preview);
+    });
+    setMultipleImages([]);
+    setMultipleImagePreviews([]);
   };
   
   // Handle file changes (logo)
@@ -212,7 +245,13 @@ export default function AiFlyerFormCompact({
     const formData = new FormData();
     formData.append("prompt", prompt);
     
-    if (backgroundImage) {
+    // If carousel mode is enabled and we have multiple images, append them all
+    if (createCarousel && multipleImages.length > 0) {
+      multipleImages.forEach(img => {
+        formData.append("background_image", img);
+      });
+    } else if (backgroundImage) {
+      // Otherwise just use the single background image
       formData.append("background_image", backgroundImage);
     }
     
@@ -380,13 +419,27 @@ export default function AiFlyerFormCompact({
                 id="background-image"
                 onChange={handleBackgroundImageChange}
                 className="sr-only"
+                multiple={createCarousel} // Allow multiple file selection when carousel mode is enabled
               />
               <Label
                 htmlFor="background-image"
-                className="cursor-pointer flex flex-col justify-center items-center aspect-square w-full rounded-md border border-white/10 bg-white/10 backdrop-blur-md shadow-lg hover:bg-white/15 transition-colors"
+                className={`cursor-pointer flex flex-col justify-center items-center aspect-square w-full rounded-md border ${createCarousel ? 'border-indigo-400/30' : 'border-white/10'} bg-white/10 backdrop-blur-md shadow-lg hover:bg-white/15 transition-colors`}
               >
-                <Upload className="h-4 w-4 text-white/80" />
-                <span className="text-[7px] text-white/70 mt-1">IMAGE</span>
+                <div className="relative">
+                  <Upload className="h-4 w-4 text-white/80" />
+                  {createCarousel && (
+                    <span className="absolute -top-1 -right-1 flex h-1.5 w-1.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-indigo-500"></span>
+                    </span>
+                  )}
+                </div>
+                <span className="text-[7px] text-white/70 mt-1">
+                  {createCarousel ? 'IMAGES' : 'IMAGE'}
+                </span>
+                {createCarousel && (
+                  <span className="text-[5px] text-indigo-400 mt-0.5">Multiple allowed</span>
+                )}
               </Label>
               
               {(backgroundImagePreview || backgroundImage) && (
@@ -405,6 +458,18 @@ export default function AiFlyerFormCompact({
                       <path d="M6 18L18 6M6 6l12 12" stroke="white" strokeWidth="2" />
                     </svg>
                   </button>
+                  
+                  {/* Show image count badge for carousel mode */}
+                  {createCarousel && multipleImages.length > 1 && (
+                    <div className="absolute bottom-0.5 left-0.5 bg-black/70 text-white px-1 py-0.5 rounded-sm text-[6px] flex items-center">
+                      <span className="mr-0.5">{multipleImages.length}</span>
+                      <svg width="6" height="6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21 3H3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 16H3V5h18v14z" fill="white" />
+                        <path d="M14 10.5V13c0 .6.4 1 1 1h2.5c.6 0 1-.4 1-1v-2.5c0-.6-.4-1-1-1H15c-.6 0-1 .4-1 1z" fill="white" />
+                        <path d="M8 10.5V13c0 .6.4 1 1 1h2.5c.6 0 1-.4 1-1v-2.5c0-.6-.4-1-1-1H9c-.6 0-1 .4-1 1z" fill="white" />
+                      </svg>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

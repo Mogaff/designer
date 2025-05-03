@@ -22,13 +22,13 @@ import { registerCompetitorAdRoutes, registerAdInspirationIntegrationRoutes } fr
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
+    fileSize: 15 * 1024 * 1024, // 15MB limit - increased to handle multiple images
   },
 });
 
 // Create a multer middleware that can handle multiple files
 const uploadFields = upload.fields([
-  { name: 'background_image', maxCount: 1 },
+  { name: 'background_image', maxCount: 10 }, // Allow up to 10 images for carousel
   { name: 'logo', maxCount: 1 }
 ]);
 
@@ -153,10 +153,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Add images to options if provided (using type assertion for files)
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
       
-      if (files && files.background_image && files.background_image[0]) {
-        log("Background image received for AI generation", "generator");
-        const backgroundImageBase64 = files.background_image[0].buffer.toString('base64');
+      // Check if carousel mode is enabled
+      const createCarousel = req.body.create_carousel === "true";
+      
+      if (files && files.background_image) {
+        const bgImages = files.background_image;
+        log(`${bgImages.length} Background image(s) received for AI generation${createCarousel ? ' in carousel mode' : ''}`, "generator");
+        
+        // For now, just use the first image for generation
+        // In future versions, we'll use all images in carousel mode
+        const backgroundImageBase64 = bgImages[0].buffer.toString('base64');
         generationOptions.backgroundImageBase64 = backgroundImageBase64;
+        
+        // If we have multiple images and carousel mode is enabled, process them differently
+        // This is a placeholder for future enhancement
+        if (createCarousel && bgImages.length > 1) {
+          log(`Carousel mode with ${bgImages.length} images - will apply consistent style across all images`, "generator");
+          // The actual multi-image processing will happen in the future implementation
+        }
       }
       
       // First check for uploaded logo
