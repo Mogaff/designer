@@ -221,35 +221,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Determine how to proceed based on carousel mode and available images
       if (createCarousel && files && files.background_image && files.background_image.length > 1) {
-        // Carousel mode with multiple images - use a consistent style
+        // Carousel mode with multiple images - use a truly consistent design approach
         log(`Carousel mode active with ${files.background_image.length} images`, "generator");
         
-        // Choose a single style variation for all images to maintain consistency
-        const styleIndex = 0; // Always use the first style for all carousel images
-        const styleVariation = styleVariations[styleIndex];
+        // For carousel mode, use a completely different approach with explicit consistency instructions
+        // Don't use any predefined style variations, instead explicitly ask for consistency
         
-        // Process each image with the same style
+        // Create a common design brief for all images in the carousel
+        const carouselPrompt = `${generationOptions.prompt} 
+        
+IMPORTANT: This is for a CAROUSEL of multiple related images. Create a CONSISTENT DESIGN SYSTEM with:
+- Use the same fonts, typography style, and text positioning across all designs
+- Maintain the same color palette and visual style throughout all slides
+- Keep consistent layout structure, margins, and spacing for all slides
+- Apply identical design elements, borders, and decorations to all slides
+- Make sure brand elements appear in the same position and style in every slide
+- The goal is to make all slides look like they belong to the same cohesive series`;
+        
+        // Process each image with this consistent approach
         for (let imgIndex = 0; imgIndex < files.background_image.length; imgIndex++) {
           try {
-            // For each image, create variant options with the same style
+            // For each image, create variant options with the consistency instructions
             const currentImageBase64 = files.background_image[imgIndex].buffer.toString('base64');
+            
+            // For the first image, use slightly different instructions to establish the design system
+            const isFirstImage = imgIndex === 0;
+            const carouselImagePrompt = isFirstImage
+              ? `${carouselPrompt}\n\nThis is the FIRST IMAGE in the carousel. Establish a strong, distinctive design system that will work well across all images in the series.`
+              : `${carouselPrompt}\n\nThis is slide #${imgIndex + 1} in the carousel. STRICTLY follow the same design system as established in the first slide.`;
             
             const variantOptions = {
               ...generationOptions,
               backgroundImageBase64: currentImageBase64, // Use the current image
-              prompt: `${generationOptions.prompt} ${styleVariation}`, // Same style
+              prompt: carouselImagePrompt, // Use the carousel-specific prompt
               aspectRatio: aspectRatio,
               templateInfo: parsedTemplateInfo,
               logoBase64: "" // CRITICAL FIX: Ensure no logo is sent to Claude for now
             };
             
-            log(`Generating carousel image ${imgIndex + 1} with consistent style: ${styleVariation}`, "generator");
+            log(`Generating carousel image ${imgIndex + 1} with consistent design system`, "generator");
             
             // Use Claude AI for each image
             const screenshot = await renderFlyerFromClaude(variantOptions);
             successfulDesigns.push({
               imageBuffer: screenshot,
-              style: styleVariation,
+              style: "Carousel design with consistent style system",
               carouselIndex: imgIndex // Track which image in carousel
             });
             

@@ -711,7 +711,7 @@ export default function AiFlyerFormCompact({
                   {createCarousel && (
                     <div className="mt-2 p-1.5 rounded-sm bg-indigo-900/20 border border-indigo-500/20">
                       <p className="text-[7px] text-indigo-300">
-                        <span className="font-medium">Carousel Mode:</span> Select multiple images to create a series of designs with consistent style. Images will be automatically compressed.
+                        <span className="font-medium">Carousel Mode:</span> Select multiple images to create a series of designs with consistent style, colors, fonts, and layouts. The AI will maintain visual coherence across all designs in the carousel.
                       </p>
                     </div>
                   )}
