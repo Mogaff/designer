@@ -1,10 +1,13 @@
 export interface GeneratedFlyer {
+  id?: number;
+  name?: string;
   imageUrl: string;
   headline: string;
   content: string;
   stylePrompt: string;
   template: string;
   fontSettings?: FontSettings;
+  metadata?: Record<string, any>;
 }
 
 export interface DesignVariation {

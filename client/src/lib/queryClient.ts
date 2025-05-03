@@ -7,13 +7,13 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
-export async function apiRequest(
+export async function apiRequest<T = any>(
   method: string,
   url: string,
   data?: unknown | undefined,
   headers?: Record<string, string>,
   isRawFormData?: boolean
-): Promise<Response> {
+): Promise<T> {
   // Check if data is FormData (for file uploads)
   const isFormData = data instanceof FormData;
   
@@ -36,7 +36,7 @@ export async function apiRequest(
   });
 
   await throwIfResNotOk(res);
-  return res;
+  return await res.json() as T;
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
