@@ -87,9 +87,8 @@ export default function AiFlyerForm({
   // Mutation for generating AI flyer
   const aiGenerationMutation = useMutation({
     mutationFn: async (data: AiFlyerGenerationRequest) => {
-      const response = await apiRequest('POST', '/api/generate-ai', data, {}, true);
-      // Parse the response to JSON before returning it
-      return await response.json();
+      // apiRequest already returns parsed JSON, no need to call .json() again
+      return await apiRequest('POST', '/api/generate-ai', data, {}, true);
     },
     onSuccess: (data: any) => {
       setIsGenerating(false);
