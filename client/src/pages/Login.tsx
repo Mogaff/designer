@@ -8,6 +8,7 @@ import { GridMotion } from '@/components/ui/grid-motion';
 import { designImages } from '@/assets/images';
 import { useIsMobile } from '@/hooks/use-mobile';
 import meshGradient from '@assets/Bildschirmfoto 2025-04-02 um 01.54.14.png';
+import ReplitLoginButton from '@/components/ReplitLoginButton';
 
 export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,7 +59,7 @@ export default function Login() {
       {/* Overlay with gradient - lighter opacity */}
       <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/40 via-black/20 to-black/40" />
       
-      {/* Content - Only Google Sign-In */}
+      {/* Content - Google and Replit Sign-In options */}
       <div className="relative z-20 flex justify-center items-center min-h-screen">
         <div 
           className="rounded-xl p-6 shadow-xl bg-white/10 backdrop-blur-md" 
@@ -76,6 +77,18 @@ export default function Login() {
               <FcGoogle className="h-7 w-7 bg-white rounded-full p-1" />
               <span className="font-medium">{isSubmitting ? 'Verarbeite...' : 'Mit Google anmelden'}</span>
             </button>
+            
+            <div className="flex items-center justify-center">
+              <div className="h-px bg-white/20 flex-1"></div>
+              <span className="px-2 text-white/60 text-xs">OR</span>
+              <div className="h-px bg-white/20 flex-1"></div>
+            </div>
+            
+            <ReplitLoginButton 
+              variant="outline" 
+              fullWidth={true} 
+              className="border-white/20 text-white hover:bg-white/10 hover:text-white"
+            />
           </div>
         </div>
       </div>
