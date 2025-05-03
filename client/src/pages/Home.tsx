@@ -22,6 +22,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<string>("preview");
   const [isBrandKitPanelOpen, setIsBrandKitPanelOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<DesignTemplate | null>(null);
+  const [isCarouselView, setIsCarouselView] = useState(false);
   const { toast } = useToast();
   
   // Listen for template selection events from sidebar
@@ -163,6 +164,7 @@ Create this as an advertisement design, NOT as a website or HTML.`;
                   isGenerating={isGenerating}
                   setGeneratedFlyer={setGeneratedFlyer}
                   setDesignSuggestions={setDesignSuggestions}
+                  isCarousel={isCarouselView}
                 />
               ) : (
                 <AiFlyerFormCompact

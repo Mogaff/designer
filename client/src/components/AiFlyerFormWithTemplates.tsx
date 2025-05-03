@@ -33,6 +33,7 @@ type AiFlyerFormProps = {
   setAspectRatio: (aspectRatio: string) => void;
   onOpenBrandKitPanel?: () => void;
   selectedTemplate?: DesignTemplate;
+  setIsCarouselView?: (isCarousel: boolean) => void;
 };
 
 export default function AiFlyerForm({ 
@@ -44,6 +45,7 @@ export default function AiFlyerForm({
   setAspectRatio,
   onOpenBrandKitPanel,
   selectedTemplate,
+  setIsCarouselView,
 }: AiFlyerFormProps) {
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -203,6 +205,11 @@ export default function AiFlyerForm({
     
     // Include flag for creating carousel
     formData.append("create_carousel", createCarousel ? "true" : "false");
+    
+    // Update the isCarouselView state in the parent component if available
+    if (setIsCarouselView) {
+      setIsCarouselView(createCarousel);
+    }
     
     // Include active brand kit ID if available
     if (activeBrandKit && !selectedTemplate) {
