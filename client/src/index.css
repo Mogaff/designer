@@ -15,26 +15,14 @@
 }
 
 @keyframes border-beam {
-  0% {
-    transform: rotate(0deg);
+  0% { 
+    background-position: 200% 0;
+    opacity: 0.3;
   }
-  100% {
-    transform: rotate(360deg);
+  100% { 
+    background-position: -200% 0;
+    opacity: 1;
   }
-}
-
-@keyframes border-light {
-  0% {
-    background-position: -100% 0%;
-  }
-  100% {
-    background-position: 200% 0%;
-  }
-}
-
-@keyframes corner-pulse {
-  0%, 100% { transform: scale(0.8); opacity: 0.4; }
-  50% { transform: scale(1.5); opacity: 1; }
 }
 
 @keyframes pulse {
