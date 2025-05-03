@@ -156,6 +156,7 @@ Create this as an advertisement design, NOT as a website or HTML.`;
                     setAspectRatio={setAspectRatio}
                     onOpenBrandKitPanel={() => setIsBrandKitPanelOpen(true)}
                     selectedTemplate={selectedTemplate}
+                    setIsCarouselView={setIsCarouselView}
                   />
                 </div>
               ) : designSuggestions ? (
@@ -175,6 +176,7 @@ Create this as an advertisement design, NOT as a website or HTML.`;
                   aspectRatio={aspectRatio}
                   setAspectRatio={setAspectRatio}
                   onOpenBrandKitPanel={() => setIsBrandKitPanelOpen(true)}
+                  setIsCarouselView={setIsCarouselView}
                 />
               )}
             </div>

@@ -29,6 +29,7 @@ type AiFlyerFormProps = {
   setAspectRatio: (aspectRatio: string) => void;
   onOpenBrandKitPanel?: () => void;
   selectedTemplate?: DesignTemplate;
+  setIsCarouselView?: (isCarousel: boolean) => void;
 };
 
 export default function AiFlyerFormCompact({ 
@@ -40,6 +41,7 @@ export default function AiFlyerFormCompact({
   setAspectRatio,
   onOpenBrandKitPanel,
   selectedTemplate,
+  setIsCarouselView,
 }: AiFlyerFormProps) {
   const { toast } = useToast();
   
@@ -51,6 +53,7 @@ export default function AiFlyerFormCompact({
   const [logoPreview, setLogoPreview] = useState<string>("");
   const [generateAiBackground, setGenerateAiBackground] = useState<boolean>(false);
   const [isInspirationPanelOpen, setIsInspirationPanelOpen] = useState<boolean>(false);
+  const [createCarousel, setCreateCarousel] = useState<boolean>(false);
   
   // State für die Anzahl der zu generierenden Designs
   const [designCount, setDesignCount] = useState<string>("4"); // Default ist jetzt 4 Designs
@@ -229,6 +232,14 @@ export default function AiFlyerFormCompact({
     
     // Include flag for AI background generation
     formData.append("generate_ai_background", generateAiBackground ? "true" : "false");
+    
+    // Include flag for creating carousel
+    formData.append("create_carousel", createCarousel ? "true" : "false");
+    
+    // Update the isCarouselView state in the parent component if available
+    if (setIsCarouselView) {
+      setIsCarouselView(createCarousel);
+    }
     
     // Include active brand kit ID if available
     if (activeBrandKit && !selectedTemplate) {
