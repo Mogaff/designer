@@ -1,12 +1,13 @@
 import { DesignVariation } from "@/lib/types";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { GeneratedFlyer } from "@/lib/types";
-import { CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { CheckCircle, ChevronLeft, ChevronRight, Play } from "lucide-react";
 import { MultiColorLoading } from "@/components/ui/multi-color-loading";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { AnimatedTransformationShowcase } from "@/components/AnimatedTransformationShowcase";
 import { 
   Carousel,
   CarouselContent,
@@ -32,8 +33,16 @@ export default function DesignSuggestions({
 }: DesignSuggestionsProps) {
   const [selectedDesign, setSelectedDesign] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [showTransformation, setShowTransformation] = useState(false);
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
+  
+  // Get aspect ratio from URL for the animated showcase
+  const getAspectRatioFromUrl = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const ratio = urlParams.get('aspectRatio') || 'square';
+    return ratio;
+  };
 
   // Function to save design to gallery
   const saveDesignToGallery = async (design: DesignVariation) => {
@@ -275,10 +284,70 @@ export default function DesignSuggestions({
               </>
             )}
           </p>
+          
+          {/* Transformation Showcase Button */}
+          {!isCarousel && designs.length > 1 && (
+            <div className="mt-2 border-t border-indigo-500/20 pt-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="w-full h-7 text-[10px] bg-indigo-500/30 hover:bg-indigo-500/40 text-white flex items-center gap-1"
+                onClick={() => setShowTransformation(true)}
+              >
+                <Play className="w-3 h-3" />
+                Watch Design Transformation
+              </Button>
+            </div>
+          )}
         </div>
       </div>
       
-      <div className="flex-grow flex flex-col items-center justify-center">
+      <div className="flex-grow flex flex-col items-center justify-center relative">
+        {/* Transformation Showcase Modal */}
+        {showTransformation && designs.length > 1 && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-gray-900/90 border border-indigo-500/30 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+              <div className="p-3 border-b border-indigo-500/30 flex justify-between items-center">
+                <h3 className="text-white font-medium text-sm">Design Transformation Showcase</h3>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 w-8 p-0"
+                  onClick={() => setShowTransformation(false)}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white/70 hover:text-white">
+                    <path d="M18 6 6 18"></path><path d="m6 6 12 12"></path>
+                  </svg>
+                </Button>
+              </div>
+              
+              <div className="p-4 flex-grow flex flex-col">
+                <p className="text-white/70 text-xs mb-4">
+                  Watch as your image transforms between different design styles. This visualization showcases the AI's ability to reimagine your content in multiple ways.
+                </p>
+                
+                <div className="flex-grow relative rounded-lg overflow-hidden">
+                  <AnimatedTransformationShowcase 
+                    designs={designs}
+                    aspectRatio={getAspectRatioFromUrl()}
+                    isActive={showTransformation}
+                    onComplete={() => {
+                      // Optional: do something when animation completes
+                    }}
+                  />
+                </div>
+                
+                <div className="mt-4 text-center">
+                  <p className="text-white/60 text-[10px]">
+                    Cycling through {designs.length} unique design variations
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      
         {isCarousel ? (
           /* Carousel View */
           <Carousel className="w-full max-w-md">
