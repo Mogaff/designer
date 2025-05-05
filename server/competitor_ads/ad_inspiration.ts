@@ -79,9 +79,32 @@ export async function searchCompetitorAds(
       
       // Check if we should search Google
       if (!options.platforms || options.platforms.includes('google')) {
-        console.log('Google Ads Transparency Center scraping currently experiencing issues in this environment.');
-        console.log('Using Meta API as the primary data source for competitor ads.');
-        // NOTE: Google Ads scraping is temporarily disabled due to Puppeteer performance issues
+        console.log('Searching Google Ads Transparency Center...');
+        try {
+          // Search for relevant advertisers
+          const searchTerm = queryType === 'brand' ? query : 
+                            (queryType === 'industry' ? query + ' companies' : query);
+          console.log(`Searching Google Ads for ${Math.min(3, options.limit || 3)} advertisers related to: ${searchTerm}`);
+          
+          // For simplicity, we'll just use the search term directly as the advertiser name
+          // This should work well for brand searches
+          try {
+            const googleAds = await searchGoogleAds(searchTerm, {
+              queryType,
+              userId: options.userId,
+              limit: Math.min(5, options.limit || 5),
+              region: options.region || 'US'
+            });
+            
+            allAds = [...allAds, ...googleAds];
+            console.log(`Found ${googleAds.length} ads from Google Ads Transparency Center`);
+          } catch (error) {
+            console.error('Error searching Google Ads Transparency Center:', error);
+            // Continue execution - we don't want to fail the entire search if Google fails
+          }
+        } catch (error) {
+          console.error('Failed to search Google Ads:', error);
+        }
       }
       
       // Update the search record with the results
