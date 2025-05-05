@@ -43,10 +43,9 @@ export async function scrapeGoogleAdsForAdvertiser(
   
   console.log(`Scraping Google Ads for advertiser: ${advertiser} in region: ${region}`);
   
-  // Launch a headless browser with correct executable path
+  // Launch a headless browser
   const browser = await puppeteer.launch({
     headless: true,
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/nix/store/zpmy9jdxaz3fcv1ziw7p7xk7siydnap3-chromium-112.0.5615.165/bin/chromium',
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
@@ -266,127 +265,7 @@ export function findRelevantAdvertisers(query: string): string[] {
   return ['Nike', 'Apple', 'Coca-Cola', 'Amazon', 'Starbucks'];
 }
 
-/**
- * Generate a placeholder ad that resembles a real Google ad
- * Used when the Google Ads Transparency Center cannot be scraped
- */
-export function createPlaceholderGoogleAd(brand: string, industry?: string): GoogleAdData {
-  // Generate a random ad ID
-  const randomAdId = `google-${brand.toLowerCase().replace(/\s+/g, '-')}-${Math.floor(Math.random() * 1000000)}`;
-  
-  // Templates for different industries
-  const templates: {[key: string]: {headline: string, body: string, cta: string, platform: string}} = {
-    'fitness': {
-      headline: `${brand} Fitness Equipment`,
-      body: `Discover premium fitness equipment from ${brand}. Designed for all levels of fitness enthusiasts.`,
-      cta: 'Shop Now',
-      platform: 'YouTube'
-    },
-    'tech': {
-      headline: `${brand} - Technology That Works`,
-      body: `Explore the latest tech innovations from ${brand}. Powerful, reliable, and user-friendly.`,
-      cta: 'Learn More',
-      platform: 'Google Search'
-    },
-    'food': {
-      headline: `${brand} - Delicious Options`,
-      body: `Try ${brand}'s new menu items. Fresh ingredients, amazing taste, delivered to your door.`,
-      cta: 'Order Online',
-      platform: 'Display Network'
-    },
-    'fashion': {
-      headline: `${brand} - New Season Collection`,
-      body: `Shop the latest fashion trends from ${brand}. Express yourself with our exclusive designs.`,
-      cta: 'View Collection',
-      platform: 'YouTube'
-    },
-    'default': {
-      headline: `${brand} - Official Ad`,
-      body: `Learn more about ${brand} products and services. Quality you can trust.`,
-      cta: 'Visit Website',
-      platform: 'Google Search'
-    }
-  };
-  
-  // Select the appropriate template
-  const template = templates[industry || ''] || templates['default'];
-  
-  // Create the placeholder ad
-  return {
-    brand: brand,
-    headline: template.headline,
-    body: template.body,
-    cta: template.cta,
-    imageUrl: `https://placehold.co/600x400/png?text=${encodeURIComponent(brand)}`,
-    thumbnailUrl: `https://placehold.co/300x200/png?text=${encodeURIComponent(brand)}`,
-    adId: randomAdId,
-    platformDetails: template.platform,
-    lastSeen: new Date().toISOString().split('T')[0],
-    advertiserId: brand.toLowerCase().replace(/\s+/g, '-')
-  };
-}
 
-/**
- * Generate sample ads when the Google Ads Transparency Center cannot be scraped
- */
-export async function getPlaceholderAds(query: string, queryType: 'brand' | 'keyword' | 'industry', limit: number = 3): Promise<CompetitorAd[]> {
-  let brands: string[] = [];
-  let industry: string | undefined = undefined;
-  
-  if (queryType === 'brand') {
-    // Use the query directly as the brand
-    brands = [query];
-  } else if (queryType === 'industry') {
-    // Set the industry and use related brands
-    industry = query;
-    switch (query.toLowerCase()) {
-      case 'fitness':
-        brands = ['Nike', 'Adidas', 'Under Armour'];
-        break;
-      case 'tech':
-        brands = ['Apple', 'Samsung', 'Microsoft'];
-        break;
-      case 'food':
-        brands = ['McDonalds', 'Burger King', 'Starbucks'];
-        break;
-      case 'fashion':
-        brands = ['H&M', 'Zara', 'Gucci'];
-        break;
-      default:
-        brands = ['Major Brand', 'Popular Company', 'Industry Leader'];
-    }
-  } else {
-    // For keywords, try to make related brands
-    if (query.toLowerCase().includes('shoe') || query.toLowerCase().includes('sport')) {
-      brands = ['Nike', 'Adidas', 'New Balance'];
-      industry = 'fitness';
-    } else if (query.toLowerCase().includes('phone') || query.toLowerCase().includes('tech')) {
-      brands = ['Apple', 'Samsung', 'Google'];
-      industry = 'tech';
-    } else if (query.toLowerCase().includes('food') || query.toLowerCase().includes('coffee')) {
-      brands = ['Starbucks', 'McDonalds', 'Dunkin'];
-      industry = 'food';
-    } else {
-      brands = ['Top Brand', 'Leading Company', 'Major Provider'];
-    }
-  }
-  
-  // Generate placeholder Google ads
-  const googleAdsData = brands.slice(0, limit).map(brand => 
-    createPlaceholderGoogleAd(brand, industry)
-  );
-  
-  // Transform to our standard format and save
-  const transformedAds = transformGoogleAds(googleAdsData);
-  
-  // Return placeholder ads in our standard format
-  return transformedAds.map(ad => ({
-    ...ad,
-    id: Math.floor(Math.random() * 1000000),
-    created_at: new Date(),
-    updated_at: new Date()
-  }));
-}
 
 /**
  * Search for ads in Google's Ads Transparency Center

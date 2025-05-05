@@ -3,7 +3,7 @@
  * Handles fetching competitor ads from multiple sources and providing inspiration for AI-generated ads
  */
 
-import { searchMetaAds, checkMetaApiKey, getPlaceholderAds, saveMetaAds } from './meta_ad_library';
+import { searchMetaAds, checkMetaApiKey } from './meta_ad_library';
 import { searchGoogleAds } from './google_ads_transparency';
 import { CompetitorAd, InsertAdSearchQuery, AdSearchQuery, adSearchQueries, competitorAds } from '@shared/schema';
 import { db } from '../db';
@@ -70,32 +70,10 @@ export async function searchCompetitorAds(
             console.log(`Found ${metaAds.length} ads from Meta Ad Library`);
           } catch (error) {
             console.error('Error searching Meta Ad Library:', error);
-            console.log('Using placeholder ads as fallback for Meta API...');
-            
-            // Use placeholder ads as fallback when real API fails
-            const placeholderAds = await getPlaceholderAds(query, queryType, options.limit || 3);
-            const savedAds = await saveMetaAds(
-              placeholderAds, 
-              options.userId,
-              queryType === 'industry' ? query : undefined
-            );
-            
-            allAds = [...allAds, ...savedAds];
-            console.log(`Created ${savedAds.length} placeholder ads for Meta Ad Library`);
+            console.error('Please check the META_API_KEY environment variable');
           }
         } else {
-          console.warn('Meta API key not configured or invalid. Using placeholder data instead.');
-          
-          // Use placeholder ads when no valid API key exists
-          const placeholderAds = await getPlaceholderAds(query, queryType, options.limit || 3);
-          const savedAds = await saveMetaAds(
-            placeholderAds, 
-            options.userId,
-            queryType === 'industry' ? query : undefined
-          );
-          
-          allAds = [...allAds, ...savedAds];
-          console.log(`Created ${savedAds.length} placeholder ads for Meta Ad Library`);
+          console.warn('Meta API key not configured or invalid. Please set a valid META_API_KEY environment variable.');
         }
       }
       
@@ -113,16 +91,8 @@ export async function searchCompetitorAds(
           allAds = [...allAds, ...googleAds];
           console.log(`Found ${googleAds.length} ads from Google Ads Transparency Center`);
         } catch (error) {
-          console.error('Error searching Google Ads:', error);
-          console.log('Using placeholder ads for Google due to scraping error...');
-          
-          // Import dynamically to avoid circular dependencies
-          const { getPlaceholderAds: getGooglePlaceholderAds } = await import('./google_ads_transparency');
-          
-          // Get placeholder Google ads with similar structure to real ones
-          const placeholderAds = await getGooglePlaceholderAds(query, queryType, options.limit || 3);
-          allAds = [...allAds, ...placeholderAds];
-          console.log(`Created ${placeholderAds.length} placeholder ads for Google Ads`);
+          console.error('Error searching Google Ads Transparency Center:', error);
+          console.error('Make sure Chromium is properly installed.');
         }
       }
       
