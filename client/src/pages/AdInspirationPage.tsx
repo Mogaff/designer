@@ -172,13 +172,11 @@ export default function AdInspirationPage() {
         throw new Error('Search query is required');
       }
       
-      const response = await apiRequest(
+      return await apiRequest<SearchResults>(
         'GET', 
         `/api/ad-inspiration/search?query=${encodeURIComponent(searchQuery)}&queryType=${searchType}&platforms=${platforms.join(',')}&limit=20`,
         null
       );
-      
-      return response.json() as Promise<SearchResults>;
     },
     onSuccess: (data) => {
       if (data.ads && data.ads.length > 0) {
@@ -210,11 +208,9 @@ export default function AdInspirationPage() {
         throw new Error('No ads selected');
       }
       
-      const response = await apiRequest('POST', '/api/ad-inspiration/analyze', {
+      return await apiRequest('POST', '/api/ad-inspiration/analyze', {
         adIds: selectedAds
       });
-      
-      return response.json();
     },
     onSuccess: (data) => {
       if (data.copyInspirations) {
