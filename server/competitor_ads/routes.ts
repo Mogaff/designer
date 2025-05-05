@@ -22,9 +22,13 @@ import Anthropic from '@anthropic-ai/sdk';
  */
 export function registerCompetitorAdRoutes(app: any) {
   // Search for competitor ads
-  app.post('/api/ad-inspiration/search', isAuthenticated, async (req: Request, res: Response) => {
+  app.get('/api/ad-inspiration/search', isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const { query, queryType, platforms, limit, region } = req.body;
+      const query = req.query.query as string;
+      const queryType = req.query.queryType as string;
+      const platforms = req.query.platforms ? (req.query.platforms as string).split(',') : undefined;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+      const region = req.query.region as string;
       
       if (!query) {
         return res.status(400).json({ error: 'Query is required' });

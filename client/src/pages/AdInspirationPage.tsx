@@ -253,6 +253,14 @@ export default function AdInspirationPage() {
   // Handle search form submission
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!searchQuery.trim()) {
+      toast({
+        title: 'Empty search',
+        description: 'Please enter a search term',
+        variant: 'destructive',
+      });
+      return;
+    }
     searchMutation.mutate();
   };
   
