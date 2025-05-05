@@ -286,109 +286,11 @@ export async function checkMetaApiKey(): Promise<boolean> {
 }
 
 /**
- * Generate a placeholder ad that resembles a real Meta ad
- * Used when the Meta API is not accessible
+ * NOT USED - Removed placeholder ad generation as per user requirements
+ * We only want to use authentic data from authorized sources
  */
-export function createPlaceholderAd(brand: string, industry?: string): MetaAdData {
-  // Generate a random page ID
-  const randomPageId = Math.floor(Math.random() * 1000000000).toString();
-  
-  // Templates for different industries
-  const templates: {[key: string]: {headline: string, body: string, cta: string}} = {
-    'fitness': {
-      headline: `${brand} Fitness Collection`,
-      body: `Discover the new ${brand} fitness collection. Designed for performance and comfort.`,
-      cta: 'Shop Now'
-    },
-    'tech': {
-      headline: `New from ${brand}`,
-      body: `Introducing our latest technology innovation. More power, more speed, more ${brand}.`,
-      cta: 'Learn More'
-    },
-    'food': {
-      headline: `Taste the Difference with ${brand}`,
-      body: `Experience the exceptional flavor and quality that only ${brand} can deliver.`,
-      cta: 'Order Online'
-    },
-    'fashion': {
-      headline: `${brand} New Season Collection`,
-      body: `Explore our latest styles. Express your unique style with ${brand}'s new collection.`,
-      cta: 'Shop Collection'
-    },
-    'default': {
-      headline: `${brand} Official Ad`,
-      body: `Quality products and services from ${brand}. Discover why customers choose us.`,
-      cta: 'Learn More'
-    }
-  };
-  
-  // Select the appropriate template
-  const template = templates[industry || ''] || templates['default'];
-  
-  // Create the placeholder ad
-  return {
-    page_id: randomPageId,
-    page_name: brand,
-    ad_snapshot_url: `https://www.facebook.com/ads/library/?id=${randomPageId}`,
-    ad_creative_body_text: template.body,
-    ad_creative_link_title: template.headline,
-    ad_creative_link_description: `Official ${brand} offering.`,
-    ad_delivery_start_time: new Date().toISOString(),
-    call_to_action: template.cta,
-    images: [{
-      url: 'https://placehold.co/600x400/png?text=' + encodeURIComponent(brand)
-    }],
-    placements: ['facebook', 'instagram']
-  };
-}
 
 /**
- * Generate sample ads when the Meta API is not available
+ * NOT USED - Removed placeholder ad generation as per user requirements
+ * We only want to use authentic data from authorized sources
  */
-export async function getPlaceholderAds(query: string, queryType: 'brand' | 'keyword' | 'industry', limit: number = 3): Promise<MetaAdData[]> {
-  let brands: string[] = [];
-  let industry: string | undefined = undefined;
-  
-  if (queryType === 'brand') {
-    // Use the query directly as the brand
-    brands = [query];
-  } else if (queryType === 'industry') {
-    // Set the industry and use related brands
-    industry = query;
-    switch (query.toLowerCase()) {
-      case 'fitness':
-        brands = ['Nike', 'Adidas', 'Under Armour'];
-        break;
-      case 'tech':
-        brands = ['Apple', 'Samsung', 'Microsoft'];
-        break;
-      case 'food':
-        brands = ['McDonalds', 'Burger King', 'Starbucks'];
-        break;
-      case 'fashion':
-        brands = ['H&M', 'Zara', 'Gucci'];
-        break;
-      default:
-        brands = ['Brand A', 'Brand B', 'Brand C'];
-    }
-  } else {
-    // For keywords, try to make related brands
-    if (query.toLowerCase().includes('shoe') || query.toLowerCase().includes('sport')) {
-      brands = ['Nike', 'Adidas', 'New Balance'];
-    } else if (query.toLowerCase().includes('phone') || query.toLowerCase().includes('tech')) {
-      brands = ['Apple', 'Samsung', 'Google'];
-    } else if (query.toLowerCase().includes('food') || query.toLowerCase().includes('coffee')) {
-      brands = ['Starbucks', 'McDonalds', 'Dunkin'];
-    } else {
-      brands = ['Brand X', 'Company Y', 'Store Z'];
-    }
-  }
-  
-  // Generate ads for each brand
-  const ads: MetaAdData[] = [];
-  for (const brand of brands.slice(0, limit)) {
-    ads.push(createPlaceholderAd(brand, industry));
-  }
-  
-  return ads;
-}
