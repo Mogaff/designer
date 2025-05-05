@@ -43,10 +43,19 @@ export async function scrapeGoogleAdsForAdvertiser(
   
   console.log(`Scraping Google Ads for advertiser: ${advertiser} in region: ${region}`);
   
-  // Launch a headless browser
+  // Launch a headless browser with correct executable path
   const browser = await puppeteer.launch({
     headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/nix/store/zpmy9jdxaz3fcv1ziw7p7xk7siydnap3-chromium-112.0.5615.165/bin/chromium',
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--no-first-run',
+      '--no-zygote',
+      '--disable-gpu'
+    ]
   });
   
   try {
