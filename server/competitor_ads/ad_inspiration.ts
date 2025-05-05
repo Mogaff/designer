@@ -79,21 +79,9 @@ export async function searchCompetitorAds(
       
       // Check if we should search Google
       if (!options.platforms || options.platforms.includes('google')) {
-        console.log('Searching Google Ads Transparency Center...');
-        try {
-          const googleAds = await searchGoogleAds(query, {
-            queryType,
-            userId: options.userId,
-            maxAds: options.limit,
-            region: options.region
-          });
-          
-          allAds = [...allAds, ...googleAds];
-          console.log(`Found ${googleAds.length} ads from Google Ads Transparency Center`);
-        } catch (error) {
-          console.error('Error searching Google Ads Transparency Center:', error);
-          console.error('Make sure Chromium is properly installed.');
-        }
+        console.log('Google Ads Transparency Center scraping currently experiencing issues in this environment.');
+        console.log('Using Meta API as the primary data source for competitor ads.');
+        // NOTE: Google Ads scraping is temporarily disabled due to Puppeteer performance issues
       }
       
       // Update the search record with the results

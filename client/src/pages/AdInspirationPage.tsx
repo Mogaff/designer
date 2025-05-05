@@ -434,13 +434,33 @@ export default function AdInspirationPage() {
             
             {!searchMutation.isPending && (!searchMutation.data || !searchMutation.data.ads || searchMutation.data.ads.length === 0) && (
               <div className="text-center py-12 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                <Search className="mx-auto h-12 w-12 text-muted-foreground opacity-50 mb-4" />
-                <h3 className="text-lg font-medium mb-2">No Results Yet</h3>
-                <p className="text-muted-foreground max-w-md mx-auto">
-                  {searchMutation.isError
-                    ? 'An error occurred while searching. Please try again.'
-                    : 'Search for competitor ads to see results here. Try specific brand names or relevant keywords for your industry.'}
-                </p>
+                {!searchMutation.isSuccess ? (
+                  <>
+                    <Search className="mx-auto h-12 w-12 text-muted-foreground opacity-50 mb-4" />
+                    <h3 className="text-lg font-medium mb-2">No Results Yet</h3>
+                    <p className="text-muted-foreground max-w-md mx-auto">
+                      {searchMutation.isError
+                        ? 'An error occurred while searching. Please try again.'
+                        : 'Search for competitor ads to see results here. Try specific brand names or relevant keywords for your industry.'}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="mx-auto h-12 w-12 text-muted-foreground opacity-50 mb-4" />
+                    <h3 className="text-lg font-medium mb-2">No Real Ads Found</h3>
+                    <p className="text-muted-foreground max-w-md mx-auto mb-4">
+                      We could not find authentic competitor ads for your search criteria.
+                      Try a different search term, brand, or industry.
+                    </p>
+                    <div className="mt-4 p-4 mx-auto bg-amber-50 border border-amber-200 rounded-md max-w-md">
+                      <h4 className="font-medium text-amber-800">About our data policy</h4>
+                      <p className="text-sm text-amber-700 mt-1">
+                        This platform uses only authentic advertising data from authorized sources (Meta Ad Library API).
+                        We never generate synthetic or placeholder ads.
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
             )}
             
