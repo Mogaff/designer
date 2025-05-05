@@ -13,14 +13,14 @@ const GOOGLE_ADS_TRANSPARENCY_URL = 'https://adstransparency.google.com';
 
 interface GoogleAdData {
   brand: string;
-  headline?: string;
-  body?: string;
-  imageUrl?: string;
-  thumbnailUrl?: string;
-  cta?: string;
+  headline?: string | null;
+  body?: string | null;
+  imageUrl?: string | null;
+  thumbnailUrl?: string | null;
+  cta?: string | null;
   adId?: string;
-  platformDetails?: string; // YouTube, Search, Display, etc.
-  lastSeen?: string;
+  platformDetails?: string | null; // YouTube, Search, Display, etc.
+  lastSeen?: string | null;
   advertiserId?: string;
 }
 
@@ -36,7 +36,7 @@ interface ScrapingOptions {
 export async function scrapeGoogleAdsForAdvertiser(
   advertiser: string,
   options: ScrapingOptions = {}
-): Promise<GoogleAdData[]> {
+): Promise<any[]> {
   const region = options.region || 'US';
   const maxAds = options.maxAds || 20;
   const timeout = options.timeout || 30000; // 30 seconds
@@ -46,6 +46,7 @@ export async function scrapeGoogleAdsForAdvertiser(
   // Launch a headless browser
   const browser = await puppeteer.launch({
     headless: true,
+    executablePath: '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium',
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
@@ -106,30 +107,30 @@ export async function scrapeGoogleAdsForAdvertiser(
     // Extract ad data from the page
     const ads = await page.evaluate((maxAdsToExtract, advertiserId) => {
       const adCards = document.querySelectorAll('.ad-card');
-      const extractedAds: GoogleAdData[] = [];
+      const extractedAds = [];
       
       for (let i = 0; i < Math.min(adCards.length, maxAdsToExtract); i++) {
         const card = adCards[i];
         
         // Extract headline
-        const headline = card.querySelector('.ad-title')?.textContent?.trim();
+        const headline = card.querySelector('.ad-title')?.textContent?.trim() || null;
         
         // Extract body text
-        const body = card.querySelector('.ad-description')?.textContent?.trim();
+        const body = card.querySelector('.ad-description')?.textContent?.trim() || null;
         
         // Extract image URL if available
         const image = card.querySelector('img');
-        const imageUrl = image?.src;
+        const imageUrl = image?.src || null;
         
         // Extract platform details (YouTube, Search, etc.)
         const platformBadge = card.querySelector('.ad-platform-badge');
-        const platform = platformBadge?.textContent?.trim();
+        const platform = platformBadge?.textContent?.trim() || null;
         
         // Extract last seen date if available
-        const lastSeen = card.querySelector('.ad-last-seen')?.textContent?.trim();
+        const lastSeen = card.querySelector('.ad-last-seen')?.textContent?.trim() || null;
         
         // Extract CTA text if available
-        const cta = card.querySelector('.ad-cta')?.textContent?.trim();
+        const cta = card.querySelector('.ad-cta')?.textContent?.trim() || null;
         
         // Generate a unique ad ID since Google doesn't provide one
         const adIdElement = card.querySelector('[data-ad-id]');
@@ -167,7 +168,7 @@ export async function scrapeGoogleAdsForAdvertiser(
 /**
  * Transform Google ad data into our standard Competitor Ad format
  */
-export function transformGoogleAds(googleAds: GoogleAdData[], userId?: number, industry?: string): InsertCompetitorAd[] {
+export function transformGoogleAds(googleAds: any[], userId?: number, industry?: string): InsertCompetitorAd[] {
   return googleAds.map(ad => {
     // Create the transformed competitor ad
     const competitorAd: InsertCompetitorAd = {
