@@ -14,7 +14,8 @@ import {
 } from './ad_inspiration';
 import { db } from '../db';
 import { competitorAds } from '@shared/schema';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
+import Anthropic from '@anthropic-ai/sdk';
 
 /**
  * Register competitor ad inspiration API routes
@@ -197,6 +198,126 @@ export function registerCompetitorAdRoutes(app: any) {
     } catch (error) {
       console.error('Error getting ad inspiration:', error);
       return res.status(500).json({ error: `Failed to get ad inspiration: ${(error as Error).message}` });
+    }
+  });
+  
+  // Analyze specific ads and generate inspiration
+  app.post('/api/ad-inspiration/analyze', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { adIds } = req.body;
+      
+      if (!adIds || !Array.isArray(adIds) || adIds.length === 0) {
+        return res.status(400).json({ error: 'Valid adIds array is required' });
+      }
+      
+      const userId = (req.user as any)?.id;
+      
+      if (!userId) {
+        return res.status(401).json({ error: 'User must be authenticated' });
+      }
+      
+      // Get the ads from the database
+      const ads = await db.select()
+        .from(competitorAds)
+        .where(sql`${competitorAds.id} IN ${adIds}`);
+      
+      if (ads.length === 0) {
+        return res.status(404).json({ error: 'No ads found with the provided IDs' });
+      }
+      
+      // Generate style descriptions for any ads that don't have them
+      const adsWithStyles = await Promise.all(
+        ads.map(async (ad) => {
+          if (!ad.style_description) {
+            ad.style_description = await generateStyleDescription(ad);
+            
+            // Update the ad in the database with the new style description
+            await db.update(competitorAds)
+              .set({ style_description: ad.style_description })
+              .where(eq(competitorAds.id, ad.id));
+          }
+          return ad;
+        })
+      );
+      
+      // Generate insights using Anthropic
+      const anthropic = new Anthropic({
+        apiKey: process.env.ANTHROPIC_API_KEY,
+      });
+      
+      // Create an analysis prompt
+      const prompt = `I have ${adsWithStyles.length} competitor ads and want you to analyze them to generate inspiration for creating my own ads.
+      
+      Here are the details of each ad:
+      
+      ${adsWithStyles.map((ad, i) => `
+      AD #${i+1} - ${ad.brand} (${ad.platform})
+      Headline: ${ad.headline || 'N/A'}
+      Body: ${ad.body || 'N/A'}
+      CTA: ${ad.cta || 'N/A'}
+      Style: ${ad.style_description || 'N/A'}
+      `).join('\n\n')}
+      
+      Based on these competitor ads, please:
+      
+      1. Identify the common themes, messaging patterns, and persuasion techniques used
+      2. Extract the most effective stylistic elements and design patterns
+      3. Analyze the tone, vocabulary level, and emotional appeals
+      4. Provide specific copywriting inspiration based on what works well
+      5. Suggest ways to differentiate while incorporating successful elements
+      
+      Format your response as follows:
+      
+      THEMES AND MESSAGING:
+      [Your analysis of common themes and messaging patterns]
+      
+      STYLISTIC ELEMENTS:
+      [Your analysis of design patterns and visual approaches]
+      
+      TONE AND EMOTION:
+      [Your analysis of emotional appeals and tone]
+      
+      COPYWRITING TECHNIQUES:
+      [Your analysis of effective copywriting techniques]
+      
+      DIFFERENTIATION OPPORTUNITIES:
+      [Your suggestions for standing out while incorporating successful elements]`;
+      
+      const response = await anthropic.messages.create({
+        model: "claude-3-opus-20240229",
+        max_tokens: 2000,
+        messages: [
+          { role: "user", content: prompt }
+        ],
+      });
+      
+      const analysisOutput = typeof response.content[0] === 'object' && 'text' in response.content[0] 
+        ? response.content[0].text 
+        : typeof response.content[0] === 'string' 
+          ? response.content[0] 
+          : '';
+      
+      // Extract style and copy inspirations
+      const styleInspirations = adsWithStyles
+        .filter(ad => ad.style_description)
+        .map(ad => `${ad.brand}: ${ad.style_description}`)
+        .join('\n\n');
+        
+      const copyInspirations = adsWithStyles
+        .filter(ad => ad.headline || ad.body)
+        .map(ad => `${ad.brand}: ${ad.headline || ''} - ${ad.body || ''}${ad.cta ? ` (CTA: ${ad.cta})` : ''}`)
+        .join('\n\n');
+      
+      return res.status(200).json({
+        ads: adsWithStyles,
+        styleInspirations,
+        copyInspirations,
+        analysis: analysisOutput
+      });
+      
+    } catch (error) {
+      console.error('Error analyzing competitor ads:', error);
+      return res.status(500).json({ error: `Failed to analyze competitor ads: ${(error as Error).message}` });
     }
   });
   
