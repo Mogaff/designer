@@ -54,8 +54,14 @@ export async function scrapeGoogleAdsForAdvertiser(
       '--disable-accelerated-2d-canvas',
       '--no-first-run',
       '--no-zygote',
-      '--disable-gpu'
-    ]
+      '--single-process', // Reduziert den Speicherverbrauch
+      '--disable-gpu',
+      '--disable-extensions',
+      '--disable-web-security',
+      '--disable-features=site-per-process',
+      '--disable-site-isolation-trials'
+    ],
+    timeout: 60000 // 60 Sekunden
   });
   
   try {
@@ -64,39 +70,28 @@ export async function scrapeGoogleAdsForAdvertiser(
     // Set a reasonable timeout
     page.setDefaultTimeout(timeout);
     
-    // Navigate to the Ads Transparency Center with the region parameter
-    await page.goto(`${GOOGLE_ADS_TRANSPARENCY_URL}?region=${region}`);
+    // Dieser Teil wird übersprungen, da wir direkt zur Anzeigenseite gehen
     
-    // Wait for the search box to be available
-    await page.waitForSelector('input[aria-label="Search by advertiser or website name"]');
+    // Direkt auf die Anzeigen-Seite des Werbetreibenden navigieren
+    const advertiserPageUrl = `${GOOGLE_ADS_TRANSPARENCY_URL}/advertiser/${encodeURIComponent(advertiser)}?region=${region}`;
+    console.log(`Navigating to advertiser page: ${advertiserPageUrl}`);
     
-    // Type the advertiser name into the search box
-    await page.type('input[aria-label="Search by advertiser or website name"]', advertiser);
-    
-    // Press Enter to search
-    await page.keyboard.press('Enter');
-    
-    // Wait for search results
     try {
-      await page.waitForSelector('[role="listitem"]', { timeout: 10000 });
-    } catch (error) {
-      console.log(`No search results found for advertiser: ${advertiser}`);
-      return [];
-    }
-    
-    // Click on the first matching advertiser
-    await page.evaluate(() => {
-      const items = document.querySelectorAll('[role="listitem"]');
-      if (items.length > 0) {
-        (items[0] as HTMLElement).click();
+      await page.goto(advertiserPageUrl, { waitUntil: 'networkidle2' });
+      // Kurz warten, damit die Seite vollständig laden kann
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      
+      // Prüfen, ob Anzeigen geladen wurden
+      const hasAds = await page.evaluate(() => {
+        return document.querySelectorAll('.ad-card').length > 0;
+      });
+      
+      if (!hasAds) {
+        console.log(`No ads found for advertiser: ${advertiser}`);
+        return [];
       }
-    });
-    
-    // Wait for ads to load
-    try {
-      await page.waitForSelector('.ad-card', { timeout: 10000 });
     } catch (error) {
-      console.log(`No ads found for advertiser: ${advertiser}`);
+      console.log(`Error navigating to advertiser page: ${error}`);
       return [];
     }
     

@@ -92,7 +92,7 @@ export async function searchCompetitorAds(
             const googleAds = await searchGoogleAds(searchTerm, {
               queryType,
               userId: options.userId,
-              limit: Math.min(5, options.limit || 5),
+              maxAds: Math.min(5, options.limit || 5),
               region: options.region || 'US'
             });
             
