@@ -51,14 +51,14 @@ export default function CompetitorInspirationPanel({
   useEffect(() => {
     const checkGoogleApiStatus = async () => {
       try {
-        const response = await fetch('/api/ad-inspiration/google-search-status');
-        const data = await response.json();
+        // Use apiRequest to benefit from its error handling
+        const data = await apiRequest('GET', '/api/ad-inspiration/google-search-status', null);
         setGoogleApiStatus(data);
       } catch (error) {
         console.error('Error checking Google Search API status:', error);
         setGoogleApiStatus({
           configured: false,
-          message: 'Error checking Google Search API status'
+          message: error instanceof Error ? error.message : 'Error checking Google Search API status'
         });
       }
     };
@@ -69,8 +69,8 @@ export default function CompetitorInspirationPanel({
   // Search for competitor ads
   const searchMutation = useMutation({
     mutationFn: async (searchData: { query: string; type: string }) => {
-      // Switch to POST method to avoid potential issues with GET requests
-      const response = await apiRequest(
+      // The apiRequest function already handles error checking and JSON parsing
+      return apiRequest(
         'POST', 
         '/api/ad-inspiration/search',
         {
@@ -80,13 +80,6 @@ export default function CompetitorInspirationPanel({
           limit: 10
         }
       );
-      
-      if (!response.ok) {
-        const errorData = await response.text();
-        throw new Error(errorData || 'Failed to search competitor ads');
-      }
-      
-      return response.json();
     },
     onSuccess: (data) => {
       setIsSearching(false);
@@ -123,14 +116,8 @@ export default function CompetitorInspirationPanel({
       industry?: string;
       limit?: number;
     }) => {
-      const response = await apiRequest('POST', '/api/ad-inspiration/inspire', data);
-      
-      if (!response.ok) {
-        const errorData = await response.text();
-        throw new Error(errorData || 'Failed to enhance prompt');
-      }
-      
-      return response.json();
+      // The apiRequest function already handles error checking and JSON parsing
+      return apiRequest('POST', '/api/ad-inspiration/inspire', data);
     },
     onSuccess: (data) => {
       if (data.styleInspiration || data.copyInspiration) {
