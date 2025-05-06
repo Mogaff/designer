@@ -6,6 +6,7 @@ type ApiRequestOptions = {
   headers?: Record<string, string>;
   body?: any;
   includeAuth?: boolean;
+  isFormData?: boolean;
 };
 
 /**
@@ -20,12 +21,13 @@ export async function apiRequest<T = any>(
     method = 'GET',
     headers = {},
     body,
-    includeAuth = true
+    includeAuth = true,
+    isFormData = false
   } = options;
 
-  // Default headers
+  // Default headers - don't set Content-Type for FormData (browser sets it with boundary)
   const requestHeaders: Record<string, string> = {
-    'Content-Type': 'application/json',
+    ...(!isFormData ? { 'Content-Type': 'application/json' } : {}),
     ...headers
   };
 
@@ -36,8 +38,15 @@ export async function apiRequest<T = any>(
       requestHeaders['Authorization'] = `Bearer ${token}`;
       
       // Also include the Firebase UID in the request body for our custom auth middleware
-      if (body && method !== 'GET') {
-        body.uid = auth.currentUser.uid;
+      // But only for JSON requests, not FormData
+      if (body && method !== 'GET' && !isFormData && typeof body === 'object') {
+        // For FormData we'll need to append this field
+        if (body instanceof FormData) {
+          body.append('uid', auth.currentUser.uid);
+        } else {
+          // For JSON objects
+          body.uid = auth.currentUser.uid;
+        }
       }
     } catch (error) {
       console.error('Error getting Firebase token:', error);
@@ -53,7 +62,18 @@ export async function apiRequest<T = any>(
 
   // Add body for non-GET requests
   if (body && method !== 'GET') {
-    requestOptions.body = JSON.stringify(body);
+    // If it's FormData, use it directly
+    if (isFormData || body instanceof FormData) {
+      requestOptions.body = body as FormData | BodyInit;
+      
+      // For FormData with Firebase UID, add it if not already present
+      if (includeAuth && auth.currentUser && body instanceof FormData && !body.has('uid')) {
+        body.append('uid', auth.currentUser.uid);
+      }
+    } else {
+      // Otherwise stringify as JSON
+      requestOptions.body = JSON.stringify(body);
+    }
   }
 
   try {
@@ -86,15 +106,26 @@ export async function apiRequest<T = any>(
 
 // Helper functions for common request methods
 export const api = {
-  get: <T = any>(url: string, options?: Omit<ApiRequestOptions, 'method' | 'body'>) => 
-    apiRequest<T>(url, { ...options, method: 'GET' }),
+  // GET request with optional query params - adds Firebase UID to URL for auth
+  get: async <T = any>(url: string, options?: Omit<ApiRequestOptions, 'method' | 'body'>): Promise<T> => {
+    // Automatically append user's Firebase UID to GET requests if user is logged in
+    let finalUrl = url;
+    
+    if (auth.currentUser) {
+      // Add user's Firebase UID as a query parameter
+      const separator = url.includes('?') ? '&' : '?';
+      finalUrl = `${url}${separator}uid=${auth.currentUser.uid}`;
+    }
+    
+    return apiRequest<T>(finalUrl, { ...options, method: 'GET' });
+  },
 
-  post: <T = any>(url: string, body: any, options?: Omit<ApiRequestOptions, 'method'>) => 
+  post: async <T = any>(url: string, body: any, options?: Omit<ApiRequestOptions, 'method'>): Promise<T> => 
     apiRequest<T>(url, { ...options, method: 'POST', body }),
 
-  put: <T = any>(url: string, body: any, options?: Omit<ApiRequestOptions, 'method'>) => 
+  put: async <T = any>(url: string, body: any, options?: Omit<ApiRequestOptions, 'method'>): Promise<T> => 
     apiRequest<T>(url, { ...options, method: 'PUT', body }),
 
-  delete: <T = any>(url: string, options?: Omit<ApiRequestOptions, 'method'>) => 
+  delete: async <T = any>(url: string, options?: Omit<ApiRequestOptions, 'method'>): Promise<T> => 
     apiRequest<T>(url, { ...options, method: 'DELETE' }),
 };
