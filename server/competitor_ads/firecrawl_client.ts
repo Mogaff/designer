@@ -47,33 +47,44 @@ export async function searchFireCrawlAds(query: string, options: {
     platforms: options.platforms?.join(',') || undefined
   };
   
+  console.log(`FireCrawl search parameters: ${JSON.stringify(params)}`);
+  
   // Create a list of URLs to try, starting with the main one
   const urlsToTry = [FIRECRAWL_API_URL, ...FIRECRAWL_API_FALLBACK_URLS];
   
   // Try each URL in sequence
   let lastError: Error | null = null;
+  let attempts = 0;
+  const maxAttempts = 6; // Try up to 6 different combinations
   
   for (const baseUrl of urlsToTry) {
     try {
       console.log(`Trying FireCrawl API at ${baseUrl}...`);
       
       // Try multiple endpoint patterns
-      const endpointPaths = ['/search/ads', '/ads/search', '/api/ads/search'];
+      const endpointPaths = ['/search/ads', '/ads/search', '/api/ads/search', '/api/v1/search/ads'];
       
       for (const path of endpointPaths) {
+        attempts++;
+        if (attempts > maxAttempts) {
+          console.log(`Reached maximum attempts (${maxAttempts}), stopping search to prevent timeouts`);
+          break;
+        }
+        
         try {
           const fullUrl = `${baseUrl}${path}`;
-          console.log(`Making request to: ${fullUrl}`);
+          console.log(`Attempt ${attempts}/${maxAttempts}: Making request to ${fullUrl}`);
           
-          // Make the API request
+          // Make the API request with a longer timeout and retries
           const response = await axios.get(fullUrl, {
             params,
             headers: {
               'Authorization': `Bearer ${FIRECRAWL_API_KEY}`,
-              'Content-Type': 'application/json'
+              'Content-Type': 'application/json',
+              'User-Agent': 'AdBurst-Factory/1.0'
             },
             // Set a longer timeout for Replit's environment
-            timeout: 10000
+            timeout: 15000
           });
     
           if (response.status === 200) {
