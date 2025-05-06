@@ -284,13 +284,3 @@ export async function checkMetaApiKey(): Promise<boolean> {
     return false;
   }
 }
-
-/**
- * NOT USED - Removed placeholder ad generation as per user requirements
- * We only want to use authentic data from authorized sources
- */
-
-/**
- * NOT USED - Removed placeholder ad generation as per user requirements
- * We only want to use authentic data from authorized sources
- */

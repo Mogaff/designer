@@ -698,6 +698,7 @@ export default function AiFlyerFormCompact({
                       id="carousel-toggle"
                       checked={createCarousel}
                       onCheckedChange={setCreateCarousel}
+                      className="data-[state=checked]:bg-indigo-500"
                     />
                   </div>
                   <p className="text-[7px] text-white/60 mt-0.5">

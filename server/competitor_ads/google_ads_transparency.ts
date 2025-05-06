@@ -13,14 +13,14 @@ const GOOGLE_ADS_TRANSPARENCY_URL = 'https://adstransparency.google.com';
 
 interface GoogleAdData {
   brand: string;
-  headline?: string | null;
-  body?: string | null;
-  imageUrl?: string | null;
-  thumbnailUrl?: string | null;
-  cta?: string | null;
+  headline?: string;
+  body?: string;
+  imageUrl?: string;
+  thumbnailUrl?: string;
+  cta?: string;
   adId?: string;
-  platformDetails?: string | null; // YouTube, Search, Display, etc.
-  lastSeen?: string | null;
+  platformDetails?: string; // YouTube, Search, Display, etc.
+  lastSeen?: string;
   advertiserId?: string;
 }
 
@@ -34,11 +34,9 @@ interface ScrapingOptions {
  * Scrape ads for a specific advertiser from Google's Ads Transparency Center
  */
 export async function scrapeGoogleAdsForAdvertiser(
-  searchQuery: string,
-  options: ScrapingOptions & {
-    searchType?: 'brand' | 'keyword' | 'industry';
-  } = {}
-): Promise<any[]> {
+  advertiser: string,
+  options: ScrapingOptions = {}
+): Promise<GoogleAdData[]> {
   const region = options.region || 'US';
   const maxAds = options.maxAds || 20;
   const timeout = options.timeout || 30000; // 30 seconds
@@ -48,22 +46,7 @@ export async function scrapeGoogleAdsForAdvertiser(
   // Launch a headless browser
   const browser = await puppeteer.launch({
     headless: true,
-    executablePath: '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium',
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-accelerated-2d-canvas',
-      '--no-first-run',
-      '--no-zygote',
-      '--single-process', // Reduziert den Speicherverbrauch
-      '--disable-gpu',
-      '--disable-extensions',
-      '--disable-web-security',
-      '--disable-features=site-per-process',
-      '--disable-site-isolation-trials'
-    ],
-    timeout: 60000 // 60 Sekunden
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
   
   try {
@@ -72,59 +55,39 @@ export async function scrapeGoogleAdsForAdvertiser(
     // Set a reasonable timeout
     page.setDefaultTimeout(timeout);
     
-    // Dieser Teil wird übersprungen, da wir direkt zur Anzeigenseite gehen
+    // Navigate to the Ads Transparency Center with the region parameter
+    await page.goto(`${GOOGLE_ADS_TRANSPARENCY_URL}?region=${region}`);
     
-    // Handle different search types
-    let searchUrl = '';
-    const searchRegion = options.region || 'US';
+    // Wait for the search box to be available
+    await page.waitForSelector('input[aria-label="Search by advertiser or website name"]');
     
-    if (options.searchType === 'brand') {
-      // Direct brand search
-      searchUrl = `${GOOGLE_ADS_TRANSPARENCY_URL}/advertiser/${encodeURIComponent(searchQuery)}?region=${searchRegion}`;
-    } else {
-      // For keyword and industry searches, use the search endpoint
-      searchUrl = `${GOOGLE_ADS_TRANSPARENCY_URL}/search?q=${encodeURIComponent(searchQuery)}&region=${searchRegion}`;
+    // Type the advertiser name into the search box
+    await page.type('input[aria-label="Search by advertiser or website name"]', advertiser);
+    
+    // Press Enter to search
+    await page.keyboard.press('Enter');
+    
+    // Wait for search results
+    try {
+      await page.waitForSelector('[role="listitem"]', { timeout: 10000 });
+    } catch (error) {
+      console.log(`No search results found for advertiser: ${advertiser}`);
+      return [];
     }
     
-    const advertiserPageUrl = searchUrl;
-    console.log(`Navigating to advertiser page: ${advertiserPageUrl}`);
-    
-    try {
-      await page.goto(advertiserPageUrl, { waitUntil: 'networkidle2' });
-      // Kurz warten, damit die Seite vollständig laden kann
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      
-      // Prüfen, ob Anzeigen geladen wurden - verschiedene CSS-Selektoren versuchen
-      const hasAds = await page.evaluate(() => {
-        // Google ändert manchmal ihre Klassennamen, daher versuchen wir mehrere Selektoren
-        const possibleSelectors = [
-          '.ad-card', 
-          '.adCard', 
-          '.ad-container', 
-          '.adContainer',
-          '[data-ad-id]',
-          '[data-testid="ad-card"]',
-          '.gtc-ad-card',
-          '.ad_card'
-        ];
-        
-        for (const selector of possibleSelectors) {
-          const elements = document.querySelectorAll(selector);
-          if (elements && elements.length > 0) {
-            console.log(`Found ads using selector: ${selector} (count: ${elements.length})`);
-            return true;
-          }
-        }
-        
-        return false;
-      });
-      
-      if (!hasAds) {
-        console.log(`No ads found for advertiser: ${advertiser}`);
-        return [];
+    // Click on the first matching advertiser
+    await page.evaluate(() => {
+      const items = document.querySelectorAll('[role="listitem"]');
+      if (items.length > 0) {
+        (items[0] as HTMLElement).click();
       }
+    });
+    
+    // Wait for ads to load
+    try {
+      await page.waitForSelector('.ad-card', { timeout: 10000 });
     } catch (error) {
-      console.log(`Error navigating to advertiser page: ${error}`);
+      console.log(`No ads found for advertiser: ${advertiser}`);
       return [];
     }
     
@@ -132,157 +95,50 @@ export async function scrapeGoogleAdsForAdvertiser(
     const url = page.url();
     const advertiserId = url.match(/advertiser\/(AR[0-9]+)/)?.[1];
     
-    // Extract ad data from the page with robuste Selektoren
+    // Extract ad data from the page
     const ads = await page.evaluate((maxAdsToExtract, advertiserId) => {
-      // Alle möglichen Selektoren für Anzeigen
-      const adCardSelectors = [
-        '.ad-card', 
-        '.adCard', 
-        '.ad-container', 
-        '.adContainer',
-        '[data-ad-id]',
-        '[data-testid="ad-card"]',
-        '.gtc-ad-card',
-        '.ad_card'
-      ];
-      
-      // Finde den ersten Selektor, der Ergebnisse liefert
-      let adCards = [];
-      let usedSelector = '';
-      
-      for (const selector of adCardSelectors) {
-        const elements = Array.from(document.querySelectorAll(selector));
-        if (elements.length > 0) {
-          adCards = elements;
-          usedSelector = selector;
-          console.log(`Using selector "${selector}" for ad cards. Found ${elements.length} ads.`);
-          break;
-        }
-      }
-      
-      const extractedAds = [];
-      
-      // Helper-Funktion, um Text mit verschiedenen Selektoren zu extrahieren
-      const extractText = (element, selectors) => {
-        for (const selector of selectors) {
-          const el = element.querySelector(selector);
-          if (el && el.textContent) {
-            return el.textContent.trim();
-          }
-        }
-        return null;
-      };
-      
-      // Helper-Funktion für Bilder
-      const extractImage = (element, selectors) => {
-        for (const selector of selectors) {
-          const el = element.querySelector(selector);
-          if (el && el.src) {
-            return el.src;
-          }
-        }
-        return null;
-      };
+      const adCards = document.querySelectorAll('.ad-card');
+      const extractedAds: GoogleAdData[] = [];
       
       for (let i = 0; i < Math.min(adCards.length, maxAdsToExtract); i++) {
         const card = adCards[i];
         
-        // Extract headline mit verschiedenen möglichen Selektoren
-        const headline = extractText(card, [
-          '.ad-title', 
-          '.adTitle', 
-          '.ad-headline', 
-          '[data-testid="ad-title"]',
-          'h2', 
-          'h3'
-        ]);
+        // Extract headline
+        const headline = card.querySelector('.ad-title')?.textContent?.trim();
         
         // Extract body text
-        const body = extractText(card, [
-          '.ad-description', 
-          '.adDescription', 
-          '.ad-body', 
-          '.adBody',
-          '[data-testid="ad-body"]',
-          'p'
-        ]);
+        const body = card.querySelector('.ad-description')?.textContent?.trim();
         
         // Extract image URL if available
-        const imageUrl = extractImage(card, ['img', '[data-testid="ad-image"]']);
+        const image = card.querySelector('img');
+        const imageUrl = image?.src;
         
         // Extract platform details (YouTube, Search, etc.)
-        const platform = extractText(card, [
-          '.ad-platform-badge', 
-          '.adPlatform', 
-          '.platform-badge',
-          '[data-testid="ad-platform"]'
-        ]);
+        const platformBadge = card.querySelector('.ad-platform-badge');
+        const platform = platformBadge?.textContent?.trim();
         
         // Extract last seen date if available
-        const lastSeen = extractText(card, [
-          '.ad-last-seen', 
-          '.adLastSeen', 
-          '.last-seen',
-          '[data-testid="ad-last-seen"]'
-        ]);
+        const lastSeen = card.querySelector('.ad-last-seen')?.textContent?.trim();
         
         // Extract CTA text if available
-        const cta = extractText(card, [
-          '.ad-cta', 
-          '.adCta', 
-          '.call-to-action',
-          '[data-testid="ad-cta"]',
-          'button'
-        ]);
+        const cta = card.querySelector('.ad-cta')?.textContent?.trim();
         
-        // Generate a unique ad ID
-        let adId = `google-${advertiserId}-${i}`;
-        
-        // Versuche, eine eindeutige ID zu finden
-        const dataAttrNames = Array.from(card.attributes)
-          .filter(attr => attr.name.startsWith('data-'))
-          .map(attr => attr.name);
-          
-        for (const attrName of dataAttrNames) {
-          if (attrName.includes('id')) {
-            const value = card.getAttribute(attrName);
-            if (value) {
-              adId = value;
-              break;
-            }
-          }
-        }
-        
-        // Versuch, den Markennamen zu extrahieren (verschiedene Selektoren)
-        const brandSelectors = [
-          '.advertiser-name', 
-          '.advertiserName', 
-          '[data-testid="advertiser-name"]',
-          '.brand-name',
-          '.company-name',
-          'h1'
-        ];
-        
-        let brand = 'Unknown';
-        for (const selector of brandSelectors) {
-          const el = document.querySelector(selector);
-          if (el && el.textContent) {
-            brand = el.textContent.trim();
-            break;
-          }
-        }
+        // Generate a unique ad ID since Google doesn't provide one
+        const adIdElement = card.querySelector('[data-ad-id]');
+        const adId = adIdElement ? adIdElement.getAttribute('data-ad-id') : 
+                    `google-${advertiserId}-${i}`;
         
         extractedAds.push({
-          brand,
+          brand: document.querySelector('.advertiser-name')?.textContent?.trim() || 'Unknown',
           headline,
           body,
-          imageUrl,
-          thumbnailUrl: imageUrl, // Use same image for thumbnail
+          imageUrl: imageUrl === null ? undefined : imageUrl, // Convert null to undefined for type compatibility
+          thumbnailUrl: imageUrl === null ? undefined : imageUrl, // Use same image for thumbnail
           cta,
           adId,
           platformDetails: platform,
           lastSeen,
-          advertiserId: advertiserId || adId.split('-')[1] // Fallback
+          advertiserId
         });
       }
       
@@ -303,7 +159,7 @@ export async function scrapeGoogleAdsForAdvertiser(
 /**
  * Transform Google ad data into our standard Competitor Ad format
  */
-export function transformGoogleAds(googleAds: any[], userId?: number, industry?: string): InsertCompetitorAd[] {
+export function transformGoogleAds(googleAds: GoogleAdData[], userId?: number, industry?: string): InsertCompetitorAd[] {
   return googleAds.map(ad => {
     // Create the transformed competitor ad
     const competitorAd: InsertCompetitorAd = {
@@ -360,99 +216,46 @@ export async function saveGoogleAds(googleAds: GoogleAdData[], userId?: number, 
 
 /**
  * Find relevant advertisers for a given industry or keyword
- * Using a mapping between industries and known advertisers with their Google Ad IDs
+ * Using a simple mapping between industries and known advertisers
  */
 export function findRelevantAdvertisers(query: string): string[] {
-  // Viele der größeren Marken haben bekannte IDs in Google's Ads Transparency Center
-  // Format: brand name: AR... ID
-  const knownAdvertiserIds: Record<string, string> = {
-    'nike': 'AR488803513102942208',
-    'adidas': 'AR09364018780667904',
-    'apple': 'AR467122456588591104',
-    'microsoft': 'AR516879332667596800',
-    'google': 'AR18054737239162880',
-    'amazon': 'AR579308875399675904',
-    'samsung': 'AR525636455835475968',
-    'coca-cola': 'AR411337481615515648',
-    'pepsi': 'AR547005209329508352',
-    'mcdonalds': 'AR586780018707562496',
-    'starbucks': 'AR01985402131456000',
-    'walmart': 'AR476351957455847424',
-    'target': 'AR440233347195789312',
-    'dell': 'AR440214727474380800',
-    'hp': 'AR429055584834387968',
-    'ford': 'AR528764493613039616',
-    'toyota': 'AR511433172284063744',
-    'bmw': 'AR429158019538296832',
-    'audi': 'AR18177481359892480',
-    'netflix': 'AR492246968245166080',
-    'disney': 'AR419608580587913216',
-    'hbo': 'AR411378493474922496'
-  };
-  
-  // Industry-to-brand mapping for keywords und Branchen
+  // Basic industry-to-advertiser mapping
   const industryAdvertisers: Record<string, string[]> = {
-    'fitness': ['nike', 'adidas', 'under armour', 'peloton', 'planet fitness'],
-    'tech': ['apple', 'microsoft', 'samsung', 'google', 'dell'],
-    'food': ['mcdonalds', 'kraft heinz', 'kellogg', 'nestle', 'pepsi'],
-    'beauty': ['sephora', 'maybelline', 'loreal', 'fenty beauty', 'estee lauder'],
-    'fashion': ['zara', 'h&m', 'uniqlo', 'gap', 'ralph lauren'],
-    'automotive': ['toyota', 'ford', 'tesla', 'bmw', 'audi'],
-    'travel': ['expedia', 'airbnb', 'booking.com', 'trip.com', 'marriott'],
-    'finance': ['chase', 'bank of america', 'wells fargo', 'citibank', 'capital one'],
-    'streaming': ['netflix', 'disney', 'hulu', 'hbo', 'amazon'],
-    'ecommerce': ['amazon', 'walmart', 'target', 'ebay', 'etsy']
+    'fitness': ['Nike', 'Adidas', 'Under Armour', 'Peloton', 'Planet Fitness'],
+    'tech': ['Apple', 'Microsoft', 'Samsung', 'Google', 'Dell'],
+    'food': ['McDonalds', 'Kraft Heinz', 'Kellogg', 'Nestle', 'PepsiCo'],
+    'beauty': ['Sephora', 'Maybelline', 'LOreal', 'Fenty Beauty', 'Estee Lauder'],
+    'fashion': ['Zara', 'H&M', 'Uniqlo', 'GAP', 'Ralph Lauren'],
+    'automotive': ['Toyota', 'Ford', 'Tesla', 'BMW', 'Honda'],
+    'travel': ['Expedia', 'Airbnb', 'Booking.com', 'Trip.com', 'Marriott'],
+    'finance': ['Chase', 'Bank of America', 'Wells Fargo', 'Citibank', 'Capital One'],
+    'streaming': ['Netflix', 'Disney+', 'Hulu', 'HBO Max', 'Amazon Prime Video'],
+    'ecommerce': ['Amazon', 'Walmart', 'Target', 'eBay', 'Etsy']
   };
   
   // Normalize query
   const normalizedQuery = query.trim().toLowerCase();
   
-  // Direct match with known advertiser ID
-  if (normalizedQuery in knownAdvertiserIds) {
-    console.log(`Found known advertiser ID for ${normalizedQuery}: ${knownAdvertiserIds[normalizedQuery]}`);
-    return [knownAdvertiserIds[normalizedQuery]];
-  }
-  
-  // Check if query exactly matches an industry
+  // Check if the query exactly matches an industry
   if (normalizedQuery in industryAdvertisers) {
-    // For industries, return advertisers with IDs when available
-    return industryAdvertisers[normalizedQuery].map(brand => 
-      knownAdvertiserIds[brand] || brand
-    );
+    return industryAdvertisers[normalizedQuery];
   }
   
   // Check if query contains any industry keywords
-  for (const [industry, brands] of Object.entries(industryAdvertisers)) {
+  for (const [industry, _] of Object.entries(industryAdvertisers)) {
     if (normalizedQuery.includes(industry)) {
-      // Return known brands from this industry with IDs when available
-      return brands.map(brand => knownAdvertiserIds[brand] || brand);
+      return industryAdvertisers[industry];
     }
   }
   
   // If it's likely a brand name, just return it
   if (!normalizedQuery.includes(' ') && normalizedQuery.length > 2) {
-    // If we have the ID, use it
-    const knownBrands = Object.keys(knownAdvertiserIds);
-    for (const brand of knownBrands) {
-      if (brand.includes(normalizedQuery) || normalizedQuery.includes(brand)) {
-        console.log(`Found partial match for "${normalizedQuery}" with brand "${brand}"`);
-        return [knownAdvertiserIds[brand]];
-      }
-    }
     return [query]; // Assume it's a brand name
   }
   
-  // Default: return a few popular advertisers with known IDs
-  return [
-    knownAdvertiserIds['nike'] || 'nike',
-    knownAdvertiserIds['apple'] || 'apple', 
-    knownAdvertiserIds['coca-cola'] || 'coca-cola',
-    knownAdvertiserIds['amazon'] || 'amazon', 
-    knownAdvertiserIds['starbucks'] || 'starbucks'
-  ];
+  // Default: return a few popular advertisers
+  return ['Nike', 'Apple', 'Coca-Cola', 'Amazon', 'Starbucks'];
 }
-
-
 
 /**
  * Search for ads in Google's Ads Transparency Center
@@ -467,30 +270,8 @@ export async function searchGoogleAds(query: string, options: {
     let advertisers: string[] = [];
     
     if (options.queryType === 'brand') {
-      // Für Marken-Suchen: Zuerst prüfen, ob wir eine ID für diese Marke haben
-      const normalizedBrand = query.trim().toLowerCase();
-      const knownAdvertiserIds: Record<string, string> = {
-        'nike': 'AR488803513102942208',
-        'adidas': 'AR09364018780667904',
-        'apple': 'AR467122456588591104',
-        'microsoft': 'AR516879332667596800',
-        'google': 'AR18054737239162880',
-        'amazon': 'AR579308875399675904',
-        'samsung': 'AR525636455835475968',
-        'coca-cola': 'AR411337481615515648',
-        'pepsi': 'AR547005209329508352',
-        'mcdonalds': 'AR586780018707562496',
-        'starbucks': 'AR01985402131456000'
-      };
-      
-      // Wenn es eine bekannte Marke ist, verwenden wir die ID
-      if (normalizedBrand in knownAdvertiserIds) {
-        advertisers = [knownAdvertiserIds[normalizedBrand]];
-        console.log(`Using known advertiser ID for brand ${normalizedBrand}: ${knownAdvertiserIds[normalizedBrand]}`);
-      } else {
-        // Sonst den Markennamen verwenden
-        advertisers = [query];
-      }
+      // For brand queries, use the query directly
+      advertisers = [query];
     } else {
       // For keyword/industry queries, find relevant advertisers
       advertisers = findRelevantAdvertisers(query);

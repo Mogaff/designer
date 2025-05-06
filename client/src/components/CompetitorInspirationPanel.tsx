@@ -40,7 +40,7 @@ export default function CompetitorInspirationPanel({
   const [results, setResults] = useState<AdSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedAds, setSelectedAds] = useState<number[]>([]);
-
+  
   // Search for competitor ads
   const searchMutation = useMutation({
     mutationFn: async (searchData: { query: string; type: string }) => {
@@ -77,7 +77,7 @@ export default function CompetitorInspirationPanel({
       });
     }
   });
-
+  
   // Enhance the prompt with inspiration from selected ads
   const enhanceMutation = useMutation({
     mutationFn: async (data: { 
@@ -95,10 +95,10 @@ export default function CompetitorInspirationPanel({
         const enhancedPrompt = originalPrompt ? 
           `${originalPrompt}\n\n---- Inspired by competitors ----\n${data.styleInspiration || ''}\n\n${data.copyInspiration || ''}` :
           `${data.styleInspiration || ''}\n\n${data.copyInspiration || ''}`;
-
+        
         // Call the callback with the enhanced prompt
         onEnhancePrompt(enhancedPrompt);
-
+        
         toast({
           title: 'Prompt enhanced',
           description: `Enhanced your prompt with inspiration from ${data.count} competitor ads`,
@@ -119,7 +119,7 @@ export default function CompetitorInspirationPanel({
       });
     }
   });
-
+  
   // Handle search form submission
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,7 +131,7 @@ export default function CompetitorInspirationPanel({
       });
       return;
     }
-
+    
     setIsSearching(true);
     setResults([]);
     searchMutation.mutate({ 
@@ -139,7 +139,7 @@ export default function CompetitorInspirationPanel({
       type: searchType
     });
   };
-
+  
   // Toggle ad selection
   const toggleSelectAd = (adId: number) => {
     setSelectedAds(prev => 
@@ -148,7 +148,7 @@ export default function CompetitorInspirationPanel({
         : [...prev, adId]
     );
   };
-
+  
   // Get quick inspiration based on the current search query
   const getQuickInspiration = () => {
     if (!searchQuery.trim()) {
@@ -159,9 +159,9 @@ export default function CompetitorInspirationPanel({
       });
       return;
     }
-
+    
     const data: any = { limit: 5 };
-
+    
     // Map the search type to the API parameter
     if (searchType === 'keyword') {
       data.keyword = searchQuery.trim();
@@ -170,26 +170,26 @@ export default function CompetitorInspirationPanel({
     } else if (searchType === 'industry') {
       data.industry = searchQuery.trim();
     }
-
+    
     enhanceMutation.mutate(data);
   };
-
+  
   // Only show the component when it's open (this is controlled by the parent)
   if (!isOpen) return null;
-
+  
   return (
     <div className="flex flex-col gap-1 text-white">
       <h3 className="text-[10px] font-medium flex items-center gap-1">
         <Lightbulb className="h-2 w-2 text-amber-400" />
         Competitor Ad Inspiration
       </h3>
-
+      
       <Tabs defaultValue="search" className="w-full">
         <TabsList className="grid w-full grid-cols-2 h-5 bg-white/10 backdrop-blur-md shadow-sm border border-white/10 rounded-md p-0.5 gap-1">
           <TabsTrigger value="search" className="text-[8px] h-4 rounded-sm data-[state=active]:bg-white/20 data-[state=active]:text-white data-[state=active]:shadow-sm">Search Ads</TabsTrigger>
           <TabsTrigger value="quick" className="text-[8px] h-4 rounded-sm data-[state=active]:bg-white/20 data-[state=active]:text-white data-[state=active]:shadow-sm">Quick Inspiration</TabsTrigger>
         </TabsList>
-
+        
         <TabsContent value="search" className="mt-1">
           <form onSubmit={handleSearch} className="flex gap-1 mb-1">
             <div className="flex-1 relative">
@@ -219,7 +219,7 @@ export default function CompetitorInspirationPanel({
               {isSearching ? <Loader className="h-2 w-2 animate-spin" /> : <Search className="h-2.5 w-2.5" />}
             </Button>
           </form>
-
+          
           {/* Results section */}
           <div className="space-y-1 max-h-20 overflow-y-auto">
             {results.length === 0 && !isSearching && (
@@ -227,14 +227,14 @@ export default function CompetitorInspirationPanel({
                 Search for competitor ads to get inspiration
               </p>
             )}
-
+            
             {isSearching && (
               <div className="flex items-center justify-center py-2">
                 <Loader className="h-3 w-3 animate-spin text-indigo-400" />
                 <span className="ml-1 text-[8px] text-white/60">Searching...</span>
               </div>
             )}
-
+            
             {results.map((ad) => (
               <div 
                 key={ad.id} 
@@ -266,7 +266,7 @@ export default function CompetitorInspirationPanel({
               </div>
             ))}
           </div>
-
+          
           {/* Actions */}
           {results.length > 0 && (
             <div className="flex justify-between mt-1">
@@ -296,12 +296,12 @@ export default function CompetitorInspirationPanel({
             </div>
           )}
         </TabsContent>
-
+        
         <TabsContent value="quick" className="space-y-1 mt-1">
           <p className="text-[8px] text-white/70">
             Get instant inspiration from competitor ads without reviewing individual results
           </p>
-
+          
           <div className="flex gap-1">
             <div className="flex-1 relative">
               <Input
@@ -323,7 +323,7 @@ export default function CompetitorInspirationPanel({
               </select>
             </div>
           </div>
-
+          
           <Button 
             onClick={getQuickInspiration}
             className="w-full h-5 text-[8px] py-0 rounded-full bg-indigo-500/50 hover:bg-indigo-500/70"

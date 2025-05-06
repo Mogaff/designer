@@ -23,46 +23,8 @@ import Anthropic from '@anthropic-ai/sdk';
 export function registerCompetitorAdRoutes(app: any) {
   // Search for competitor ads
   app.post('/api/ad-inspiration/search', isAuthenticated, async (req: Request, res: Response) => {
-  try {
-    const { query, searchType, region } = req.body;
-    
-    if (!query) {
-      return res.status(400).json({ error: 'Search query is required' });
-    }
-
-    if (!searchType || !['brand', 'keyword', 'industry'].includes(searchType)) {
-      return res.status(400).json({ error: 'Valid search type is required' });
-    }
-
-    const userId = (req.user as any)?.id;
-    
-    const results = await searchGoogleAds(query, {
-      queryType: searchType,
-      userId,
-      region: region || 'US',
-      maxAds: 20
-    });
-
-    return res.status(200).json({
-      success: true,
-      count: results.length,
-      ads: results
-    });
-    
-  } catch (error) {
-    console.error('Error searching ads:', error);
-    return res.status(500).json({ 
-      error: 'Failed to search ads',
-      details: (error as Error).message 
-    });
-  }
-}
     try {
-      const query = req.query.query as string;
-      const queryType = req.query.queryType as string;
-      const platforms = req.query.platforms ? (req.query.platforms as string).split(',') : undefined;
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
-      const region = req.query.region as string;
+      const { query, queryType, platforms, limit, region } = req.body;
       
       if (!query) {
         return res.status(400).json({ error: 'Query is required' });

@@ -58,53 +58,32 @@ export async function searchCompetitorAds(
         
         if (hasMetaApiKey) {
           console.log('Searching Meta Ad Library...');
-          try {
-            const metaAds = await searchMetaAds(query, {
-              queryType,
-              userId: options.userId,
-              limit: options.limit,
-              country: options.region
-            });
-            
-            allAds = [...allAds, ...metaAds];
-            console.log(`Found ${metaAds.length} ads from Meta Ad Library`);
-          } catch (error) {
-            console.error('Error searching Meta Ad Library:', error);
-            console.error('Please check the META_API_KEY environment variable');
-          }
+          const metaAds = await searchMetaAds(query, {
+            queryType,
+            userId: options.userId,
+            limit: options.limit,
+            country: options.region
+          });
+          
+          allAds = [...allAds, ...metaAds];
+          console.log(`Found ${metaAds.length} ads from Meta Ad Library`);
         } else {
-          console.warn('Meta API key not configured or invalid. Please set a valid META_API_KEY environment variable.');
+          console.warn('Meta API key not configured. Skipping Meta ad search.');
         }
       }
       
       // Check if we should search Google
       if (!options.platforms || options.platforms.includes('google')) {
         console.log('Searching Google Ads Transparency Center...');
-        try {
-          // Search for relevant advertisers
-          const searchTerm = queryType === 'brand' ? query : 
-                            (queryType === 'industry' ? query + ' companies' : query);
-          console.log(`Searching Google Ads for ${Math.min(3, options.limit || 3)} advertisers related to: ${searchTerm}`);
-          
-          // For simplicity, we'll just use the search term directly as the advertiser name
-          // This should work well for brand searches
-          try {
-            const googleAds = await searchGoogleAds(searchTerm, {
-              queryType,
-              userId: options.userId,
-              maxAds: Math.min(5, options.limit || 5),
-              region: options.region || 'US'
-            });
-            
-            allAds = [...allAds, ...googleAds];
-            console.log(`Found ${googleAds.length} ads from Google Ads Transparency Center`);
-          } catch (error) {
-            console.error('Error searching Google Ads Transparency Center:', error);
-            // Continue execution - we don't want to fail the entire search if Google fails
-          }
-        } catch (error) {
-          console.error('Failed to search Google Ads:', error);
-        }
+        const googleAds = await searchGoogleAds(query, {
+          queryType,
+          userId: options.userId,
+          maxAds: options.limit,
+          region: options.region
+        });
+        
+        allAds = [...allAds, ...googleAds];
+        console.log(`Found ${googleAds.length} ads from Google Ads Transparency Center`);
       }
       
       // Update the search record with the results
