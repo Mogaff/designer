@@ -24,7 +24,7 @@ export async function searchFireCrawlAds(query: string, options: {
   region?: string;
   limit?: number;
   platforms?: string[];
-}): Promise<CompetitorAd[]> {
+}): Promise<Partial<CompetitorAd>[]> {
   try {
     if (!FIRECRAWL_API_KEY) {
       throw new Error('FireCrawl API key is not configured');
