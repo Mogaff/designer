@@ -474,237 +474,237 @@ export default function AiFlyerFormCompact({
       
       <form onSubmit={handleSubmit} className="space-y-1.5 flex-grow flex flex-col">
         {/* Creative Brief */}
-        <div className="relative">
-          <Label className="text-[9px] text-white/70 flex items-center gap-1 mb-0.5">
-            <TypeIcon className="h-2 w-2" />
-            Creative Brief
-          </Label>
-          <div className="relative">
-            <Textarea
-              placeholder="Describe your design in detail..."
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              className="h-16 text-[9px] resize-none bg-white/10 backdrop-blur-md shadow-lg border-white/10 text-white rounded-md"
-            />
-            <div className="absolute top-1 right-1 flex gap-1">
-              <Button 
-                type="button" 
-                variant="ghost" 
-                className="h-4 w-4 p-0.5 rounded-sm hover:bg-white/10"
-                onClick={() => setIsInspirationPanelOpen(true)}
-              >
-                <Lightbulb className="h-3 w-3 text-amber-500" />
-              </Button>
-            </div>
+        <div>
+          <div className="flex items-center justify-between mb-0.5">
+            <Label htmlFor="prompt" className="text-[9px] text-white/70 flex items-center gap-1">
+              <TypeIcon className="h-2 w-2" />
+              Creative Brief
+            </Label>
+            
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => setIsInspirationPanelOpen(!isInspirationPanelOpen)}
+              className="h-4 text-[8px] px-1.5 py-0 text-white/80 hover:text-white hover:bg-white/10 bg-white/5 backdrop-blur-md shadow-sm border border-white/10 rounded-full"
+            >
+              <Lightbulb className="h-2 w-2 mr-0.5" />
+              {isInspirationPanelOpen ? "Hide inspiration" : "Get inspiration"}
+            </Button>
           </div>
           
           {/* Competitor Inspiration Panel */}
           {isInspirationPanelOpen && (
-            <CompetitorInspirationPanel 
-              onEnhancePrompt={handleEnhancePrompt}
-              originalPrompt={prompt}
-              isOpen={isInspirationPanelOpen}
-            />
-          )}
-        </div>
-        
-        {/* Design Count Slider */}
-        <div>
-          <Label className="text-[9px] text-white/70 flex items-center gap-1 mb-0.5">
-            Design Variations
-          </Label>
-          <div className="px-1 py-1">
-            <div className="flex items-center gap-3">
-              <Slider
-                value={[parseInt(designCount)]}
-                min={1}
-                max={8}
-                step={1}
-                onValueChange={(value) => setDesignCount(value[0].toString())}
-                className="w-full h-1.5"
+            <div className="mb-1 p-1 rounded-md border border-white/10 bg-white/5 backdrop-blur-md shadow-sm">
+              <CompetitorInspirationPanel 
+                onEnhancePrompt={handleEnhancePrompt}
+                originalPrompt={prompt}
+                isOpen={isInspirationPanelOpen}
               />
-              <span className="text-[9px] text-white min-w-[20px] text-right">
-                {designCount}
-              </span>
+            </div>
+          )}
+          
+          <Textarea
+            id="prompt"
+            placeholder="Describe your design..."
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            className="h-12 resize-none bg-white/10 backdrop-blur-md shadow-lg border-white/10 text-white placeholder:text-white/40 rounded-md text-[9px]"
+            required
+          />
+        </div>
+
+        {/* Image Upload Row - 3 glass-blurry cube elements in a row */}
+        <div className="grid grid-cols-3 gap-1">
+          {/* Background Image */}
+          <div>
+            <div className="relative">
+              <Input
+                type="file"
+                id="background-image"
+                onChange={handleBackgroundImageChange}
+                className="sr-only"
+                multiple={createCarousel} // Allow multiple file selection when carousel mode is enabled
+              />
+              <Label
+                htmlFor="background-image"
+                className={`cursor-pointer flex flex-col justify-center items-center aspect-square w-full rounded-md border ${createCarousel ? 'border-indigo-400/30' : 'border-white/10'} bg-white/10 backdrop-blur-md shadow-lg hover:bg-white/15 transition-colors`}
+              >
+                <div className="relative">
+                  <Upload className="h-4 w-4 text-white/80" />
+                  {createCarousel && (
+                    <span className="absolute -top-1 -right-1 flex h-1.5 w-1.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-indigo-500"></span>
+                    </span>
+                  )}
+                </div>
+                <span className="text-[7px] text-white/70 mt-1">
+                  {createCarousel ? 'IMAGES' : 'IMAGE'}
+                </span>
+                {createCarousel && (
+                  <span className="text-[5px] text-indigo-400 mt-0.5">Multiple allowed</span>
+                )}
+              </Label>
+              
+              {(backgroundImagePreview || backgroundImage) && (
+                <div className="absolute inset-0 rounded-md overflow-hidden">
+                  <img 
+                    src={backgroundImagePreview} 
+                    alt="Background" 
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={clearBackgroundImage}
+                    className="absolute top-0.5 right-0.5 bg-black/70 text-white p-0.5 rounded-full"
+                  >
+                    <svg width="6" height="6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M6 18L18 6M6 6l12 12" stroke="white" strokeWidth="2" />
+                    </svg>
+                  </button>
+                  
+                  {/* Show image count badge for carousel mode */}
+                  {createCarousel && multipleImages.length > 1 && (
+                    <div className="absolute bottom-0.5 left-0.5 bg-black/70 text-white px-1 py-0.5 rounded-sm text-[6px] flex items-center">
+                      <span className="mr-0.5">{multipleImages.length}</span>
+                      <svg width="6" height="6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21 3H3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 16H3V5h18v14z" fill="white" />
+                        <path d="M14 10.5V13c0 .6.4 1 1 1h2.5c.6 0 1-.4 1-1v-2.5c0-.6-.4-1-1-1H15c-.6 0-1 .4-1 1z" fill="white" />
+                        <path d="M8 10.5V13c0 .6.4 1 1 1h2.5c.6 0 1-.4 1-1v-2.5c0-.6-.4-1-1-1H9c-.6 0-1 .4-1 1z" fill="white" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
+          
+          {/* Logo Upload */}
+          <div>
+            <div className="relative">
+              <Input
+                type="file"
+                id="logo-upload"
+                onChange={handleLogoChange}
+                className="sr-only"
+              />
+              <Label
+                htmlFor="logo-upload"
+                className="cursor-pointer flex flex-col justify-center items-center aspect-square w-full rounded-md border border-white/10 bg-white/10 backdrop-blur-md shadow-lg hover:bg-white/15 transition-colors"
+              >
+                <Upload className="h-4 w-4 text-white/80" />
+                <span className="text-[7px] text-white/70 mt-1">LOGO</span>
+              </Label>
+              
+              {(logoPreview || logo) && (
+                <div className="absolute inset-0 rounded-md overflow-hidden bg-slate-800/80 backdrop-blur-sm flex items-center justify-center">
+                  <img 
+                    src={logoPreview} 
+                    alt="Logo" 
+                    className="max-w-[70%] max-h-[70%] object-contain"
+                  />
+                  <button
+                    type="button"
+                    onClick={clearLogo}
+                    className="absolute top-0.5 right-0.5 bg-black/70 text-white p-0.5 rounded-full"
+                  >
+                    <svg width="6" height="6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M6 18L18 6M6 6l12 12" stroke="white" strokeWidth="2" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* AI Background Option */}
+          <div className={`${backgroundImage || backgroundImagePreview ? 'opacity-50 pointer-events-none' : ''}`}>
+            <div className="relative">
+              <Label 
+                className="flex flex-col items-center justify-center cursor-pointer aspect-square w-full rounded-md border border-white/10 bg-white/10 backdrop-blur-md shadow-lg hover:bg-white/15 transition-colors"
+                onClick={() => setGenerateAiBackground(!generateAiBackground)}
+              >
+                <div className="relative">
+                  <WandSparkles className="h-4 w-4 text-white/80" />
+                  {generateAiBackground && (
+                    <div className="absolute -top-1 -right-1 h-2 w-2 bg-emerald-500 rounded-full border border-white/20"></div>
+                  )}
+                </div>
+                <span className="text-[7px] text-white/70 mt-1">AI BG</span>
+              </Label>
+            </div>
+          </div>
+          
+          {/* Brand Kit Logo Option - Moved to quality/format row */}
+          {/* Will be handled in the Settings Row */}
         </div>
         
-        {/* Resources & Controls */}
-        <div className="grid grid-cols-2 gap-1.5">
-          {/* Resources - Enhance visual design of image upload */}
+        {/* Settings Row - Changed to flex-col for vertical stacking */}
+        <div className="flex flex-col gap-1.5">
+          {/* Design Count Selection */}
           <div>
             <Label className="text-[9px] text-white/70 flex items-center gap-1 mb-0.5">
-              <ImageIcon className="h-2 w-2" />
-              Resources
+              <Crown className="h-2 w-2" />
+              Anzahl Designs
             </Label>
-            <div className="p-1.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-md">
-              <div className="grid grid-cols-2 gap-1.5">
-                {/* Background Image Uploader */}
-                <div>
-                  <label 
-                    htmlFor="background-image-upload" 
-                    className="text-center cursor-pointer"
-                  >
-                    <div className={`
-                      relative aspect-square rounded-sm border overflow-hidden 
-                      flex flex-col items-center justify-center
-                      ${backgroundImagePreview ? 'border-indigo-500/50' : 'border-white/15 hover:border-white/30'}
-                      ${generateAiBackground ? 'bg-indigo-500/20' : 'bg-white/5'}
-                      transition-all duration-200
-                    `}>
-                      {backgroundImagePreview ? (
-                        <>
-                          <img 
-                            src={backgroundImagePreview} 
-                            alt="Background" 
-                            className="absolute inset-0 w-full h-full object-cover"
-                          />
-                          <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                            <Upload className="h-3 w-3 text-white mb-0.5" />
-                            <span className="text-[7px] text-white">Replace</span>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <Upload className={`h-3 w-3 ${generateAiBackground ? 'text-indigo-300' : 'text-white/70'}`} />
-                          <span className={`text-[7px] mt-0.5 ${generateAiBackground ? 'text-indigo-300' : 'text-white/70'}`}>Background</span>
-                        </>
-                      )}
-                    </div>
-                  </label>
-                  <input
-                    id="background-image-upload"
-                    type="file"
-                    accept="image/*"
-                    multiple={createCarousel}
-                    onChange={handleBackgroundImageChange}
-                    className="hidden"
-                  />
-                  <div className="text-center mt-0.5 flex flex-col">
-                    <div className="flex items-center justify-center gap-1">
-                      <Checkbox 
-                        id="ai-background-toggle"
-                        checked={generateAiBackground}
-                        onCheckedChange={(checked) => {
-                          setGenerateAiBackground(checked as boolean);
-                          if (checked) {
-                            clearBackgroundImage();
-                          }
-                        }}
-                        className="h-2 w-2"
-                      />
-                      <Label 
-                        htmlFor="ai-background-toggle" 
-                        className="text-[7px] text-white/70 cursor-pointer"
-                      >
-                        Generate AI
-                      </Label>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Logo Uploader */}
-                <div>
-                  <label 
-                    htmlFor="logo-upload" 
-                    className="text-center cursor-pointer"
-                  >
-                    <div className={`
-                      relative aspect-square rounded-sm border overflow-hidden 
-                      flex flex-col items-center justify-center
-                      ${logoPreview ? 'border-indigo-500/50' : 'border-white/15 hover:border-white/30'}
-                      bg-white/5
-                      transition-all duration-200
-                    `}>
-                      {logoPreview ? (
-                        <>
-                          <img 
-                            src={logoPreview} 
-                            alt="Logo" 
-                            className="absolute inset-0 w-full h-full object-contain p-1"
-                          />
-                          <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                            <Upload className="h-3 w-3 text-white mb-0.5" />
-                            <span className="text-[7px] text-white">Replace</span>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="h-3 w-3 text-white/70" />
-                          <span className="text-[7px] mt-0.5 text-white/70">Logo</span>
-                        </>
-                      )}
-                    </div>
-                  </label>
-                  <input
-                    id="logo-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleLogoChange}
-                    className="hidden"
-                  />
-                  <div className="text-center mt-0.5">
-                    <Button
-                      type="button"
-                      variant="link"
-                      onClick={onOpenBrandKitPanel}
-                      disabled={!onOpenBrandKitPanel}
-                      className="p-0 text-[7px] text-blue-400 h-auto hover:text-blue-300"
+            {/* Modern design count slider */}
+            <div className="space-y-2">
+              <div className="bg-white/10 backdrop-blur-md shadow-lg rounded-md border border-white/10 px-3 py-2.5">
+                <Slider
+                  value={[parseInt(designCount)]}
+                  min={1}
+                  max={4}
+                  step={1}
+                  onValueChange={(values) => {
+                    setDesignCount(values[0].toString());
+                  }}
+                  className="mb-3 mt-1"
+                />
+                <div className="flex justify-between">
+                  {[1, 2, 3, 4].map((num) => (
+                    <div 
+                      key={num}
+                      className={`flex flex-col items-center cursor-pointer transition-all duration-150 ${
+                        parseInt(designCount) === num 
+                          ? 'scale-105' 
+                          : 'opacity-60 hover:opacity-90'
+                      }`}
+                      onClick={() => setDesignCount(num.toString())}
                     >
-                      Brand Kit
-                    </Button>
-                  </div>
+                      <div 
+                        className={`w-3.5 h-3.5 rounded-[1px] flex items-center justify-center text-[7px] font-medium ${
+                          parseInt(designCount) === num 
+                            ? 'bg-indigo-500 text-white shadow-sm' 
+                            : 'bg-white/10 text-white/70 border border-white/10'
+                        }`}
+                      >
+                        {num}
+                      </div>
+                      <span className="text-[6px] text-white/70 mt-0.5">
+                        {num === 1 ? 'Design' : 'Designs'}
+                      </span>
+                    </div>
+                  ))}
                 </div>
                 
-                {/* Multiple Images Preview for Carousel Mode */}
-                {createCarousel && multipleImagePreviews.length > 0 && (
-                  <div className="col-span-2 mt-1 border-t border-white/10 pt-1">
-                    <p className="text-[7px] text-white/90 mb-1">Carousel Images:</p>
-                    <div className="flex flex-wrap gap-1">
-                      {multipleImagePreviews.map((preview, index) => (
-                        <div 
-                          key={index}
-                          className="relative w-7 h-7 bg-white/5 border border-white/10 rounded-[1px] overflow-hidden"
-                        >
-                          <img 
-                            src={preview} 
-                            alt={`Image ${index + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                          <div className="absolute bottom-0 right-0 text-[6px] px-0.5 bg-black/50 text-white">
-                            {index + 1}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {/* Carousel Toggle with Glass Morphism */}
+                {/* Carousel Toggle */}
                 <div className="mt-3 border-t border-white/10 pt-2">
-                  <div className="bg-black/25 backdrop-blur-lg rounded-md border border-white/10 p-1.5 shadow-sm hover:bg-black/30 transition-all duration-200">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="carousel-toggle" className="text-[9px] text-white/90 flex items-center gap-1 cursor-pointer">
-                        <span className="h-3 w-3 rounded-full bg-indigo-500/30 flex items-center justify-center">
-                          <svg width="8" height="8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M8 5L15 12L8 19" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        </span>
-                        Create Carousel
-                      </Label>
-                      <Switch
-                        id="carousel-toggle"
-                        checked={createCarousel}
-                        onCheckedChange={setCreateCarousel}
-                        className="data-[state=checked]:bg-indigo-500/80 data-[state=checked]:backdrop-blur-md data-[state=checked]:border-indigo-400/30 data-[state=unchecked]:bg-white/10 border border-white/20 shadow-inner h-4 w-7"
-                      />
-                    </div>
-                    <p className="text-[7px] text-white/70 mt-1 ml-4">
-                      Generate designs with consistent style
-                    </p>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="carousel-toggle" className="text-[9px] text-white/80 flex items-center gap-1">
+                      Create Carousel
+                    </Label>
+                    <Switch
+                      id="carousel-toggle"
+                      checked={createCarousel}
+                      onCheckedChange={setCreateCarousel}
+                      className="data-[state=checked]:bg-indigo-500"
+                    />
                   </div>
-                
+                  <p className="text-[7px] text-white/60 mt-0.5">
+                    Generate designs with consistent style
+                  </p>
+                  
                   {/* Additional info for carousel mode */}
                   {createCarousel && (
                     <div className="mt-2 p-1.5 rounded-sm bg-indigo-900/20 border border-indigo-500/20">
@@ -876,34 +876,32 @@ export default function AiFlyerFormCompact({
         <div className="mt-auto mb-0">
           <Button
             type="submit"
-            className="w-full h-6 bg-white/10 backdrop-blur-md shadow-lg hover:bg-indigo-500/20 hover:border-indigo-400/30 transition-all duration-200 border border-white/20 text-white rounded-md text-[9px] font-medium"
+            className="w-full h-6 bg-white/10 backdrop-blur-md shadow-lg hover:bg-white/15 border-white/10 text-white rounded-md text-[9px] font-medium"
             disabled={isGenerating || (!prompt && !selectedTemplate)}
           >
             {isGenerating ? (
               <>
-                <div className="flex items-center">
-                  <svg
-                    className="animate-spin -ml-1 mr-1.5 h-2.5 w-2.5 text-white/90"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-90"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  <span className="text-white/90">Generating<span className="animate-pulse">...</span></span>
-                </div>
+                <svg
+                  className="animate-spin -ml-1 mr-1.5 h-2.5 w-2.5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                <span>Generating...</span>
               </>
             ) : (
               <>
