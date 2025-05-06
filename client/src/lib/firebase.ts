@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signInAnonymously } from "firebase/auth";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -142,5 +142,36 @@ export const getCurrentUserIdToken = async () => {
   } catch (error) {
     console.error("Error getting user ID token:", error);
     return null;
+  }
+};
+
+// Sign in anonymously - this doesn't require domain validation
+export const signInAnonymouslyWithFallback = async () => {
+  try {
+    console.log("Starting anonymous sign-in...");
+    const userCredential = await signInAnonymously(auth);
+    const user = userCredential.user;
+    
+    console.log("Anonymous auth successful, user ID:", user.uid);
+    
+    // Get ID token for backend authentication
+    const idToken = await user.getIdToken();
+    console.log("Anonymous ID token available:", !!idToken);
+    
+    return {
+      success: true,
+      user,
+      idToken,
+      anonymous: true
+    };
+  } catch (error: any) {
+    console.error("Anonymous sign-in error:", error);
+    return {
+      success: false,
+      error: {
+        code: error.code,
+        message: error.message
+      }
+    };
   }
 };

@@ -4,7 +4,8 @@ import {
   auth, 
   googleProvider,
   signInWithGoogle,
-  handleRedirectResult 
+  handleRedirectResult,
+  signInAnonymouslyWithFallback
 } from '@/lib/firebase';
 import { signOut, onAuthStateChanged } from 'firebase/auth';
 import type { User as FirebaseUser } from 'firebase/auth';
@@ -130,7 +131,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, [toast]);
 
-  // Google Sign-in with Popup (updated implementation)
+  // Google Sign-in with anonymous fallback
   const signInWithGoogleAuth = async () => {
     try {
       setIsLoading(true);
@@ -148,35 +149,77 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         });
         
         // Note: The auth state listener will handle the user state update
-      } else if (result.error) {
-        // Handle authentication errors
-        let errorMessage = 'Anmeldung mit Google fehlgeschlagen';
+        return;
+      } 
+      
+      // Handle authentication errors with Google
+      if (result.error) {
         const errorCode = result.error.code;
         
-        if (errorCode === 'auth/popup-blocked') {
-          errorMessage = 'Das Login-Popup wurde blockiert. Bitte erlauben Sie Popups für diese Seite.';
-        } else if (errorCode === 'auth/popup-closed-by-user') {
-          errorMessage = 'Der Login-Vorgang wurde abgebrochen.';
-        } else if (errorCode === 'auth/unauthorized-domain') {
-          errorMessage = 'Authentifizierungsproblem: Diese Domain muss in der Firebase-Konsole autorisiert werden.';
-          console.error('Domain nicht autorisiert:', window.location.origin, 'Bitte in Firebase-Konsole hinzufügen');
-        } else if (errorCode) {
-          errorMessage = `Authentifizierungsfehler: ${errorCode}`;
+        // For domain-related errors, fall back to anonymous auth
+        if (errorCode === 'auth/unauthorized-domain') {
+          console.log('Domain nicht autorisiert. Versuche anonyme Anmeldung als Fallback...');
+          
+          // Try anonymous sign-in as fallback
+          const anonResult = await signInAnonymouslyWithFallback();
+          
+          if (anonResult.success) {
+            toast({
+              title: 'Als Gast angemeldet',
+              description: 'Sie sind jetzt als Gast angemeldet. Einige Funktionen sind möglicherweise eingeschränkt.',
+            });
+            return;
+          } else {
+            // If anonymous auth also fails, show error
+            toast({
+              title: 'Anmeldung fehlgeschlagen',
+              description: 'Sowohl Google-Anmeldung als auch Gast-Anmeldung fehlgeschlagen.',
+              variant: 'destructive',
+            });
+          }
+        } else {
+          // For other errors, show appropriate message
+          let errorMessage = 'Anmeldung mit Google fehlgeschlagen';
+          
+          if (errorCode === 'auth/popup-blocked') {
+            errorMessage = 'Das Login-Popup wurde blockiert. Bitte erlauben Sie Popups für diese Seite.';
+          } else if (errorCode === 'auth/popup-closed-by-user') {
+            errorMessage = 'Der Login-Vorgang wurde abgebrochen.';
+          } else if (errorCode) {
+            errorMessage = `Authentifizierungsfehler: ${errorCode}`;
+          }
+          
+          toast({
+            title: 'Anmeldung fehlgeschlagen',
+            description: errorMessage,
+            variant: 'destructive',
+          });
         }
+      }
+    } catch (error: any) {
+      console.error('Authentication error:', error);
+      
+      // Try anonymous sign-in as fallback for any error
+      console.log('Versuche anonyme Anmeldung als Fallback nach Fehler...');
+      
+      try {
+        const anonResult = await signInAnonymouslyWithFallback();
         
+        if (anonResult.success) {
+          toast({
+            title: 'Als Gast angemeldet',
+            description: 'Sie sind jetzt als Gast angemeldet. Einige Funktionen sind möglicherweise eingeschränkt.',
+          });
+          return;
+        }
+      } catch (anonError) {
+        console.error('Anonymous sign-in fallback error:', anonError);
         toast({
           title: 'Anmeldung fehlgeschlagen',
-          description: errorMessage,
+          description: 'Keine Anmeldemethode verfügbar. Bitte versuchen Sie es später erneut.',
           variant: 'destructive',
         });
       }
-    } catch (error: any) {
-      console.error('Google sign-in error:', error);
-      toast({
-        title: 'Anmeldung fehlgeschlagen',
-        description: error.message || 'Ein unbekannter Fehler ist aufgetreten',
-        variant: 'destructive',
-      });
     } finally {
       setIsLoading(false);
     }
