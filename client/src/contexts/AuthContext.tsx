@@ -135,91 +135,84 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithGoogleAuth = async () => {
     try {
       setIsLoading(true);
-      console.log('Starting Google sign-in with popup...');
+      console.log('Versuche direkte Backend-Anmeldung ohne Firebase...');
       
-      // Use the imported signInWithGoogle function from our firebase.ts
-      // This will open a popup for Google authentication
-      const result = await signInWithGoogle();
+      // Import the api client
+      const { api } = await import('../lib/api');
       
-      if (result.success && result.user) {
-        // Show success notification
-        toast({
-          title: 'Login erfolgreich',
-          description: 'Sie sind jetzt mit Google angemeldet.',
-        });
+      try {
+        // Create a random UID if needed
+        const tempUid = 'temp_' + Math.random().toString(36).substring(2, 10);
         
-        // Note: The auth state listener will handle the user state update
-        return;
-      } 
-      
-      // Handle authentication errors with Google
-      if (result.error) {
-        const errorCode = result.error.code;
+        // Call our backend directly to create an anonymous session
+        const userData = await api.post('/api/auth/firebase', {
+          uid: tempUid,
+          email: null,
+          displayName: 'Gast Benutzer',
+        }, { includeAuth: false }); // Don't include auth headers since we're not authenticated yet
         
-        // For domain-related errors, fall back to anonymous auth
-        if (errorCode === 'auth/unauthorized-domain') {
-          console.log('Domain nicht autorisiert. Versuche anonyme Anmeldung als Fallback...');
+        console.log('Backend-Anmeldung erfolgreich:', userData);
+        
+        // Set user in state directly since we're not using Firebase auth state
+        if (userData) {
+          setUser({
+            uid: userData.firebase_uid || tempUid,
+            email: null,
+            displayName: 'Gast Benutzer'
+          });
           
-          // Try anonymous sign-in as fallback
+          toast({
+            title: 'Als Gast angemeldet',
+            description: 'Sie sind jetzt als Gast angemeldet.',
+          });
+        }
+        
+        return;
+      } catch (apiError) {
+        console.error('Backend-Anmeldung fehlgeschlagen:', apiError);
+        
+        // If direct backend auth fails, try Google auth as a fallback
+        console.log('Versuche Google-Anmeldung als Fallback...');
+        
+        // Try Google sign-in
+        const result = await signInWithGoogle();
+        
+        if (result.success && result.user) {
+          toast({
+            title: 'Login erfolgreich',
+            description: 'Sie sind jetzt mit Google angemeldet.',
+          });
+          return;
+        }
+        
+        // Handle Google auth errors with anonymous fallback
+        if (result.error) {
+          console.log('Google-Anmeldung fehlgeschlagen. Versuche anonyme Anmeldung...');
           const anonResult = await signInAnonymouslyWithFallback();
           
           if (anonResult.success) {
             toast({
               title: 'Als Gast angemeldet',
-              description: 'Sie sind jetzt als Gast angemeldet. Einige Funktionen sind möglicherweise eingeschränkt.',
+              description: 'Sie sind jetzt als Gast angemeldet.',
             });
             return;
-          } else {
-            // If anonymous auth also fails, show error
-            toast({
-              title: 'Anmeldung fehlgeschlagen',
-              description: 'Sowohl Google-Anmeldung als auch Gast-Anmeldung fehlgeschlagen.',
-              variant: 'destructive',
-            });
-          }
-        } else {
-          // For other errors, show appropriate message
-          let errorMessage = 'Anmeldung mit Google fehlgeschlagen';
+          } 
           
-          if (errorCode === 'auth/popup-blocked') {
-            errorMessage = 'Das Login-Popup wurde blockiert. Bitte erlauben Sie Popups für diese Seite.';
-          } else if (errorCode === 'auth/popup-closed-by-user') {
-            errorMessage = 'Der Login-Vorgang wurde abgebrochen.';
-          } else if (errorCode) {
-            errorMessage = `Authentifizierungsfehler: ${errorCode}`;
-          }
-          
+          // If all auth methods fail
           toast({
             title: 'Anmeldung fehlgeschlagen',
-            description: errorMessage,
+            description: 'Keine Anmeldemethode verfügbar.',
             variant: 'destructive',
           });
         }
       }
     } catch (error: any) {
-      console.error('Authentication error:', error);
-      
-      // Try anonymous sign-in as fallback for any error
-      console.log('Versuche anonyme Anmeldung als Fallback nach Fehler...');
-      
-      try {
-        const anonResult = await signInAnonymouslyWithFallback();
-        
-        if (anonResult.success) {
-          toast({
-            title: 'Als Gast angemeldet',
-            description: 'Sie sind jetzt als Gast angemeldet. Einige Funktionen sind möglicherweise eingeschränkt.',
-          });
-          return;
-        }
-      } catch (anonError) {
-        console.error('Anonymous sign-in fallback error:', anonError);
-        toast({
-          title: 'Anmeldung fehlgeschlagen',
-          description: 'Keine Anmeldemethode verfügbar. Bitte versuchen Sie es später erneut.',
-          variant: 'destructive',
-        });
-      }
+      console.error('Allgemeiner Authentifizierungsfehler:', error);
+      toast({
+        title: 'Anmeldung fehlgeschlagen',
+        description: 'Es gab ein Problem bei der Anmeldung.',
+        variant: 'destructive',
+      });
     } finally {
       setIsLoading(false);
     }
