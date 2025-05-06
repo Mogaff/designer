@@ -122,6 +122,7 @@ export function registerCompetitorAdRoutes(app: any) {
         screenshots: string[];
         sampleData?: any[];
         ads?: any[];
+        debugInfo?: any;
       }
       
       // Build detailed diagnostic response
@@ -159,6 +160,44 @@ export function registerCompetitorAdRoutes(app: any) {
         
         diagnosticResponse.message = `No ads found for ${advertiserQuery}. This suggests that the scraper is being blocked or the selectors need to be updated.`;
         diagnosticResponse.ads = [];
+        
+        // Look for screenshot files that might contain helpful debugging information
+        try {
+          const fs = require('fs');
+          // Check if screenshots are available
+          if (screenshots.length > 0) {
+            diagnosticResponse.debugInfo = "Check the screenshots for visual cues on what might be wrong.";
+          } else {
+            // Read text content from the webpage for debugging
+            const htmlContentPath = './temp/google-ads-page-source.txt';
+            try {
+              // Save the current page HTML for debugging
+              const htmlContent = await fs.promises.readFile(htmlContentPath, 'utf8');
+              const contentPreview = htmlContent.substring(0, 500) + '...';
+              diagnosticResponse.debugInfo = {
+                htmlContentPreview: contentPreview,
+                possibleIssues: [
+                  "Google may be detecting the automation",
+                  "Page structure might have changed",
+                  "IP address may be rate limited or blocked",
+                  "CAPTCHA or verification challenge may be present"
+                ]
+              };
+            } catch (readError) {
+              diagnosticResponse.debugInfo = {
+                note: "No HTML content available for debugging",
+                possibleIssues: [
+                  "Google may be detecting the automation",
+                  "Page structure might have changed",
+                  "IP address may be rate limited or blocked",
+                  "CAPTCHA or verification challenge may be present"
+                ]
+              };
+            }
+          }
+        } catch (debugError) {
+          console.error(`[GoogleAdsDiagnostic] Error getting debug info: ${debugError}`);
+        }
         
         return res.json(diagnosticResponse);
       }

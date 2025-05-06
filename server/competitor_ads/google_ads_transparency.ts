@@ -34,10 +34,60 @@ interface ScrapingOptions {
 
 /**
  * Scrape ads for a specific advertiser from Google's Ads Transparency Center
+ * Uses multiple attempts with different browser configurations
  */
 export async function scrapeGoogleAdsForAdvertiser(
   searchQuery: string,
   options: ScrapingOptions = {}
+): Promise<any[]> {
+  // Implement a retry mechanism with different browser configurations
+  // This helps overcome detection by rotating browser settings
+  const MAX_ATTEMPTS = 2; // Number of attempts to try before giving up
+  
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    console.log(`[GoogleAdsScraper] Attempt ${attempt}/${MAX_ATTEMPTS} for query: ${searchQuery}`);
+    
+    try {
+      // Try with different browser settings per attempt
+      const result = await scrapeGoogleAdsWithConfiguration(searchQuery, options, attempt);
+      
+      // If we found results, return them
+      if (result && result.length > 0) {
+        console.log(`[GoogleAdsScraper] Success on attempt ${attempt}! Found ${result.length} ads`);
+        return result;
+      }
+      
+      console.log(`[GoogleAdsScraper] Attempt ${attempt} failed, no ads found`);
+      
+      // Wait a bit between attempts to avoid triggering rate limits
+      if (attempt < MAX_ATTEMPTS) {
+        const waitTime = 5000 + Math.random() * 3000;
+        console.log(`[GoogleAdsScraper] Waiting ${Math.round(waitTime/1000)} seconds before next attempt`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
+    } catch (error) {
+      console.error(`[GoogleAdsScraper] Error in attempt ${attempt}: ${error}`);
+      
+      // Wait longer if we hit an error
+      if (attempt < MAX_ATTEMPTS) {
+        const waitTime = 8000 + Math.random() * 4000;
+        console.log(`[GoogleAdsScraper] Error encountered, waiting ${Math.round(waitTime/1000)} seconds before retry`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
+    }
+  }
+  
+  console.log(`[GoogleAdsScraper] All ${MAX_ATTEMPTS} attempts failed for ${searchQuery}`);
+  return []; // Return empty array if all attempts failed
+}
+
+/**
+ * Inner implementation of the scraper with specific browser configuration
+ */
+async function scrapeGoogleAdsWithConfiguration(
+  searchQuery: string,
+  options: ScrapingOptions = {},
+  attemptNumber: number = 1
 ): Promise<any[]> {
   const region = options.region || 'US';
   const maxAds = options.maxAds || 10; // Reduced from 20 to 10 for faster processing
@@ -59,7 +109,7 @@ export async function scrapeGoogleAdsForAdvertiser(
     // Use non-headless mode for better success (though with headless=false on Replit, it still works "headlessly")
     // This helps to evade some bot detection systems
     browser = await puppeteer.launch({
-      headless: false, // Non-headless mode often has higher success rate against bot detection
+      headless: true, // Use headless mode for Replit environment
       executablePath: '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium',
       args: [
         '--no-sandbox',
@@ -82,10 +132,33 @@ export async function scrapeGoogleAdsForAdvertiser(
         '--accept-lang=en-US,en;q=0.9',
         // Needed for Replit's environment
         '--no-zygote',
-        '--single-process' // More stable in limited environments
+        '--single-process', // More stable in limited environments
+        // Advanced anti-detection flags
+        '--disable-web-security',
+        '--disable-site-isolation-trials',
+        '--ignore-certificate-errors',
+        '--enable-features=NetworkService',
+        '--allow-running-insecure-content',
+        '--disable-popup-blocking',
+        // Make the browser appear more random and natural
+        '--disable-reading-from-canvas',
+        '--disable-features=site-per-process,TranslateUI',
+        '--disable-breakpad',
+        '--disable-component-extensions-with-background-pages',
+        '--metrics-recording-only',
+        '--mute-audio',
+        '--no-pings'
       ],
       timeout: options.timeout || 60000,
-      defaultViewport: null, // Let the browser control viewport - more natural
+      defaultViewport: {
+        width: 1920,
+        height: 1080,
+        deviceScaleFactor: 1,
+        isMobile: false,
+        hasTouch: false,
+        isLandscape: true
+      },
+      ignoreHTTPSErrors: true,
     });
     
     console.log('[GoogleAdsScraper] Browser launched successfully with evasion configuration');
@@ -463,6 +536,37 @@ export async function scrapeGoogleAdsForAdvertiser(
           fullPage: true 
         });
         console.log(`[GoogleAdsScraper] Screenshot saved to ${screenshotPath}`);
+        
+        // Also save the HTML content for advanced debugging
+        try {
+          const htmlContent = await page.content();
+          const htmlContentPath = './temp/google-ads-page-source.txt';
+          await fs.promises.writeFile(htmlContentPath, htmlContent);
+          console.log(`[GoogleAdsScraper] HTML content saved to ${htmlContentPath}`);
+          
+          // Look for specific patterns in the HTML that might indicate issues
+          if (htmlContent.includes('recaptcha') || htmlContent.includes('captcha')) {
+            console.log(`[GoogleAdsScraper] CAPTCHA detected in page HTML`);
+          }
+          
+          if (htmlContent.includes('unusual activity') || htmlContent.includes('suspicious')) {
+            console.log(`[GoogleAdsScraper] Security warnings detected in page HTML`);
+          }
+          
+          if (htmlContent.includes('blocked') || htmlContent.includes('limit')) {
+            console.log(`[GoogleAdsScraper] Possible rate limiting detected in page HTML`);
+          }
+          
+          // Search for JSON data in the page
+          const jsonDataCount = (htmlContent.match(/\{[\s\S]*?"ads"[\s\S]*?\}/g) || []).length;
+          if (jsonDataCount > 0) {
+            console.log(`[GoogleAdsScraper] Found ${jsonDataCount} potential JSON data blocks with ads in HTML`);
+          } else {
+            console.log(`[GoogleAdsScraper] No potential JSON data blocks found in HTML`);
+          }
+        } catch (htmlError) {
+          console.error(`[GoogleAdsScraper] Failed to save HTML content: ${htmlError}`);
+        }
       } catch (error) {
         console.error(`[GoogleAdsScraper] Failed to save screenshot: ${error}`);
       }
@@ -729,6 +833,47 @@ export async function scrapeGoogleAdsForAdvertiser(
           if (pageData.divContents.length > 0) {
             console.log(`[GoogleAdsScraper] Found ${pageData.divContents.length} content divs, will attempt generic extraction`);
             
+            // Try a direct "view page source" approach to extract all data from HTML
+            // Many websites have the data embedded in JSON format
+            try {
+              const htmlContent = await page.content();
+              const jsonDataMatches = htmlContent.match(/\{[\s\S]*?"ads"[\s\S]*?\}/g);
+              
+              if (jsonDataMatches && jsonDataMatches.length > 0) {
+                console.log(`[GoogleAdsScraper] Found ${jsonDataMatches.length} potential JSON data blocks in the HTML`);
+                
+                for (const jsonData of jsonDataMatches) {
+                  try {
+                    const parsedData = JSON.parse(jsonData);
+                    if (parsedData.ads && Array.isArray(parsedData.ads) && parsedData.ads.length > 0) {
+                      console.log(`[GoogleAdsScraper] Successfully extracted ${parsedData.ads.length} ads from embedded JSON`);
+                      
+                      // Transform the JSON data to our format
+                      const extractedAds = parsedData.ads.map((ad: any, index: number) => {
+                        return {
+                          brand: ad.advertiser || ad.brand || searchQuery,
+                          headline: ad.headline || ad.title || null,
+                          body: ad.description || ad.body || ad.text || null,
+                          imageUrl: ad.imageUrl || ad.image || null,
+                          cta: ad.callToAction || ad.cta || null,
+                          adId: ad.id || `json-extracted-${index}-${Date.now()}`,
+                          platformDetails: ad.platform || ad.type || null
+                        };
+                      });
+                      
+                      return extractedAds;
+                    }
+                  } catch (parseError) {
+                    console.log(`[GoogleAdsScraper] Failed to parse JSON data: ${parseError}`);
+                    // Continue to next match
+                  }
+                }
+              }
+            } catch (jsonExtractionError) {
+              console.log(`[GoogleAdsScraper] Error extracting JSON data: ${jsonExtractionError}`);
+            }
+            
+            // If JSON extraction failed, fall back to visual content extraction
             // Try to find likely ad content elements by looking for content patterns
             try {
               // This custom extraction runs when standard selectors fail
