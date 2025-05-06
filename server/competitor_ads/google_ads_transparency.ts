@@ -34,8 +34,10 @@ interface ScrapingOptions {
  * Scrape ads for a specific advertiser from Google's Ads Transparency Center
  */
 export async function scrapeGoogleAdsForAdvertiser(
-  advertiser: string,
-  options: ScrapingOptions = {}
+  searchQuery: string,
+  options: ScrapingOptions & {
+    searchType?: 'brand' | 'keyword' | 'industry';
+  } = {}
 ): Promise<any[]> {
   const region = options.region || 'US';
   const maxAds = options.maxAds || 20;
@@ -72,15 +74,19 @@ export async function scrapeGoogleAdsForAdvertiser(
     
     // Dieser Teil wird übersprungen, da wir direkt zur Anzeigenseite gehen
     
-    // Prüfen, ob wir eine ID oder einen Namen haben
-    let advertiserPageUrl = '';
-    if (advertiser.startsWith('AR')) {
-      // Das ist bereits eine ID - direkt verwenden
-      advertiserPageUrl = `${GOOGLE_ADS_TRANSPARENCY_URL}/advertiser/${advertiser}?region=${region}`;
+    // Handle different search types
+    let searchUrl = '';
+    const searchRegion = options.region || 'US';
+    
+    if (options.searchType === 'brand') {
+      // Direct brand search
+      searchUrl = `${GOOGLE_ADS_TRANSPARENCY_URL}/advertiser/${encodeURIComponent(searchQuery)}?region=${searchRegion}`;
     } else {
-      // Das ist ein Name - normale URL verwenden
-      advertiserPageUrl = `${GOOGLE_ADS_TRANSPARENCY_URL}/advertiser/${encodeURIComponent(advertiser)}?region=${region}`;
+      // For keyword and industry searches, use the search endpoint
+      searchUrl = `${GOOGLE_ADS_TRANSPARENCY_URL}/search?q=${encodeURIComponent(searchQuery)}&region=${searchRegion}`;
     }
+    
+    const advertiserPageUrl = searchUrl;
     console.log(`Navigating to advertiser page: ${advertiserPageUrl}`);
     
     try {
