@@ -461,15 +461,24 @@ export async function searchGoogleAds(query: string, options: {
           maxAds: options.maxAds || 10
         });
         
-        // Save the ads to the database
-        const savedAds = await saveGoogleAds(
+        // Für Testzwecke: Anstatt in der Datenbank zu speichern, direkt transformieren 
+        // und die Objekte ohne Datenbank-Speicherung zurückgeben
+        const transformedAds = transformGoogleAds(
           googleAds, 
           options.userId,
           options.queryType === 'industry' ? query : undefined
         );
         
-        // Add the saved ads to our result array
-        allAds.push(...savedAds);
+        // Transformierte Ads in Ergebnisliste aufnehmen
+        // Wir konvertieren die InsertCompetitorAd zu CompetitorAd, indem wir id und timestamps hinzufügen
+        const fakeDbAds = transformedAds.map((ad, index) => ({
+          ...ad,
+          id: index + 1000, // Fake IDs für Test
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }));
+        
+        allAds.push(...fakeDbAds);
         
       } catch (error) {
         console.error(`Error fetching ads for advertiser "${advertiser}":`, error);
