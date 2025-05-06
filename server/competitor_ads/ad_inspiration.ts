@@ -54,16 +54,32 @@ export async function searchCompetitorAds(
     
     try {
       // Check if FireCrawl is configured - this is now our preferred search method
-      if (isFireCrawlConfigured()) {
+      const isFireCrawlEnabled = isFireCrawlConfigured();
+      
+      if (isFireCrawlEnabled) {
         console.log('Searching FireCrawl API...');
         try {
-          const fireCrawlAds = await searchFireCrawlAds(query, {
+          // Create a timeout promise that rejects after 20 seconds
+          const timeoutPromise = new Promise<Partial<CompetitorAd>[]>((_, reject) => {
+            setTimeout(() => {
+              console.log('FireCrawl API search timed out after 20 seconds');
+              reject(new Error('FireCrawl API search timed out after 20 seconds'));
+            }, 20000);
+          });
+          
+          console.log(`Starting FireCrawl search for ${queryType}: "${query}"`);
+          
+          // Start the actual FireCrawl search
+          const searchPromise = searchFireCrawlAds(query, {
             queryType,
             userId: options.userId,
             limit: options.limit || 20,
             region: options.region || 'US',
             platforms: options.platforms
           });
+          
+          // Race the search against the timeout
+          const fireCrawlAds = await Promise.race([searchPromise, timeoutPromise]);
           
           // Store the ads in the database for future reference
           for (const ad of fireCrawlAds) {

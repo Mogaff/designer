@@ -72,8 +72,8 @@ export async function searchFireCrawlAds(query: string, options: {
               'Authorization': `Bearer ${FIRECRAWL_API_KEY}`,
               'Content-Type': 'application/json'
             },
-            // Set a reasonable timeout
-            timeout: 5000
+            // Set a longer timeout for Replit's environment
+            timeout: 10000
           });
     
           if (response.status === 200) {
