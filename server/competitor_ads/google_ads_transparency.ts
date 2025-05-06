@@ -99,15 +99,24 @@ export async function scrapeGoogleAdsForAdvertiser(
     const searchRegion = options.region || 'US';
     
     if (options.searchType === 'brand') {
-      // Direct brand search
-      searchUrl = `${GOOGLE_ADS_TRANSPARENCY_URL}/advertiser/${encodeURIComponent(searchQuery)}?region=${searchRegion}`;
+      // For brand searches, try direct advertiser URL
+      // Check if it's an AR ID first
+      if (searchQuery.startsWith('AR')) {
+        searchUrl = `${GOOGLE_ADS_TRANSPARENCY_URL}/advertiser/${encodeURIComponent(searchQuery)}?region=${searchRegion}`;
+        console.log(`[GoogleAdsScraper] Using direct AR ID URL: ${searchUrl}`);
+      } else {
+        // For brands without AR ID, use search instead for better results
+        searchUrl = `${GOOGLE_ADS_TRANSPARENCY_URL}/search?q=${encodeURIComponent(searchQuery)}&region=${searchRegion}`;
+        console.log(`[GoogleAdsScraper] Using search URL for brand: ${searchUrl}`);
+      }
     } else {
       // For keyword and industry searches, use the search endpoint
       searchUrl = `${GOOGLE_ADS_TRANSPARENCY_URL}/search?q=${encodeURIComponent(searchQuery)}&region=${searchRegion}`;
+      console.log(`[GoogleAdsScraper] Using search URL: ${searchUrl}`);
     }
     
     const advertiserPageUrl = searchUrl;
-    console.log(`Navigating to advertiser page: ${advertiserPageUrl}`);
+    console.log(`[GoogleAdsScraper] Navigating to page: ${advertiserPageUrl}`);
     
     try {
       // Set user agent to appear more like a regular browser

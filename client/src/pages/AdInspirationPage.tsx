@@ -172,10 +172,17 @@ export default function AdInspirationPage() {
         throw new Error('Search query is required');
       }
       
+      console.log("Searching for competitor ads:", searchQuery, searchType);
+      
       return await apiRequest<SearchResults>(
-        'GET', 
-        `/api/ad-inspiration/search?query=${encodeURIComponent(searchQuery)}&queryType=${searchType}&platforms=${platforms.join(',')}&limit=20`,
-        null
+        'POST', 
+        '/api/ad-inspiration/search',
+        { 
+          query: searchQuery,
+          searchType: searchType,
+          platforms: platforms,
+          limit: 20
+        }
       );
     },
     onSuccess: (data) => {
