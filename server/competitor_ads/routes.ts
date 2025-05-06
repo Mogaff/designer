@@ -12,6 +12,7 @@ import {
   generateStyleDescription,
   getAdInspiration
 } from './ad_inspiration';
+import { scrapeGoogleAdsForAdvertiser } from './google_ads_transparency';
 import { db } from '../db';
 import { competitorAds } from '@shared/schema';
 import { eq, sql } from 'drizzle-orm';
@@ -21,45 +22,122 @@ import Anthropic from '@anthropic-ai/sdk';
  * Register competitor ad inspiration API routes
  */
 export function registerCompetitorAdRoutes(app: any) {
-  // Search for competitor ads
+  // Diagnostic endpoint to test Google Ads Transparency Center scraping
+  app.get('/api/ad-inspiration/diagnostic/google', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // Only allow for authenticated users
+      const userId = (req.user as any)?.id;
+      if (!userId) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+      
+      console.log('[GoogleAdsDiagnostic] Running diagnostic test...');
+      
+      // Test with a known advertiser that should have ads
+      const testAdvertiser = 'AR18054737239162880'; // Google's advertiser ID
+      
+      // Run the scraper with detailed logging
+      console.log(`[GoogleAdsDiagnostic] Testing scraper with advertiser: ${testAdvertiser}`);
+      
+      const startTime = Date.now();
+      const scrapingResult = await scrapeGoogleAdsForAdvertiser(testAdvertiser, {
+        region: 'US',
+        maxAds: 3,
+        searchType: 'brand',
+        timeout: 40000 // Longer timeout for diagnostic
+      });
+      const endTime = Date.now();
+      
+      console.log(`[GoogleAdsDiagnostic] Scraping completed in ${endTime - startTime}ms`);
+      console.log(`[GoogleAdsDiagnostic] Found ${scrapingResult.length} ads`);
+      
+      // Return diagnostic information
+      return res.status(200).json({
+        success: true,
+        testAdvertiser,
+        executionTimeMs: endTime - startTime,
+        adsFound: scrapingResult.length,
+        sampleData: scrapingResult.slice(0, 1), // Just return the first ad as sample
+        timeStamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('[GoogleAdsDiagnostic] Error in diagnostic test:', error);
+      
+      return res.status(500).json({
+        success: false,
+        error: 'Google Ads scraper diagnostic failed',
+        details: (error as Error).message,
+        stack: (error as Error).stack,
+        timeStamp: new Date().toISOString()
+      });
+    }
+  });
+  // Search for competitor ads with improved error handling
   app.post('/api/ad-inspiration/search', isAuthenticated, async (req: Request, res: Response) => {
     try {
-    const { query, searchType, region } = req.body;
-    
-    if (!query) {
-      return res.status(400).json({ error: 'Search query is required' });
-    }
-
-    if (!searchType || !['brand', 'keyword', 'industry'].includes(searchType)) {
-      return res.status(400).json({ error: 'Valid search type is required' });
-    }
-
-    const userId = (req.user as any)?.id;
-    
-    const result = await searchCompetitorAds(
-      query,
-      searchType as 'brand' | 'keyword' | 'industry',
-      {
-        userId,
-        region: region || 'US',
-        limit: 20
+      // Log the request for debugging
+      console.log(`[AdInspirationAPI] Received search request:`, {
+        body: req.body,
+        user: (req.user as any)?.username || 'unknown',
+        userId: (req.user as any)?.id || 'unknown'
+      });
+      
+      const { query, searchType, platforms, region } = req.body;
+      
+      if (!query) {
+        console.log(`[AdInspirationAPI] Error: Missing search query`);
+        return res.status(400).json({ error: 'Search query is required' });
       }
-    );
 
-    return res.status(200).json({
-      success: true,
-      count: result.ads.length,
-      searchId: result.searchId,
-      ads: result.ads
-    });
+      if (!searchType || !['brand', 'keyword', 'industry'].includes(searchType)) {
+        console.log(`[AdInspirationAPI] Error: Invalid search type: ${searchType}`);
+        return res.status(400).json({ error: 'Valid search type is required: brand, keyword, or industry' });
+      }
+
+      const userId = (req.user as any)?.id;
+      
+      if (!userId) {
+        console.log(`[AdInspirationAPI] Error: Unauthenticated request`);
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+      
+      console.log(`[AdInspirationAPI] Starting search for "${query}" (type: ${searchType}) by user ${userId}`);
+      
+      // Execute search with platforms filtering
+      const result = await searchCompetitorAds(
+        query,
+        searchType as 'brand' | 'keyword' | 'industry',
+        {
+          userId,
+          platforms: platforms || ['meta', 'google'],
+          region: region || 'US',
+          limit: 20
+        }
+      );
+
+      console.log(`[AdInspirationAPI] Search complete for "${query}". Found ${result.ads.length} ads. SearchId: ${result.searchId}`);
+      
+      // Return successful response in clean JSON format
+      return res.status(200).json({
+        success: true,
+        count: result.ads.length,
+        searchId: result.searchId,
+        ads: result.ads
+      });
     
-  } catch (error) {
-    console.error('Error searching ads:', error);
-    return res.status(500).json({ 
-      error: 'Failed to search ads',
-      details: (error as Error).message 
-    });
-  }
+    } catch (error) {
+      console.error('[AdInspirationAPI] Error searching ads:', error);
+      // Log details for troubleshooting
+      if (error instanceof Error) {
+        console.error('[AdInspirationAPI] Error stack:', error.stack);
+      }
+      
+      return res.status(500).json({ 
+        error: 'Failed to search ads',
+        details: (error as Error).message 
+      });
+    }
   });
 
   // Get ad inspiration search results  

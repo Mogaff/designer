@@ -174,19 +174,37 @@ export default function AdInspirationPage() {
       
       console.log("Searching for competitor ads:", searchQuery, searchType);
       
-      return await apiRequest<SearchResults>(
-        'POST', 
-        '/api/ad-inspiration/search',
-        { 
+      try {
+        // Add more detailed request logging
+        console.log("Making POST request to /api/ad-inspiration/search with data:", { 
           query: searchQuery,
           searchType: searchType,
           platforms: platforms,
           limit: 20
-        }
-      );
+        });
+        
+        // Make the request with improved error handling
+        const result = await apiRequest<SearchResults>(
+          'POST', 
+          '/api/ad-inspiration/search',
+          { 
+            query: searchQuery,
+            searchType: searchType,
+            platforms: platforms,
+            limit: 20
+          }
+        );
+        
+        console.log("Search request successful, received data:", result);
+        return result;
+      } catch (error) {
+        console.error("Search request failed with error:", error);
+        // Rethrow to let the mutation error handler deal with it
+        throw error;
+      }
     },
     onSuccess: (data) => {
-      if (data.ads && data.ads.length > 0) {
+      if (data && data.ads && data.ads.length > 0) {
         toast({
           title: 'Search complete',
           description: `Found ${data.ads.length} competitor ads matching "${searchQuery}"`,
@@ -200,11 +218,36 @@ export default function AdInspirationPage() {
       }
     },
     onError: (error) => {
-      toast({
-        title: 'Search failed',
-        description: `Error searching for competitor ads: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        variant: 'destructive',
-      });
+      console.error("Search mutation error:", error);
+      
+      // More specific error handling based on error type
+      if (error instanceof Error) {
+        if (error.message.includes('401') || error.message.includes('unauthorized')) {
+          toast({
+            title: 'Authentication error',
+            description: 'You need to be logged in to search for ads. Please log in and try again.',
+            variant: 'destructive',
+          });
+        } else if (error.message.includes('500')) {
+          toast({
+            title: 'Server error',
+            description: 'The server encountered an error. Please try again later.',
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: 'Search failed',
+            description: `Error searching for competitor ads: ${error.message}`,
+            variant: 'destructive',
+          });
+        }
+      } else {
+        toast({
+          title: 'Search failed',
+          description: 'An unknown error occurred while searching for ads',
+          variant: 'destructive',
+        });
+      }
     }
   });
   
