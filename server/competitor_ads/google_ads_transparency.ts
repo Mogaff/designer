@@ -69,29 +69,39 @@ export async function scrapeGoogleAdsForAdvertiser(
   }
 
   try {
-    // Configure HTTP request to the internal API endpoint
+    // Generate random values for cookies to avoid detection
+    const randomVisitorId = Math.random().toString(36).substring(2, 15);
+    const randomGaId = Math.floor(Math.random() * 1000000000);
+    const timestamp = Math.floor(Date.now()/1000);
+    
+    // Configure HTTP request to better emulate a real browser
     const headers = {
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-      'Accept': 'application/json',
-      'Accept-Language': 'en-US,en;q=0.9',
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+      'Accept': '*/*',
+      'Accept-Language': 'en-US,en;q=0.9,de;q=0.8',
       'Content-Type': 'application/json',
       'Origin': GOOGLE_ADS_TRANSPARENCY_URL,
       'Referer': `${GOOGLE_ADS_TRANSPARENCY_URL}/advertiser/${advertiserId}?region=${region}`,
+      'Sec-Ch-Ua': '"Google Chrome";v="125", "Chromium";v="125", "Not.A/Brand";v="24"',
+      'Sec-Ch-Ua-Mobile': '?0',
+      'Sec-Ch-Ua-Platform': '"Windows"',
       'Sec-Fetch-Dest': 'empty',
       'Sec-Fetch-Mode': 'cors',
       'Sec-Fetch-Site': 'same-origin',
-      'X-Requested-With': 'XMLHttpRequest'
+      'X-Requested-With': 'XMLHttpRequest',
+      'Cookie': `VISITOR_INFO1_LIVE=${randomVisitorId}; _ga=GA1.1.${randomGaId}.${timestamp}`
     };
     
-    // Construct the specific API request
-    // This directly accesses the internal JSON API that the frontend uses
-    const url = `${GOOGLE_ADS_API_URL}/ads?advertiserId=${advertiserId}&region=${region}`;
-    console.log(`Fetching ads from internal API: ${url}`);
+    // Try the newer internal API endpoint format first
+    // This appears to be the newer format used by the transparency center
+    const url = `${GOOGLE_ADS_API_URL}/advertisers.ads?advertiser=${advertiserId}&region=${region}&hl=en-US&f.type=ALL&f.since=ALL_TIME`;
+    console.log(`Fetching ads from internal API (newer format): ${url}`);
     
-    // Execute API request
+    // Execute API request with improved options
     const response = await axios.get(url, {
       headers,
       timeout: timeout,
+      maxRedirects: 5, // Follow redirects if needed
     });
     
     // Check if we got a valid JSON response
@@ -469,14 +479,37 @@ export async function searchGoogleAds(query: string, options: {
           options.queryType === 'industry' ? query : undefined
         );
         
-        // Transformierte Ads in Ergebnisliste aufnehmen
-        // Wir konvertieren die InsertCompetitorAd zu CompetitorAd, indem wir id und timestamps hinzufügen
-        const fakeDbAds = transformedAds.map((ad, index) => ({
-          ...ad,
-          id: index + 1000, // Fake IDs für Test
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }));
+        // Erzeugen von CompetitorAd Objekten ohne Datenbank-Speicherung
+        // Wichtig: Alle erforderlichen Eigenschaften müssen richtig typisiert sein
+        const fakeDbAds = transformedAds.map((ad, index) => {
+          // Konvertiere zu CompetitorAd mit korrekten Typen und stelle sicher, dass alle
+          // erforderlichen Felder mit den richtigen Typen vorhanden sind
+          const competitorAd: CompetitorAd = {
+            id: index + 1000, // Fake IDs für Test
+            platform: ad.platform,
+            brand: ad.brand,
+            headline: ad.headline ?? null,
+            body: ad.body ?? null,
+            image_url: ad.image_url ?? null,
+            thumbnail_url: ad.thumbnail_url ?? null,
+            cta: ad.cta ?? null,
+            start_date: ad.start_date ?? null,
+            platform_details: ad.platform_details ?? null,
+            ad_id: ad.ad_id ?? "",
+            page_id: ad.page_id ?? "",
+            snapshot_url: ad.snapshot_url ?? "",
+            fetched_by_user_id: ad.fetched_by_user_id ?? null,
+            industry: ad.industry ?? null,
+            tags: ad.tags ?? [],
+            is_active: ad.is_active ?? true,
+            style_description: ad.style_description ?? null,
+            metadata: ad.metadata ?? {},
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+          
+          return competitorAd;
+        });
         
         allAds.push(...fakeDbAds);
         
