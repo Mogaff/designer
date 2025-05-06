@@ -177,32 +177,22 @@ export default function Settings() {
                 <CardHeader>
                   <CardTitle className="text-white">Google Custom Search API Settings</CardTitle>
                   <CardDescription className="text-white/70">
-                    These settings are required for the Ad Inspiration feature to search for Google ads without using browser automation.
-                    Follow these steps:
+                    Configure the Ad Inspiration feature to search for competitor ads using Google Custom Search API.
+                    Server-side OAuth authentication has been implemented, so you only need to provide a Custom Search Engine ID.
                   </CardDescription>
                   <div className="mt-3 text-xs text-white/70 space-y-1">
-                    <p>1. Create a Google Cloud project at <a href="https://console.cloud.google.com" target="_blank" className="text-blue-400 hover:underline">Google Cloud Console</a></p>
-                    <p>2. Enable the "Custom Search API" in the Google Cloud Console</p>
-                    <p>3. Create an API key in the Credentials section</p>
-                    <p>4. Create a Custom Search Engine at <a href="https://programmablesearchengine.google.com/cse/all" target="_blank" className="text-blue-400 hover:underline">Programmable Search Engine</a></p>
-                    <p>5. Get your Search Engine ID (look for "cx" parameter)</p>
-                    <p>6. Enter both values below and save</p>
+                    <p>1. Create a Custom Search Engine at <a href="https://programmablesearchengine.google.com/cse/all" target="_blank" className="text-blue-400 hover:underline">Programmable Search Engine</a></p>
+                    <p>2. Configure it to search the entire web</p>
+                    <p>3. Get your Search Engine ID (look for "cx" parameter)</p>
+                    <p>4. Enter your CSE ID below and save</p>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-sm text-white/70">Google API Key</label>
-                    <Input
-                      type="password"
-                      value={googleApiKey}
-                      onChange={(e) => setGoogleApiKey(e.target.value)}
-                      placeholder="Enter your Google API Key"
-                      className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
-                    />
-                    <p className="text-xs text-white/50">
-                      Create a key in the <a href="https://console.cloud.google.com/apis/credentials" target="_blank" className="text-blue-400 hover:underline">Google Cloud Console</a>
-                    </p>
-                  </div>
+                  {googleSearchStatusQuery.isSuccess && googleSearchStatusQuery.data?.oauthConfigured && (
+                    <div className="p-2 bg-green-500/20 border border-green-500/30 rounded text-sm text-white">
+                      ✓ Google OAuth is configured on the server
+                    </div>
+                  )}
                   
                   <div className="space-y-2">
                     <label className="text-sm text-white/70">Custom Search Engine ID</label>
@@ -217,7 +207,7 @@ export default function Settings() {
                     </p>
                   </div>
                   
-                  {googleSearchStatusQuery.isSuccess && (googleSearchStatusQuery.data as any)?.configured && (
+                  {googleSearchStatusQuery.isSuccess && googleSearchStatusQuery.data?.configured && (
                     <div className="mt-2 p-2 bg-green-500/20 border border-green-500/30 rounded text-sm text-white">
                       ✓ Google Custom Search API is configured
                     </div>
