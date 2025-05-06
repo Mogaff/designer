@@ -855,7 +855,13 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
   // Firebase Authentication - create or update user from Firebase
   app.post("/api/auth/firebase", async (req: Request, res: Response) => {
     try {
+      // Log the headers to debug
+      console.log("Request headers:", req.headers);
+      
       const { uid, email, displayName } = req.body;
+      
+      // Log the Firebase auth details
+      console.log("Firebase auth details:", { uid, email, displayName });
       
       if (!uid) {
         return res.status(400).json({ message: "Firebase UID is required" });
@@ -863,13 +869,20 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
       
       // Check if user already exists by firebase_uid
       let user = await storage.getUserByFirebaseUid(uid);
+      console.log("User from Firebase UID lookup:", user ? user.id : "Not found");
       
       if (user) {
         // User exists, login
         req.login(user, (loginErr) => {
           if (loginErr) {
+            console.error("Login error:", loginErr);
             return res.status(500).json({ message: "Login failed" });
           }
+          console.log("User logged in successfully:", user!.id);
+          
+          // Log session to debug
+          console.log("Session after login:", req.session);
+          
           return res.json({
             id: user!.id,
             username: user!.username,
@@ -879,6 +892,7 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
       } else {
         // User doesn't exist, create new user
         const username = email ? email.split('@')[0] : `user_${Date.now()}`;
+        console.log("Creating new user with username:", username);
         
         const newUser = await storage.createUser({
           username,
@@ -888,11 +902,19 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
           display_name: displayName || username
         });
         
+        console.log("New user created:", newUser.id);
+        
         // Log in the new user
         req.login(newUser, (loginErr) => {
           if (loginErr) {
+            console.error("Login error after user creation:", loginErr);
             return res.status(500).json({ message: "Login failed after user creation" });
           }
+          console.log("New user logged in successfully");
+          
+          // Log session to debug
+          console.log("Session after new user login:", req.session);
+          
           return res.status(201).json({
             id: newUser.id,
             username: newUser.username,

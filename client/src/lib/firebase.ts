@@ -26,6 +26,8 @@ export const signInWithGoogle = () => {
 export const handleRedirectResult = async () => {
   try {
     const result = await getRedirectResult(auth);
+    console.log("Firebase redirect result:", result ? "Success" : "No result");
+    
     if (result) {
       // Get the Google access token
       const credential = GoogleAuthProvider.credentialFromResult(result);
@@ -34,15 +36,25 @@ export const handleRedirectResult = async () => {
       // Get the user info
       const user = result.user;
       
+      // Log success data
+      console.log("Auth successful for user:", user.email);
+      console.log("User ID:", user.uid);
+      
+      // Get ID token for backend authentication
+      const idToken = await user.getIdToken();
+      console.log("ID token available:", !!idToken);
+      
       // Return user data
       return {
         success: true,
         user,
-        token
+        token,
+        idToken
       };
     }
     return { success: false, message: "No redirect result" };
   } catch (error: any) {
+    console.error("Firebase redirect error:", error);
     return {
       success: false,
       error: {

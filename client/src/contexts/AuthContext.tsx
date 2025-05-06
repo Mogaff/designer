@@ -46,11 +46,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Function to sync Firebase user with our backend
   const syncUserWithBackend = async (fbUser: FirebaseUser) => {
     try {
+      // Get the user's Firebase ID token for authentication
+      const idToken = await fbUser.getIdToken();
+      console.log("Syncing user with backend. ID token available:", !!idToken);
+      
       // Send Firebase user data to our backend
       const response = await fetch('/api/auth/firebase', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}` // Add the ID token in the Authorization header
         },
         body: JSON.stringify({
           uid: fbUser.uid,
@@ -62,8 +67,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       if (!response.ok) {
         console.error('Failed to sync user with backend:', await response.text());
+        // Show complete error details
+        const responseText = await response.text();
+        console.error(`Response status: ${response.status}, Response text: ${responseText}`);
       } else {
         console.log('User synced with backend successfully');
+        const userData = await response.json();
+        console.log('User data from backend:', userData);
       }
     } catch (error) {
       console.error('Error syncing user with backend:', error);
