@@ -15,22 +15,25 @@ import { apiRequest } from "@/lib/queryClient";
 export default function Settings() {
   const { fontSettings, setFontSettings, resetFontSettings } = useUserSettings();
   const [fonts, setFonts] = useState<FontSettings>(fontSettings);
-  const [googleApiKey, setGoogleApiKey] = useState('');
   const [googleCseId, setGoogleCseId] = useState('');
   const [activeTab, setActiveTab] = useState('fonts');
   const { toast } = useToast();
 
-  // Query to check if Google Search API is configured
-  const googleSearchStatusQuery = useQuery<{ configured: boolean }>({
+  // Query to check if Google Search API is configured with OAuth
+  const googleSearchStatusQuery = useQuery<{ 
+    configured: boolean;
+    oauthConfigured?: boolean;
+    cseIdConfigured?: boolean;
+    message?: string;
+  }>({
     queryKey: ['/api/ad-inspiration/google-search-status'],
     refetchOnWindowFocus: false,
   });
 
-  // Mutation for saving Google Search API settings
+  // Mutation for saving Google Search Engine ID settings (uses server-side OAuth)
   const saveGoogleSearchMutation = useMutation({
     mutationFn: async () => {
       return apiRequest('POST', '/api/ad-inspiration/configure-google-search', {
-        apiKey: googleApiKey,
         cseId: googleCseId
       });
     },
@@ -89,10 +92,10 @@ export default function Settings() {
   };
   
   const handleSaveGoogleSearchSettings = () => {
-    if (!googleApiKey || !googleCseId) {
+    if (!googleCseId) {
       toast({
         title: "Missing information",
-        description: "Please enter both Google API Key and Custom Search Engine ID.",
+        description: "Please enter your Custom Search Engine ID.",
         variant: "destructive",
       });
       return;

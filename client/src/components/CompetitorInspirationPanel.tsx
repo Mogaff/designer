@@ -40,18 +40,26 @@ export default function CompetitorInspirationPanel({
   const [results, setResults] = useState<AdSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedAds, setSelectedAds] = useState<number[]>([]);
-  const [googleApiConfigured, setGoogleApiConfigured] = useState<boolean | null>(null);
+  const [googleApiStatus, setGoogleApiStatus] = useState<{
+    configured: boolean;
+    oauthConfigured?: boolean;
+    cseIdConfigured?: boolean;
+    message?: string;
+  } | null>(null);
 
-  // Check if Google API is configured when component loads
+  // Check if Google Search API is configured when component loads
   useEffect(() => {
     const checkGoogleApiStatus = async () => {
       try {
         const response = await fetch('/api/ad-inspiration/google-search-status');
         const data = await response.json();
-        setGoogleApiConfigured(data.configured);
+        setGoogleApiStatus(data);
       } catch (error) {
-        console.error('Error checking Google API status:', error);
-        setGoogleApiConfigured(false);
+        console.error('Error checking Google Search API status:', error);
+        setGoogleApiStatus({
+          configured: false,
+          message: 'Error checking Google Search API status'
+        });
       }
     };
     
@@ -238,9 +246,11 @@ export default function CompetitorInspirationPanel({
           </form>
           
           {/* Google API warning */}
-          {googleApiConfigured === false && (
+          {googleApiStatus && !googleApiStatus.configured && (
             <div className="mb-1 p-1 text-[8px] text-amber-300 bg-amber-500/20 border border-amber-500/30 rounded">
-              <strong>Google API not configured.</strong> Some search results may be limited. 
+              <strong>Google Search API not fully configured.</strong>{' '}
+              {googleApiStatus.message || 'Some search results may be limited.'}
+              {googleApiStatus.cseIdConfigured === false && ' Custom Search Engine ID needed.'}
               <a href="/settings" className="underline ml-1">Configure in Settings</a>
             </div>
           )}
@@ -328,9 +338,11 @@ export default function CompetitorInspirationPanel({
           </p>
           
           {/* Google API warning for quick tab */}
-          {googleApiConfigured === false && (
+          {googleApiStatus && !googleApiStatus.configured && (
             <div className="mb-1 p-1 text-[8px] text-amber-300 bg-amber-500/20 border border-amber-500/30 rounded">
-              <strong>Google API not configured.</strong> Inspiration results may be limited. 
+              <strong>Google Search API not fully configured.</strong>{' '}
+              {googleApiStatus.message || 'Inspiration results may be limited.'}
+              {googleApiStatus.cseIdConfigured === false && ' Custom Search Engine ID needed.'}
               <a href="/settings" className="underline ml-1">Configure in Settings</a>
             </div>
           )}
