@@ -4,7 +4,6 @@ import { setupVite, serveStatic, log } from "./vite";
 import session from "express-session";
 import passport from "./auth";
 import MemoryStore from "memorystore";
-import { checkAllApiKeys } from "./api_keys";
 
 const app = express();
 // Increase JSON payload limit to 50MB to accommodate large image data
@@ -65,10 +64,6 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Check all API keys before starting the server
-  log('Checking API keys for AdBurst Factory...');
-  await checkAllApiKeys();
-  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
