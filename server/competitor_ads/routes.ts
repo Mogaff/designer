@@ -12,7 +12,6 @@ import {
   generateStyleDescription,
   getAdInspiration
 } from './ad_inspiration';
-import { scrapeGoogleAdsForAdvertiser } from './google_ads_transparency';
 import { db } from '../db';
 import { competitorAds } from '@shared/schema';
 import { eq, sql } from 'drizzle-orm';
@@ -22,346 +21,45 @@ import Anthropic from '@anthropic-ai/sdk';
  * Register competitor ad inspiration API routes
  */
 export function registerCompetitorAdRoutes(app: any) {
-  // Route to serve the diagnostic viewer HTML page
-  app.get('/google-ads-diagnostic', (req: Request, res: Response) => {
-    const path = require('path');
-    res.sendFile(path.join(__dirname, 'diagnostic-viewer.html'));
-  });
-  
-  // Route to serve files from the temp directory
-  app.get('/temp/:filename', (req: Request, res: Response) => {
-    const fs = require('fs');
-    const path = require('path');
-    
-    const filename = req.params.filename;
-    const filePath = path.join('./temp', filename);
-    
-    // Basic security check to prevent directory traversal
-    if (filename.includes('..') || !filename) {
-      return res.status(400).send('Invalid filename');
-    }
-    
-    // Check if file exists
-    if (fs.existsSync(filePath)) {
-      return res.sendFile(path.resolve(filePath));
-    } else {
-      return res.status(404).send('File not found');
-    }
-  });
-  
-  // Route to list files in the temp directory
-  app.get('/temp', (req: Request, res: Response) => {
-    const fs = require('fs');
-    
-    try {
-      if (fs.existsSync('./temp')) {
-        const files = fs.readdirSync('./temp');
-        return res.json({ files });
-      } else {
-        return res.json({ files: [] });
-      }
-    } catch (error) {
-      console.error('Error listing temp directory:', error);
-      return res.status(500).json({ error: 'Failed to list temp directory' });
-    }
-  });
-  // Diagnostic endpoint to test Google Ads Transparency Center scraping
-  app.get('/api/ad-inspiration/diagnostic/google', async (req: Request, res: Response) => {
-    // Get optional query parameters 
-    const advertiserQuery = req.query.advertiser as string || 'AR18054737239162880'; // Default to Google's advertiser ID
-    const region = req.query.region as string || 'US';
-    const maxAds = parseInt(req.query.maxAds as string || '3');
-    const searchTypeParam = req.query.searchType as string || 'brand';
-    const timeoutParam = parseInt(req.query.timeout as string || '45000');
-    
-    // Set a longer timeout to prevent long-running requests
-    let timeoutHandle: NodeJS.Timeout | null = setTimeout(() => {
-      console.log(`[GoogleAdsDiagnostic] Diagnostic test timed out after ${timeoutParam/1000} seconds`);
-      timeoutHandle = null;
-      res.status(504).json({
-        success: false,
-        error: `Diagnostic test timed out after ${timeoutParam/1000} seconds`,
-        query: {
-          advertiser: advertiserQuery,
-          region,
-          maxAds,
-          searchType: searchTypeParam,
-          timeout: timeoutParam
-        },
-        timeStamp: new Date().toISOString()
-      });
-    }, timeoutParam + 5000); // Add 5 seconds to the timeout to ensure proper cleanup
-    
-    try {
-      // Allow non-authenticated access for easier testing
-      console.log(`[GoogleAdsDiagnostic] Diagnostic test requested by IP: ${req.ip}`);
-      console.log(`[GoogleAdsDiagnostic] Parameters: advertiser=${advertiserQuery}, region=${region}, searchType=${searchTypeParam}, maxAds=${maxAds}, timeout=${timeoutParam}ms`);
-      
-      console.log('[GoogleAdsDiagnostic] Running diagnostic test...');
-      
-      // Create temp directory for screenshots if it doesn't exist
-      try {
-        const fs = require('fs').promises;
-        await fs.mkdir('./temp', { recursive: true });
-        console.log('[GoogleAdsDiagnostic] Temp directory created or already exists');
-      } catch (dirError) {
-        console.error(`[GoogleAdsDiagnostic] Error creating temp directory: ${dirError}`);
-      }
-      
-      // Run the scraper with detailed logging
-      console.log(`[GoogleAdsDiagnostic] Testing scraper with advertiser: ${advertiserQuery}`);
-      
-      const startTime = Date.now();
-      const scrapingResult = await scrapeGoogleAdsForAdvertiser(advertiserQuery, {
-        region,
-        maxAds,
-        searchType: searchTypeParam as 'brand' | 'keyword' | 'industry',
-        timeout: timeoutParam
-      });
-      const endTime = Date.now();
-      
-      // Track performance metrics
-      const scrapingDuration = (endTime - startTime) / 1000;
-      
-      // Find any screenshots that were created during the scraping
-      let screenshots = [];
-      try {
-        const fs = require('fs');
-        const files = await fs.promises.readdir('./temp');
-        screenshots = files
-          .filter((file: string) => file.startsWith('google-ads-') && file.endsWith('.png'))
-          .map((file: string) => `/temp/${file}`);
-        console.log(`[GoogleAdsDiagnostic] Found ${screenshots.length} screenshots`);
-      } catch (readError) {
-        console.error(`[GoogleAdsDiagnostic] Error reading temp directory: ${readError}`);
-      }
-      
-      // Clear timeout since we're responding
-      if (timeoutHandle) {
-        clearTimeout(timeoutHandle);
-        timeoutHandle = null;
-      }
-      
-      // Define the response type with proper TypeScript interface
-      interface DiagnosticResponse {
-        success: boolean;
-        query: {
-          advertiser: string;
-          region: string;
-          maxAds: number;
-          searchType: string;
-        };
-        message?: string;
-        duration: number;
-        adCount: number;
-        timeStamp: string;
-        environment: {
-          nodeVersion: string;
-          platform: string;
-          arch: string;
-          chromiumPath: string;
-        };
-        googleUrl: string;
-        screenshots: string[];
-        sampleData?: any[];
-        ads?: any[];
-        debugInfo?: any;
-      }
-      
-      // Build detailed diagnostic response
-      const diagnosticResponse: DiagnosticResponse = {
-        success: scrapingResult && scrapingResult.length > 0,
-        query: {
-          advertiser: advertiserQuery,
-          region,
-          maxAds,
-          searchType: searchTypeParam
-        },
-        duration: scrapingDuration,
-        adCount: scrapingResult.length,
-        timeStamp: new Date().toISOString(),
-        environment: {
-          nodeVersion: process.version,
-          platform: process.platform,
-          arch: process.arch,
-          chromiumPath: '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium',
-        },
-        googleUrl: `https://adstransparency.google.com/advertiser/${advertiserQuery}?region=${region}`,
-        screenshots
-      };
-      
-      if (scrapingResult && scrapingResult.length > 0) {
-        console.log(`[GoogleAdsDiagnostic] Success! Found ${scrapingResult.length} ads in ${scrapingDuration.toFixed(2)} seconds`);
-        
-        // Include the first ad as a sample in the response if we found any
-        diagnosticResponse.message = `Found ${scrapingResult.length} ads for ${advertiserQuery}`;
-        diagnosticResponse.sampleData = scrapingResult.slice(0, 1);
-        
-        return res.json(diagnosticResponse);
-      } else {
-        console.log(`[GoogleAdsDiagnostic] Failed to find any ads in ${scrapingDuration.toFixed(2)} seconds`);
-        
-        diagnosticResponse.message = `No ads found for ${advertiserQuery}. This suggests that the scraper is being blocked or the selectors need to be updated.`;
-        diagnosticResponse.ads = [];
-        
-        // Look for screenshot files that might contain helpful debugging information
-        try {
-          const fs = require('fs');
-          // Check if screenshots are available
-          if (screenshots.length > 0) {
-            diagnosticResponse.debugInfo = "Check the screenshots for visual cues on what might be wrong.";
-          } else {
-            // Read text content from the webpage for debugging
-            const htmlContentPath = './temp/google-ads-page-source.txt';
-            try {
-              // Save the current page HTML for debugging
-              const htmlContent = await fs.promises.readFile(htmlContentPath, 'utf8');
-              const contentPreview = htmlContent.substring(0, 500) + '...';
-              diagnosticResponse.debugInfo = {
-                htmlContentPreview: contentPreview,
-                possibleIssues: [
-                  "Google may be detecting the automation",
-                  "Page structure might have changed",
-                  "IP address may be rate limited or blocked",
-                  "CAPTCHA or verification challenge may be present"
-                ]
-              };
-            } catch (readError) {
-              diagnosticResponse.debugInfo = {
-                note: "No HTML content available for debugging",
-                possibleIssues: [
-                  "Google may be detecting the automation",
-                  "Page structure might have changed",
-                  "IP address may be rate limited or blocked",
-                  "CAPTCHA or verification challenge may be present"
-                ]
-              };
-            }
-          }
-        } catch (debugError) {
-          console.error(`[GoogleAdsDiagnostic] Error getting debug info: ${debugError}`);
-        }
-        
-        return res.json(diagnosticResponse);
-      }
-    } catch (error) {
-      console.error(`[GoogleAdsDiagnostic] Error running diagnostic: ${error}`);
-      
-      // Clear the timeout since we're responding with an error
-      if (timeoutHandle) {
-        clearTimeout(timeoutHandle);
-        timeoutHandle = null;
-      }
-      
-      return res.status(500).json({
-        success: false,
-        error: `Diagnostic test failed: ${(error as Error).message}`,
-        details: {
-          message: (error as Error).message,
-          stack: (error as Error).stack,
-        },
-        query: {
-          advertiser: advertiserQuery,
-          region,
-          maxAds,
-          searchType: searchTypeParam,
-          timeout: timeoutParam
-        },
-        timeStamp: new Date().toISOString()
-      });
-    }
-  });
-  // Search for competitor ads with improved error handling
+  // Search for competitor ads
   app.post('/api/ad-inspiration/search', isAuthenticated, async (req: Request, res: Response) => {
-    // Declare the timeout handle at the top level of the function
-    let searchTimeoutHandle: NodeJS.Timeout | null = null;
-    
     try {
-      // Log the request for debugging
-      console.log(`[AdInspirationAPI] Received search request:`, {
-        body: req.body,
-        user: (req.user as any)?.username || 'unknown',
-        userId: (req.user as any)?.id || 'unknown'
-      });
-      
-      // Set timeout to prevent long-running requests
-      searchTimeoutHandle = setTimeout(() => {
-        console.log(`[AdInspirationAPI] Search timed out after 40 seconds`);
-        searchTimeoutHandle = null;
-        res.status(504).json({
-          error: 'Search timed out after 40 seconds',
-          details: 'The search operation took too long to complete. Please try a different search term or try again later.',
-          timeStamp: new Date().toISOString()
-        });
-      }, 40000); // 40 second timeout
-      
-      const { query, searchType, platforms, region } = req.body;
-      
-      if (!query) {
-        console.log(`[AdInspirationAPI] Error: Missing search query`);
-        return res.status(400).json({ error: 'Search query is required' });
-      }
-
-      if (!searchType || !['brand', 'keyword', 'industry'].includes(searchType)) {
-        console.log(`[AdInspirationAPI] Error: Invalid search type: ${searchType}`);
-        return res.status(400).json({ error: 'Valid search type is required: brand, keyword, or industry' });
-      }
-
-      const userId = (req.user as any)?.id;
-      
-      if (!userId) {
-        console.log(`[AdInspirationAPI] Error: Unauthenticated request`);
-        return res.status(401).json({ error: 'Authentication required' });
-      }
-      
-      console.log(`[AdInspirationAPI] Starting search for "${query}" (type: ${searchType}) by user ${userId}`);
-      
-      // Execute search with platforms filtering
-      const result = await searchCompetitorAds(
-        query,
-        searchType as 'brand' | 'keyword' | 'industry',
-        {
-          userId,
-          platforms: platforms || ['meta', 'google'],
-          region: region || 'US',
-          limit: 20
-        }
-      );
-
-      console.log(`[AdInspirationAPI] Search complete for "${query}". Found ${result.ads.length} ads. SearchId: ${result.searchId}`);
-      
-      // Clear the timeout since we're responding successfully
-      if (searchTimeoutHandle) {
-        clearTimeout(searchTimeoutHandle);
-        searchTimeoutHandle = null;
-      }
-      
-      // Return successful response in clean JSON format
-      return res.status(200).json({
-        success: true,
-        count: result.ads.length,
-        searchId: result.searchId,
-        ads: result.ads
-      });
+    const { query, searchType, region } = req.body;
     
-    } catch (error) {
-      console.error('[AdInspirationAPI] Error searching ads:', error);
-      // Log details for troubleshooting
-      if (error instanceof Error) {
-        console.error('[AdInspirationAPI] Error stack:', error.stack);
-      }
-      
-      // Clear the timeout since we're responding with an error
-      if (searchTimeoutHandle) {
-        clearTimeout(searchTimeoutHandle);
-        searchTimeoutHandle = null;
-      }
-      
-      return res.status(500).json({ 
-        error: 'Failed to search ads',
-        details: (error as Error).message 
-      });
+    if (!query) {
+      return res.status(400).json({ error: 'Search query is required' });
     }
+
+    if (!searchType || !['brand', 'keyword', 'industry'].includes(searchType)) {
+      return res.status(400).json({ error: 'Valid search type is required' });
+    }
+
+    const userId = (req.user as any)?.id;
+    
+    const result = await searchCompetitorAds(
+      query,
+      searchType as 'brand' | 'keyword' | 'industry',
+      {
+        userId,
+        region: region || 'US',
+        limit: 20
+      }
+    );
+
+    return res.status(200).json({
+      success: true,
+      count: result.ads.length,
+      searchId: result.searchId,
+      ads: result.ads
+    });
+    
+  } catch (error) {
+    console.error('Error searching ads:', error);
+    return res.status(500).json({ 
+      error: 'Failed to search ads',
+      details: (error as Error).message 
+    });
+  }
   });
 
   // Get ad inspiration search results  
