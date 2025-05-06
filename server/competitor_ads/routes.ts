@@ -42,20 +42,27 @@ export function registerCompetitorAdRoutes(app: any) {
         region: 'US',
         maxAds: 3,
         searchType: 'brand',
-        timeout: 40000 // Longer timeout for diagnostic
+        timeout: 15000 // Shorter timeout for diagnostic
       });
       const endTime = Date.now();
       
       console.log(`[GoogleAdsDiagnostic] Scraping completed in ${endTime - startTime}ms`);
       console.log(`[GoogleAdsDiagnostic] Found ${scrapingResult.length} ads`);
       
-      // Return diagnostic information
+      // Return diagnostic information with more details
       return res.status(200).json({
         success: true,
         testAdvertiser,
         executionTimeMs: endTime - startTime,
         adsFound: scrapingResult.length,
         sampleData: scrapingResult.slice(0, 1), // Just return the first ad as sample
+        chromiumPath: '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium',
+        environment: {
+          nodeVersion: process.version,
+          platform: process.platform,
+          arch: process.arch
+        },
+        googleUrl: `https://adstransparency.google.com/advertiser/${testAdvertiser}?region=US`,
         timeStamp: new Date().toISOString()
       });
       

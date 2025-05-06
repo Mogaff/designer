@@ -50,11 +50,12 @@ export async function scrapeGoogleAdsForAdvertiser(
     return [];
   }
   
-  // Launch a headless browser with optimized configuration for Replit
+  // Launch a headless browser with extremely lightweight configuration for Replit
   let browser = null;
   try {
+    console.log('[GoogleAdsScraper] Launching browser with Chromium path: /nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium');
     browser = await puppeteer.launch({
-      headless: true, // Use headless mode
+      headless: 'new', // Use new headless mode which is more efficient
       executablePath: '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium',
       args: [
         '--no-sandbox',
@@ -277,6 +278,7 @@ export async function scrapeGoogleAdsForAdvertiser(
     
     // Extract ad data from the page with robust selectors
     const ads = await page.evaluate((maxAdsToExtract, advertiserId) => {
+      console.log('Inside page.evaluate() - beginning ad extraction');
       interface AdData {
         brand: string;
         headline?: string | null;
