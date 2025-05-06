@@ -7,6 +7,7 @@ import puppeteer from 'puppeteer-core';
 import { CompetitorAd, InsertCompetitorAd } from '@shared/schema';
 import { db } from '../db';
 import { competitorAds } from '@shared/schema';
+import fs from 'fs';
 
 // Google Ads Transparency Center URL
 const GOOGLE_ADS_TRANSPARENCY_URL = 'https://adstransparency.google.com';
@@ -50,35 +51,44 @@ export async function scrapeGoogleAdsForAdvertiser(
     return [];
   }
   
-  // Launch a headless browser with extremely lightweight configuration for Replit
+  // Launch a browser with better configuration to avoid detection
   let browser = null;
   try {
     console.log('[GoogleAdsScraper] Launching browser with Chromium path: /nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium');
+    
+    // Use non-headless mode for better success (though with headless=false on Replit, it still works "headlessly")
+    // This helps to evade some bot detection systems
     browser = await puppeteer.launch({
-      headless: true, // Use headless mode
+      headless: false, // Non-headless mode often has higher success rate against bot detection
       executablePath: '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium',
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox', 
         '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
+        '--disable-blink-features=AutomationControlled', // Hide automation flags
+        '--window-size=1920,1080',
+        '--start-maximized',
+        '--disable-notifications',
+        '--lang=en-US,en',
+        // Improved font rendering to look more like a real browser
+        '--font-render-hinting=medium',
+        // Add realistic browser flags
+        '--use-gl=egl',
+        '--disable-infobars',
+        '--disable-features=IsolateOrigins,site-per-process',
+        // Additional evasion flags
+        '--disable-extensions-except=',
+        '--user-agent-client-hint',
+        '--accept-lang=en-US,en;q=0.9',
+        // Needed for Replit's environment
         '--no-zygote',
-        '--disable-gpu',
-        '--disable-extensions',
-        '--disable-web-security',
-        '--disable-features=site-per-process',
-        '--window-size=1920,1080', // Use larger window size for better rendering
-        '--mute-audio', // No audio needed
-        '--ignore-certificate-errors', // Ignore SSL errors
-        '--disable-notifications', // Disable notifications
-        '--disable-infobars'
+        '--single-process' // More stable in limited environments
       ],
-      timeout: options.timeout || 60000, // Use options timeout or default to 60 seconds
-      defaultViewport: { width: 1920, height: 1080 } // Larger viewport to see more content
+      timeout: options.timeout || 60000,
+      defaultViewport: null, // Let the browser control viewport - more natural
     });
     
-    console.log('[GoogleAdsScraper] Browser launched successfully');
+    console.log('[GoogleAdsScraper] Browser launched successfully with evasion configuration');
   } catch (error) {
     console.error('[GoogleAdsScraper] Failed to launch browser:', error);
     return [];
@@ -117,59 +127,211 @@ export async function scrapeGoogleAdsForAdvertiser(
     console.log(`[GoogleAdsScraper] Navigating to page: ${advertiserPageUrl}`);
     
     try {
-      // Set user agent to appear more like a regular browser
-      await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36');
+      // Advanced anti-detection setup
+      await page.evaluateOnNewDocument(() => {
+        // Overwrite the navigator properties to evade fingerprinting
+        Object.defineProperty(navigator, 'webdriver', {
+          get: () => false,
+        });
+        
+        // Overwrite the plugins array with fake data
+        Object.defineProperty(navigator, 'plugins', {
+          get: () => [
+            {
+              0: {
+                type: "application/pdf",
+                suffixes: "pdf",
+                description: "Portable Document Format",
+                enabledPlugin: true,
+              },
+              name: "Chrome PDF Plugin",
+              filename: "internal-pdf-viewer",
+              description: "Portable Document Format",
+              length: 1,
+            },
+            {
+              0: {
+                type: "application/pdf",
+                suffixes: "pdf",
+                description: "Portable Document Format",
+                enabledPlugin: true,
+              },
+              name: "Chrome PDF Viewer",
+              filename: "mhjfbmdgcfjbbpaeojofohoefgiehjai",
+              description: "Portable Document Format",
+              length: 1,
+            },
+            {
+              0: {
+                type: "application/x-nacl",
+                suffixes: "",
+                description: "Native Client Executable",
+                enabledPlugin: true,
+              },
+              name: "Native Client",
+              filename: "internal-nacl-plugin",
+              description: "Native Client Executable",
+              length: 1,
+            }
+          ],
+        });
+        
+        // Modify languages
+        Object.defineProperty(navigator, 'languages', {
+          get: () => ['en-US', 'en', 'de'],
+        });
+        
+        // Prevent detection via Chrome (Blink) rendering engine
+        // @ts-ignore - Chrome property doesn't exist in TypeScript definitions
+        window.chrome = {
+          runtime: {},
+          loadTimes: function() {},
+          csi: function() {},
+          app: {},
+        };
+        
+        // Create a fake notification permission
+        const originalQuery = window.Notification?.requestPermission;
+        if (window.Notification) {
+          window.Notification.requestPermission = function () {
+            return Promise.resolve('granted');
+          };
+        }
+        
+        // Hide automation flags (using any to avoid TypeScript errors)
+        const win = window as any;
+        if (win.cdc_adoQpoasnfa76pfcZLmcfl_Array) delete win.cdc_adoQpoasnfa76pfcZLmcfl_Array;
+        if (win.cdc_adoQpoasnfa76pfcZLmcfl_Promise) delete win.cdc_adoQpoasnfa76pfcZLmcfl_Promise;
+        if (win.cdc_adoQpoasnfa76pfcZLmcfl_Symbol) delete win.cdc_adoQpoasnfa76pfcZLmcfl_Symbol;
+      });
       
-      // Set extra HTTP headers
+      // Use a believable user agent
+      const userAgents = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 Edg/125.0.0.0',
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/124.0.6367.95 Mobile/15E148 Safari/604.1'
+      ];
+      
+      // Choose a random user agent
+      const randomUserAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
+      await page.setUserAgent(randomUserAgent);
+      console.log(`[GoogleAdsScraper] Using user agent: ${randomUserAgent}`);
+      
+      // Set realistic HTTP headers for a browser
       await page.setExtraHTTPHeaders({
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-        'Sec-Fetch-Site': 'same-origin',
+        'Accept-Language': 'en-US,en;q=0.9,de;q=0.8',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'Cache-Control': 'max-age=0',
+        'Connection': 'keep-alive',
+        'Sec-Fetch-Site': 'none',
         'Sec-Fetch-Mode': 'navigate',
         'Sec-Fetch-User': '?1',
         'Sec-Fetch-Dest': 'document',
-        'sec-ch-ua': '"Google Chrome";v="125", " Not A;Brand";v="99", "Chromium";v="125"',
-        'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': '"macOS"'
+        'Sec-Ch-Ua': '"Google Chrome";v="125", " Not A;Brand";v="99", "Chromium";v="125"',
+        'Sec-Ch-Ua-Mobile': '?0',
+        'Sec-Ch-Ua-Platform': '"macOS"',
+        'Upgrade-Insecure-Requests': '1',
+        'DNT': '1'
       });
       
-      console.log(`[GoogleAdsScraper] Navigating to ${advertiserPageUrl} with improved browser profile`);
+      console.log(`[GoogleAdsScraper] Enhanced browser fingerprint to avoid detection`);
+      console.log(`[GoogleAdsScraper] Navigating to ${advertiserPageUrl}`);
       
-      // Try multiple strategies to load the page
+      // First, visit Google homepage to establish a more natural browsing pattern
       try {
-        // First attempt with networkidle2 (wait for network to be idle)
+        await page.goto('https://www.google.com', { 
+          waitUntil: 'networkidle2',
+          timeout: 15000 
+        });
+        
+        // Wait a random amount of time to simulate human browsing
+        await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 2000));
+        
+        console.log('[GoogleAdsScraper] Successfully visited Google homepage as initial step');
+      } catch (error) {
+        console.log(`[GoogleAdsScraper] Initial Google homepage visit failed: ${error}`);
+        // Continue anyway
+      }
+      
+      // Now navigate to the actual target URL with improved error handling
+      try {
         await page.goto(advertiserPageUrl, { 
           waitUntil: 'networkidle2',
-          timeout: 30000 
+          timeout: 35000 
         });
-      } catch (error) {
-        console.log(`[GoogleAdsScraper] First navigation attempt failed: ${error}`);
         
-        // Second attempt with domcontentloaded (faster but less reliable)
+        console.log(`[GoogleAdsScraper] Successfully loaded page with networkidle2 strategy`);
+      } catch (error) {
+        console.log(`[GoogleAdsScraper] Primary navigation attempt failed: ${error}`);
+        
+        // Try with domcontentloaded as fallback
         try {
           await page.goto(advertiserPageUrl, { 
             waitUntil: 'domcontentloaded',
-            timeout: 20000 
+            timeout: 25000 
           });
           console.log(`[GoogleAdsScraper] Loaded with domcontentloaded strategy`);
           
-          // Give extra time for content to load
-          await new Promise(resolve => setTimeout(resolve, 10000));
+          // Simulate scrolling to trigger lazy loading content
+          await page.evaluate(() => {
+            window.scrollBy(0, 300);
+            setTimeout(() => window.scrollBy(0, 300), 500);
+            setTimeout(() => window.scrollBy(0, 300), 1000);
+            setTimeout(() => window.scrollTo(0, 0), 1500); // Back to top
+          });
+          
+          // Give more time for content to load after scrolling
+          await new Promise(resolve => setTimeout(resolve, 12000));
         } catch (error) {
-          console.log(`[GoogleAdsScraper] Second navigation attempt failed: ${error}`);
+          console.log(`[GoogleAdsScraper] Secondary navigation attempt failed: ${error}`);
           return [];
         }
       }
       
-      // Wait longer for the page to fully render and dynamic content to load
-      console.log(`[GoogleAdsScraper] Waiting for dynamic content to load...`);
-      await new Promise(resolve => setTimeout(resolve, 8000));
+      // Wait for dynamic content to load with human-like interactions
+      console.log(`[GoogleAdsScraper] Simulating human browsing behavior...`);
+      
+      // Small wait
+      await new Promise(resolve => setTimeout(resolve, 3000 + Math.random() * 2000));
+      
+      // Scroll down a bit to trigger lazy loading
+      await page.evaluate(() => {
+        const scrollAmount = 100 + Math.floor(Math.random() * 400);
+        window.scrollBy(0, scrollAmount);
+      });
+      
+      // Another small wait
+      await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 1500));
+      
+      // Scroll a bit more
+      await page.evaluate(() => {
+        const scrollAmount = 200 + Math.floor(Math.random() * 500);
+        window.scrollBy(0, scrollAmount);
+      });
+      
+      // Wait longer for any remaining dynamic content
+      console.log(`[GoogleAdsScraper] Waiting for dynamic content to fully load...`);
+      await new Promise(resolve => setTimeout(resolve, 10000));
       
       // Log the current URL to help with debugging
       console.log(`Current page URL: ${page.url()}`);
       
-      // Take a screenshot for debugging (disabled in production)
-      // await page.screenshot({ path: './temp/google-ads-page.png' });
+      // Take a screenshot for debugging
+      const screenshotPath = './temp/google-ads-page.png';
+      try {
+        // Create temp directory if it doesn't exist
+        await fs.promises.mkdir('./temp', { recursive: true });
+        
+        // Take screenshot
+        await page.screenshot({ 
+          path: screenshotPath,
+          fullPage: true 
+        });
+        console.log(`[GoogleAdsScraper] Screenshot saved to ${screenshotPath}`);
+      } catch (error) {
+        console.error(`[GoogleAdsScraper] Failed to save screenshot: ${error}`);
+      }
       
       // Check if ads were loaded - try different CSS selectors
       console.log(`[GoogleAdsScraper] Checking for ad elements on the page...`);
