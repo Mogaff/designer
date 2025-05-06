@@ -67,7 +67,8 @@ export function registerCompetitorAdRoutes(app: any) {
   // Search for competitor ads (GET route for client usage)
   app.get('/api/ad-inspiration/search', isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const query = req.query.query as string;
+      // Support both 'query' and 'q' parameters for flexibility
+      const query = (req.query.query || req.query.q) as string;
       const queryType = req.query.queryType as 'brand' | 'keyword' | 'industry';
       const platforms = req.query.platforms ? (req.query.platforms as string).split(',') : undefined;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
