@@ -298,10 +298,10 @@ export async function scrapeGoogleAdsForAdvertiser(
         // Generate a unique ad ID
         let adId = `google-${advertiserId}-${i}`;
         
-        // Versuche, eine eindeutige ID zu finden
-        const dataAttrNames = Array.from(card.attributes)
-          .filter(attr => attr.name.startsWith('data-'))
-          .map(attr => attr.name);
+        // Try to find a unique ID from data attributes
+        const dataAttrNames = Array.from(card.attributes || [])
+          .filter((attr: { name: string }) => attr.name.startsWith('data-'))
+          .map((attr: { name: string }) => attr.name);
           
         for (const attrName of dataAttrNames) {
           if (attrName.includes('id')) {
