@@ -128,11 +128,11 @@ export function transformGoogleAds(googleAds: GoogleAdData[], userId?: number, i
       industry: industry || null,
       tags: [],
       is_active: true,
-      metadata: {
+      metadata: JSON.stringify({
         lastSeen: ad.lastSeen,
         source: 'google_search_api',
         searchMethod: 'oauth'
-      }
+      })
     };
     
     return competitorAd;

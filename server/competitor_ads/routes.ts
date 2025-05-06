@@ -62,14 +62,9 @@ export function registerCompetitorAdRoutes(app: any) {
         return res.status(401).json({ error: 'User must be authenticated' });
       }
       
-      // Before starting a search, check if Google Search API is configured when platforms includes google
-      if ((!platforms || platforms.includes('google')) && !process.env.GOOGLE_API_KEY) {
-        console.warn('Google API key not configured for ad search');
-        // Remove 'google' from platforms if it exists
-        if (platforms && platforms.includes('google')) {
-          platforms = platforms.filter((p: string) => p !== 'google');
-        }
-      }
+      // Before starting a search, check if Google OAuth is configured when platforms includes google
+      // We'll make the check inside searchCompetitorAds function
+      // The server-side OAuth should work without user-provided API keys
       
       // Start the search
       const result = await searchCompetitorAds(
