@@ -43,7 +43,7 @@ export async function scrapeGoogleAdsForAdvertiser(
   const maxAds = options.maxAds || 20;
   const timeout = options.timeout || 30000; // 30 seconds
   
-  console.log(`Scraping Google Ads for advertiser: ${advertiser} in region: ${region}`);
+  console.log(`Scraping Google Ads for advertiser: ${searchQuery} in region: ${region}`);
   
   // Launch a headless browser
   const browser = await puppeteer.launch({
@@ -120,7 +120,7 @@ export async function scrapeGoogleAdsForAdvertiser(
       });
       
       if (!hasAds) {
-        console.log(`No ads found for advertiser: ${advertiser}`);
+        console.log(`No ads found for advertiser: ${searchQuery}`);
         return [];
       }
     } catch (error) {
@@ -289,11 +289,11 @@ export async function scrapeGoogleAdsForAdvertiser(
       return extractedAds;
     }, maxAds, advertiserId);
     
-    console.log(`Found ${ads.length} ads for advertiser: ${advertiser}`);
+    console.log(`Found ${ads.length} ads for advertiser: ${searchQuery}`);
     return ads;
     
   } catch (error) {
-    console.error(`Error scraping Google Ads for advertiser: ${advertiser}`, error);
+    console.error(`Error scraping Google Ads for advertiser: ${searchQuery}`, error);
     throw new Error(`Failed to scrape Google Ads Transparency Center: ${(error as Error).message}`);
   } finally {
     await browser.close();
