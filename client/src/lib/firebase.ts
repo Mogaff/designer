@@ -8,21 +8,17 @@ import {
   onAuthStateChanged
 } from 'firebase/auth';
 
-// Firebase configuration from environment variables
+// Firebase-Konfiguration mit der ursprünglichen Firebase-Domain
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.appspot.com`,
-  messagingSenderId: "", // not needed for basic auth
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+  apiKey: "AIzaSyA84jOtKbd_aFr07gt4EKH_md_XVhX-RZw",
+  authDomain: "dieseiner-7c81b.firebaseapp.com", // Die originale Firebase-Domain verwenden
+  projectId: "dieseiner-7c81b",
+  storageBucket: "dieseiner-7c81b.appspot.com",
+  messagingSenderId: "558539292154",
+  appId: "1:558539292154:web:5c6a993fd80165e4e2f843"
 };
 
-console.log("Initializing Firebase with configuration from environment variables:", {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY ? `${import.meta.env.VITE_FIREBASE_API_KEY.substring(0, 5)}...` : 'missing',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'missing',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID ? 'present' : 'missing'
-});
+console.log("Initializing Firebase with standard configuration");
 
 // Einfache Firebase-Initialisierung ohne irgendwelche komplexen Anpassungen
 const app = initializeApp(firebaseConfig);
