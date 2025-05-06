@@ -100,7 +100,29 @@ export async function scrapeGoogleAdsForAdvertiser(
     // Set a reasonable timeout
     page.setDefaultTimeout(timeout);
     
-    // Dieser Teil wird übersprungen, da wir direkt zur Anzeigenseite gehen
+    // Set user agent to a real browser profile
+    await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36');
+    
+    // Set language and geolocation preferences
+    await page.setExtraHTTPHeaders({
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+      'sec-ch-ua': '"Google Chrome";v="125", " Not;A Brand";v="99"',
+      'sec-ch-ua-mobile': '?0',
+      'sec-ch-ua-platform': '"macOS"',
+      'Sec-Fetch-Dest': 'document',
+      'Sec-Fetch-Mode': 'navigate',
+      'Sec-Fetch-Site': 'none',
+      'Sec-Fetch-User': '?1',
+    });
+    
+    // Set cookies to appear more like a regular user
+    await page.setCookie({
+      name: 'CONSENT',
+      value: 'YES+',
+      domain: '.google.com',
+      path: '/',
+    });
     
     // Handle different search types
     let searchUrl = '';
@@ -465,6 +487,57 @@ export async function scrapeGoogleAdsForAdvertiser(
               pageContent.bodyText.includes('unusual activity')
             ) {
               console.log(`[GoogleAdsScraper] CAPTCHA or verification detected!`);
+              
+              // Take a screenshot of the CAPTCHA for debugging
+              try {
+                await page.screenshot({ 
+                  path: './temp/google-ads-captcha.png', 
+                  fullPage: true 
+                });
+                console.log(`[GoogleAdsScraper] CAPTCHA screenshot saved for analysis`);
+                
+                // Extract the CAPTCHA image if possible
+                const captchaImage = await page.evaluate(() => {
+                  const imgElement = document.querySelector('img[src*="captcha"]') as HTMLImageElement;
+                  return imgElement ? imgElement.src : null;
+                });
+                
+                if (captchaImage) {
+                  console.log(`[GoogleAdsScraper] CAPTCHA image found: ${captchaImage.substring(0, 50)}...`);
+                }
+                
+                // Try to work around the CAPTCHA with basic techniques
+                // This won't solve complex CAPTCHAs but may get past simple checks
+                
+                // Try clicking "I'm not a robot" checkbox if present
+                const clickedCheckbox = await page.evaluate(() => {
+                  const checkbox = document.querySelector('.recaptcha-checkbox') as HTMLElement;
+                  if (checkbox) {
+                    checkbox.click();
+                    return true;
+                  }
+                  return false;
+                });
+                
+                if (clickedCheckbox) {
+                  console.log(`[GoogleAdsScraper] Clicked CAPTCHA checkbox, waiting to see if it passes...`);
+                  await new Promise(resolve => setTimeout(resolve, 5000));
+                  
+                  // Check if we successfully passed CAPTCHA
+                  const captchaSuccess = await page.evaluate(() => {
+                    return !document.body.innerText.includes('captcha') && 
+                           !document.body.innerText.includes('CAPTCHA');
+                  });
+                  
+                  if (captchaSuccess) {
+                    console.log(`[GoogleAdsScraper] Successfully passed simple CAPTCHA check`);
+                  } else {
+                    console.log(`[GoogleAdsScraper] CAPTCHA still present after clicking checkbox`);
+                  }
+                }
+              } catch (captchaError) {
+                console.error(`[GoogleAdsScraper] Error handling CAPTCHA: ${captchaError}`);
+              }
             }
           }
         }
@@ -543,6 +616,147 @@ export async function scrapeGoogleAdsForAdvertiser(
           // If we found meaningful content, we can try to extract information even without specific ad elements
           if (pageData.divContents.length > 0) {
             console.log(`[GoogleAdsScraper] Found ${pageData.divContents.length} content divs, will attempt generic extraction`);
+            
+            // Try to find likely ad content elements by looking for content patterns
+            try {
+              // This custom extraction runs when standard selectors fail
+              // It looks for any content that might represent ads based on structure and keywords
+              const possibleAds = await page.evaluate(() => {
+                interface GenericAd {
+                  brand: string;
+                  headline?: string | null;
+                  body?: string | null;
+                  imageUrl?: string | null;
+                  adId?: string;
+                }
+                
+                // Pattern matching - common ad-related keywords
+                const adKeywords = [
+                  'ad', 'advertisement', 'sponsored', 'promotion', 'campaign',
+                  'view ad', 'learn more', 'shop now', 'sign up', 'download',
+                  'install', 'buy now', 'get offer', 'click here'
+                ];
+                
+                const brandKeywords = [
+                  'by', 'from', 'advertiser', 'advertised by', 'brand',
+                  'company', 'business', 'enterprise'
+                ];
+                
+                // Find possible ad cards - any container with meaningful content
+                const allContainers = Array.from(document.querySelectorAll('div, article, section'));
+                const possibleAdContainers = allContainers.filter(container => {
+                  // Must have some reasonable size
+                  const rect = container.getBoundingClientRect();
+                  if (rect.width < 200 || rect.height < 100) return false;
+                  
+                  // Must have some content
+                  const text = container.textContent?.trim();
+                  if (!text || text.length < 20) return false;
+                  
+                  // Should possibly have an image
+                  const hasImage = container.querySelector('img') !== null;
+                  
+                  // Look for ad-related keywords
+                  const hasAdKeyword = adKeywords.some(keyword => 
+                    text.toLowerCase().includes(keyword.toLowerCase())
+                  );
+                  
+                  // Give priority to elements with images and ad keywords
+                  return hasImage || hasAdKeyword;
+                });
+                
+                // Array to store extracted ad data
+                const extractedAds: GenericAd[] = [];
+                
+                // Process each potential ad container
+                for (let i = 0; i < Math.min(possibleAdContainers.length, 10); i++) {
+                  const container = possibleAdContainers[i];
+                  
+                  // Extract headline - first heading or first strong text
+                  let headline = '';
+                  const headingEl = container.querySelector('h1, h2, h3, h4, h5, h6');
+                  const strongEl = container.querySelector('strong, b');
+                  if (headingEl && headingEl.textContent) {
+                    headline = headingEl.textContent.trim();
+                  } else if (strongEl && strongEl.textContent) {
+                    headline = strongEl.textContent.trim();
+                  }
+                  
+                  // Extract body text - paragraph or div with text content
+                  let bodyText = '';
+                  const paragraphs = Array.from(container.querySelectorAll('p, div'))
+                    .filter(el => {
+                      const text = el.textContent?.trim();
+                      return text && text.length > 10 && text !== headline;
+                    });
+                  
+                  if (paragraphs.length > 0) {
+                    bodyText = paragraphs[0].textContent?.trim() || '';
+                  }
+                  
+                  // Extract image if present
+                  let imageUrl = null;
+                  const imgEl = container.querySelector('img');
+                  if (imgEl && 'src' in imgEl) {
+                    imageUrl = (imgEl as HTMLImageElement).src;
+                  }
+                  
+                  // Try to extract brand/advertiser name
+                  let brand = 'Unknown Advertiser';
+                  
+                  // Look for elements with brand indicators
+                  const allElements = Array.from(container.querySelectorAll('*'));
+                  for (const element of allElements) {
+                    const text = element.textContent?.trim();
+                    if (!text) continue;
+                    
+                    // Check for brand identifiers like "By CompanyName"
+                    for (const keyword of brandKeywords) {
+                      if (text.toLowerCase().includes(keyword.toLowerCase())) {
+                        const parts = text.split(new RegExp(`${keyword}\\s+`, 'i'));
+                        if (parts.length > 1 && parts[1].length > 0) {
+                          brand = parts[1].trim().split(' ')[0]; // Get first word after "by"
+                          break;
+                        }
+                      }
+                    }
+                    
+                    // Check if element itself might be a brand name (short text in specific elements)
+                    if (text.length < 30 && 
+                        ['span', 'div', 'small', 'em'].includes(element.tagName.toLowerCase()) &&
+                        !adKeywords.some(kw => text.toLowerCase().includes(kw))) {
+                      const potentialBrand = text.trim();
+                      if (potentialBrand.length > 2 && potentialBrand.length < 25) {
+                        brand = potentialBrand;
+                      }
+                    }
+                  }
+                  
+                  // Generate a unique ID
+                  const adId = `generic-${i}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+                  
+                  // Only add if we have at least some content
+                  if (headline || bodyText || imageUrl) {
+                    extractedAds.push({
+                      brand,
+                      headline: headline || null,
+                      body: bodyText || null,
+                      imageUrl,
+                      adId
+                    });
+                  }
+                }
+                
+                return extractedAds;
+              });
+              
+              if (possibleAds && possibleAds.length > 0) {
+                console.log(`[GoogleAdsScraper] Generic extraction found ${possibleAds.length} possible ads`);
+                return possibleAds;
+              }
+            } catch (extractError) {
+              console.error(`[GoogleAdsScraper] Error during generic extraction: ${extractError}`);
+            }
           } else {
             console.log(`[GoogleAdsScraper] No content elements found that could be potential ads`);
             return [];
