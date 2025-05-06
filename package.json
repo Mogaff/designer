@@ -54,6 +54,7 @@
     "@types/uuid": "^10.0.0",
     "axios": "^1.8.4",
     "bcryptjs": "^3.0.2",
+    "cheerio": "^1.0.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
