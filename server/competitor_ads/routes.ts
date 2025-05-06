@@ -114,8 +114,14 @@ export function registerCompetitorAdRoutes(app: any) {
       }
     } catch (error) {
       console.error('Error in ad inspiration search:', error);
-      return res.status(500).json({ 
+      
+      // Use 200 status to avoid breaking the UI with a failed request
+      // The client can still detect the error from the 'error' property
+      return res.status(200).json({ 
         error: `Search failed: ${(error instanceof Error ? error.message : 'Unknown error')}`,
+        message: "An error occurred while searching for competitor ads. Please try again later.",
+        count: 0,
+        ads: [],
         details: error instanceof Error ? error.stack : undefined
       });
     }
@@ -144,7 +150,10 @@ export function registerCompetitorAdRoutes(app: any) {
       
     } catch (error) {
       console.error('Error fetching recent searches:', error);
-      return res.status(500).json({ error: `Failed to fetch recent searches: ${(error as Error).message}` });
+      return res.status(200).json({ 
+        error: `Failed to fetch recent searches: ${(error as Error).message}`,
+        searches: []
+      });
     }
   });
   
@@ -166,7 +175,11 @@ export function registerCompetitorAdRoutes(app: any) {
       
     } catch (error) {
       console.error(`Error fetching ads for search ${req.params.searchId}:`, error);
-      return res.status(500).json({ error: `Failed to fetch ads: ${(error as Error).message}` });
+      return res.status(200).json({
+        error: `Failed to fetch ads: ${(error as Error).message}`,
+        count: 0,
+        ads: []
+      });
     }
   });
   
@@ -200,7 +213,10 @@ export function registerCompetitorAdRoutes(app: any) {
       
     } catch (error) {
       console.error(`Error fetching ad ${req.params.adId}:`, error);
-      return res.status(500).json({ error: `Failed to fetch ad: ${(error as Error).message}` });
+      return res.status(200).json({ 
+        error: `Failed to fetch ad: ${(error as Error).message}`,
+        ad: null
+      });
     }
   });
   
@@ -220,43 +236,116 @@ export function registerCompetitorAdRoutes(app: any) {
         return res.status(401).json({ error: 'User must be authenticated' });
       }
       
-      // Get inspiration
-      const ads = await getAdInspiration({
-        industry,
-        brand,
-        keyword,
-        userId,
-        limit: limit || 5
-      });
-      
-      // Generate style descriptions for any ads that don't have them
-      const adsWithStyles = await Promise.all(
-        ads.map(async (ad) => {
-          if (!ad.style_description) {
-            ad.style_description = await generateStyleDescription(ad);
+      try {
+        // Get inspiration
+        const ads = await getAdInspiration({
+          industry,
+          brand,
+          keyword,
+          userId,
+          limit: limit || 5
+        });
+        
+        if (ads.length === 0) {
+          return res.status(200).json({
+            count: 0,
+            ads: [],
+            message: `No inspiration found for ${brand || industry || keyword}. Try a different search term.`,
+            styleInspiration: '',
+            copyInspiration: ''
+          });
+        }
+        
+        // Generate style descriptions for any ads that don't have them
+        const adsWithStyles = await Promise.all(
+          ads.map(async (ad) => {
+            if (!ad.style_description) {
+              ad.style_description = await generateStyleDescription(ad);
+            }
+            return ad;
+          })
+        );
+        
+        return res.status(200).json({
+          count: adsWithStyles.length,
+          ads: adsWithStyles,
+          // Extract style descriptions for use in AI prompts
+          styleInspiration: adsWithStyles
+            .filter(ad => ad.style_description)
+            .map(ad => `${ad.brand}: ${ad.style_description}`)
+            .join('\n\n'),
+          // Extract copywriting patterns for use in AI prompts  
+          copyInspiration: adsWithStyles
+            .filter(ad => ad.headline || ad.body)
+            .map(ad => `${ad.brand}: ${ad.headline || ''} - ${ad.body || ''}${ad.cta ? ` (CTA: ${ad.cta})` : ''}`)
+            .join('\n\n')
+        });
+      } catch (inspirationError) {
+        // Check if this is a Google OAuth error that we can handle gracefully
+        if (inspirationError instanceof Error) {
+          const errorMessage = inspirationError.message;
+          
+          if (errorMessage.includes('Google OAuth') ||
+              errorMessage.includes('ECONNREFUSED 169.254.169.254') ||
+              errorMessage.includes('Could not refresh access token')) {
+            
+            console.warn('Google OAuth error during ad inspiration:', errorMessage);
+            
+            // Try to fallback to database-only results instead of failing entirely
+            const { getAdsFromDatabase } = await import('./ad_inspiration');
+            const fallbackAds = await getAdsFromDatabase({
+              industry,
+              brand,
+              keyword,
+              limit: limit || 5
+            });
+            
+            if (fallbackAds.length > 0) {
+              // Generate style descriptions for any ads that don't have them
+              const adsWithStyles = await Promise.all(
+                fallbackAds.map(async (ad) => {
+                  if (!ad.style_description) {
+                    ad.style_description = await generateStyleDescription(ad);
+                  }
+                  return ad;
+                })
+              );
+              
+              return res.status(200).json({
+                count: adsWithStyles.length,
+                ads: adsWithStyles,
+                googleApiError: true,
+                message: "Using database results only. Google API is not available in this environment.",
+                // Extract style descriptions for use in AI prompts
+                styleInspiration: adsWithStyles
+                  .filter(ad => ad.style_description)
+                  .map(ad => `${ad.brand}: ${ad.style_description}`)
+                  .join('\n\n'),
+                // Extract copywriting patterns for use in AI prompts  
+                copyInspiration: adsWithStyles
+                  .filter(ad => ad.headline || ad.body)
+                  .map(ad => `${ad.brand}: ${ad.headline || ''} - ${ad.body || ''}${ad.cta ? ` (CTA: ${ad.cta})` : ''}`)
+                  .join('\n\n')
+              });
+            }
           }
-          return ad;
-        })
-      );
-      
-      return res.status(200).json({
-        count: adsWithStyles.length,
-        ads: adsWithStyles,
-        // Extract style descriptions for use in AI prompts
-        styleInspiration: adsWithStyles
-          .filter(ad => ad.style_description)
-          .map(ad => `${ad.brand}: ${ad.style_description}`)
-          .join('\n\n'),
-        // Extract copywriting patterns for use in AI prompts  
-        copyInspiration: adsWithStyles
-          .filter(ad => ad.headline || ad.body)
-          .map(ad => `${ad.brand}: ${ad.headline || ''} - ${ad.body || ''}${ad.cta ? ` (CTA: ${ad.cta})` : ''}`)
-          .join('\n\n')
-      });
-      
+        }
+        
+        // If we couldn't handle the error specifically, re-throw it
+        throw inspirationError;
+      }
     } catch (error) {
       console.error('Error getting ad inspiration:', error);
-      return res.status(500).json({ error: `Failed to get ad inspiration: ${(error as Error).message}` });
+      
+      // Return a more descriptive error and make sure it's a 200 status to avoid breaking the UI
+      return res.status(200).json({ 
+        error: `Failed to get ad inspiration: ${error instanceof Error ? error.message : String(error)}`,
+        count: 0,
+        ads: [],
+        message: "An error occurred while generating inspiration. Please try a different term.",
+        styleInspiration: '',
+        copyInspiration: ''
+      });
     }
   });
   
@@ -376,7 +465,13 @@ export function registerCompetitorAdRoutes(app: any) {
       
     } catch (error) {
       console.error('Error analyzing competitor ads:', error);
-      return res.status(500).json({ error: `Failed to analyze competitor ads: ${(error as Error).message}` });
+      return res.status(200).json({
+        error: `Failed to analyze competitor ads: ${(error as Error).message}`,
+        ads: [],
+        styleInspirations: '',
+        copyInspirations: '',
+        analysis: 'Error generating analysis. Please try again with different ads.'
+      });
     }
   });
   
@@ -591,51 +686,86 @@ export function registerAdInspirationIntegrationRoutes(app: any) {
         return res.status(401).json({ error: 'User must be authenticated' });
       }
       
-      // Import the check function
-      const { checkGoogleApiKeys } = await import('./google_ads_transparency');
-      
-      // Check if Google OAuth and CSE ID are configured
-      const isConfigured = await checkGoogleApiKeys();
-      
-      if (!isConfigured) {
-        // Get detailed configuration status for better error message
-        const { checkGoogleOAuthConfig } = await import('../services/googleOAuth');
-        const isOAuthConfigured = await checkGoogleOAuthConfig();
-        const hasCseId = !!process.env.GOOGLE_CSE_ID;
+      try {
+        // Import the check function
+        const { checkGoogleApiKeys } = await import('./google_ads_transparency');
         
-        let errorMessage = 'Google Search API is not configured. ';
+        // Check if Google OAuth and CSE ID are configured
+        const isConfigured = await checkGoogleApiKeys();
         
-        if (!isOAuthConfigured && !hasCseId) {
-          errorMessage += 'Both OAuth and Custom Search Engine ID are missing.';
-        } else if (!isOAuthConfigured) {
-          errorMessage += 'OAuth is not configured.';
-        } else if (!hasCseId) {
-          errorMessage += 'Custom Search Engine ID is missing.';
+        if (!isConfigured) {
+          // Get detailed configuration status for better error message
+          const { checkGoogleOAuthConfig } = await import('../services/googleOAuth');
+          const isOAuthConfigured = await checkGoogleOAuthConfig();
+          const hasCseId = !!process.env.GOOGLE_CSE_ID;
+          
+          let errorMessage = 'Google Search API is not configured. ';
+          
+          if (!isOAuthConfigured && !hasCseId) {
+            errorMessage += 'Both OAuth and Custom Search Engine ID are missing.';
+          } else if (!isOAuthConfigured) {
+            errorMessage += 'OAuth is not configured.';
+          } else if (!hasCseId) {
+            errorMessage += 'Custom Search Engine ID is missing.';
+          }
+          
+          return res.status(200).json({ 
+            success: false,
+            error: errorMessage,
+            environmentIssue: false
+          });
         }
         
-        return res.status(400).json({ error: errorMessage });
+        // Use a test brand to verify the API works
+        const testBrand = 'Nike';
+        const { getGoogleAdsForAdvertiser } = await import('./google_ads_transparency');
+        
+        // Get test results without saving to database
+        const testResults = await getGoogleAdsForAdvertiser(testBrand, {
+          maxAds: 3 // Limit to 3 results for this test
+        });
+        
+        return res.status(200).json({
+          success: true,
+          message: `Successfully tested Google Search API with query "${testBrand}"`,
+          count: testResults.length,
+          results: testResults.slice(0, 2) // Only return 2 sample results
+        });
+      
+      } catch (oauthError) {
+        // Specifically handle OAuth-related errors to provide better feedback
+        console.warn('OAuth error during Google API test:', oauthError);
+        
+        const errorMessage = oauthError instanceof Error ? oauthError.message : String(oauthError);
+        let userFriendlyMessage = "Google Search API test failed due to authentication issues.";
+        let environmentIssue = false;
+        
+        // Check for specific error types and provide better messages
+        if (errorMessage.includes('ECONNREFUSED 169.254.169.254') || 
+            errorMessage.includes('compute/metadata')) {
+          userFriendlyMessage = "Google OAuth requires a Google Cloud environment, which is not available in this environment.";
+          environmentIssue = true;
+        } else if (errorMessage.includes('Could not refresh access token')) {
+          userFriendlyMessage = "Unable to authenticate with Google APIs. Token refresh failed.";
+          environmentIssue = true;
+        }
+        
+        return res.status(200).json({ 
+          success: false,
+          error: userFriendlyMessage,
+          environmentIssue,
+          technicalDetails: errorMessage
+        });
       }
-      
-      // Use a test brand to verify the API works
-      const testBrand = 'Nike';
-      const { getGoogleAdsForAdvertiser } = await import('./google_ads_transparency');
-      
-      // Get test results without saving to database
-      const testResults = await getGoogleAdsForAdvertiser(testBrand, {
-        maxAds: 3 // Limit to 3 results for this test
-      });
-      
-      return res.status(200).json({
-        success: true,
-        message: `Successfully tested Google Search API with query "${testBrand}"`,
-        count: testResults.length,
-        results: testResults.slice(0, 2) // Only return 2 sample results
-      });
-      
     } catch (error) {
       console.error('Error testing Google Search API:', error);
-      return res.status(500).json({ 
-        error: `Failed to test Google Search API: ${(error as Error).message}` 
+      
+      // Return more detailed error information
+      return res.status(200).json({ 
+        success: false,
+        error: `Failed to test Google Search API: ${error instanceof Error ? error.message : String(error)}`,
+        environmentIssue: false,
+        stack: error instanceof Error ? error.stack : undefined
       });
     }
   });
