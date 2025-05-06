@@ -523,40 +523,113 @@ async function scrapeGoogleAdsWithConfiguration(
       // Log the current URL to help with debugging
       console.log(`Current page URL: ${page.url()}`);
       
-      // Take a screenshot for debugging
-      const screenshotPath = './temp/google-ads-page.png';
+      // Enhanced diagnostics: Take multiple screenshots and extract detailed page information
+      const timestamp = Date.now();
+      const baseScreenshotPath = `./temp/google-ads-${timestamp}`;
       try {
         // Create temp directory if it doesn't exist
         await fs.promises.mkdir('./temp', { recursive: true });
         
-        // Take screenshot
+        // 1. Take full page screenshot
+        const fullScreenshotPath = `${baseScreenshotPath}-full.png`;
         await page.screenshot({ 
-          path: screenshotPath,
+          path: fullScreenshotPath,
           fullPage: true 
         });
-        console.log(`[GoogleAdsScraper] Screenshot saved to ${screenshotPath}`);
+        console.log(`[GoogleAdsScraper] Full page screenshot saved to ${fullScreenshotPath}`);
         
-        // Also save the HTML content for advanced debugging
+        // 2. Take viewport-only screenshot (often more useful for quick debugging)
+        const viewportScreenshotPath = `${baseScreenshotPath}-viewport.png`;
+        await page.screenshot({ 
+          path: viewportScreenshotPath,
+          fullPage: false 
+        });
+        console.log(`[GoogleAdsScraper] Viewport screenshot saved to ${viewportScreenshotPath}`);
+        
+        // 3. Save the HTML content for advanced debugging
         try {
           const htmlContent = await page.content();
           const htmlContentPath = './temp/google-ads-page-source.txt';
           await fs.promises.writeFile(htmlContentPath, htmlContent);
-          console.log(`[GoogleAdsScraper] HTML content saved to ${htmlContentPath}`);
+          console.log(`[GoogleAdsScraper] HTML content saved to ${htmlContentPath} (${htmlContent.length} bytes)`);
           
-          // Look for specific patterns in the HTML that might indicate issues
-          if (htmlContent.includes('recaptcha') || htmlContent.includes('captcha')) {
-            console.log(`[GoogleAdsScraper] CAPTCHA detected in page HTML`);
+          // 4. Analyze HTML content for common issues
+          const issueDetectors = [
+            { pattern: /recaptcha|captcha/i, message: 'CAPTCHA detected in page HTML' },
+            { pattern: /unusual activity|suspicious|security check/i, message: 'Security warnings detected in page HTML' },
+            { pattern: /blocked|limit|too many requests|rate limit/i, message: 'Possible rate limiting detected in page HTML' },
+            { pattern: /detected automated|bot|automation/i, message: 'Automation detection warning found in page HTML' },
+            { pattern: /javascript disabled|enable javascript/i, message: 'JavaScript requirement detected in page HTML' }
+          ];
+          
+          for (const detector of issueDetectors) {
+            if (detector.pattern.test(htmlContent)) {
+              console.log(`[GoogleAdsScraper] ⚠️ ${detector.message}`);
+            }
           }
           
-          if (htmlContent.includes('unusual activity') || htmlContent.includes('suspicious')) {
-            console.log(`[GoogleAdsScraper] Security warnings detected in page HTML`);
+          // 5. Extract and save any embedded JSON
+          try {
+            const jsonObjects = await page.evaluate(() => {
+              const scriptTags = Array.from(document.querySelectorAll('script:not([src])'));
+              const jsonData = [];
+              
+              scriptTags.forEach(script => {
+                const content = script.textContent || '';
+                try {
+                  // Look for potential JSON objects/arrays
+                  const matches = content.match(/(\{[\s\S]*?\}|\[[\s\S]*?\])/g);
+                  if (matches) {
+                    matches.forEach(match => {
+                      try {
+                        // Only consider larger JSON objects
+                        if (match.length > 100) {
+                          const parsed = JSON.parse(match);
+                          if (typeof parsed === 'object' && parsed !== null) {
+                            jsonData.push(parsed);
+                          }
+                        }
+                      } catch {
+                        // Ignore parse errors
+                      }
+                    });
+                  }
+                } catch {
+                  // Ignore errors
+                }
+              });
+              
+              return jsonData;
+            });
+            
+            if (jsonObjects && jsonObjects.length > 0) {
+              const jsonPath = `${baseScreenshotPath}-embedded-json.json`;
+              await fs.promises.writeFile(jsonPath, JSON.stringify(jsonObjects, null, 2));
+              console.log(`[GoogleAdsScraper] Extracted ${jsonObjects.length} embedded JSON objects to ${jsonPath}`);
+            }
+          } catch (jsonError) {
+            console.error(`[GoogleAdsScraper] Error extracting JSON data: ${jsonError}`);
           }
           
-          if (htmlContent.includes('blocked') || htmlContent.includes('limit')) {
-            console.log(`[GoogleAdsScraper] Possible rate limiting detected in page HTML`);
-          }
+          // 6. Extract and analyze DOM metrics
+          const domMetrics = await page.evaluate(() => {
+            return {
+              title: document.title,
+              url: window.location.href,
+              elementCount: document.querySelectorAll('*').length,
+              divCount: document.querySelectorAll('div').length,
+              imgCount: document.querySelectorAll('img').length,
+              adRelatedElements: {
+                adWords: document.querySelectorAll('[class*="ad" i], [id*="ad" i]').length,
+                cardElements: document.querySelectorAll('.card, [class*="card" i]').length,
+                possibleAdContainers: document.querySelectorAll('[class*="container" i]').length
+              }
+            };
+          });
           
-          // Search for JSON data in the page
+          console.log(`[GoogleAdsScraper] DOM analysis:`, domMetrics);
+          
+          // 7. Search for JSON data in the page
           const jsonDataCount = (htmlContent.match(/\{[\s\S]*?"ads"[\s\S]*?\}/g) || []).length;
           if (jsonDataCount > 0) {
             console.log(`[GoogleAdsScraper] Found ${jsonDataCount} potential JSON data blocks with ads in HTML`);
