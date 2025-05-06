@@ -74,9 +74,9 @@ export async function searchCompetitorAds(
       
       // Check if we should search Google
       if (!options.platforms || options.platforms.includes('google')) {
-        console.log('Searching Google Ads using Custom Search API...');
+        console.log('Searching Google Ads using OAuth and Custom Search API...');
         
-        // Check if Google API is configured before attempting search
+        // Check if Google OAuth and CSE ID are configured before attempting search
         const isGoogleConfigured = await checkGoogleApiKeys();
         
         if (isGoogleConfigured) {
@@ -88,9 +88,9 @@ export async function searchCompetitorAds(
           });
           
           allAds = [...allAds, ...googleAds];
-          console.log(`Found ${googleAds.length} ads from Google Custom Search API`);
+          console.log(`Found ${googleAds.length} ads from Google Search API`);
         } else {
-          console.warn('Google Custom Search API is not configured. Please configure it in Settings.');
+          console.warn('Google Search API is not fully configured. OAuth authentication and/or Custom Search Engine ID may be missing.');
         }
       }
       

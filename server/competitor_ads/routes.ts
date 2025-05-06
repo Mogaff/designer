@@ -439,11 +439,11 @@ export function registerAdInspirationIntegrationRoutes(app: any) {
   // Configure Google Custom Search API credentials
   app.post('/api/ad-inspiration/configure-google-search', isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const { apiKey, cseId } = req.body;
+      const { cseId } = req.body;
       
-      if (!apiKey || !cseId) {
+      if (!cseId) {
         return res.status(400).json({ 
-          error: 'Both Google API Key and CSE ID are required' 
+          error: 'Google Custom Search Engine ID is required' 
         });
       }
       
@@ -454,27 +454,32 @@ export function registerAdInspirationIntegrationRoutes(app: any) {
         return res.status(401).json({ error: 'User must be authenticated' });
       }
       
-      // In production, these would be securely stored in a database
-      // For this implementation, we'll store them in environment variables
-      process.env.GOOGLE_API_KEY = apiKey;
+      // We only need to store the CSE ID as we're using OAuth for authentication
       process.env.GOOGLE_CSE_ID = cseId;
       
-      console.log('Google Custom Search API credentials configured');
+      console.log('Google Custom Search Engine ID configured');
+      
+      // Import the OAuth check function
+      const { checkGoogleOAuthConfig } = await import('../services/googleOAuth');
+      
+      // Check if OAuth is configured correctly
+      const isOAuthConfigured = await checkGoogleOAuthConfig();
       
       return res.status(200).json({
-        message: 'Google Custom Search API credentials successfully configured',
-        configured: true
+        message: `Google Search API configuration ${isOAuthConfigured ? 'successful' : 'partially successful (OAuth not configured)'}`,
+        configured: true,
+        oauthConfigured: isOAuthConfigured
       });
       
     } catch (error) {
-      console.error('Error configuring Google Custom Search API:', error);
+      console.error('Error configuring Google Search API:', error);
       return res.status(500).json({ 
-        error: `Failed to configure Google Custom Search API: ${(error as Error).message}` 
+        error: `Failed to configure Google Search API: ${(error as Error).message}` 
       });
     }
   });
   
-  // Get Google Custom Search API configuration status
+  // Get Google Search API configuration status using OAuth
   app.get('/api/ad-inspiration/google-search-status', isAuthenticated, async (req: Request, res: Response) => {
     try {
       // Get the user ID from the authenticated session
@@ -484,21 +489,39 @@ export function registerAdInspirationIntegrationRoutes(app: any) {
         return res.status(401).json({ error: 'User must be authenticated' });
       }
       
-      const isConfigured = !!(process.env.GOOGLE_API_KEY && process.env.GOOGLE_CSE_ID);
+      // Import the necessary functions
+      const { checkGoogleApiKeys } = await import('./google_ads_transparency');
+      
+      // Check if Google OAuth and CSE ID are configured
+      const isConfigured = await checkGoogleApiKeys();
+      
+      // Get the OAuth status separately to provide more detailed information
+      const { checkGoogleOAuthConfig } = await import('../services/googleOAuth');
+      const isOAuthConfigured = await checkGoogleOAuthConfig();
+      const hasCseId = !!process.env.GOOGLE_CSE_ID;
       
       return res.status(200).json({
-        configured: isConfigured
+        configured: isConfigured,
+        oauthConfigured: isOAuthConfigured,
+        cseIdConfigured: hasCseId,
+        message: isConfigured 
+          ? "Google Search API is fully configured" 
+          : isOAuthConfigured && !hasCseId 
+            ? "Google OAuth is configured, but Custom Search Engine ID is missing"
+            : !isOAuthConfigured && hasCseId
+              ? "Custom Search Engine ID is configured, but Google OAuth is missing"
+              : "Google Search API is not configured"
       });
       
     } catch (error) {
-      console.error('Error checking Google Custom Search API configuration:', error);
+      console.error('Error checking Google Search API configuration:', error);
       return res.status(500).json({ 
-        error: `Failed to check Google Custom Search API configuration: ${(error as Error).message}` 
+        error: `Failed to check Google Search API configuration: ${(error as Error).message}` 
       });
     }
   });
   
-  // Test the Google Custom Search API
+  // Test the Google Search API using OAuth
   app.get('/api/ad-inspiration/test-google-search', isAuthenticated, async (req: Request, res: Response) => {
     try {
       // Get the user ID from the authenticated session
@@ -508,13 +531,29 @@ export function registerAdInspirationIntegrationRoutes(app: any) {
         return res.status(401).json({ error: 'User must be authenticated' });
       }
       
-      // Check if Google Search API is configured
-      const isConfigured = !!(process.env.GOOGLE_API_KEY && process.env.GOOGLE_CSE_ID);
+      // Import the check function
+      const { checkGoogleApiKeys } = await import('./google_ads_transparency');
+      
+      // Check if Google OAuth and CSE ID are configured
+      const isConfigured = await checkGoogleApiKeys();
       
       if (!isConfigured) {
-        return res.status(400).json({ 
-          error: 'Google Custom Search API is not configured. Please configure it in Settings.' 
-        });
+        // Get detailed configuration status for better error message
+        const { checkGoogleOAuthConfig } = await import('../services/googleOAuth');
+        const isOAuthConfigured = await checkGoogleOAuthConfig();
+        const hasCseId = !!process.env.GOOGLE_CSE_ID;
+        
+        let errorMessage = 'Google Search API is not configured. ';
+        
+        if (!isOAuthConfigured && !hasCseId) {
+          errorMessage += 'Both OAuth and Custom Search Engine ID are missing.';
+        } else if (!isOAuthConfigured) {
+          errorMessage += 'OAuth is not configured.';
+        } else if (!hasCseId) {
+          errorMessage += 'Custom Search Engine ID is missing.';
+        }
+        
+        return res.status(400).json({ error: errorMessage });
       }
       
       // Use a test brand to verify the API works
@@ -528,15 +567,15 @@ export function registerAdInspirationIntegrationRoutes(app: any) {
       
       return res.status(200).json({
         success: true,
-        message: `Successfully tested Google Custom Search API with query "${testBrand}"`,
+        message: `Successfully tested Google Search API with query "${testBrand}"`,
         count: testResults.length,
         results: testResults.slice(0, 2) // Only return 2 sample results
       });
       
     } catch (error) {
-      console.error('Error testing Google Custom Search API:', error);
+      console.error('Error testing Google Search API:', error);
       return res.status(500).json({ 
-        error: `Failed to test Google Custom Search API: ${(error as Error).message}` 
+        error: `Failed to test Google Search API: ${(error as Error).message}` 
       });
     }
   });
