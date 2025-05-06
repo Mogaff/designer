@@ -501,9 +501,9 @@ export default function AiFlyerFormCompact({
           {/* Competitor Inspiration Panel */}
           {isInspirationPanelOpen && (
             <CompetitorInspirationPanel 
-              onClose={() => setIsInspirationPanelOpen(false)}
               onEnhancePrompt={handleEnhancePrompt}
-              currentPrompt={prompt}
+              originalPrompt={prompt}
+              isOpen={isInspirationPanelOpen}
             />
           )}
         </div>
@@ -683,9 +683,9 @@ export default function AiFlyerFormCompact({
                 
                 {/* Carousel Toggle with Glass Morphism */}
                 <div className="mt-3 border-t border-white/10 pt-2">
-                  <div className="bg-black/25 backdrop-blur-lg rounded-md border border-white/10 p-1.5 shadow-sm">
+                  <div className="bg-black/25 backdrop-blur-lg rounded-md border border-white/10 p-1.5 shadow-sm hover:bg-black/30 transition-all duration-200">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="carousel-toggle" className="text-[9px] text-white/90 flex items-center gap-1">
+                      <Label htmlFor="carousel-toggle" className="text-[9px] text-white/90 flex items-center gap-1 cursor-pointer">
                         <span className="h-3 w-3 rounded-full bg-indigo-500/30 flex items-center justify-center">
                           <svg width="8" height="8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M8 5L15 12L8 19" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -697,7 +697,7 @@ export default function AiFlyerFormCompact({
                         id="carousel-toggle"
                         checked={createCarousel}
                         onCheckedChange={setCreateCarousel}
-                        className="data-[state=checked]:bg-indigo-500/80 data-[state=checked]:backdrop-blur-md border border-white/20 shadow-inner h-4 w-7"
+                        className="data-[state=checked]:bg-indigo-500/80 data-[state=checked]:backdrop-blur-md data-[state=checked]:border-indigo-400/30 data-[state=unchecked]:bg-white/10 border border-white/20 shadow-inner h-4 w-7"
                       />
                     </div>
                     <p className="text-[7px] text-white/70 mt-1 ml-4">
@@ -876,32 +876,34 @@ export default function AiFlyerFormCompact({
         <div className="mt-auto mb-0">
           <Button
             type="submit"
-            className="w-full h-6 bg-white/10 backdrop-blur-md shadow-lg hover:bg-white/15 border-white/10 text-white rounded-md text-[9px] font-medium"
+            className="w-full h-6 bg-white/10 backdrop-blur-md shadow-lg hover:bg-indigo-500/20 hover:border-indigo-400/30 transition-all duration-200 border border-white/20 text-white rounded-md text-[9px] font-medium"
             disabled={isGenerating || (!prompt && !selectedTemplate)}
           >
             {isGenerating ? (
               <>
-                <svg
-                  className="animate-spin -ml-1 mr-1.5 h-2.5 w-2.5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                <span>Generating...</span>
+                <div className="flex items-center">
+                  <svg
+                    className="animate-spin -ml-1 mr-1.5 h-2.5 w-2.5 text-white/90"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-90"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  <span className="text-white/90">Generating<span className="animate-pulse">...</span></span>
+                </div>
               </>
             ) : (
               <>
