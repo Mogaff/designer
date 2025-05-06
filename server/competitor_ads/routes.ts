@@ -21,10 +21,31 @@ import Anthropic from '@anthropic-ai/sdk';
  * Register competitor ad inspiration API routes
  */
 export function registerCompetitorAdRoutes(app: any) {
-  // Search for competitor ads
-  app.post('/api/ad-inspiration/search', isAuthenticated, async (req: Request, res: Response) => {
+  // Search for competitor ads - supporting both GET and POST
+  const handleAdSearch = async (req: Request, res: Response) => {
     try {
-      const { query, queryType, platforms, limit, region } = req.body;
+      // Extract parameters from request body (POST) or query params (GET)
+      const isGetRequest = req.method === 'GET';
+      
+      // Get parameters from either query or body depending on request type
+      const query = isGetRequest ? req.query.query as string : req.body.query as string;
+      const queryType = isGetRequest ? req.query.queryType as string : req.body.queryType as string;
+      
+      // Parse platforms (could be string or array)
+      let platforms: string[] | undefined;
+      if (isGetRequest && req.query.platforms) {
+        platforms = (req.query.platforms as string).split(',');
+      } else if (!isGetRequest && req.body.platforms) {
+        platforms = req.body.platforms as string[];
+      }
+      
+      // Parse limit (string or number)
+      const limit = isGetRequest 
+        ? req.query.limit ? parseInt(req.query.limit as string) : 20
+        : req.body.limit || 20;
+        
+      // Parse region
+      const region = isGetRequest ? req.query.region as string : req.body.region as string;
       
       if (!query) {
         return res.status(400).json({ error: 'Query is required' });
@@ -41,14 +62,23 @@ export function registerCompetitorAdRoutes(app: any) {
         return res.status(401).json({ error: 'User must be authenticated' });
       }
       
+      // Before starting a search, check if Google Search API is configured when platforms includes google
+      if ((!platforms || platforms.includes('google')) && !process.env.GOOGLE_API_KEY) {
+        console.warn('Google API key not configured for ad search');
+        // Remove 'google' from platforms if it exists
+        if (platforms && platforms.includes('google')) {
+          platforms = platforms.filter((p: string) => p !== 'google');
+        }
+      }
+      
       // Start the search
       const result = await searchCompetitorAds(
         query,
         queryType as 'brand' | 'keyword' | 'industry',
         {
           userId,
-          platforms: platforms,
-          limit: limit || 20,
+          platforms,
+          limit,
           region: region || 'US'
         }
       );
@@ -64,7 +94,11 @@ export function registerCompetitorAdRoutes(app: any) {
       console.error('Error in ad inspiration search:', error);
       return res.status(500).json({ error: `Search failed: ${(error as Error).message}` });
     }
-  });
+  };
+  
+  // Register both GET and POST routes for searching
+  app.post('/api/ad-inspiration/search', isAuthenticated, handleAdSearch);
+  app.get('/api/ad-inspiration/search', isAuthenticated, handleAdSearch);
   
   // Get recent ad searches for the authenticated user
   app.get('/api/ad-inspiration/recent-searches', isAuthenticated, async (req: Request, res: Response) => {

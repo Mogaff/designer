@@ -209,6 +209,16 @@ export function findRelevantAdvertisers(query: string): string[] {
 }
 
 /**
+ * Check if Google Custom Search API keys are configured
+ */
+export async function checkGoogleApiKeys(): Promise<boolean> {
+  const hasApiKey = !!process.env.GOOGLE_API_KEY;
+  const hasCseId = !!process.env.GOOGLE_CSE_ID;
+  
+  return hasApiKey && hasCseId;
+}
+
+/**
  * Search for ads using Google Custom Search API
  */
 export async function searchGoogleAds(query: string, options: {
@@ -218,6 +228,14 @@ export async function searchGoogleAds(query: string, options: {
   region?: string;
 }): Promise<CompetitorAd[]> {
   try {
+    // Check if Google Custom Search API is configured
+    const isConfigured = await checkGoogleApiKeys();
+    
+    if (!isConfigured) {
+      console.warn('Google Custom Search API is not configured. Please configure it in Settings.');
+      return [];
+    }
+    
     let advertisers: string[] = [];
     
     if (options.queryType === 'brand') {
