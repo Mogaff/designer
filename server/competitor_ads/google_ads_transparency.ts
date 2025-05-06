@@ -96,7 +96,7 @@ export async function scrapeGoogleAdsForAdvertiser(
     
     console.log('Page loaded, looking for ad cards...');
     
-    // Extract data using our script
+    // Extract data using our script - removed TypeScript syntax for browser environment
     const result = await page.evaluate(() => {
       // Find all ad card elements
       const adCardSelectors = [
@@ -111,7 +111,7 @@ export async function scrapeGoogleAdsForAdvertiser(
       ];
       
       // Helper function to extract text from elements using multiple selectors
-      const extractText = (element: Element, selectors: string[]): string | null => {
+      const extractText = (element, selectors) => {
         for (const selector of selectors) {
           const el = element.querySelector(selector);
           if (el && el.textContent) {
@@ -122,9 +122,9 @@ export async function scrapeGoogleAdsForAdvertiser(
       };
       
       // Helper function for images
-      const extractImage = (element: Element, selectors: string[]): string | null => {
+      const extractImage = (element, selectors) => {
         for (const selector of selectors) {
-          const el = element.querySelector(selector) as HTMLImageElement;
+          const el = element.querySelector(selector);
           if (el && el.src) {
             return el.src;
           }
@@ -133,7 +133,7 @@ export async function scrapeGoogleAdsForAdvertiser(
       };
       
       // Find all ad cards using the selectors
-      let adCards: Element[] = [];
+      let adCards = [];
       for (const selector of adCardSelectors) {
         const elements = Array.from(document.querySelectorAll(selector));
         if (elements.length > 0) {
@@ -213,7 +213,7 @@ export async function scrapeGoogleAdsForAdvertiser(
         ]);
         
         // Try to get ad ID from data attribute or generate one
-        let adId: string | null = null;
+        let adId = null;
         if (card.hasAttribute('data-ad-id')) {
           adId = card.getAttribute('data-ad-id');
         } else {
