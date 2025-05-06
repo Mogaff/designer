@@ -62,9 +62,10 @@ export async function scrapeGoogleAdsForAdvertiser(
   console.log(`Navigating to advertiser page: ${searchUrl}`);
   
   try {
-    // Launch Puppeteer browser in headless mode
+    // Launch Puppeteer browser in headless mode with system Chromium
     const browser = await puppeteer.launch({
       headless: true,
+      executablePath: '/nix/store/9pkjpnvj0smwswsx4vbavvjigcyvlcd6-chromium-headless-119.0.6045.159/bin/chromium-browser',
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -91,7 +92,7 @@ export async function scrapeGoogleAdsForAdvertiser(
     await page.goto(searchUrl, { waitUntil: 'networkidle2' });
     
     // Wait for some time to let everything load
-    await page.waitForTimeout(3000);
+    await new Promise(resolve => setTimeout(resolve, 3000));
     
     console.log('Page loaded, looking for ad cards...');
     
