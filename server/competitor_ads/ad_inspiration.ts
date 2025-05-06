@@ -5,6 +5,7 @@
 
 import { searchMetaAds, checkMetaApiKey } from './meta_ad_library';
 import { searchGoogleAds } from './google_ads_transparency';
+import { searchFireCrawlAds, isConfigured as isFireCrawlConfigured, validateFireCrawlApiKey } from './firecrawl_client';
 import { CompetitorAd, InsertAdSearchQuery, AdSearchQuery, adSearchQueries, competitorAds } from '@shared/schema';
 import { db } from '../db';
 import { eq, and, desc } from 'drizzle-orm';
@@ -52,6 +53,70 @@ export async function searchCompetitorAds(
     let allAds: CompetitorAd[] = [];
     
     try {
+      // Check if FireCrawl is configured - this is now our preferred search method
+      if (isFireCrawlConfigured()) {
+        console.log('Searching FireCrawl API...');
+        try {
+          const fireCrawlAds = await searchFireCrawlAds(query, {
+            queryType,
+            userId: options.userId,
+            limit: options.limit || 20,
+            region: options.region || 'US',
+            platforms: options.platforms
+          });
+          
+          // Store the ads in the database for future reference
+          for (const ad of fireCrawlAds) {
+            try {
+              // Check if we already have this ad in the database
+              const existingAds = await db.select()
+                .from(competitorAds)
+                .where(
+                  and(
+                    eq(competitorAds.brand, ad.brand),
+                    eq(competitorAds.headline, ad.headline || '')
+                  )
+                )
+                .limit(1);
+                
+              if (existingAds.length === 0) {
+                // Insert the ad into the database with the user id who fetched it
+                await db.insert(competitorAds).values({
+                  ...ad,
+                  fetched_by_user_id: options.userId
+                });
+              }
+            } catch (dbError) {
+              console.error('Error saving ad to database:', dbError);
+              // Continue with the next ad
+            }
+          }
+          
+          allAds = [...allAds, ...fireCrawlAds];
+          console.log(`Found ${fireCrawlAds.length} ads from FireCrawl API`);
+          
+          // If we got results from FireCrawl, we can skip the other sources
+          if (fireCrawlAds.length > 0) {
+            console.log('Using FireCrawl results exclusively as search was successful');
+            // Skip Meta and Google searches
+            return {
+              ads: allAds,
+              searchId
+            };
+          }
+        } catch (error) {
+          console.error('Error searching FireCrawl API:', error);
+          console.error('Will try fallback search methods');
+          // Continue to fallback search methods
+        }
+      } else {
+        console.warn('FireCrawl API key not configured. Please set FIRECRAWL_API_KEY environment variable.');
+        console.log('Using fallback search methods instead...');
+      }
+      
+      // FALLBACK METHODS
+      // Only use these if FireCrawl didn't return results or isn't configured
+      
       // Check if we should search Meta
       if (!options.platforms || options.platforms.includes('meta')) {
         const hasMetaApiKey = await checkMetaApiKey();
@@ -77,8 +142,8 @@ export async function searchCompetitorAds(
         }
       }
       
-      // Check if we should search Google
-      if (!options.platforms || options.platforms.includes('google')) {
+      // Check if we should search Google as a last resort
+      if (allAds.length === 0 && (!options.platforms || options.platforms.includes('google'))) {
         console.log('Searching Google Ads Transparency Center...');
         try {
           // Search for relevant advertisers
