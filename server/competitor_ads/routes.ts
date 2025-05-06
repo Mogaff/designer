@@ -24,67 +24,146 @@ import Anthropic from '@anthropic-ai/sdk';
 export function registerCompetitorAdRoutes(app: any) {
   // Diagnostic endpoint to test Google Ads Transparency Center scraping
   app.get('/api/ad-inspiration/diagnostic/google', async (req: Request, res: Response) => {
-    // Set timeout to prevent long-running requests
+    // Get optional query parameters 
+    const advertiserQuery = req.query.advertiser as string || 'AR18054737239162880'; // Default to Google's advertiser ID
+    const region = req.query.region as string || 'US';
+    const maxAds = parseInt(req.query.maxAds as string || '3');
+    const searchTypeParam = req.query.searchType as string || 'brand';
+    const timeoutParam = parseInt(req.query.timeout as string || '45000');
+    
+    // Set a longer timeout to prevent long-running requests
     let timeoutHandle: NodeJS.Timeout | null = setTimeout(() => {
-      console.log(`[GoogleAdsDiagnostic] Diagnostic test timed out after 30 seconds`);
+      console.log(`[GoogleAdsDiagnostic] Diagnostic test timed out after ${timeoutParam/1000} seconds`);
       timeoutHandle = null;
       res.status(504).json({
         success: false,
-        error: 'Diagnostic test timed out after 30 seconds',
+        error: `Diagnostic test timed out after ${timeoutParam/1000} seconds`,
+        query: {
+          advertiser: advertiserQuery,
+          region,
+          maxAds,
+          searchType: searchTypeParam,
+          timeout: timeoutParam
+        },
         timeStamp: new Date().toISOString()
       });
-    }, 30000); // 30 second timeout
+    }, timeoutParam + 5000); // Add 5 seconds to the timeout to ensure proper cleanup
     
     try {
       // Allow non-authenticated access for easier testing
       console.log(`[GoogleAdsDiagnostic] Diagnostic test requested by IP: ${req.ip}`);
-      
+      console.log(`[GoogleAdsDiagnostic] Parameters: advertiser=${advertiserQuery}, region=${region}, searchType=${searchTypeParam}, maxAds=${maxAds}, timeout=${timeoutParam}ms`);
       
       console.log('[GoogleAdsDiagnostic] Running diagnostic test...');
       
-      // Test with a known advertiser that should have ads
-      const testAdvertiser = 'AR18054737239162880'; // Google's advertiser ID
+      // Create temp directory for screenshots if it doesn't exist
+      try {
+        const fs = require('fs').promises;
+        await fs.mkdir('./temp', { recursive: true });
+        console.log('[GoogleAdsDiagnostic] Temp directory created or already exists');
+      } catch (dirError) {
+        console.error(`[GoogleAdsDiagnostic] Error creating temp directory: ${dirError}`);
+      }
       
       // Run the scraper with detailed logging
-      console.log(`[GoogleAdsDiagnostic] Testing scraper with advertiser: ${testAdvertiser}`);
+      console.log(`[GoogleAdsDiagnostic] Testing scraper with advertiser: ${advertiserQuery}`);
       
       const startTime = Date.now();
-      const scrapingResult = await scrapeGoogleAdsForAdvertiser(testAdvertiser, {
-        region: 'US',
-        maxAds: 3,
-        searchType: 'brand',
-        timeout: 15000 // Shorter timeout for diagnostic
+      const scrapingResult = await scrapeGoogleAdsForAdvertiser(advertiserQuery, {
+        region,
+        maxAds,
+        searchType: searchTypeParam as 'brand' | 'keyword' | 'industry',
+        timeout: timeoutParam
       });
       const endTime = Date.now();
       
-      console.log(`[GoogleAdsDiagnostic] Scraping completed in ${endTime - startTime}ms`);
-      console.log(`[GoogleAdsDiagnostic] Found ${scrapingResult.length} ads`);
+      // Track performance metrics
+      const scrapingDuration = (endTime - startTime) / 1000;
       
-      // Clear the timeout since we're responding successfully
+      // Find any screenshots that were created during the scraping
+      let screenshots = [];
+      try {
+        const fs = require('fs');
+        const files = await fs.promises.readdir('./temp');
+        screenshots = files
+          .filter((file: string) => file.startsWith('google-ads-') && file.endsWith('.png'))
+          .map((file: string) => `/temp/${file}`);
+        console.log(`[GoogleAdsDiagnostic] Found ${screenshots.length} screenshots`);
+      } catch (readError) {
+        console.error(`[GoogleAdsDiagnostic] Error reading temp directory: ${readError}`);
+      }
+      
+      // Clear timeout since we're responding
       if (timeoutHandle) {
         clearTimeout(timeoutHandle);
         timeoutHandle = null;
       }
       
-      // Return diagnostic information with more details
-      return res.status(200).json({
-        success: true,
-        testAdvertiser,
-        executionTimeMs: endTime - startTime,
-        adsFound: scrapingResult.length,
-        sampleData: scrapingResult.slice(0, 1), // Just return the first ad as sample
-        chromiumPath: '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium',
+      // Define the response type with proper TypeScript interface
+      interface DiagnosticResponse {
+        success: boolean;
+        query: {
+          advertiser: string;
+          region: string;
+          maxAds: number;
+          searchType: string;
+        };
+        message?: string;
+        duration: number;
+        adCount: number;
+        timeStamp: string;
+        environment: {
+          nodeVersion: string;
+          platform: string;
+          arch: string;
+          chromiumPath: string;
+        };
+        googleUrl: string;
+        screenshots: string[];
+        sampleData?: any[];
+        ads?: any[];
+      }
+      
+      // Build detailed diagnostic response
+      const diagnosticResponse: DiagnosticResponse = {
+        success: scrapingResult && scrapingResult.length > 0,
+        query: {
+          advertiser: advertiserQuery,
+          region,
+          maxAds,
+          searchType: searchTypeParam
+        },
+        duration: scrapingDuration,
+        adCount: scrapingResult.length,
+        timeStamp: new Date().toISOString(),
         environment: {
           nodeVersion: process.version,
           platform: process.platform,
-          arch: process.arch
+          arch: process.arch,
+          chromiumPath: '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium',
         },
-        googleUrl: `https://adstransparency.google.com/advertiser/${testAdvertiser}?region=US`,
-        timeStamp: new Date().toISOString()
-      });
+        googleUrl: `https://adstransparency.google.com/advertiser/${advertiserQuery}?region=${region}`,
+        screenshots
+      };
       
+      if (scrapingResult && scrapingResult.length > 0) {
+        console.log(`[GoogleAdsDiagnostic] Success! Found ${scrapingResult.length} ads in ${scrapingDuration.toFixed(2)} seconds`);
+        
+        // Include the first ad as a sample in the response if we found any
+        diagnosticResponse.message = `Found ${scrapingResult.length} ads for ${advertiserQuery}`;
+        diagnosticResponse.sampleData = scrapingResult.slice(0, 1);
+        
+        return res.json(diagnosticResponse);
+      } else {
+        console.log(`[GoogleAdsDiagnostic] Failed to find any ads in ${scrapingDuration.toFixed(2)} seconds`);
+        
+        diagnosticResponse.message = `No ads found for ${advertiserQuery}. This suggests that the scraper is being blocked or the selectors need to be updated.`;
+        diagnosticResponse.ads = [];
+        
+        return res.json(diagnosticResponse);
+      }
     } catch (error) {
-      console.error('[GoogleAdsDiagnostic] Error in diagnostic test:', error);
+      console.error(`[GoogleAdsDiagnostic] Error running diagnostic: ${error}`);
       
       // Clear the timeout since we're responding with an error
       if (timeoutHandle) {
@@ -94,9 +173,18 @@ export function registerCompetitorAdRoutes(app: any) {
       
       return res.status(500).json({
         success: false,
-        error: 'Google Ads scraper diagnostic failed',
-        details: (error as Error).message,
-        stack: (error as Error).stack,
+        error: `Diagnostic test failed: ${(error as Error).message}`,
+        details: {
+          message: (error as Error).message,
+          stack: (error as Error).stack,
+        },
+        query: {
+          advertiser: advertiserQuery,
+          region,
+          maxAds,
+          searchType: searchTypeParam,
+          timeout: timeoutParam
+        },
         timeStamp: new Date().toISOString()
       });
     }

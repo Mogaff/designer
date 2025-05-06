@@ -295,16 +295,73 @@ export async function scrapeGoogleAdsForAdvertiser(
           });
           console.log(`[GoogleAdsScraper] Loaded with domcontentloaded strategy`);
           
-          // Simulate scrolling to trigger lazy loading content
+          // Simulate scrolling to trigger lazy loading content with more human-like behavior
           await page.evaluate(() => {
-            window.scrollBy(0, 300);
-            setTimeout(() => window.scrollBy(0, 300), 500);
-            setTimeout(() => window.scrollBy(0, 300), 1000);
-            setTimeout(() => window.scrollTo(0, 0), 1500); // Back to top
+            return new Promise((resolve) => {
+              // Initial delay
+              setTimeout(() => {
+                window.scrollBy(0, 200 + Math.random() * 100);
+                
+                // Second scroll
+                setTimeout(() => {
+                  window.scrollBy(0, 250 + Math.random() * 150);
+                  
+                  // Third scroll
+                  setTimeout(() => {
+                    window.scrollBy(0, 300 + Math.random() * 200);
+                    
+                    // Pause
+                    setTimeout(() => {
+                      // Scroll back up a bit (like a human looking for something)
+                      window.scrollBy(0, -150);
+                      
+                      // Then continue scrolling down
+                      setTimeout(() => {
+                        window.scrollBy(0, 400);
+                        
+                        // Then back to top slowly
+                        setTimeout(() => {
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                          resolve(true);
+                        }, 1200);
+                      }, 800);
+                    }, 1000);
+                  }, 800);
+                }, 700);
+              }, 500);
+            });
           });
           
-          // Give more time for content to load after scrolling
-          await new Promise(resolve => setTimeout(resolve, 12000));
+          // Handle clicks on "See more ads" button if present
+          try {
+            const buttonVisible = await page.evaluate(() => {
+              const seeMoreButton = Array.from(document.querySelectorAll('button, a')).find(el => {
+                const text = el.textContent?.trim().toLowerCase() || '';
+                return text.includes('see more') || 
+                       text.includes('load more') || 
+                       text.includes('show more') ||
+                       text.includes('view more');
+              });
+              
+              if (seeMoreButton) {
+                console.log('Found "See more" button, clicking it');
+                (seeMoreButton as HTMLElement).click();
+                return true;
+              }
+              return false;
+            });
+            
+            if (buttonVisible) {
+              console.log('[GoogleAdsScraper] Clicked "See more" button, waiting for more content to load');
+              // Wait for more content to load
+              await new Promise(resolve => setTimeout(resolve, 5000));
+            }
+          } catch (clickError) {
+            console.log('[GoogleAdsScraper] Error trying to click "See more" button:', clickError);
+          }
+          
+          // Give more time for content to load after all interactions
+          await new Promise(resolve => setTimeout(resolve, 8000));
         } catch (error) {
           console.log(`[GoogleAdsScraper] Secondary navigation attempt failed: ${error}`);
           return [];
@@ -317,24 +374,79 @@ export async function scrapeGoogleAdsForAdvertiser(
       // Small wait
       await new Promise(resolve => setTimeout(resolve, 3000 + Math.random() * 2000));
       
-      // Scroll down a bit to trigger lazy loading
+      // Implement more realistic human-like scrolling behavior
       await page.evaluate(() => {
-        const scrollAmount = 100 + Math.floor(Math.random() * 400);
-        window.scrollBy(0, scrollAmount);
+        return new Promise((resolve) => {
+          // Initial small scroll
+          setTimeout(() => {
+            window.scrollBy(0, 100 + Math.random() * 150);
+            
+            // Small pause, then continue scrolling
+            setTimeout(() => {
+              window.scrollBy(0, 200 + Math.random() * 150);
+              
+              // Another small pause
+              setTimeout(() => {
+                // Scroll back up a little bit (like a human looking for something)
+                window.scrollBy(0, -120);
+                
+                setTimeout(() => {
+                  // Continue scrolling down
+                  window.scrollBy(0, 300 + Math.random() * 200);
+                  
+                  setTimeout(() => {
+                    // One more scroll
+                    window.scrollBy(0, 250 + Math.random() * 150);
+                    
+                    // Click any "See more" or "Load more" buttons if they exist
+                    const loadMoreButton = Array.from(document.querySelectorAll('button, a')).find(el => {
+                      const text = el.textContent?.trim().toLowerCase() || '';
+                      return text.includes('see more') || 
+                             text.includes('load more') || 
+                             text.includes('view more') ||
+                             text.includes('show more');
+                    });
+                    
+                    if (loadMoreButton) {
+                      console.log('Found and clicking "load more" button');
+                      (loadMoreButton as HTMLElement).click();
+                      
+                      // Additional scroll after clicking "load more"
+                      setTimeout(() => {
+                        window.scrollBy(0, 300);
+                        resolve(true);
+                      }, 2000);
+                    } else {
+                      resolve(true);
+                    }
+                  }, 800 + Math.random() * 500);
+                }, 700 + Math.random() * 300);
+              }, 600 + Math.random() * 400);
+            }, 500 + Math.random() * 300);
+          }, 400 + Math.random() * 200);
+        });
       });
       
-      // Another small wait
-      await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 1500));
+      // Wait for any dynamic content to load
+      console.log(`[GoogleAdsScraper] Waiting for dynamic content after scrolling...`);
+      await new Promise(resolve => setTimeout(resolve, 5000 + Math.random() * 3000));
       
-      // Scroll a bit more
-      await page.evaluate(() => {
-        const scrollAmount = 200 + Math.floor(Math.random() * 500);
-        window.scrollBy(0, scrollAmount);
-      });
+      // Move mouse around to appear more human-like
+      try {
+        for (let i = 0; i < 3; i++) {
+          await page.mouse.move(
+            100 + Math.floor(Math.random() * 600),
+            100 + Math.floor(Math.random() * 400)
+          );
+          await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 200));
+        }
+      } catch (mouseError) {
+        console.log(`[GoogleAdsScraper] Mouse movement error: ${mouseError}`);
+      }
       
-      // Wait longer for any remaining dynamic content
-      console.log(`[GoogleAdsScraper] Waiting for dynamic content to fully load...`);
-      await new Promise(resolve => setTimeout(resolve, 10000));
+      // Final wait for any remaining content
+      console.log(`[GoogleAdsScraper] Final wait for any dynamic content to fully load...`);
+      await new Promise(resolve => setTimeout(resolve, 5000));
       
       // Log the current URL to help with debugging
       console.log(`Current page URL: ${page.url()}`);
