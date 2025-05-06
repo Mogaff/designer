@@ -68,6 +68,7 @@
     "ffmpeg-static": "^5.2.0",
     "firebase": "^11.6.0",
     "framer-motion": "^11.18.2",
+    "google-auth-library": "^9.15.1",
     "googleapis": "^148.0.0",
     "gsap": "^3.12.7",
     "html2canvas": "^1.4.1",
