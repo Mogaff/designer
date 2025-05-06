@@ -1,12 +1,18 @@
 /**
  * Google Ads Transparency Center Scraper
  * Handles fetching competitor ads from Google's Ads Transparency Center
+ * Using Firecrawl for web scraping
  */
 
-import puppeteer from 'puppeteer';
+import Firecrawl from 'firecrawl';
 import { CompetitorAd, InsertCompetitorAd } from '@shared/schema';
 import { db } from '../db';
 import { competitorAds } from '@shared/schema';
+
+// Initialize Firecrawl client
+const firecrawlClient = new Firecrawl({
+  apiKey: process.env.FIRECRAWL_API_KEY
+});
 
 // Google Ads Transparency Center URL
 const GOOGLE_ADS_TRANSPARENCY_URL = 'https://adstransparency.google.com';
@@ -32,6 +38,7 @@ interface ScrapingOptions {
 
 /**
  * Scrape ads for a specific advertiser from Google's Ads Transparency Center
+ * Using Firecrawl instead of Puppeteer
  */
 export async function scrapeGoogleAdsForAdvertiser(
   searchQuery: string,
@@ -43,61 +50,28 @@ export async function scrapeGoogleAdsForAdvertiser(
   const maxAds = options.maxAds || 20;
   const timeout = options.timeout || 30000; // 30 seconds
   
-  console.log(`Scraping Google Ads for advertiser: ${advertiser} in region: ${region}`);
+  console.log(`Scraping Google Ads for advertiser: ${searchQuery} in region: ${region}`);
   
-  // Launch a headless browser
-  const browser = await puppeteer.launch({
-    headless: true,
-    executablePath: '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium',
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-accelerated-2d-canvas',
-      '--no-first-run',
-      '--no-zygote',
-      '--single-process', // Reduziert den Speicherverbrauch
-      '--disable-gpu',
-      '--disable-extensions',
-      '--disable-web-security',
-      '--disable-features=site-per-process',
-      '--disable-site-isolation-trials'
-    ],
-    timeout: 60000 // 60 Sekunden
-  });
+  // Handle different search types
+  let searchUrl = '';
+  const searchRegion = options.region || 'US';
+  
+  if (options.searchType === 'brand') {
+    // Direct brand search
+    searchUrl = `${GOOGLE_ADS_TRANSPARENCY_URL}/advertiser/${encodeURIComponent(searchQuery)}?region=${searchRegion}`;
+  } else {
+    // For keyword and industry searches, use the search endpoint
+    searchUrl = `${GOOGLE_ADS_TRANSPARENCY_URL}/search?q=${encodeURIComponent(searchQuery)}&region=${searchRegion}`;
+  }
+  
+  console.log(`Navigating to advertiser page: ${searchUrl}`);
   
   try {
-    const page = await browser.newPage();
-    
-    // Set a reasonable timeout
-    page.setDefaultTimeout(timeout);
-    
-    // Dieser Teil wird übersprungen, da wir direkt zur Anzeigenseite gehen
-    
-    // Handle different search types
-    let searchUrl = '';
-    const searchRegion = options.region || 'US';
-    
-    if (options.searchType === 'brand') {
-      // Direct brand search
-      searchUrl = `${GOOGLE_ADS_TRANSPARENCY_URL}/advertiser/${encodeURIComponent(searchQuery)}?region=${searchRegion}`;
-    } else {
-      // For keyword and industry searches, use the search endpoint
-      searchUrl = `${GOOGLE_ADS_TRANSPARENCY_URL}/search?q=${encodeURIComponent(searchQuery)}&region=${searchRegion}`;
-    }
-    
-    const advertiserPageUrl = searchUrl;
-    console.log(`Navigating to advertiser page: ${advertiserPageUrl}`);
-    
-    try {
-      await page.goto(advertiserPageUrl, { waitUntil: 'networkidle2' });
-      // Kurz warten, damit die Seite vollständig laden kann
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      
-      // Prüfen, ob Anzeigen geladen wurden - verschiedene CSS-Selektoren versuchen
-      const hasAds = await page.evaluate(() => {
-        // Google ändert manchmal ihre Klassennamen, daher versuchen wir mehrere Selektoren
-        const possibleSelectors = [
+    // Define our extraction script for Firecrawl
+    const extractionScript = `
+      (() => {
+        // Find all ad card elements
+        const adCardSelectors = [
           '.ad-card', 
           '.adCard', 
           '.ad-container', 
@@ -108,152 +82,40 @@ export async function scrapeGoogleAdsForAdvertiser(
           '.ad_card'
         ];
         
-        for (const selector of possibleSelectors) {
-          const elements = document.querySelectorAll(selector);
-          if (elements && elements.length > 0) {
-            console.log(`Found ads using selector: ${selector} (count: ${elements.length})`);
-            return true;
-          }
-        }
-        
-        return false;
-      });
-      
-      if (!hasAds) {
-        console.log(`No ads found for advertiser: ${advertiser}`);
-        return [];
-      }
-    } catch (error) {
-      console.log(`Error navigating to advertiser page: ${error}`);
-      return [];
-    }
-    
-    // Extract the advertiser ID from the URL
-    const url = page.url();
-    const advertiserId = url.match(/advertiser\/(AR[0-9]+)/)?.[1];
-    
-    // Extract ad data from the page with robuste Selektoren
-    const ads = await page.evaluate((maxAdsToExtract, advertiserId) => {
-      // Alle möglichen Selektoren für Anzeigen
-      const adCardSelectors = [
-        '.ad-card', 
-        '.adCard', 
-        '.ad-container', 
-        '.adContainer',
-        '[data-ad-id]',
-        '[data-testid="ad-card"]',
-        '.gtc-ad-card',
-        '.ad_card'
-      ];
-      
-      // Finde den ersten Selektor, der Ergebnisse liefert
-      let adCards = [];
-      let usedSelector = '';
-      
-      for (const selector of adCardSelectors) {
-        const elements = Array.from(document.querySelectorAll(selector));
-        if (elements.length > 0) {
-          adCards = elements;
-          usedSelector = selector;
-          console.log(`Using selector "${selector}" for ad cards. Found ${elements.length} ads.`);
-          break;
-        }
-      }
-      
-      const extractedAds = [];
-      
-      // Helper-Funktion, um Text mit verschiedenen Selektoren zu extrahieren
-      const extractText = (element, selectors) => {
-        for (const selector of selectors) {
-          const el = element.querySelector(selector);
-          if (el && el.textContent) {
-            return el.textContent.trim();
-          }
-        }
-        return null;
-      };
-      
-      // Helper-Funktion für Bilder
-      const extractImage = (element, selectors) => {
-        for (const selector of selectors) {
-          const el = element.querySelector(selector);
-          if (el && el.src) {
-            return el.src;
-          }
-        }
-        return null;
-      };
-      
-      for (let i = 0; i < Math.min(adCards.length, maxAdsToExtract); i++) {
-        const card = adCards[i];
-        
-        // Extract headline mit verschiedenen möglichen Selektoren
-        const headline = extractText(card, [
-          '.ad-title', 
-          '.adTitle', 
-          '.ad-headline', 
-          '[data-testid="ad-title"]',
-          'h2', 
-          'h3'
-        ]);
-        
-        // Extract body text
-        const body = extractText(card, [
-          '.ad-description', 
-          '.adDescription', 
-          '.ad-body', 
-          '.adBody',
-          '[data-testid="ad-body"]',
-          'p'
-        ]);
-        
-        // Extract image URL if available
-        const imageUrl = extractImage(card, ['img', '[data-testid="ad-image"]']);
-        
-        // Extract platform details (YouTube, Search, etc.)
-        const platform = extractText(card, [
-          '.ad-platform-badge', 
-          '.adPlatform', 
-          '.platform-badge',
-          '[data-testid="ad-platform"]'
-        ]);
-        
-        // Extract last seen date if available
-        const lastSeen = extractText(card, [
-          '.ad-last-seen', 
-          '.adLastSeen', 
-          '.last-seen',
-          '[data-testid="ad-last-seen"]'
-        ]);
-        
-        // Extract CTA text if available
-        const cta = extractText(card, [
-          '.ad-cta', 
-          '.adCta', 
-          '.call-to-action',
-          '[data-testid="ad-cta"]',
-          'button'
-        ]);
-        
-        // Generate a unique ad ID
-        let adId = `google-${advertiserId}-${i}`;
-        
-        // Versuche, eine eindeutige ID zu finden
-        const dataAttrNames = Array.from(card.attributes)
-          .filter(attr => attr.name.startsWith('data-'))
-          .map(attr => attr.name);
-          
-        for (const attrName of dataAttrNames) {
-          if (attrName.includes('id')) {
-            const value = card.getAttribute(attrName);
-            if (value) {
-              adId = value;
-              break;
+        // Helper function to extract text from elements using multiple selectors
+        const extractText = (element, selectors) => {
+          for (const selector of selectors) {
+            const el = element.querySelector(selector);
+            if (el && el.textContent) {
+              return el.textContent.trim();
             }
           }
+          return null;
+        };
+        
+        // Helper function for images
+        const extractImage = (element, selectors) => {
+          for (const selector of selectors) {
+            const el = element.querySelector(selector);
+            if (el && el.src) {
+              return el.src;
+            }
+          }
+          return null;
+        };
+        
+        // Find all ad cards using the selectors
+        let adCards = [];
+        for (const selector of adCardSelectors) {
+          const elements = Array.from(document.querySelectorAll(selector));
+          if (elements.length > 0) {
+            adCards = elements;
+            console.log('Found ' + elements.length + ' ads using selector: ' + selector);
+            break;
+          }
         }
         
-        // Versuch, den Markennamen zu extrahieren (verschiedene Selektoren)
+        // Extract brand name
         const brandSelectors = [
           '.advertiser-name', 
           '.advertiserName', 
@@ -263,40 +125,153 @@ export async function scrapeGoogleAdsForAdvertiser(
           'h1'
         ];
         
-        let brand = 'Unknown';
+        let brandName = 'Unknown';
         for (const selector of brandSelectors) {
           const el = document.querySelector(selector);
           if (el && el.textContent) {
-            brand = el.textContent.trim();
+            brandName = el.textContent.trim();
             break;
           }
         }
         
-        extractedAds.push({
-          brand,
-          headline,
-          body,
-          imageUrl,
-          thumbnailUrl: imageUrl, // Use same image for thumbnail
-          cta,
-          adId,
-          platformDetails: platform,
-          lastSeen,
-          advertiserId: advertiserId || adId.split('-')[1] // Fallback
+        // Process each ad card
+        const extractedAds = adCards.map((card, i) => {
+          // Extract headline
+          const headline = extractText(card, [
+            '.ad-title', 
+            '.adTitle', 
+            '.ad-headline', 
+            '[data-testid="ad-title"]',
+            'h2', 
+            'h3'
+          ]);
+          
+          // Extract body text
+          const body = extractText(card, [
+            '.ad-description', 
+            '.adDescription', 
+            '.ad-body', 
+            '.adBody',
+            '[data-testid="ad-body"]',
+            'p'
+          ]);
+          
+          // Extract image URL
+          const imageUrl = extractImage(card, ['img', '[data-testid="ad-image"]']);
+          
+          // Extract platform details
+          const platformDetails = extractText(card, [
+            '.ad-platform-badge', 
+            '.adPlatform', 
+            '.platform-badge',
+            '[data-testid="ad-platform"]'
+          ]);
+          
+          // Extract last seen date
+          const lastSeen = extractText(card, [
+            '.ad-last-seen', 
+            '.adLastSeen', 
+            '.last-seen',
+            '[data-testid="ad-last-seen"]'
+          ]);
+          
+          // Extract CTA
+          const cta = extractText(card, [
+            '.ad-cta', 
+            '.adCta', 
+            '.call-to-action',
+            '[data-testid="ad-cta"]',
+            'button'
+          ]);
+          
+          // Try to get ad ID from data attribute or generate one
+          let adId;
+          if (card.hasAttribute('data-ad-id')) {
+            adId = card.getAttribute('data-ad-id');
+          } else {
+            // Look for other data attributes that might contain ID
+            const dataAttrs = Array.from(card.attributes)
+              .filter(attr => attr.name.startsWith('data-'));
+              
+            for (const attr of dataAttrs) {
+              if (attr.name.includes('id')) {
+                adId = attr.value;
+                break;
+              }
+            }
+            
+            // Generate fallback ID if none found
+            if (!adId) {
+              adId = 'google-ad-' + i;
+            }
+          }
+          
+          return {
+            headline,
+            body,
+            imageUrl,
+            platformDetails,
+            lastSeen,
+            cta,
+            adId
+          };
         });
-      }
-      
-      return extractedAds;
-    }, maxAds, advertiserId);
+        
+        return {
+          ads: extractedAds,
+          brandName,
+          currentUrl: window.location.href
+        };
+      })()
+    `;
     
-    console.log(`Found ${ads.length} ads for advertiser: ${advertiser}`);
-    return ads;
+    // Execute the scrape with Firecrawl
+    const result = await firecrawlClient.scrapeUrl(searchUrl, {
+      script: extractionScript,
+      waitFor: 5000, // Wait for 5 seconds to ensure dynamic content loads
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+      timeout: timeout
+    });
+    
+    // Check if we have valid results
+    if (!result || !result.result || !result.result.ads || result.result.ads.length === 0) {
+      console.log(`No ads found for advertiser: ${searchQuery}`);
+      return [];
+    }
+    
+    // Extract the advertiser ID from the URL if available
+    const currentUrl = result.result.currentUrl || '';
+    const advertiserId = currentUrl.match(/advertiser\/(AR[0-9]+)/)?.[1];
+    
+    // Process the scraped data
+    const brandName = result.result.brandName || 'Unknown';
+    
+    const extractedAds = result.result.ads
+      .slice(0, maxAds)
+      .map((card: any, index: number) => {
+        // Generate a fallback ad ID if none was found
+        const adId = card.adId || `google-${advertiserId || 'unknown'}-${index}`;
+        
+        return {
+          brand: brandName,
+          headline: card.headline || null,
+          body: card.body || null,
+          imageUrl: card.imageUrl || null,
+          thumbnailUrl: card.imageUrl || null, // Use same image for thumbnail
+          cta: card.cta || null,
+          adId: adId,
+          platformDetails: card.platformDetails || null,
+          lastSeen: card.lastSeen || null,
+          advertiserId: advertiserId || adId.split('-')[1] // Fallback
+        };
+      });
+    
+    console.log(`Found ${extractedAds.length} ads for advertiser: ${searchQuery}`);
+    return extractedAds;
     
   } catch (error) {
-    console.error(`Error scraping Google Ads for advertiser: ${advertiser}`, error);
+    console.error(`Error scraping Google Ads for advertiser: ${searchQuery}`, error);
     throw new Error(`Failed to scrape Google Ads Transparency Center: ${(error as Error).message}`);
-  } finally {
-    await browser.close();
   }
 }
 
@@ -456,6 +431,7 @@ export function findRelevantAdvertisers(query: string): string[] {
 
 /**
  * Search for ads in Google's Ads Transparency Center
+ * Using Firecrawl instead of Puppeteer
  */
 export async function searchGoogleAds(query: string, options: {
   queryType?: 'brand' | 'keyword' | 'industry';
@@ -467,7 +443,7 @@ export async function searchGoogleAds(query: string, options: {
     let advertisers: string[] = [];
     
     if (options.queryType === 'brand') {
-      // Für Marken-Suchen: Zuerst prüfen, ob wir eine ID für diese Marke haben
+      // For brand searches: First check if we have an ID for this brand
       const normalizedBrand = query.trim().toLowerCase();
       const knownAdvertiserIds: Record<string, string> = {
         'nike': 'AR488803513102942208',
@@ -483,12 +459,12 @@ export async function searchGoogleAds(query: string, options: {
         'starbucks': 'AR01985402131456000'
       };
       
-      // Wenn es eine bekannte Marke ist, verwenden wir die ID
+      // If it's a known brand, use the ID
       if (normalizedBrand in knownAdvertiserIds) {
         advertisers = [knownAdvertiserIds[normalizedBrand]];
         console.log(`Using known advertiser ID for brand ${normalizedBrand}: ${knownAdvertiserIds[normalizedBrand]}`);
       } else {
-        // Sonst den Markennamen verwenden
+        // Otherwise use the brand name directly
         advertisers = [query];
       }
     } else {
@@ -507,8 +483,9 @@ export async function searchGoogleAds(query: string, options: {
     // Search for each advertiser
     for (const advertiser of limitedAdvertisers) {
       try {
-        // Scrape ads for this advertiser
+        // Scrape ads for this advertiser using Firecrawl
         const googleAds = await scrapeGoogleAdsForAdvertiser(advertiser, {
+          searchType: advertiser.startsWith('AR') ? 'brand' : options.queryType,
           region: options.region,
           maxAds: options.maxAds || 10
         });
