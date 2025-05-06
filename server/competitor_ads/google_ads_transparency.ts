@@ -245,11 +245,11 @@ export async function scrapeGoogleAdsForAdvertiser(
     
     // Execute the scrape with Firecrawl
     // Cast result to our custom type for better type safety
+    // Use @ts-ignore because the API might have newer options than the types
+    // @ts-ignore - Firecrawl types might be out of date
     const result = await firecrawlClient.scrapeUrl(searchUrl, {
-      // @ts-ignore - Firecrawl types are incomplete, script is a valid parameter
       script: extractionScript,
       waitFor: 5000, // Wait for 5 seconds to ensure dynamic content loads
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
       timeout: timeout
     }) as FirecrawlScriptResult;
     
