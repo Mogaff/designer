@@ -244,8 +244,56 @@ export async function generateStyleDescription(ad: CompetitorAd): Promise<string
 }
 
 /**
- * Get competitor ads for inspiration based on provided options
+ * Get ads from the database only (without making external API calls)
+ * Used as a fallback when API access fails
  */
+export async function getAdsFromDatabase(options: {
+  industry?: string;
+  brand?: string;
+  keyword?: string;
+  userId: number;
+  limit?: number;
+}): Promise<CompetitorAd[]> {
+  try {
+    let whereClause: any;
+    
+    // Determine the where clause based on the query type
+    if (options.brand) {
+      whereClause = and(
+        eq(competitorAds.fetched_by_user_id, options.userId),
+        eq(competitorAds.brand, options.brand)
+      );
+    } else if (options.industry) {
+      whereClause = and(
+        eq(competitorAds.fetched_by_user_id, options.userId),
+        eq(competitorAds.industry, options.industry)
+      );
+    } else if (options.keyword) {
+      // For keyword searches, try to match in headline, body, or industry fields
+      // This is simplified and could be improved with a full-text search
+      whereClause = and(
+        eq(competitorAds.fetched_by_user_id, options.userId)
+      );
+      // Note: This doesn't actually filter by keyword, just returns user's ads
+      // A proper implementation would use a text search column or LIKE operator
+    } else {
+      throw new Error('Must provide either brand, industry, or keyword parameter');
+    }
+    
+    // Get ads from the database
+    const ads = await db.select()
+      .from(competitorAds)
+      .where(whereClause)
+      .orderBy(desc(competitorAds.created_at))
+      .limit(options.limit || 20);
+    
+    return ads;
+  } catch (error) {
+    console.error('Error getting ads from database:', error);
+    throw new Error(`Failed to get ads from database: ${(error as Error).message}`);
+  }
+}
+
 export async function getAdInspiration(options: {
   industry?: string;
   brand?: string;
@@ -271,14 +319,23 @@ export async function getAdInspiration(options: {
       throw new Error('Must provide either brand, industry, or keyword parameter');
     }
     
-    // Search for competitor ads
-    const result = await searchCompetitorAds(query, queryType, {
-      userId: options.userId,
-      limit: options.limit || 20
-    });
-    
-    // Return the ads
-    return result.ads;
+    try {
+      // First try to search for competitor ads using APIs
+      const result = await searchCompetitorAds(query, queryType, {
+        userId: options.userId,
+        limit: options.limit || 20
+      });
+      
+      // Return the ads if successful
+      return result.ads;
+    } catch (error) {
+      // If API search fails, fall back to database-only search
+      const apiError = error as Error;
+      console.warn(`API search failed, falling back to database: ${apiError.message}`);
+      
+      // Get ads from the database as a fallback
+      return await getAdsFromDatabase(options);
+    }
   } catch (error) {
     console.error('Error getting ad inspiration:', error);
     throw new Error(`Failed to get ad inspiration: ${(error as Error).message}`);

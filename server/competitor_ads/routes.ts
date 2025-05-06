@@ -13,7 +13,7 @@ import {
   getAdInspiration
 } from './ad_inspiration';
 import { db } from '../db';
-import { competitorAds } from '@shared/schema';
+import { competitorAds, CompetitorAd } from '@shared/schema';
 import { eq, sql } from 'drizzle-orm';
 import Anthropic from '@anthropic-ai/sdk';
 
@@ -297,13 +297,14 @@ export function registerCompetitorAdRoutes(app: any) {
               industry,
               brand,
               keyword,
+              userId, // Add required userId parameter
               limit: limit || 5
             });
             
             if (fallbackAds.length > 0) {
               // Generate style descriptions for any ads that don't have them
               const adsWithStyles = await Promise.all(
-                fallbackAds.map(async (ad) => {
+                fallbackAds.map(async (ad: CompetitorAd) => {
                   if (!ad.style_description) {
                     ad.style_description = await generateStyleDescription(ad);
                   }
@@ -318,13 +319,13 @@ export function registerCompetitorAdRoutes(app: any) {
                 message: "Using database results only. Google API is not available in this environment.",
                 // Extract style descriptions for use in AI prompts
                 styleInspiration: adsWithStyles
-                  .filter(ad => ad.style_description)
-                  .map(ad => `${ad.brand}: ${ad.style_description}`)
+                  .filter((ad: CompetitorAd) => ad.style_description)
+                  .map((ad: CompetitorAd) => `${ad.brand}: ${ad.style_description}`)
                   .join('\n\n'),
                 // Extract copywriting patterns for use in AI prompts  
                 copyInspiration: adsWithStyles
-                  .filter(ad => ad.headline || ad.body)
-                  .map(ad => `${ad.brand}: ${ad.headline || ''} - ${ad.body || ''}${ad.cta ? ` (CTA: ${ad.cta})` : ''}`)
+                  .filter((ad: CompetitorAd) => ad.headline || ad.body)
+                  .map((ad: CompetitorAd) => `${ad.brand}: ${ad.headline || ''} - ${ad.body || ''}${ad.cta ? ` (CTA: ${ad.cta})` : ''}`)
                   .join('\n\n')
               });
             }
