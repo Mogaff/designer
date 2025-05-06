@@ -187,10 +187,26 @@ export default function CompetitorInspirationPanel({
         // Call the callback with the enhanced prompt
         onEnhancePrompt(enhancedPrompt);
         
-        toast({
-          title: 'Prompt enhanced',
-          description: `Enhanced your prompt with inspiration from ${data.count} competitor ads`,
-        });
+        // Display appropriate message based on whether this came from database only
+        if (data.googleApiError) {
+          toast({
+            title: 'Prompt enhanced (limited sources)',
+            description: `Enhanced using ${data.count} previously saved competitor ads`,
+          });
+          
+          // Update Google API status to reflect the issue
+          setGoogleApiStatus(prev => ({
+            ...prev!,
+            configured: false,
+            message: data.message || "Google Search API unavailable. Using database results only.",
+            envLimitation: true
+          }));
+        } else {
+          toast({
+            title: 'Prompt enhanced',
+            description: `Enhanced your prompt with inspiration from ${data.count} competitor ads`,
+          });
+        }
       } else {
         toast({
           title: 'No inspiration found',
