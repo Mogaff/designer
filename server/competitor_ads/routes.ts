@@ -469,5 +469,48 @@ export function registerAdInspirationIntegrationRoutes(app: any) {
     }
   });
   
+  // Test the Google Custom Search API
+  app.get('/api/ad-inspiration/test-google-search', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // Get the user ID from the authenticated session
+      const userId = (req.user as any)?.id;
+      
+      if (!userId) {
+        return res.status(401).json({ error: 'User must be authenticated' });
+      }
+      
+      // Check if Google Search API is configured
+      const isConfigured = !!(process.env.GOOGLE_API_KEY && process.env.GOOGLE_CSE_ID);
+      
+      if (!isConfigured) {
+        return res.status(400).json({ 
+          error: 'Google Custom Search API is not configured. Please configure it in Settings.' 
+        });
+      }
+      
+      // Use a test brand to verify the API works
+      const testBrand = 'Nike';
+      const { getGoogleAdsForAdvertiser } = await import('./google_ads_transparency');
+      
+      // Get test results without saving to database
+      const testResults = await getGoogleAdsForAdvertiser(testBrand, {
+        maxAds: 3 // Limit to 3 results for this test
+      });
+      
+      return res.status(200).json({
+        success: true,
+        message: `Successfully tested Google Custom Search API with query "${testBrand}"`,
+        count: testResults.length,
+        results: testResults.slice(0, 2) // Only return 2 sample results
+      });
+      
+    } catch (error) {
+      console.error('Error testing Google Custom Search API:', error);
+      return res.status(500).json({ 
+        error: `Failed to test Google Custom Search API: ${(error as Error).message}` 
+      });
+    }
+  });
+  
   console.log('Ad Inspiration integration routes registered');
 }

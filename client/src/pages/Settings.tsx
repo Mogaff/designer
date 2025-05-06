@@ -21,7 +21,7 @@ export default function Settings() {
   const { toast } = useToast();
 
   // Query to check if Google Search API is configured
-  const googleSearchStatusQuery = useQuery({
+  const googleSearchStatusQuery = useQuery<{ configured: boolean }>({
     queryKey: ['/api/ad-inspiration/google-search-status'],
     refetchOnWindowFocus: false,
   });
@@ -46,6 +46,26 @@ export default function Settings() {
       toast({
         title: "Error",
         description: `Failed to save API settings: ${error.message}`,
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Mutation for testing Google Search API
+  const testGoogleSearchMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest('GET', '/api/ad-inspiration/test-google-search', null);
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "API Test Successful",
+        description: `Found ${data.count} results from Google Search API.`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "API Test Failed",
+        description: `Failed to test Google Search API: ${error.message}`,
         variant: "destructive",
       });
     }
@@ -79,6 +99,20 @@ export default function Settings() {
     }
     
     saveGoogleSearchMutation.mutate();
+  };
+  
+  const handleTestGoogleSearch = () => {
+    // Check if Google Search API is configured
+    if (!(googleSearchStatusQuery.isSuccess && (googleSearchStatusQuery.data as any)?.configured)) {
+      toast({
+        title: "API Not Configured",
+        description: "Please save your Google Custom Search API settings first.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    testGoogleSearchMutation.mutate();
   };
 
   return (
@@ -140,8 +174,17 @@ export default function Settings() {
                 <CardHeader>
                   <CardTitle className="text-white">Google Custom Search API Settings</CardTitle>
                   <CardDescription className="text-white/70">
-                    These settings are required for the Ad Inspiration feature to search for Google ads
+                    These settings are required for the Ad Inspiration feature to search for Google ads without using browser automation.
+                    Follow these steps:
                   </CardDescription>
+                  <div className="mt-3 text-xs text-white/70 space-y-1">
+                    <p>1. Create a Google Cloud project at <a href="https://console.cloud.google.com" target="_blank" className="text-blue-400 hover:underline">Google Cloud Console</a></p>
+                    <p>2. Enable the "Custom Search API" in the Google Cloud Console</p>
+                    <p>3. Create an API key in the Credentials section</p>
+                    <p>4. Create a Custom Search Engine at <a href="https://programmablesearchengine.google.com/cse/all" target="_blank" className="text-blue-400 hover:underline">Programmable Search Engine</a></p>
+                    <p>5. Get your Search Engine ID (look for "cx" parameter)</p>
+                    <p>6. Enter both values below and save</p>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
@@ -171,13 +214,25 @@ export default function Settings() {
                     </p>
                   </div>
                   
-                  {googleSearchStatusQuery.isSuccess && googleSearchStatusQuery.data?.configured && (
+                  {googleSearchStatusQuery.isSuccess && (googleSearchStatusQuery.data as any)?.configured && (
                     <div className="mt-2 p-2 bg-green-500/20 border border-green-500/30 rounded text-sm text-white">
                       ✓ Google Custom Search API is configured
                     </div>
                   )}
                 </CardContent>
-                <CardFooter className="flex justify-end border-t border-white/10 pt-4">
+                <CardFooter className="flex justify-between border-t border-white/10 pt-4">
+                  <div>
+                    {googleSearchStatusQuery.isSuccess && (googleSearchStatusQuery.data as any)?.configured && (
+                      <Button 
+                        variant="outline"
+                        onClick={handleTestGoogleSearch}
+                        disabled={testGoogleSearchMutation.isPending}
+                        className="bg-transparent border-white/20 text-white/70 hover:bg-white/10"
+                      >
+                        {testGoogleSearchMutation.isPending ? 'Testing...' : 'Test API Connection'}
+                      </Button>
+                    )}
+                  </div>
                   <Button 
                     onClick={handleSaveGoogleSearchSettings}
                     disabled={saveGoogleSearchMutation.isPending}
