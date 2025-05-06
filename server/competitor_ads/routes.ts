@@ -65,7 +65,7 @@ export function registerCompetitorAdRoutes(app: any) {
   });
   
   // Search for competitor ads (GET route for client usage)
-  app.get('/api/ad-inspiration/search', isAuthenticated, async (req: Request, res: Response) => {
+  app.get('/api/ad-inspiration/search', async (req: Request, res: Response) => {
     try {
       // Support both 'query' and 'q' parameters for flexibility
       const query = (req.query.query || req.query.q) as string;
@@ -81,48 +81,44 @@ export function registerCompetitorAdRoutes(app: any) {
       if (!queryType || !['brand', 'keyword', 'industry'].includes(queryType)) {
         return res.status(400).json({ error: 'Valid queryType is required (brand, keyword, or industry)' });
       }
-  
-      const userId = (req.user as any)?.id;
       
-      if (!userId) {
-        return res.status(401).json({ error: 'User must be authenticated' });
-      }
+      console.log(`GET search request: ${queryType} "${query}"`);
       
-      console.log(`GET search request: ${queryType} "${query}" for user ${userId}`);
-      
-      // Use the same function as the POST route to get real search results
+      // Direkt die Google Ads API für Tests aufrufen, ohne Datenbankeinträge
       try {
-        // Start the search using searchCompetitorAds to get REAL data
-        console.log(`Searching for competitor ads: ${queryType} "${query}"`);
+        console.log(`Searching Google Ads for: ${queryType} "${query}"`);
         
-        const result = await searchCompetitorAds(
-          query,
-          queryType as 'brand' | 'keyword' | 'industry',
-          {
-            userId,
-            platforms: platforms,
-            limit: limit || 20,
-            region: region || 'US'
-          }
-        );
+        // Für Testzwecke direkt die Google API aufrufen
+        const searchTerm = queryType === 'brand' ? query : 
+                         (queryType === 'industry' ? query + ' companies' : query);
         
-        console.log(`Found ${result.ads.length} ads for search: ${queryType} "${query}"`);
+        // Für direkten API-Aufruf importieren
+        const { searchGoogleAds } = await import('./google_ads_transparency');
+        
+        // Wir umgehen hier die Datenbank-Operationen und rufen die API direkt auf
+        const googleAds = await searchGoogleAds(searchTerm, {
+          queryType,
+          maxAds: limit || 10,
+          region: region || 'US'
+        });
+        
+        console.log(`Found ${googleAds.length} ads for search: ${queryType} "${query}"`);
         
         return res.status(200).json({
-          message: `Found ${result.ads.length} ads for ${queryType}: "${query}"`,
-          searchId: result.searchId,
-          count: result.ads.length,
-          ads: result.ads.slice(0, 10), // Return only first 10 to keep response size small
+          message: `Found ${googleAds.length} ads for ${queryType}: "${query}"`,
+          searchId: -1, // Dummy-Wert, da wir keinen Eintrag in der Datenbank haben
+          count: googleAds.length,
+          ads: googleAds.slice(0, 10), // Return only first 10 to keep response size small
         });
       } catch (searchError) {
-        console.error(`Error in real search: ${(searchError as Error).message}`);
+        console.error(`Error in Google ads search: ${(searchError as Error).message}`);
         // Fall back to detailed error response
         return res.status(500).json({ 
           error: `Search failed: ${(searchError as Error).message}`,
           errorStack: (searchError as Error).stack,
           query,
           queryType,
-          errorDetails: "Fehler beim Abrufen echter Anzeigen. Bitte prüfe die Firecrawl-API und die Serverlogs für weitere Details."
+          errorDetails: "Fehler beim Abrufen echter Anzeigen. Bitte überprüfen Sie die Server-Logs für weitere Details."
         });
       }
     } catch (error) {

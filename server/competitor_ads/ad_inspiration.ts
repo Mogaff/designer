@@ -10,6 +10,9 @@ import { db } from '../db';
 import { eq, and, desc } from 'drizzle-orm';
 import Anthropic from '@anthropic-ai/sdk';
 
+// Debug mode: Aktiviere für detaillierte Logs
+const DEBUG_MODE = true;
+
 // Initialize Anthropic client for style analysis
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
