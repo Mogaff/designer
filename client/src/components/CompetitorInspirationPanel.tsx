@@ -83,6 +83,27 @@ export default function CompetitorInspirationPanel({
     },
     onSuccess: (data) => {
       setIsSearching(false);
+      
+      // Check for Google API specific errors first
+      if (data.googleApiError) {
+        setResults([]);
+        
+        // Set a more detailed error status that will be shown in the UI
+        setGoogleApiStatus(prev => ({
+          ...prev,
+          configured: false,
+          message: data.warning || "Google Search API is temporarily unavailable in this environment",
+          error: true
+        }));
+        
+        toast({
+          title: 'Limited search results',
+          description: data.warning || "Google Search API unavailable. Using alternative sources only.",
+          // No variant means it will use the default style
+        });
+        return;
+      }
+      
       if (data.ads && data.ads.length > 0) {
         setResults(data.ads);
         toast({
@@ -100,9 +121,31 @@ export default function CompetitorInspirationPanel({
     },
     onError: (error) => {
       setIsSearching(false);
+      
+      // Parse the error message to check for specific issues
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      let userFriendlyMessage = errorMessage;
+      
+      // Check for specific error types and provide better messages
+      if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
+        userFriendlyMessage = 'Network connection error. Please check your internet connection.';
+      } else if (errorMessage.includes('timeout')) {
+        userFriendlyMessage = 'The search request timed out. Please try again later.';
+      } else if (errorMessage.includes('OAuth') || errorMessage.includes('Google')) {
+        userFriendlyMessage = 'Unable to access Google Search API. Using alternative sources only.';
+        
+        // Update the Google API status with more details
+        setGoogleApiStatus(prev => ({
+          ...prev,
+          configured: false,
+          message: "Google Search API authentication failed",
+          error: true
+        }));
+      }
+      
       toast({
         title: 'Search failed',
-        description: `Error searching for competitor ads: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        description: `Error searching for competitor ads: ${userFriendlyMessage}`,
         variant: 'destructive',
       });
     }
@@ -142,9 +185,32 @@ export default function CompetitorInspirationPanel({
       }
     },
     onError: (error) => {
+      // Parse the error message to check for specific issues
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      let userFriendlyMessage = errorMessage;
+      
+      // Check for specific error types and provide better messages
+      if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
+        userFriendlyMessage = 'Network connection error. Please check your internet connection.';
+      } else if (errorMessage.includes('timeout')) {
+        userFriendlyMessage = 'The request timed out. Please try again later.';
+      } else if (errorMessage.includes('OAuth') || errorMessage.includes('Google')) {
+        userFriendlyMessage = 'Unable to access Google Search API. Using alternative sources only.';
+        
+        // Update the Google API status with more details
+        setGoogleApiStatus(prev => ({
+          ...prev,
+          configured: false,
+          message: "Google Search API authentication failed", 
+          error: true
+        }));
+      } else if (errorMessage.includes('Found 0 ads')) {
+        userFriendlyMessage = 'No suitable competitor ads found for inspiration. Try a different search term.';
+      }
+      
       toast({
         title: 'Failed to enhance prompt',
-        description: `Error enhancing prompt: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        description: `Error enhancing prompt: ${userFriendlyMessage}`,
         variant: 'destructive',
       });
     }
