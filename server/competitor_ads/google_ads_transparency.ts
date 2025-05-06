@@ -504,8 +504,8 @@ export async function searchGoogleAds(query: string, options: {
             is_active: ad.is_active ?? true,
             style_description: ad.style_description ?? null,
             metadata: ad.metadata ?? {},
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            created_at: new Date(), // Use actual Date object instead of string
+            updated_at: new Date() // Use actual Date object instead of string
           };
           
           return competitorAd;
