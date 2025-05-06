@@ -135,13 +135,36 @@ export async function scrapeGoogleAdsForAdvertiser(
         'sec-ch-ua-platform': '"macOS"'
       });
       
-      console.log(`Navigating to ${advertiserPageUrl} with improved browser profile`);
-      await page.goto(advertiserPageUrl, { 
-        waitUntil: 'networkidle2',
-        timeout: 30000 
-      });
+      console.log(`[GoogleAdsScraper] Navigating to ${advertiserPageUrl} with improved browser profile`);
       
-      // Wait longer for the page to fully render
+      // Try multiple strategies to load the page
+      try {
+        // First attempt with networkidle2 (wait for network to be idle)
+        await page.goto(advertiserPageUrl, { 
+          waitUntil: 'networkidle2',
+          timeout: 30000 
+        });
+      } catch (error) {
+        console.log(`[GoogleAdsScraper] First navigation attempt failed: ${error}`);
+        
+        // Second attempt with domcontentloaded (faster but less reliable)
+        try {
+          await page.goto(advertiserPageUrl, { 
+            waitUntil: 'domcontentloaded',
+            timeout: 20000 
+          });
+          console.log(`[GoogleAdsScraper] Loaded with domcontentloaded strategy`);
+          
+          // Give extra time for content to load
+          await new Promise(resolve => setTimeout(resolve, 10000));
+        } catch (error) {
+          console.log(`[GoogleAdsScraper] Second navigation attempt failed: ${error}`);
+          return [];
+        }
+      }
+      
+      // Wait longer for the page to fully render and dynamic content to load
+      console.log(`[GoogleAdsScraper] Waiting for dynamic content to load...`);
       await new Promise(resolve => setTimeout(resolve, 8000));
       
       // Log the current URL to help with debugging
@@ -150,33 +173,92 @@ export async function scrapeGoogleAdsForAdvertiser(
       // Take a screenshot for debugging (disabled in production)
       // await page.screenshot({ path: './temp/google-ads-page.png' });
       
-      // Prüfen, ob Anzeigen geladen wurden - verschiedene CSS-Selektoren versuchen
-      const hasAds = await page.evaluate(() => {
-        // Google ändert manchmal ihre Klassennamen, daher versuchen wir mehrere Selektoren
-        const possibleSelectors = [
-          '.ad-card', 
-          '.adCard', 
-          '.ad-container', 
-          '.adContainer',
-          '[data-ad-id]',
-          '[data-testid="ad-card"]',
-          '.gtc-ad-card',
-          '.ad_card'
-        ];
+      // Check if ads were loaded - try different CSS selectors
+      console.log(`[GoogleAdsScraper] Checking for ad elements on the page...`);
+      
+      // Try to find ads multiple times with delay in between
+      let hasAds = false;
+      let adSelector = '';
+      let adCount = 0;
+      
+      // Try up to 3 times with delays in between
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        console.log(`[GoogleAdsScraper] Attempt ${attempt} to find ad elements`);
         
-        for (const selector of possibleSelectors) {
-          const elements = document.querySelectorAll(selector);
-          if (elements && elements.length > 0) {
-            console.log(`Found ads using selector: ${selector} (count: ${elements.length})`);
-            return true;
+        hasAds = await page.evaluate(() => {
+          // Declare interface to extend Window
+          interface CustomWindow extends Window {
+            _lastAdSelector?: string;
+            _lastAdCount?: number;
           }
+          
+          // Cast window to our custom interface
+          const customWindow = window as CustomWindow;
+          
+          // Google changes their class names sometimes, so we try multiple selectors
+          const possibleSelectors = [
+            '.ad-card', 
+            '.adCard', 
+            '.ad-container', 
+            '.adContainer',
+            '[data-ad-id]',
+            '[data-testid="ad-card"]',
+            '.gtc-ad-card',
+            '.ad_card',
+            // Try more general selectors as fallbacks
+            '.card',
+            '.transparency-card',
+            'article',
+            // Last resort selectors
+            'img[src*="googleusercontent"]',
+            '.grid-item'
+          ];
+          
+          for (const selector of possibleSelectors) {
+            const elements = document.querySelectorAll(selector);
+            if (elements && elements.length > 0) {
+              console.log(`Found ads using selector: ${selector} (count: ${elements.length})`);
+              // Add properties to window for communication between contexts
+              customWindow._lastAdSelector = selector;
+              customWindow._lastAdCount = elements.length;
+              return true;
+            }
+          }
+          
+          return false;
+        });
+        
+        // Get the selector and count from the page using the custom window interface
+        adSelector = await page.evaluate(() => {
+          interface CustomWindow extends Window {
+            _lastAdSelector?: string;
+            _lastAdCount?: number;
+          }
+          return (window as CustomWindow)._lastAdSelector || '';
+        });
+        
+        adCount = await page.evaluate(() => {
+          interface CustomWindow extends Window {
+            _lastAdSelector?: string;
+            _lastAdCount?: number;
+          }
+          return (window as CustomWindow)._lastAdCount || 0;
+        });
+        
+        if (hasAds) {
+          console.log(`[GoogleAdsScraper] Found ${adCount} ads using selector: ${adSelector}`);
+          break;
         }
         
-        return false;
-      });
+        // If no ads found and not last attempt, wait and try again
+        if (!hasAds && attempt < 3) {
+          console.log(`[GoogleAdsScraper] No ads found on attempt ${attempt}, waiting to try again...`);
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        }
+      }
       
       if (!hasAds) {
-        console.log(`No ads found for advertiser: ${searchQuery}`);
+        console.log(`[GoogleAdsScraper] No ads found for ${searchQuery} after multiple attempts`);
         return [];
       }
     } catch (error) {
@@ -212,7 +294,14 @@ export async function scrapeGoogleAdsForAdvertiser(
         '[data-ad-id]',
         '[data-testid="ad-card"]',
         '.gtc-ad-card',
-        '.ad_card'
+        '.ad_card',
+        // More general selectors as fallbacks
+        '.card',
+        '.transparency-card',
+        'article',
+        // Last resort selectors
+        'img[src*="googleusercontent"]',
+        '.grid-item'
       ];
       
       // Find the first selector that yields results
