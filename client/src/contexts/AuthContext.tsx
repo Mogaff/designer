@@ -3,9 +3,8 @@ import { useToast } from '@/hooks/use-toast';
 import { 
   auth, 
   googleProvider,
-  signInWithGoogle as firebaseSignInWithGoogle,
-  handleRedirectResult,
-  getCurrentUserIdToken
+  signInWithGoogle,
+  handleRedirectResult 
 } from '@/lib/firebase';
 import { signOut, onAuthStateChanged } from 'firebase/auth';
 import type { User as FirebaseUser } from 'firebase/auth';
@@ -172,14 +171,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [toast]);
 
   // Google Sign-in with Redirect (new implementation)
-  const signInWithGoogle = async () => {
+  const signInWithGoogleAuth = async () => {
     try {
       setIsLoading(true);
       console.log('Starting Google sign-in with redirect...');
       
-      // Use the signInWithGoogle function from our firebase.ts
+      // Use the imported signInWithGoogle function from our firebase.ts
       // This will redirect the user to Google's login page
-      await firebaseSignInWithGoogle();
+      await signInWithGoogle();
       
       // No toast here as the page will redirect to Google
       // We'll handle the redirect result in the useEffect below
@@ -227,7 +226,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user,
     isLoading,
     isAuthenticated: !!user,
-    signInWithGoogle,
+    signInWithGoogle: signInWithGoogleAuth,
     logout,
   };
 
