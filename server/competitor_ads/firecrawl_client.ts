@@ -7,7 +7,7 @@ import axios from 'axios';
 import { CompetitorAd } from '@shared/schema';
 
 // FireCrawl API configuration
-const FIRECRAWL_API_URL = 'https://api.firecrawl.com/v1'; // Replace with actual API URL
+const FIRECRAWL_API_URL = 'https://api.firecrawl.com/v1';
 const FIRECRAWL_API_KEY = process.env.FIRECRAWL_API_KEY;
 
 // Check if the API key is configured
@@ -40,7 +40,7 @@ export async function searchFireCrawlAds(query: string, options: {
     };
     
     // Make the API request
-    const response = await axios.get(`${FIRECRAWL_API_URL}/ads/search`, {
+    const response = await axios.get(`${FIRECRAWL_API_URL}/search/ads`, {
       params,
       headers: {
         'Authorization': `Bearer ${FIRECRAWL_API_KEY}`,
@@ -110,7 +110,7 @@ export async function validateFireCrawlApiKey(): Promise<boolean> {
       return false;
     }
 
-    const response = await axios.get(`${FIRECRAWL_API_URL}/auth/validate`, {
+    const response = await axios.get(`${FIRECRAWL_API_URL}/auth/status`, {
       headers: {
         'Authorization': `Bearer ${FIRECRAWL_API_KEY}`
       }

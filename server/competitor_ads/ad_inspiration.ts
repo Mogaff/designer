@@ -69,21 +69,39 @@ export async function searchCompetitorAds(
           for (const ad of fireCrawlAds) {
             try {
               // Check if we already have this ad in the database
+              const conditions = [eq(competitorAds.brand, ad.brand || 'Unknown')];
+              
+              if (ad.headline) {
+                conditions.push(eq(competitorAds.headline, ad.headline));
+              }
+              
               const existingAds = await db.select()
                 .from(competitorAds)
-                .where(
-                  and(
-                    eq(competitorAds.brand, ad.brand),
-                    eq(competitorAds.headline, ad.headline || '')
-                  )
-                )
+                .where(and(...conditions))
                 .limit(1);
                 
               if (existingAds.length === 0) {
                 // Insert the ad into the database with the user id who fetched it
+                // Make sure all required fields are present with defaults for optional ones
                 await db.insert(competitorAds).values({
-                  ...ad,
-                  fetched_by_user_id: options.userId
+                  brand: ad.brand || 'Unknown',
+                  platform: ad.platform || 'web',
+                  headline: ad.headline || null,
+                  body: ad.body || null,
+                  image_url: ad.image_url || null,
+                  thumbnail_url: ad.thumbnail_url || null,
+                  cta: ad.cta || null,
+                  start_date: ad.start_date || null,
+                  platform_details: ad.platform_details || null,
+                  style_description: ad.style_description || null,
+                  ad_id: ad.ad_id || null,
+                  page_id: ad.page_id || null,
+                  snapshot_url: ad.snapshot_url || null, 
+                  industry: ad.industry || null,
+                  tags: ad.tags || [],
+                  is_active: true,
+                  fetched_by_user_id: options.userId,
+                  metadata: ad.metadata || {}
                 });
               }
             } catch (dbError) {
@@ -92,7 +110,33 @@ export async function searchCompetitorAds(
             }
           }
           
-          allAds = [...allAds, ...fireCrawlAds];
+          // Convert Partial<CompetitorAd>[] to CompetitorAd[]
+          const completedAds = fireCrawlAds.map(ad => {
+            return {
+              id: ad.id || 0,
+              brand: ad.brand || 'Unknown',
+              platform: ad.platform || 'web',
+              headline: ad.headline || null,
+              body: ad.body || null,
+              image_url: ad.image_url || null,
+              thumbnail_url: ad.thumbnail_url || null,
+              cta: ad.cta || null,
+              start_date: ad.start_date || null,
+              platform_details: ad.platform_details || null,
+              style_description: ad.style_description || null,
+              ad_id: ad.ad_id || null,
+              page_id: ad.page_id || null,
+              snapshot_url: ad.snapshot_url || null, 
+              industry: ad.industry || null,
+              tags: ad.tags || [],
+              is_active: true,
+              fetched_by_user_id: options.userId,
+              created_at: new Date(),
+              metadata: ad.metadata || {}
+            } as CompetitorAd;
+          });
+          
+          allAds = [...allAds, ...completedAds];
           console.log(`Found ${fireCrawlAds.length} ads from FireCrawl API`);
           
           // If we got results from FireCrawl, we can skip the other sources
