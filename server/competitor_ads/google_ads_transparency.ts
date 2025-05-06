@@ -40,36 +40,51 @@ export async function scrapeGoogleAdsForAdvertiser(
   } = {}
 ): Promise<any[]> {
   const region = options.region || 'US';
-  const maxAds = options.maxAds || 20;
+  const maxAds = options.maxAds || 10; // Reduced from 20 to 10 for faster processing
   const timeout = options.timeout || 30000; // 30 seconds
   
-  console.log(`Scraping Google Ads for advertiser: ${searchQuery} in region: ${region}`);
+  console.log(`[GoogleAdsScraper] Starting scrape for: ${searchQuery} in region: ${region}`);
+  
+  // Check if searchQuery is empty or invalid
+  if (!searchQuery || searchQuery.trim() === '') {
+    console.error('[GoogleAdsScraper] Invalid empty search query');
+    return [];
+  }
   
   // Launch a headless browser with optimized configuration for Replit
-  const browser = await puppeteer.launch({
-    headless: true, // Use headless mode
-    executablePath: '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium',
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-accelerated-2d-canvas',
-      '--no-first-run',
-      '--no-zygote',
-      '--single-process',
-      '--disable-gpu',
-      '--disable-extensions',
-      '--disable-web-security',
-      '--disable-features=site-per-process',
-      '--disable-site-isolation-trials',
-      '--window-size=1920,1080', // Use larger window size for better rendering
-      '--mute-audio', // No audio needed
-      '--ignore-certificate-errors', // Ignore SSL errors
-      '--disable-notifications' // Disable notifications
-    ],
-    timeout: 60000, // 60 seconds
-    defaultViewport: { width: 1920, height: 1080 } // Larger viewport to see more content
-  });
+  let browser = null;
+  try {
+    browser = await puppeteer.launch({
+      headless: true, // Use headless mode
+      executablePath: '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium',
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox', 
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process',
+        '--disable-gpu',
+        '--disable-extensions',
+        '--disable-web-security',
+        '--disable-features=site-per-process',
+        '--disable-site-isolation-trials',
+        '--window-size=1920,1080', // Use larger window size for better rendering
+        '--mute-audio', // No audio needed
+        '--ignore-certificate-errors', // Ignore SSL errors
+        '--disable-notifications', // Disable notifications
+        '--disable-infobars'
+      ],
+      timeout: 60000, // 60 seconds
+      defaultViewport: { width: 1920, height: 1080 } // Larger viewport to see more content
+    });
+    
+    console.log('[GoogleAdsScraper] Browser launched successfully');
+  } catch (error) {
+    console.error('[GoogleAdsScraper] Failed to launch browser:', error);
+    return [];
+  }
   
   try {
     const page = await browser.newPage();
@@ -164,9 +179,22 @@ export async function scrapeGoogleAdsForAdvertiser(
     const url = page.url();
     const advertiserId = url.match(/advertiser\/(AR[0-9]+)/)?.[1];
     
-    // Extract ad data from the page with robuste Selektoren
+    // Extract ad data from the page with robust selectors
     const ads = await page.evaluate((maxAdsToExtract, advertiserId) => {
-      // Alle möglichen Selektoren für Anzeigen
+      interface AdData {
+        brand: string;
+        headline?: string | null;
+        body?: string | null;
+        imageUrl?: string | null;
+        thumbnailUrl?: string | null;
+        cta?: string | null;
+        adId?: string;
+        platformDetails?: string | null;
+        lastSeen?: string | null;
+        advertiserId?: string;
+      }
+
+      // All possible selectors for ads
       const adCardSelectors = [
         '.ad-card', 
         '.adCard', 
@@ -178,8 +206,8 @@ export async function scrapeGoogleAdsForAdvertiser(
         '.ad_card'
       ];
       
-      // Finde den ersten Selektor, der Ergebnisse liefert
-      let adCards = [];
+      // Find the first selector that yields results
+      let adCards: Element[] = [];
       let usedSelector = '';
       
       for (const selector of adCardSelectors) {
@@ -192,10 +220,10 @@ export async function scrapeGoogleAdsForAdvertiser(
         }
       }
       
-      const extractedAds = [];
+      const extractedAds: AdData[] = [];
       
-      // Helper-Funktion, um Text mit verschiedenen Selektoren zu extrahieren
-      const extractText = (element, selectors) => {
+      // Helper function to extract text with different selectors
+      const extractText = (element: Element, selectors: string[]): string | null => {
         for (const selector of selectors) {
           const el = element.querySelector(selector);
           if (el && el.textContent) {
@@ -205,12 +233,12 @@ export async function scrapeGoogleAdsForAdvertiser(
         return null;
       };
       
-      // Helper-Funktion für Bilder
-      const extractImage = (element, selectors) => {
+      // Helper function for images
+      const extractImage = (element: Element, selectors: string[]): string | null => {
         for (const selector of selectors) {
           const el = element.querySelector(selector);
-          if (el && el.src) {
-            return el.src;
+          if (el && (el as HTMLImageElement).src) {
+            return (el as HTMLImageElement).src;
           }
         }
         return null;
@@ -496,10 +524,13 @@ export async function searchGoogleAds(query: string, options: {
   region?: string;
 }): Promise<CompetitorAd[]> {
   try {
+    // Add debug log to track when this function is called
+    console.log(`[GoogleAdsSearch] Starting search for: "${query}" (type: ${options.queryType})`);
+    
     let advertisers: string[] = [];
     
     if (options.queryType === 'brand') {
-      // Für Marken-Suchen: Zuerst prüfen, ob wir eine ID für diese Marke haben
+      // For brand searches: Check if we have a known ID for this brand
       const normalizedBrand = query.trim().toLowerCase();
       const knownAdvertiserIds: Record<string, string> = {
         'nike': 'AR488803513102942208',
@@ -515,23 +546,24 @@ export async function searchGoogleAds(query: string, options: {
         'starbucks': 'AR01985402131456000'
       };
       
-      // Wenn es eine bekannte Marke ist, verwenden wir die ID
+      // If it's a known brand, use the ID
       if (normalizedBrand in knownAdvertiserIds) {
         advertisers = [knownAdvertiserIds[normalizedBrand]];
-        console.log(`Using known advertiser ID for brand ${normalizedBrand}: ${knownAdvertiserIds[normalizedBrand]}`);
+        console.log(`[GoogleAdsSearch] Using known advertiser ID for brand ${normalizedBrand}: ${knownAdvertiserIds[normalizedBrand]}`);
       } else {
-        // Sonst den Markennamen verwenden
+        // Otherwise use the brand name directly
         advertisers = [query];
+        console.log(`[GoogleAdsSearch] No known ID for brand ${normalizedBrand}, using name directly`);
       }
     } else {
       // For keyword/industry queries, find relevant advertisers
       advertisers = findRelevantAdvertisers(query);
+      console.log(`[GoogleAdsSearch] Found ${advertisers.length} relevant advertisers for ${options.queryType}: "${query}"`);
     }
     
-    console.log(`Searching Google Ads for ${advertisers.length} advertisers related to: ${query}`);
-    
     // Limit the number of advertisers to search to avoid long processing times
-    const limitedAdvertisers = advertisers.slice(0, 3);
+    const limitedAdvertisers = advertisers.slice(0, 2); // Reduced from 3 to 2 for faster results
+    console.log(`[GoogleAdsSearch] Limited to ${limitedAdvertisers.length} advertisers: ${limitedAdvertisers.join(', ')}`);
     
     // Create an array to store all ads
     const allAds: CompetitorAd[] = [];
@@ -539,11 +571,21 @@ export async function searchGoogleAds(query: string, options: {
     // Search for each advertiser
     for (const advertiser of limitedAdvertisers) {
       try {
+        console.log(`[GoogleAdsSearch] Processing advertiser: "${advertiser}"`);
+        
         // Scrape ads for this advertiser
         const googleAds = await scrapeGoogleAdsForAdvertiser(advertiser, {
           region: options.region,
-          maxAds: options.maxAds || 10
+          maxAds: options.maxAds || 5, // Reduced from 10 to 5 for faster results
+          searchType: options.queryType
         });
+        
+        console.log(`[GoogleAdsSearch] Found ${googleAds.length} ads for "${advertiser}"`);
+        
+        if (googleAds.length === 0) {
+          console.log(`[GoogleAdsSearch] No ads found for "${advertiser}", continuing to next one`);
+          continue;
+        }
         
         // Save the ads to the database
         const savedAds = await saveGoogleAds(
@@ -554,16 +596,19 @@ export async function searchGoogleAds(query: string, options: {
         
         // Add the saved ads to our result array
         allAds.push(...savedAds);
+        console.log(`[GoogleAdsSearch] Successfully saved ${savedAds.length} ads for "${advertiser}"`);
         
       } catch (error) {
-        console.error(`Error fetching ads for advertiser "${advertiser}":`, error);
+        console.error(`[GoogleAdsSearch] Error fetching ads for advertiser "${advertiser}":`, error);
         // Continue with the next advertiser
       }
     }
     
+    console.log(`[GoogleAdsSearch] Completed search for "${query}". Found total ${allAds.length} ads.`);
     return allAds;
   } catch (error) {
-    console.error(`Error searching Google ads for "${query}":`, error);
-    throw error;
+    console.error(`[GoogleAdsSearch] Fatal error searching Google ads for "${query}":`, error);
+    // Return empty array instead of throwing to prevent cascading errors
+    return [];
   }
 }
