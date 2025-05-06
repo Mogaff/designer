@@ -45,6 +45,8 @@ export default function CompetitorInspirationPanel({
     oauthConfigured?: boolean;
     cseIdConfigured?: boolean;
     message?: string;
+    error?: boolean;
+    envLimitation?: boolean;
   } | null>(null);
 
   // Check if Google Search API is configured when component loads
@@ -53,12 +55,26 @@ export default function CompetitorInspirationPanel({
       try {
         // Use apiRequest to benefit from its error handling
         const data = await apiRequest('GET', '/api/ad-inspiration/google-search-status', null);
-        setGoogleApiStatus(data);
+        
+        // The server now always returns a 200 status, even for errors
+        // So we need to check for error properties in the response
+        if (data.error) {
+          setGoogleApiStatus({
+            configured: false,
+            message: data.message || data.error,
+            error: true,
+            envLimitation: data.envLimitation
+          });
+        } else {
+          setGoogleApiStatus(data);
+        }
       } catch (error) {
+        // This block should rarely be hit now since server returns 200 status
         console.error('Error checking Google Search API status:', error);
         setGoogleApiStatus({
           configured: false,
-          message: error instanceof Error ? error.message : 'Error checking Google Search API status'
+          message: error instanceof Error ? error.message : 'Error checking Google Search API status',
+          error: true
         });
       }
     };
@@ -317,11 +333,24 @@ export default function CompetitorInspirationPanel({
           
           {/* Google API warning */}
           {googleApiStatus && !googleApiStatus.configured && (
-            <div className="mb-1 p-1 text-[8px] text-amber-300 bg-amber-500/20 border border-amber-500/30 rounded">
-              <strong>Google Search API not fully configured.</strong>{' '}
-              {googleApiStatus.message || 'Some search results may be limited.'}
-              {googleApiStatus.cseIdConfigured === false && ' Custom Search Engine ID needed.'}
-              <a href="/settings" className="underline ml-1">Configure in Settings</a>
+            <div className={`mb-1 p-1 text-[8px] rounded ${
+              googleApiStatus.envLimitation 
+                ? 'text-blue-300 bg-blue-500/20 border border-blue-500/30' 
+                : 'text-amber-300 bg-amber-500/20 border border-amber-500/30'
+            }`}>
+              {googleApiStatus.envLimitation ? (
+                <>
+                  <strong>Environment limitation:</strong>{' '}
+                  {googleApiStatus.message || 'Google Search API is not available in this environment.'}
+                </>
+              ) : (
+                <>
+                  <strong>Google Search API not fully configured.</strong>{' '}
+                  {googleApiStatus.message || 'Some search results may be limited.'}
+                  {googleApiStatus.cseIdConfigured === false && ' Custom Search Engine ID needed.'}
+                  <a href="/settings" className="underline ml-1">Configure in Settings</a>
+                </>
+              )}
             </div>
           )}
             
@@ -409,11 +438,24 @@ export default function CompetitorInspirationPanel({
           
           {/* Google API warning for quick tab */}
           {googleApiStatus && !googleApiStatus.configured && (
-            <div className="mb-1 p-1 text-[8px] text-amber-300 bg-amber-500/20 border border-amber-500/30 rounded">
-              <strong>Google Search API not fully configured.</strong>{' '}
-              {googleApiStatus.message || 'Inspiration results may be limited.'}
-              {googleApiStatus.cseIdConfigured === false && ' Custom Search Engine ID needed.'}
-              <a href="/settings" className="underline ml-1">Configure in Settings</a>
+            <div className={`mb-1 p-1 text-[8px] rounded ${
+              googleApiStatus.envLimitation 
+                ? 'text-blue-300 bg-blue-500/20 border border-blue-500/30' 
+                : 'text-amber-300 bg-amber-500/20 border border-amber-500/30'
+            }`}>
+              {googleApiStatus.envLimitation ? (
+                <>
+                  <strong>Environment limitation:</strong>{' '}
+                  {googleApiStatus.message || 'Google Search API is not available in this environment.'}
+                </>
+              ) : (
+                <>
+                  <strong>Google Search API not fully configured.</strong>{' '}
+                  {googleApiStatus.message || 'Inspiration results may be limited.'}
+                  {googleApiStatus.cseIdConfigured === false && ' Custom Search Engine ID needed.'}
+                  <a href="/settings" className="underline ml-1">Configure in Settings</a>
+                </>
+              )}
             </div>
           )}
           

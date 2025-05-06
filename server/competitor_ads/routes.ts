@@ -553,10 +553,15 @@ export function registerAdInspirationIntegrationRoutes(app: any) {
       
     } catch (error) {
       console.error('Error enhancing prompt with competitor insights:', error);
-      return res.status(500).json({ 
-        error: `Failed to enhance prompt: ${(error as Error).message}`,
+      
+      // Always use status 200 for errors to avoid breaking the UI
+      // The client can still check for the error property
+      return res.status(200).json({ 
+        error: `Failed to enhance prompt: ${error instanceof Error ? error.message : String(error)}`,
         originalPrompt: req.body.promptText,
-        enhancedPrompt: req.body.promptText // Fall back to original prompt
+        enhancedPrompt: req.body.promptText, // Fall back to original prompt
+        errorOccurred: true,
+        message: "Unable to generate competitor insights. Using original prompt instead."
       });
     }
   });
@@ -598,8 +603,32 @@ export function registerAdInspirationIntegrationRoutes(app: any) {
       
     } catch (error) {
       console.error('Error configuring Google Search API:', error);
-      return res.status(500).json({ 
-        error: `Failed to configure Google Search API: ${(error as Error).message}` 
+      
+      // Use a more descriptive error message based on the type of error
+      let errorMessage = `Failed to configure Google Search API`;
+      let envLimitation = false;
+      
+      if (error instanceof Error) {
+        const message = error.message;
+        
+        if (message.includes('ECONNREFUSED 169.254.169.254') || 
+            message.includes('compute/metadata')) {
+          errorMessage = "Google OAuth requires a Google Cloud environment, which is not available in Replit.";
+          envLimitation = true;
+        } else if (message.includes('Could not refresh access token')) {
+          errorMessage = "Unable to authenticate with Google APIs in this environment.";
+          envLimitation = true;
+        } else {
+          errorMessage += `: ${message}`;
+        }
+      }
+      
+      // Return status 200 to avoid breaking the UI
+      return res.status(200).json({ 
+        error: errorMessage,
+        configured: false,
+        envLimitation,
+        cseConfigured: !!process.env.GOOGLE_CSE_ID
       });
     }
   });
