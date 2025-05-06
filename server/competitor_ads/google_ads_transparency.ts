@@ -1,7 +1,7 @@
 /**
  * Google Ads Transparency Center Scraper
  * Handles fetching competitor ads from Google's Ads Transparency Center
- * Using Puppeteer for web scraping (more reliable than Firecrawl)
+ * Using direct HTTP requests and Cheerio parsing for web scraping
  */
 
 import { CompetitorAd, InsertCompetitorAd } from '@shared/schema';
@@ -126,7 +126,7 @@ export async function scrapeGoogleAdsForAdvertiser(
       '.ad_card'
     ];
     
-    let adCards: cheerio.Element[] = [];
+    let adCards: any[] = [];
     for (const selector of adCardSelectors) {
       const elements = $(selector).toArray();
       if (elements.length > 0) {
@@ -182,7 +182,7 @@ export async function scrapeGoogleAdsForAdvertiser(
     const advertiserId = searchUrl.match(/advertiser\/(AR[0-9]+)/)?.[1] || '';
     
     // Helper function to extract text using selectors
-    const extractText = (element: cheerio.Element, selectors: string[]): string | null => {
+    const extractText = (element: any, selectors: string[]): string | null => {
       for (const selector of selectors) {
         const el = $(element).find(selector);
         if (el.length > 0 && el.text().trim()) {
@@ -193,7 +193,7 @@ export async function scrapeGoogleAdsForAdvertiser(
     };
     
     // Helper function to extract image URL
-    const extractImage = (element: cheerio.Element, selectors: string[]): string | null => {
+    const extractImage = (element: any, selectors: string[]): string | null => {
       for (const selector of selectors) {
         const el = $(element).find(selector);
         if (el.length > 0 && el.attr('src')) {
@@ -433,7 +433,7 @@ export function findRelevantAdvertisers(query: string): string[] {
 
 /**
  * Search for ads in Google's Ads Transparency Center
- * Using Firecrawl instead of Puppeteer
+ * Using HTTP and Cheerio for reliability
  */
 export async function searchGoogleAds(query: string, options: {
   queryType?: 'brand' | 'keyword' | 'industry';
@@ -485,7 +485,7 @@ export async function searchGoogleAds(query: string, options: {
     // Search for each advertiser
     for (const advertiser of limitedAdvertisers) {
       try {
-        // Scrape ads for this advertiser using Firecrawl
+        // Scrape ads for this advertiser using HTTP and Cheerio
         const googleAds = await scrapeGoogleAdsForAdvertiser(advertiser, {
           searchType: advertiser.startsWith('AR') ? 'brand' : options.queryType,
           region: options.region,
