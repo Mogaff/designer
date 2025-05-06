@@ -120,13 +120,19 @@ export function transformGoogleAds(googleAds: GoogleAdData[], userId?: number, i
       cta: ad.cta || null,
       start_date: null, // Google doesn't provide exact start dates
       platform_details: ad.platformDetails || null,
+      style_description: null, // This will be generated later
       ad_id: ad.adId || '',
       page_id: ad.advertiserId || '',
       snapshot_url: '', // Google doesn't provide snapshot URLs
       fetched_by_user_id: userId || null,
       industry: industry || null,
-      style_description: null, // This will be generated later
-      created_at: new Date()
+      tags: [],
+      is_active: true,
+      metadata: {
+        lastSeen: ad.lastSeen,
+        source: 'google_search_api',
+        searchMethod: 'oauth'
+      }
     };
     
     return competitorAd;
