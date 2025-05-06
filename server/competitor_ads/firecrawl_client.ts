@@ -1,10 +1,17 @@
 /**
  * FireCrawl API Client
  * Handles interactions with the FireCrawl API for competitor ad search
+ * 
+ * Common issues in Replit environment:
+ * 1. Network connectivity limitations
+ * 2. DNS resolution issues
+ * 3. Timeout constraints
+ * 4. SSL/TLS certificate validation problems
  */
 
 import axios from 'axios';
 import { CompetitorAd } from '@shared/schema';
+import * as https from 'https';
 
 // FireCrawl API configuration
 // The base URL for the FireCrawl API
@@ -21,105 +28,6 @@ const FIRECRAWL_API_KEY = process.env.FIRECRAWL_API_KEY;
 // Check if the API key is configured
 export function isConfigured(): boolean {
   return !!FIRECRAWL_API_KEY;
-}
-
-/**
- * Search for competitor ads using FireCrawl API
- * Tries multiple endpoint URLs in case the primary one doesn't work
- */
-export async function searchFireCrawlAds(query: string, options: {
-  queryType: 'brand' | 'keyword' | 'industry';
-  userId: number;
-  region?: string;
-  limit?: number;
-  platforms?: string[];
-}): Promise<Partial<CompetitorAd>[]> {
-  if (!FIRECRAWL_API_KEY) {
-    throw new Error('FireCrawl API key is not configured');
-  }
-
-  // Prepare the request parameters
-  const params = {
-    query,
-    type: options.queryType,
-    region: options.region || 'US',
-    limit: options.limit || 20,
-    platforms: options.platforms?.join(',') || undefined
-  };
-  
-  console.log(`FireCrawl search parameters: ${JSON.stringify(params)}`);
-  
-  // Create a list of URLs to try, starting with the main one
-  const urlsToTry = [FIRECRAWL_API_URL, ...FIRECRAWL_API_FALLBACK_URLS];
-  
-  // Try each URL in sequence
-  let lastError: Error | null = null;
-  let attempts = 0;
-  const maxAttempts = 6; // Try up to 6 different combinations
-  
-  for (const baseUrl of urlsToTry) {
-    try {
-      console.log(`Trying FireCrawl API at ${baseUrl}...`);
-      
-      // Try multiple endpoint patterns
-      const endpointPaths = ['/search/ads', '/ads/search', '/api/ads/search', '/api/v1/search/ads'];
-      
-      for (const path of endpointPaths) {
-        attempts++;
-        if (attempts > maxAttempts) {
-          console.log(`Reached maximum attempts (${maxAttempts}), stopping search to prevent timeouts`);
-          break;
-        }
-        
-        try {
-          const fullUrl = `${baseUrl}${path}`;
-          console.log(`Attempt ${attempts}/${maxAttempts}: Making request to ${fullUrl}`);
-          
-          // Make the API request with a longer timeout and retries
-          const response = await axios.get(fullUrl, {
-            params,
-            headers: {
-              'Authorization': `Bearer ${FIRECRAWL_API_KEY}`,
-              'Content-Type': 'application/json',
-              'User-Agent': 'AdBurst-Factory/1.0'
-            },
-            // Set a longer timeout for Replit's environment
-            timeout: 15000
-          });
-    
-          if (response.status === 200) {
-            console.log(`SUCCESS! FireCrawl API responded from ${fullUrl}`);
-            
-            // If we have ads in the response
-            if (response.data && Array.isArray(response.data.ads)) {
-              // Convert FireCrawl API results to our CompetitorAd format
-              const ads = mapFireCrawlResponseToCompetitorAds(response.data.ads);
-              return ads;
-            } else if (response.data && Array.isArray(response.data.results)) {
-              // Alternative response format
-              const ads = mapFireCrawlResponseToCompetitorAds(response.data.results);
-              return ads;
-            } else {
-              console.warn(`Unexpected FireCrawl API response format from ${fullUrl}`, response.data);
-              throw new Error('Unexpected response format from FireCrawl API');
-            }
-          }
-        } catch (pathError) {
-          console.error(`Error trying FireCrawl API at ${baseUrl}${path}:`, pathError);
-          lastError = pathError as Error;
-          // Continue to the next path
-        }
-      }
-    } catch (urlError) {
-      console.error(`Error trying FireCrawl API at ${baseUrl}:`, urlError);
-      lastError = urlError as Error;
-      // Continue to the next URL
-    }
-  }
-  
-  // If we get here, all URLs failed
-  console.error('All FireCrawl API endpoints failed');
-  throw new Error(`FireCrawl API search failed: ${lastError?.message || 'Unknown error'}`);
 }
 
 /**
@@ -159,6 +67,117 @@ function mapFireCrawlResponseToCompetitorAds(firecrawlAds: any[]): Partial<Compe
       }
     };
   });
+}
+
+/**
+ * Search for competitor ads using FireCrawl API
+ * Tries multiple endpoint URLs in case the primary one doesn't work
+ */
+export async function searchFireCrawlAds(query: string, options: {
+  queryType: 'brand' | 'keyword' | 'industry';
+  userId: number;
+  region?: string;
+  limit?: number;
+  platforms?: string[];
+}): Promise<Partial<CompetitorAd>[]> {
+  if (!FIRECRAWL_API_KEY) {
+    throw new Error('FireCrawl API key is not configured');
+  }
+
+  // Prepare the request parameters
+  const params = {
+    query,
+    type: options.queryType,
+    region: options.region || 'US',
+    limit: options.limit || 20,
+    platforms: options.platforms?.join(',') || undefined
+  };
+  
+  console.log(`FireCrawl search parameters: ${JSON.stringify(params)}`);
+  
+  // Create a list of URLs to try, starting with the main one
+  const urlsToTry = [FIRECRAWL_API_URL, ...FIRECRAWL_API_FALLBACK_URLS];
+  
+  // Try each URL in sequence
+  let lastError: Error | null = null;
+  let attempts = 0;
+  const maxAttempts = 6; // Try up to 6 different combinations
+  
+  for (const baseUrl of urlsToTry) {
+    // Try multiple endpoint patterns
+    const endpointPaths = ['/search/ads', '/ads/search', '/api/ads/search', '/api/v1/search/ads'];
+    
+    for (const path of endpointPaths) {
+      attempts++;
+      if (attempts > maxAttempts) {
+        console.log(`Reached maximum attempts (${maxAttempts}), stopping search to prevent timeouts`);
+        break;
+      }
+      
+      const fullUrl = `${baseUrl}${path}`;
+      console.log(`Attempt ${attempts}/${maxAttempts}: Making request to ${fullUrl} with params: ${JSON.stringify(params)}`);
+      
+      try {
+        // Add detailed request diagnostics
+        console.log(`FireCrawl request headers: ${JSON.stringify({
+          'Authorization': 'Bearer ' + FIRECRAWL_API_KEY.substring(0, 5) + '...',
+          'Content-Type': 'application/json',
+          'User-Agent': 'AdBurst-Factory/1.0'
+        })}`);
+        
+        // Make the API request with a longer timeout and retries
+        const response = await axios.get(fullUrl, {
+          params,
+          headers: {
+            'Authorization': `Bearer ${FIRECRAWL_API_KEY}`,
+            'Content-Type': 'application/json',
+            'User-Agent': 'AdBurst-Factory/1.0',
+            // Add cache control headers to prevent caching issues
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          },
+          // Set a longer timeout for Replit's environment
+          timeout: 20000,
+          // Add proxy configuration if needed for Replit
+          proxy: false
+        });
+
+        if (response.status === 200) {
+          console.log(`SUCCESS! FireCrawl API responded from ${fullUrl}`);
+          
+          // If we have ads in the response
+          if (response.data && Array.isArray(response.data.ads)) {
+            // Convert FireCrawl API results to our CompetitorAd format
+            return mapFireCrawlResponseToCompetitorAds(response.data.ads);
+          } else if (response.data && Array.isArray(response.data.results)) {
+            // Alternative response format
+            return mapFireCrawlResponseToCompetitorAds(response.data.results);
+          } else {
+            console.warn(`Unexpected FireCrawl API response format from ${fullUrl}`, response.data);
+            // Log the raw response for debugging
+            console.log('Raw response:', JSON.stringify(response.data).substring(0, 500) + '...');
+          }
+        }
+      } catch (error) {
+        console.error(`Error trying FireCrawl API at ${fullUrl}:`, error.message || 'Unknown error');
+        // Type checking for the error object
+        if (error && typeof error === 'object') {
+          const axiosError = error as any;
+          if (axiosError.response) {
+            console.error(`Status: ${axiosError.response.status}, Data:`, axiosError.response.data);
+          } else if (axiosError.request) {
+            console.error('No response received from FireCrawl API');
+          }
+        }
+        lastError = error instanceof Error ? error : new Error(String(error));
+        // Continue to the next endpoint
+      }
+    }
+  }
+  
+  // If we get here, all URLs failed
+  console.error('All FireCrawl API endpoints failed');
+  throw new Error(`FireCrawl API search failed: ${lastError?.message || 'Unknown error'}`);
 }
 
 /**
