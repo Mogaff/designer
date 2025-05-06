@@ -46,34 +46,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Function to sync Firebase user with our backend
   const syncUserWithBackend = async (fbUser: FirebaseUser) => {
     try {
+      // Import the api client
+      const { api } = await import('../lib/api');
+      
       // Get the user's Firebase ID token for authentication
       const idToken = await fbUser.getIdToken();
       console.log("Syncing user with backend. ID token available:", !!idToken);
       
-      // Send Firebase user data to our backend
-      const response = await fetch('/api/auth/firebase', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${idToken}` // Add the ID token in the Authorization header
-        },
-        body: JSON.stringify({
+      // Send Firebase user data to our backend using the API client
+      // The API client will automatically include the ID token in Authorization header
+      try {
+        const userData = await api.post('/api/auth/firebase', {
           uid: fbUser.uid,
           email: fbUser.email,
           displayName: fbUser.displayName,
-        }),
-        credentials: 'include', // Important for cookies/session
-      });
-      
-      if (!response.ok) {
-        console.error('Failed to sync user with backend:', await response.text());
-        // Show complete error details
-        const responseText = await response.text();
-        console.error(`Response status: ${response.status}, Response text: ${responseText}`);
-      } else {
+        });
+        
         console.log('User synced with backend successfully');
-        const userData = await response.json();
         console.log('User data from backend:', userData);
+      } catch (apiError) {
+        console.error('Failed to sync user with backend:', apiError);
       }
     } catch (error) {
       console.error('Error syncing user with backend:', error);
@@ -164,10 +156,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         // Also logout from backend
         try {
-          await fetch('/api/auth/logout', {
-            method: 'POST',
-            credentials: 'include',
-          });
+          const { api } = await import('../lib/api');
+          await api.post('/api/auth/logout', {}, { includeAuth: false });
+          console.log('Successfully logged out from backend');
         } catch (error) {
           console.error('Error logging out from backend:', error);
         }
@@ -218,9 +209,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       setIsLoading(true);
+      
+      // First logout from Firebase (client-side)
       await signOut(auth);
-      // Toast message removed to simplify the logout experience
+      
+      // Note: The authState listener will handle server-side logout
+      console.log('Firebase logout successful');
+      
     } catch (error: any) {
+      console.error('Logout error:', error);
       toast({
         title: 'Logout Failed',
         description: error.message || 'There was an issue logging you out',
