@@ -28,6 +28,7 @@ interface ScrapingOptions {
   region?: string;
   maxAds?: number;
   timeout?: number;
+  searchType?: 'brand' | 'keyword' | 'industry';
 }
 
 /**
@@ -35,9 +36,7 @@ interface ScrapingOptions {
  */
 export async function scrapeGoogleAdsForAdvertiser(
   searchQuery: string,
-  options: ScrapingOptions & {
-    searchType?: 'brand' | 'keyword' | 'industry';
-  } = {}
+  options: ScrapingOptions = {}
 ): Promise<any[]> {
   const region = options.region || 'US';
   const maxAds = options.maxAds || 10; // Reduced from 20 to 10 for faster processing
@@ -56,7 +55,6 @@ export async function scrapeGoogleAdsForAdvertiser(
   try {
     browser = await puppeteer.launch({
       headless: true, // Use headless mode
-      executablePath: '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium',
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox', 
@@ -64,19 +62,17 @@ export async function scrapeGoogleAdsForAdvertiser(
         '--disable-accelerated-2d-canvas',
         '--no-first-run',
         '--no-zygote',
-        '--single-process',
         '--disable-gpu',
         '--disable-extensions',
         '--disable-web-security',
         '--disable-features=site-per-process',
-        '--disable-site-isolation-trials',
         '--window-size=1920,1080', // Use larger window size for better rendering
         '--mute-audio', // No audio needed
         '--ignore-certificate-errors', // Ignore SSL errors
         '--disable-notifications', // Disable notifications
         '--disable-infobars'
       ],
-      timeout: 60000, // 60 seconds
+      timeout: options.timeout || 60000, // Use options timeout or default to 60 seconds
       defaultViewport: { width: 1920, height: 1080 } // Larger viewport to see more content
     });
     
@@ -197,7 +193,15 @@ export async function scrapeGoogleAdsForAdvertiser(
           
           // Google changes their class names sometimes, so we try multiple selectors
           const possibleSelectors = [
-            '.ad-card', 
+            '.ad-card',
+            '.ad-container', 
+            '.ad-entry',
+            '.adv-card',
+            '[data-card-type="ad"]',
+            '[data-testid="ad-card"]',
+            '[data-testid="adTransparencyCard"]',
+            '.ad-transparency-card',
+            '.ad-search-result',
             '.adCard', 
             '.ad-container', 
             '.adContainer',

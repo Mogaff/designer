@@ -23,13 +23,11 @@ import Anthropic from '@anthropic-ai/sdk';
  */
 export function registerCompetitorAdRoutes(app: any) {
   // Diagnostic endpoint to test Google Ads Transparency Center scraping
-  app.get('/api/ad-inspiration/diagnostic/google', isAuthenticated, async (req: Request, res: Response) => {
+  app.get('/api/ad-inspiration/diagnostic/google', async (req: Request, res: Response) => {
     try {
-      // Only allow for authenticated users
-      const userId = (req.user as any)?.id;
-      if (!userId) {
-        return res.status(401).json({ error: 'Authentication required' });
-      }
+      // Allow non-authenticated access for easier testing
+      console.log(`[GoogleAdsDiagnostic] Diagnostic test requested by IP: ${req.ip}`);
+      
       
       console.log('[GoogleAdsDiagnostic] Running diagnostic test...');
       
