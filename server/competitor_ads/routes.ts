@@ -23,7 +23,7 @@ import Anthropic from '@anthropic-ai/sdk';
 export function registerCompetitorAdRoutes(app: any) {
   // Search for competitor ads
   app.post('/api/ad-inspiration/search', isAuthenticated, async (req: Request, res: Response) => {
-  try {
+    try {
     const { query, searchType, region } = req.body;
     
     if (!query) {
@@ -36,17 +36,21 @@ export function registerCompetitorAdRoutes(app: any) {
 
     const userId = (req.user as any)?.id;
     
-    const results = await searchGoogleAds(query, {
-      queryType: searchType,
-      userId,
-      region: region || 'US',
-      maxAds: 20
-    });
+    const result = await searchCompetitorAds(
+      query,
+      searchType as 'brand' | 'keyword' | 'industry',
+      {
+        userId,
+        region: region || 'US',
+        limit: 20
+      }
+    );
 
     return res.status(200).json({
       success: true,
-      count: results.length,
-      ads: results
+      count: result.ads.length,
+      searchId: result.searchId,
+      ads: result.ads
     });
     
   } catch (error) {
@@ -56,7 +60,10 @@ export function registerCompetitorAdRoutes(app: any) {
       details: (error as Error).message 
     });
   }
-}
+  });
+
+  // Get ad inspiration search results  
+  app.get('/api/ad-inspiration/results', isAuthenticated, async (req: Request, res: Response) => {
     try {
       const query = req.query.query as string;
       const queryType = req.query.queryType as string;
