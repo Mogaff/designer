@@ -157,8 +157,7 @@ async function scrapeGoogleAdsWithConfiguration(
         isMobile: false,
         hasTouch: false,
         isLandscape: true
-      },
-      ignoreHTTPSErrors: true,
+      }
     });
     
     console.log('[GoogleAdsScraper] Browser launched successfully with evasion configuration');

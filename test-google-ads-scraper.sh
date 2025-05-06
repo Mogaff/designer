@@ -1,75 +1,112 @@
 #!/bin/bash
 
-# Script to test Google Ads Transparency scraper
+# This script tests the Google Ads scraper diagnostic functionality with configurable parameters
 
 # Default values
-ADVERTISER="AR18054737239162880"  # Google's advertiser ID
-REGION="US"
-MAX_ADS=3
-SEARCH_TYPE="brand"
-TIMEOUT=45000
+ADVERTISER="AR18054737239162880"  # Default advertiser ID (Google)
+REGION="US"                      # Default region
+MAX_ADS=3                        # Number of ads to retrieve
+TIMEOUT=45000                    # Timeout in milliseconds
+PORT=5000                        # Default port for the server
+OPEN_BROWSER=true                # Whether to open the diagnostic viewer
 
-# Parse command line arguments
+# Function to print usage
+print_usage() {
+  echo "Usage: $0 [options]"
+  echo "Options:"
+  echo "  -a, --advertiser ADVERTISER  Advertiser ID or brand name to search for (default: $ADVERTISER)"
+  echo "  -r, --region REGION          Region code (default: $REGION)"
+  echo "  -m, --max-ads MAX_ADS        Maximum number of ads to retrieve (default: $MAX_ADS)"
+  echo "  -t, --timeout TIMEOUT        Timeout in milliseconds (default: $TIMEOUT)"
+  echo "  -p, --port PORT              Port number (default: $PORT)"
+  echo "  -n, --no-browser             Don't open the browser for viewing results"
+  echo "  -h, --help                   Show this help message"
+  echo ""
+  echo "Example:"
+  echo "  $0 -a \"Apple\" -r \"US\" -m 5 -t 60000"
+  echo "  $0 --advertiser \"AR4761532174297849856\" --region \"GB\" --max-ads 10"
+}
+
+# Parse command-line arguments
 while [[ $# -gt 0 ]]; do
-  case $1 in
-    --advertiser=*)
-      ADVERTISER="${1#*=}"
-      shift
+  case "$1" in
+    -a|--advertiser)
+      ADVERTISER="$2"
+      shift 2
       ;;
-    --region=*)
-      REGION="${1#*=}"
-      shift
+    -r|--region)
+      REGION="$2"
+      shift 2
       ;;
-    --max-ads=*)
-      MAX_ADS="${1#*=}"
-      shift
+    -m|--max-ads)
+      MAX_ADS="$2"
+      shift 2
       ;;
-    --search-type=*)
-      SEARCH_TYPE="${1#*=}"
-      shift
+    -t|--timeout)
+      TIMEOUT="$2"
+      shift 2
       ;;
-    --timeout=*)
-      TIMEOUT="${1#*=}"
+    -p|--port)
+      PORT="$2"
+      shift 2
+      ;;
+    -n|--no-browser)
+      OPEN_BROWSER=false
       shift
       ;;
     -h|--help)
-      echo "Usage: $0 [options]"
-      echo "Options:"
-      echo "  --advertiser=ID    Advertiser ID or name to search for (default: $ADVERTISER)"
-      echo "  --region=REGION    Region code (default: $REGION)"
-      echo "  --max-ads=N        Maximum number of ads to retrieve (default: $MAX_ADS)"
-      echo "  --search-type=TYPE Search type: brand, keyword, or industry (default: $SEARCH_TYPE)"
-      echo "  --timeout=MS       Timeout in milliseconds (default: $TIMEOUT)"
-      echo "  -h, --help         Show this help message"
+      print_usage
       exit 0
       ;;
     *)
       echo "Unknown option: $1"
-      echo "Use --help for usage information"
+      print_usage
       exit 1
       ;;
   esac
 done
 
-echo "==== Testing Google Ads Transparency Scraper ===="
-echo "Parameters:"
-echo "  Advertiser: $ADVERTISER"
-echo "  Region: $REGION"
-echo "  Max ads: $MAX_ADS"
-echo "  Search type: $SEARCH_TYPE"
-echo "  Timeout: $TIMEOUT ms"
+# Base URL
+BASE_URL="http://localhost:$PORT"
+DIAGNOSTIC_URL="$BASE_URL/api/ad-inspiration/diagnostic/google"
+VIEWER_URL="$BASE_URL/google-ads-diagnostic"
+
+# URL with query parameters
+URL="$DIAGNOSTIC_URL?advertiser=$ADVERTISER&region=$REGION&maxAds=$MAX_ADS&timeout=$TIMEOUT"
+
+echo "🔍 Testing Google Ads scraper with the following configuration:"
+echo "- Advertiser: $ADVERTISER"
+echo "- Region: $REGION"
+echo "- Max Ads: $MAX_ADS"
+echo "- Timeout: $TIMEOUT ms"
+echo "- API Endpoint: $DIAGNOSTIC_URL"
+echo "- Viewer URL: $VIEWER_URL"
 echo ""
-echo "Making request to diagnostic endpoint..."
+echo "🚀 Making request to: $URL"
 echo ""
 
-# Construct the URL with query parameters
-URL="http://localhost:5000/api/ad-inspiration/diagnostic/google?advertiser=$ADVERTISER&region=$REGION&maxAds=$MAX_ADS&searchType=$SEARCH_TYPE&timeout=$TIMEOUT"
-
-# Make the request
-curl -s "$URL" | jq
+# Make the request and get output
+echo "⏳ Starting diagnostic test... (this may take up to $((TIMEOUT/1000)) seconds)"
+curl -s "$URL" | jq '.'
 
 echo ""
-echo "==== Test Complete ===="
+echo "✅ Diagnostic test completed"
 echo ""
-echo "Check ./temp directory for screenshots if the scraper ran"
-echo "Screenshots taken during the test should be available there"
+
+# Check if we should open the browser
+if [ "$OPEN_BROWSER" = true ]; then
+  echo "🌐 Opening diagnostic viewer in your browser..."
+  # Try to open the browser based on the platform
+  if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    xdg-open "$VIEWER_URL" 2>/dev/null || echo "Could not open browser automatically. Please visit $VIEWER_URL manually."
+  elif [[ "$OSTYPE" == "darwin"* ]]; then
+    open "$VIEWER_URL" 2>/dev/null || echo "Could not open browser automatically. Please visit $VIEWER_URL manually."
+  else
+    echo "Please visit the diagnostic viewer at: $VIEWER_URL"
+  fi
+else
+  echo "🌐 To view the results in the diagnostic viewer, visit: $VIEWER_URL"
+fi
+
+echo ""
+echo "📁 Screenshots and diagnostic information are saved in the ./temp directory"

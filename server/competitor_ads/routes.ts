@@ -22,6 +22,49 @@ import Anthropic from '@anthropic-ai/sdk';
  * Register competitor ad inspiration API routes
  */
 export function registerCompetitorAdRoutes(app: any) {
+  // Route to serve the diagnostic viewer HTML page
+  app.get('/google-ads-diagnostic', (req: Request, res: Response) => {
+    const path = require('path');
+    res.sendFile(path.join(__dirname, 'diagnostic-viewer.html'));
+  });
+  
+  // Route to serve files from the temp directory
+  app.get('/temp/:filename', (req: Request, res: Response) => {
+    const fs = require('fs');
+    const path = require('path');
+    
+    const filename = req.params.filename;
+    const filePath = path.join('./temp', filename);
+    
+    // Basic security check to prevent directory traversal
+    if (filename.includes('..') || !filename) {
+      return res.status(400).send('Invalid filename');
+    }
+    
+    // Check if file exists
+    if (fs.existsSync(filePath)) {
+      return res.sendFile(path.resolve(filePath));
+    } else {
+      return res.status(404).send('File not found');
+    }
+  });
+  
+  // Route to list files in the temp directory
+  app.get('/temp', (req: Request, res: Response) => {
+    const fs = require('fs');
+    
+    try {
+      if (fs.existsSync('./temp')) {
+        const files = fs.readdirSync('./temp');
+        return res.json({ files });
+      } else {
+        return res.json({ files: [] });
+      }
+    } catch (error) {
+      console.error('Error listing temp directory:', error);
+      return res.status(500).json({ error: 'Failed to list temp directory' });
+    }
+  });
   // Diagnostic endpoint to test Google Ads Transparency Center scraping
   app.get('/api/ad-inspiration/diagnostic/google', async (req: Request, res: Response) => {
     // Get optional query parameters 
