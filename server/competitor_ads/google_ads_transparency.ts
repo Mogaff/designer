@@ -55,7 +55,7 @@ export async function scrapeGoogleAdsForAdvertiser(
   try {
     console.log('[GoogleAdsScraper] Launching browser with Chromium path: /nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium');
     browser = await puppeteer.launch({
-      headless: 'new', // Use new headless mode which is more efficient
+      headless: true, // Use headless mode
       executablePath: '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium',
       args: [
         '--no-sandbox',

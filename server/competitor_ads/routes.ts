@@ -24,6 +24,17 @@ import Anthropic from '@anthropic-ai/sdk';
 export function registerCompetitorAdRoutes(app: any) {
   // Diagnostic endpoint to test Google Ads Transparency Center scraping
   app.get('/api/ad-inspiration/diagnostic/google', async (req: Request, res: Response) => {
+    // Set timeout to prevent long-running requests
+    let timeoutHandle: NodeJS.Timeout | null = setTimeout(() => {
+      console.log(`[GoogleAdsDiagnostic] Diagnostic test timed out after 30 seconds`);
+      timeoutHandle = null;
+      res.status(504).json({
+        success: false,
+        error: 'Diagnostic test timed out after 30 seconds',
+        timeStamp: new Date().toISOString()
+      });
+    }, 30000); // 30 second timeout
+    
     try {
       // Allow non-authenticated access for easier testing
       console.log(`[GoogleAdsDiagnostic] Diagnostic test requested by IP: ${req.ip}`);
@@ -49,6 +60,12 @@ export function registerCompetitorAdRoutes(app: any) {
       console.log(`[GoogleAdsDiagnostic] Scraping completed in ${endTime - startTime}ms`);
       console.log(`[GoogleAdsDiagnostic] Found ${scrapingResult.length} ads`);
       
+      // Clear the timeout since we're responding successfully
+      if (timeoutHandle) {
+        clearTimeout(timeoutHandle);
+        timeoutHandle = null;
+      }
+      
       // Return diagnostic information with more details
       return res.status(200).json({
         success: true,
@@ -69,6 +86,9 @@ export function registerCompetitorAdRoutes(app: any) {
     } catch (error) {
       console.error('[GoogleAdsDiagnostic] Error in diagnostic test:', error);
       
+      // Clear the timeout since we're responding with an error
+      clearTimeout(diagnosticTimeout);
+      
       return res.status(500).json({
         success: false,
         error: 'Google Ads scraper diagnostic failed',
@@ -87,6 +107,16 @@ export function registerCompetitorAdRoutes(app: any) {
         user: (req.user as any)?.username || 'unknown',
         userId: (req.user as any)?.id || 'unknown'
       });
+      
+      // Set timeout to prevent long-running requests
+      const searchTimeout = setTimeout(() => {
+        console.log(`[AdInspirationAPI] Search timed out after 40 seconds`);
+        res.status(504).json({
+          error: 'Search timed out after 40 seconds',
+          details: 'The search operation took too long to complete. Please try a different search term or try again later.',
+          timeStamp: new Date().toISOString()
+        });
+      }, 40000); // 40 second timeout
       
       const { query, searchType, platforms, region } = req.body;
       
