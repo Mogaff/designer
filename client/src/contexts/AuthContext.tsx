@@ -72,53 +72,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Handle redirect result when the user returns from Google authentication
+  // We don't need to check for redirect results anymore since we're using popup
+  // but we'll keep this for future reference if needed
   useEffect(() => {
-    const checkRedirectResult = async () => {
-      setIsLoading(true);
-      try {
-        // Check if we're returning from a redirect operation
-        const result = await handleRedirectResult();
-        
-        if (result.success && result.user) {
-          // User successfully logged in via redirect
-          console.log('Redirect login successful:', result.user.email);
-          
-          // No need to set user state here as the auth state change listener will handle it
-          
-          toast({
-            title: 'Login erfolgreich',
-            description: 'Sie sind jetzt mit Google angemeldet.',
-          });
-        } else if (result.error) {
-          console.error('Redirect login error:', result.error);
-          
-          let errorMessage = 'Anmeldung mit Google fehlgeschlagen';
-          const errorCode = result.error.code;
-          
-          if (errorCode === 'auth/unauthorized-domain') {
-            errorMessage = 'Authentifizierungsproblem: Diese Domain muss in der Firebase-Konsole autorisiert werden.';
-            console.error('Domain nicht autorisiert:', window.location.origin, 'Bitte in Firebase-Konsole hinzufügen');
-          } else if (errorCode) {
-            errorMessage = `Authentifizierungsfehler: ${errorCode}`;
-          }
-          
-          toast({
-            title: 'Anmeldung fehlgeschlagen',
-            description: errorMessage,
-            variant: 'destructive',
-          });
-        }
-      } catch (error) {
-        console.error('Error checking redirect result:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    // Check for redirect result when the component mounts
-    checkRedirectResult();
-  }, [toast]);
+    // Initialize auth state when the component mounts
+    setIsLoading(false);
+  }, []);
 
   // Watch auth state changes
   useEffect(() => {
@@ -171,38 +130,56 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, [toast]);
 
-  // Google Sign-in with Redirect (new implementation)
+  // Google Sign-in with Popup (updated implementation)
   const signInWithGoogleAuth = async () => {
     try {
       setIsLoading(true);
-      console.log('Starting Google sign-in with redirect...');
+      console.log('Starting Google sign-in with popup...');
       
       // Use the imported signInWithGoogle function from our firebase.ts
-      // This will redirect the user to Google's login page
-      await signInWithGoogle();
+      // This will open a popup for Google authentication
+      const result = await signInWithGoogle();
       
-      // No toast here as the page will redirect to Google
-      // We'll handle the redirect result in the useEffect below
-    } catch (error: any) {
-      let errorMessage = 'Anmeldung mit Google fehlgeschlagen';
-      console.error('Google sign-in error:', error);
-      
-      // Error handling for redirect
-      if (error.code === 'auth/unauthorized-domain') {
-        errorMessage = 'Authentifizierungsproblem: Diese Domain muss in der Firebase-Konsole autorisiert werden.';
-        console.error('Domain nicht autorisiert:', window.location.origin, 'Bitte in Firebase-Konsole hinzufügen');
-      } else if (error.code) {
-        errorMessage = `Authentifizierungsfehler: ${error.code}`;
+      if (result.success && result.user) {
+        // Show success notification
+        toast({
+          title: 'Login erfolgreich',
+          description: 'Sie sind jetzt mit Google angemeldet.',
+        });
+        
+        // Note: The auth state listener will handle the user state update
+      } else if (result.error) {
+        // Handle authentication errors
+        let errorMessage = 'Anmeldung mit Google fehlgeschlagen';
+        const errorCode = result.error.code;
+        
+        if (errorCode === 'auth/popup-blocked') {
+          errorMessage = 'Das Login-Popup wurde blockiert. Bitte erlauben Sie Popups für diese Seite.';
+        } else if (errorCode === 'auth/popup-closed-by-user') {
+          errorMessage = 'Der Login-Vorgang wurde abgebrochen.';
+        } else if (errorCode === 'auth/unauthorized-domain') {
+          errorMessage = 'Authentifizierungsproblem: Diese Domain muss in der Firebase-Konsole autorisiert werden.';
+          console.error('Domain nicht autorisiert:', window.location.origin, 'Bitte in Firebase-Konsole hinzufügen');
+        } else if (errorCode) {
+          errorMessage = `Authentifizierungsfehler: ${errorCode}`;
+        }
+        
+        toast({
+          title: 'Anmeldung fehlgeschlagen',
+          description: errorMessage,
+          variant: 'destructive',
+        });
       }
-      
+    } catch (error: any) {
+      console.error('Google sign-in error:', error);
       toast({
         title: 'Anmeldung fehlgeschlagen',
-        description: errorMessage,
+        description: error.message || 'Ein unbekannter Fehler ist aufgetreten',
         variant: 'destructive',
       });
+    } finally {
       setIsLoading(false);
     }
-    // Don't set isLoading to false here as the page will redirect
   };
 
   // Logout function
