@@ -519,34 +519,64 @@ export function registerAdInspirationIntegrationRoutes(app: any) {
         return res.status(401).json({ error: 'User must be authenticated' });
       }
       
-      // Import the necessary functions
-      const { checkGoogleApiKeys } = await import('./google_ads_transparency');
-      
-      // Check if Google OAuth and CSE ID are configured
-      const isConfigured = await checkGoogleApiKeys();
-      
-      // Get the OAuth status separately to provide more detailed information
-      const { checkGoogleOAuthConfig } = await import('../services/googleOAuth');
-      const isOAuthConfigured = await checkGoogleOAuthConfig();
-      const hasCseId = !!process.env.GOOGLE_CSE_ID;
-      
-      return res.status(200).json({
-        configured: isConfigured,
-        oauthConfigured: isOAuthConfigured,
-        cseIdConfigured: hasCseId,
-        message: isConfigured 
-          ? "Google Search API is fully configured" 
-          : isOAuthConfigured && !hasCseId 
-            ? "Google OAuth is configured, but Custom Search Engine ID is missing"
-            : !isOAuthConfigured && hasCseId
-              ? "Custom Search Engine ID is configured, but Google OAuth is missing"
-              : "Google Search API is not configured"
-      });
-      
+      try {
+        // Import the necessary functions
+        const { checkGoogleApiKeys } = await import('./google_ads_transparency');
+        
+        // Check if Google OAuth and CSE ID are configured
+        const isConfigured = await checkGoogleApiKeys();
+        
+        // Get the OAuth status separately to provide more detailed information
+        const { checkGoogleOAuthConfig } = await import('../services/googleOAuth');
+        const isOAuthConfigured = await checkGoogleOAuthConfig();
+        const hasCseId = !!process.env.GOOGLE_CSE_ID;
+        
+        return res.status(200).json({
+          configured: isConfigured,
+          oauthConfigured: isOAuthConfigured,
+          cseIdConfigured: hasCseId,
+          message: isConfigured 
+            ? "Google Search API is fully configured" 
+            : isOAuthConfigured && !hasCseId 
+              ? "Google OAuth is configured, but Custom Search Engine ID is missing"
+              : !isOAuthConfigured && hasCseId
+                ? "Custom Search Engine ID is configured, but Google OAuth is missing"
+                : "Google Search API is not configured"
+        });
+      } catch (oauthError) {
+        // If there's a specific error related to OAuth environment limitations, handle it gracefully
+        console.warn('OAuth error checking Google Search API status:', oauthError);
+        
+        const errorMessage = oauthError instanceof Error ? oauthError.message : String(oauthError);
+        let userFriendlyMessage = "Google Search API authentication unavailable in this environment.";
+        
+        // Check for specific error types to provide better messages
+        if (errorMessage.includes('ECONNREFUSED 169.254.169.254') || 
+            errorMessage.includes('compute/metadata')) {
+          userFriendlyMessage = "Google OAuth requires a Google Cloud environment, which is not available in Replit.";
+        } else if (errorMessage.includes('Could not refresh access token')) {
+          userFriendlyMessage = "Unable to authenticate with Google APIs. Using alternative data sources only.";
+        }
+        
+        // Return a 200 status with detailed error information, but as a non-critical error
+        return res.status(200).json({
+          configured: false,
+          oauthConfigured: false,
+          cseIdConfigured: !!process.env.GOOGLE_CSE_ID,
+          message: userFriendlyMessage,
+          envLimitation: true  // Flag to indicate this is an environment limitation, not a configuration error
+        });
+      }
     } catch (error) {
       console.error('Error checking Google Search API configuration:', error);
-      return res.status(500).json({ 
-        error: `Failed to check Google Search API configuration: ${(error as Error).message}` 
+      // Convert error to a more user-friendly format and return 200 instead of 500
+      // to avoid breaking the UI when this endpoint is polled
+      return res.status(200).json({ 
+        configured: false,
+        oauthConfigured: false,
+        cseIdConfigured: false,
+        message: `Google Search API unavailable: ${error instanceof Error ? error.message : String(error)}`,
+        error: true
       });
     }
   });

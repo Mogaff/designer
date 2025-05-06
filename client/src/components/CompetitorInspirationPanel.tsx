@@ -98,8 +98,7 @@ export default function CompetitorInspirationPanel({
         
         toast({
           title: 'Limited search results',
-          description: data.warning || "Google Search API unavailable. Using alternative sources only.",
-          // No variant means it will use the default style
+          description: data.warning || "Google Search API unavailable. Using alternative sources only."
         });
         return;
       }
