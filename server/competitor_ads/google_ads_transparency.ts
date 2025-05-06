@@ -45,9 +45,9 @@ export async function scrapeGoogleAdsForAdvertiser(
   
   console.log(`Scraping Google Ads for advertiser: ${searchQuery} in region: ${region}`);
   
-  // Launch a headless browser
+  // Launch a headless browser with optimized configuration for Replit
   const browser = await puppeteer.launch({
-    headless: true,
+    headless: true, // Use headless mode
     executablePath: '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium',
     args: [
       '--no-sandbox',
@@ -56,14 +56,19 @@ export async function scrapeGoogleAdsForAdvertiser(
       '--disable-accelerated-2d-canvas',
       '--no-first-run',
       '--no-zygote',
-      '--single-process', // Reduziert den Speicherverbrauch
+      '--single-process',
       '--disable-gpu',
       '--disable-extensions',
       '--disable-web-security',
       '--disable-features=site-per-process',
-      '--disable-site-isolation-trials'
+      '--disable-site-isolation-trials',
+      '--window-size=1920,1080', // Use larger window size for better rendering
+      '--mute-audio', // No audio needed
+      '--ignore-certificate-errors', // Ignore SSL errors
+      '--disable-notifications' // Disable notifications
     ],
-    timeout: 60000 // 60 Sekunden
+    timeout: 60000, // 60 seconds
+    defaultViewport: { width: 1920, height: 1080 } // Larger viewport to see more content
   });
   
   try {
@@ -90,9 +95,36 @@ export async function scrapeGoogleAdsForAdvertiser(
     console.log(`Navigating to advertiser page: ${advertiserPageUrl}`);
     
     try {
-      await page.goto(advertiserPageUrl, { waitUntil: 'networkidle2' });
-      // Kurz warten, damit die Seite vollständig laden kann
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      // Set user agent to appear more like a regular browser
+      await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36');
+      
+      // Set extra HTTP headers
+      await page.setExtraHTTPHeaders({
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'Sec-Fetch-Site': 'same-origin',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-User': '?1',
+        'Sec-Fetch-Dest': 'document',
+        'sec-ch-ua': '"Google Chrome";v="125", " Not A;Brand";v="99", "Chromium";v="125"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"macOS"'
+      });
+      
+      console.log(`Navigating to ${advertiserPageUrl} with improved browser profile`);
+      await page.goto(advertiserPageUrl, { 
+        waitUntil: 'networkidle2',
+        timeout: 30000 
+      });
+      
+      // Wait longer for the page to fully render
+      await new Promise(resolve => setTimeout(resolve, 8000));
+      
+      // Log the current URL to help with debugging
+      console.log(`Current page URL: ${page.url()}`);
+      
+      // Take a screenshot for debugging (disabled in production)
+      // await page.screenshot({ path: './temp/google-ads-page.png' });
       
       // Prüfen, ob Anzeigen geladen wurden - verschiedene CSS-Selektoren versuchen
       const hasAds = await page.evaluate(() => {
