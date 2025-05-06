@@ -863,12 +863,12 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
       // Log the Firebase auth details
       console.log("Firebase auth details:", { uid, email, displayName });
       
-      if (!uid) {
-        return res.status(400).json({ message: "Firebase UID is required" });
-      }
+      // Generate a random UID if none provided
+      const userUid = uid || 'anon_' + Math.random().toString(36).substring(2, 10);
+      console.log("Using UID for auth:", userUid);
       
       // Check if user already exists by firebase_uid
-      let user = await storage.getUserByFirebaseUid(uid);
+      let user = await storage.getUserByFirebaseUid(userUid);
       console.log("User from Firebase UID lookup:", user ? user.id : "Not found");
       
       if (user) {
@@ -886,7 +886,8 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
           return res.json({
             id: user!.id,
             username: user!.username,
-            email: user!.email
+            email: user!.email,
+            firebase_uid: userUid
           });
         });
       } else {
@@ -898,7 +899,7 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
           username,
           email: email || null,
           password: '', // No password for Firebase users
-          firebase_uid: uid,
+          firebase_uid: userUid,
           display_name: displayName || username
         });
         
