@@ -1,15 +1,20 @@
 /**
- * Google Ads Transparency Center Scraper
- * Handles fetching competitor ads from Google's Ads Transparency Center
+ * Google Ads API Implementation
+ * Handles fetching competitor ads from Google's Search results
  */
 
-import puppeteer from 'puppeteer';
+import { google } from 'googleapis';
 import { CompetitorAd, InsertCompetitorAd } from '@shared/schema';
 import { db } from '../db';
 import { competitorAds } from '@shared/schema';
 
-// Google Ads Transparency Center URL
-const GOOGLE_ADS_TRANSPARENCY_URL = 'https://adstransparency.google.com';
+// Configure Google Custom Search API
+// These should be set as environment variables in a production environment
+const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
+const GOOGLE_CSE_ID = process.env.GOOGLE_CSE_ID;
+
+// Check if API key is available
+const isGoogleSearchConfigured = !!GOOGLE_API_KEY && !!GOOGLE_CSE_ID;
 
 interface GoogleAdData {
   brand: string;
@@ -24,135 +29,81 @@ interface GoogleAdData {
   advertiserId?: string;
 }
 
-interface ScrapingOptions {
+interface SearchOptions {
   region?: string;
   maxAds?: number;
   timeout?: number;
 }
 
 /**
- * Scrape ads for a specific advertiser from Google's Ads Transparency Center
+ * Search for ads for a specific advertiser using Google's Custom Search API
  */
-export async function scrapeGoogleAdsForAdvertiser(
+export async function getGoogleAdsForAdvertiser(
   advertiser: string,
-  options: ScrapingOptions = {}
+  options: SearchOptions = {}
 ): Promise<GoogleAdData[]> {
   const region = options.region || 'US';
   const maxAds = options.maxAds || 20;
-  const timeout = options.timeout || 30000; // 30 seconds
   
-  console.log(`Scraping Google Ads for advertiser: ${advertiser} in region: ${region}`);
+  console.log(`Searching Google Ads for advertiser: ${advertiser} in region: ${region}`);
   
-  // Launch a headless browser
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-  });
+  // Check if Google Search API is configured
+  if (!isGoogleSearchConfigured) {
+    console.warn('Google Custom Search API is not configured. Please set GOOGLE_API_KEY and GOOGLE_CSE_ID environment variables.');
+    return [];
+  }
   
   try {
-    const page = await browser.newPage();
+    // Initialize Google Custom Search API
+    const customsearch = google.customsearch('v1');
     
-    // Set a reasonable timeout
-    page.setDefaultTimeout(timeout);
+    // Construct search query
+    const searchQuery = `${advertiser} ads`;
     
-    // Navigate to the Ads Transparency Center with the region parameter
-    await page.goto(`${GOOGLE_ADS_TRANSPARENCY_URL}?region=${region}`);
+    // Execute search
+    const searchResponse = await customsearch.cse.list({
+      auth: GOOGLE_API_KEY,
+      cx: GOOGLE_CSE_ID,
+      q: searchQuery,
+      num: maxAds,
+      gl: region, // Geolocation parameter (country code)
+      cr: `country${region}` // Country restrict parameter
+    });
     
-    // Wait for the search box to be available
-    await page.waitForSelector('input[aria-label="Search by advertiser or website name"]');
-    
-    // Type the advertiser name into the search box
-    await page.type('input[aria-label="Search by advertiser or website name"]', advertiser);
-    
-    // Press Enter to search
-    await page.keyboard.press('Enter');
-    
-    // Wait for search results
-    try {
-      await page.waitForSelector('[role="listitem"]', { timeout: 10000 });
-    } catch (error) {
+    if (!searchResponse.data.items || searchResponse.data.items.length === 0) {
       console.log(`No search results found for advertiser: ${advertiser}`);
       return [];
     }
     
-    // Click on the first matching advertiser
-    await page.evaluate(() => {
-      const items = document.querySelectorAll('[role="listitem"]');
-      if (items.length > 0) {
-        (items[0] as HTMLElement).click();
-      }
+    // Transform search results to ad data
+    const ads: GoogleAdData[] = searchResponse.data.items.map((item, index) => {
+      // Generate a unique ad ID
+      const adId = `google-${advertiser.replace(/\s+/g, '-').toLowerCase()}-${index}`;
+      
+      // Extract image URL if available
+      const imageUrl = item.pagemap?.cse_image?.[0]?.src || item.pagemap?.cse_thumbnail?.[0]?.src || null;
+      
+      return {
+        brand: advertiser,
+        headline: item.title || undefined,
+        body: item.snippet || undefined,
+        imageUrl: imageUrl || undefined,
+        thumbnailUrl: imageUrl || undefined,
+        cta: item.pagemap?.metatags?.[0]?.['og:price:amount'] ? 'Shop Now' : 'Learn More',
+        adId,
+        platformDetails: 'Search',
+        lastSeen: new Date().toISOString().split('T')[0],
+        advertiserId: advertiser.replace(/\s+/g, '-').toLowerCase()
+      };
     });
     
-    // Wait for ads to load
-    try {
-      await page.waitForSelector('.ad-card', { timeout: 10000 });
-    } catch (error) {
-      console.log(`No ads found for advertiser: ${advertiser}`);
-      return [];
-    }
-    
-    // Extract the advertiser ID from the URL
-    const url = page.url();
-    const advertiserId = url.match(/advertiser\/(AR[0-9]+)/)?.[1];
-    
-    // Extract ad data from the page
-    const ads = await page.evaluate((maxAdsToExtract, advertiserId) => {
-      const adCards = document.querySelectorAll('.ad-card');
-      const extractedAds: GoogleAdData[] = [];
-      
-      for (let i = 0; i < Math.min(adCards.length, maxAdsToExtract); i++) {
-        const card = adCards[i];
-        
-        // Extract headline
-        const headline = card.querySelector('.ad-title')?.textContent?.trim();
-        
-        // Extract body text
-        const body = card.querySelector('.ad-description')?.textContent?.trim();
-        
-        // Extract image URL if available
-        const image = card.querySelector('img');
-        const imageUrl = image?.src;
-        
-        // Extract platform details (YouTube, Search, etc.)
-        const platformBadge = card.querySelector('.ad-platform-badge');
-        const platform = platformBadge?.textContent?.trim();
-        
-        // Extract last seen date if available
-        const lastSeen = card.querySelector('.ad-last-seen')?.textContent?.trim();
-        
-        // Extract CTA text if available
-        const cta = card.querySelector('.ad-cta')?.textContent?.trim();
-        
-        // Generate a unique ad ID since Google doesn't provide one
-        const adIdElement = card.querySelector('[data-ad-id]');
-        const adId = adIdElement ? adIdElement.getAttribute('data-ad-id') : 
-                    `google-${advertiserId}-${i}`;
-        
-        extractedAds.push({
-          brand: document.querySelector('.advertiser-name')?.textContent?.trim() || 'Unknown',
-          headline,
-          body,
-          imageUrl: imageUrl === null ? undefined : imageUrl, // Convert null to undefined for type compatibility
-          thumbnailUrl: imageUrl === null ? undefined : imageUrl, // Use same image for thumbnail
-          cta,
-          adId,
-          platformDetails: platform,
-          lastSeen,
-          advertiserId
-        });
-      }
-      
-      return extractedAds;
-    }, maxAds, advertiserId);
-    
-    console.log(`Found ${ads.length} ads for advertiser: ${advertiser}`);
+    console.log(`Found ${ads.length} potential ads for advertiser: ${advertiser}`);
     return ads;
     
   } catch (error) {
-    console.error(`Error scraping Google Ads for advertiser: ${advertiser}`, error);
-    throw new Error(`Failed to scrape Google Ads Transparency Center: ${(error as Error).message}`);
-  } finally {
-    await browser.close();
+    console.error(`Error searching Google ads for advertiser: ${advertiser}`, error);
+    // Return empty array instead of throwing to avoid breaking the entire search
+    return [];
   }
 }
 
@@ -181,7 +132,7 @@ export function transformGoogleAds(googleAds: GoogleAdData[], userId?: number, i
       is_active: true,
       style_description: null, // We'll generate this separately using AI
       metadata: {
-        lastSeen: ad.lastSeen,
+        lastSeen: ad.lastSeen || undefined,
         raw_google_data: ad // Store the original data for reference
       }
     };
@@ -258,7 +209,7 @@ export function findRelevantAdvertisers(query: string): string[] {
 }
 
 /**
- * Search for ads in Google's Ads Transparency Center
+ * Search for ads using Google Custom Search API
  */
 export async function searchGoogleAds(query: string, options: {
   queryType?: 'brand' | 'keyword' | 'industry';
@@ -288,8 +239,8 @@ export async function searchGoogleAds(query: string, options: {
     // Search for each advertiser
     for (const advertiser of limitedAdvertisers) {
       try {
-        // Scrape ads for this advertiser
-        const googleAds = await scrapeGoogleAdsForAdvertiser(advertiser, {
+        // Get ads for this advertiser using Custom Search API
+        const googleAds = await getGoogleAdsForAdvertiser(advertiser, {
           region: options.region,
           maxAds: options.maxAds || 10
         });

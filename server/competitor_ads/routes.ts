@@ -407,5 +407,67 @@ export function registerAdInspirationIntegrationRoutes(app: any) {
     }
   });
   
+  // Configure Google Custom Search API credentials
+  app.post('/api/ad-inspiration/configure-google-search', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { apiKey, cseId } = req.body;
+      
+      if (!apiKey || !cseId) {
+        return res.status(400).json({ 
+          error: 'Both Google API Key and CSE ID are required' 
+        });
+      }
+      
+      // Get the user ID from the authenticated session
+      const userId = (req.user as any)?.id;
+      
+      if (!userId) {
+        return res.status(401).json({ error: 'User must be authenticated' });
+      }
+      
+      // In production, these would be securely stored in a database
+      // For this implementation, we'll store them in environment variables
+      process.env.GOOGLE_API_KEY = apiKey;
+      process.env.GOOGLE_CSE_ID = cseId;
+      
+      console.log('Google Custom Search API credentials configured');
+      
+      return res.status(200).json({
+        message: 'Google Custom Search API credentials successfully configured',
+        configured: true
+      });
+      
+    } catch (error) {
+      console.error('Error configuring Google Custom Search API:', error);
+      return res.status(500).json({ 
+        error: `Failed to configure Google Custom Search API: ${(error as Error).message}` 
+      });
+    }
+  });
+  
+  // Get Google Custom Search API configuration status
+  app.get('/api/ad-inspiration/google-search-status', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      // Get the user ID from the authenticated session
+      const userId = (req.user as any)?.id;
+      
+      if (!userId) {
+        return res.status(401).json({ error: 'User must be authenticated' });
+      }
+      
+      const isConfigured = !!(process.env.GOOGLE_API_KEY && process.env.GOOGLE_CSE_ID);
+      
+      return res.status(200).json({
+        configured: isConfigured
+      });
+      
+    } catch (error) {
+      console.error('Error checking Google Custom Search API configuration:', error);
+      return res.status(500).json({ 
+        error: `Failed to check Google Custom Search API configuration: ${(error as Error).message}` 
+      });
+    }
+  });
+  
   console.log('Ad Inspiration integration routes registered');
 }
