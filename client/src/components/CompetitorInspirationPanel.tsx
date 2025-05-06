@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import {
@@ -40,6 +40,23 @@ export default function CompetitorInspirationPanel({
   const [results, setResults] = useState<AdSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedAds, setSelectedAds] = useState<number[]>([]);
+  const [googleApiConfigured, setGoogleApiConfigured] = useState<boolean | null>(null);
+
+  // Check if Google API is configured when component loads
+  useEffect(() => {
+    const checkGoogleApiStatus = async () => {
+      try {
+        const response = await fetch('/api/ad-inspiration/google-search-status');
+        const data = await response.json();
+        setGoogleApiConfigured(data.configured);
+      } catch (error) {
+        console.error('Error checking Google API status:', error);
+        setGoogleApiConfigured(false);
+      }
+    };
+    
+    checkGoogleApiStatus();
+  }, []);
   
   // Search for competitor ads
   const searchMutation = useMutation({
@@ -220,6 +237,14 @@ export default function CompetitorInspirationPanel({
             </Button>
           </form>
           
+          {/* Google API warning */}
+          {googleApiConfigured === false && (
+            <div className="mb-1 p-1 text-[8px] text-amber-300 bg-amber-500/20 border border-amber-500/30 rounded">
+              <strong>Google API not configured.</strong> Some search results may be limited. 
+              <a href="/settings" className="underline ml-1">Configure in Settings</a>
+            </div>
+          )}
+            
           {/* Results section */}
           <div className="space-y-1 max-h-20 overflow-y-auto">
             {results.length === 0 && !isSearching && (
@@ -301,6 +326,14 @@ export default function CompetitorInspirationPanel({
           <p className="text-[8px] text-white/70">
             Get instant inspiration from competitor ads without reviewing individual results
           </p>
+          
+          {/* Google API warning for quick tab */}
+          {googleApiConfigured === false && (
+            <div className="mb-1 p-1 text-[8px] text-amber-300 bg-amber-500/20 border border-amber-500/30 rounded">
+              <strong>Google API not configured.</strong> Inspiration results may be limited. 
+              <a href="/settings" className="underline ml-1">Configure in Settings</a>
+            </div>
+          )}
           
           <div className="flex gap-1">
             <div className="flex-1 relative">

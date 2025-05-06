@@ -4,7 +4,7 @@
  */
 
 import { searchMetaAds, checkMetaApiKey } from './meta_ad_library';
-import { searchGoogleAds } from './google_ads_transparency';
+import { searchGoogleAds, checkGoogleApiKeys } from './google_ads_transparency';
 import { CompetitorAd, InsertAdSearchQuery, AdSearchQuery, adSearchQueries, competitorAds } from '@shared/schema';
 import { db } from '../db';
 import { eq, and, desc } from 'drizzle-orm';
@@ -74,16 +74,24 @@ export async function searchCompetitorAds(
       
       // Check if we should search Google
       if (!options.platforms || options.platforms.includes('google')) {
-        console.log('Searching Google Ads Transparency Center...');
-        const googleAds = await searchGoogleAds(query, {
-          queryType,
-          userId: options.userId,
-          maxAds: options.limit,
-          region: options.region
-        });
+        console.log('Searching Google Ads using Custom Search API...');
         
-        allAds = [...allAds, ...googleAds];
-        console.log(`Found ${googleAds.length} ads from Google Ads Transparency Center`);
+        // Check if Google API is configured before attempting search
+        const isGoogleConfigured = await checkGoogleApiKeys();
+        
+        if (isGoogleConfigured) {
+          const googleAds = await searchGoogleAds(query, {
+            queryType,
+            userId: options.userId,
+            maxAds: options.limit,
+            region: options.region
+          });
+          
+          allAds = [...allAds, ...googleAds];
+          console.log(`Found ${googleAds.length} ads from Google Custom Search API`);
+        } else {
+          console.warn('Google Custom Search API is not configured. Please configure it in Settings.');
+        }
       }
       
       // Update the search record with the results
