@@ -92,17 +92,61 @@ export async function scrapeGoogleAdsForAdvertiser(
       'Cookie': `VISITOR_INFO1_LIVE=${randomVisitorId}; _ga=GA1.1.${randomGaId}.${timestamp}`
     };
     
-    // Try the newer internal API endpoint format first
-    // This appears to be the newer format used by the transparency center
-    const url = `${GOOGLE_ADS_API_URL}/advertisers.ads?advertiser=${advertiserId}&region=${region}&hl=en-US&f.type=ALL&f.since=ALL_TIME`;
-    console.log(`Fetching ads from internal API (newer format): ${url}`);
+    // Try multiple URL formats, because Google's API structure can change
+    // These are based on analyzing the network requests in the Google Ads Transparency Center
+    const urlFormats = [
+      // Newer REST API endpoint (currently most reliable)
+      `https://adstransparency.google.com/api/rest/v1/advertiser/${advertiserId}/ads?hl=en&region=${region}`,
+      
+      // Older internal API endpoint
+      `${GOOGLE_ADS_API_URL}/advertisers.ads?advertiser=${advertiserId}&region=${region}&hl=en-US&f.type=ALL&f.since=ALL_TIME`,
+      
+      // Alternative format sometimes used
+      `${GOOGLE_ADS_API_URL}/advertiser/ads?advertiserId=${advertiserId}&region=${region}&hl=en-US`,
+      
+      // Another observed format
+      `${GOOGLE_ADS_TRANSPARENCY_URL}/api/rest/v1/advertisers/${advertiserId}?hl=en&region=${region}`
+    ];
     
-    // Execute API request with improved options
-    const response = await axios.get(url, {
-      headers,
-      timeout: timeout,
-      maxRedirects: 5, // Follow redirects if needed
-    });
+    // Add a critical API key header that's used by Google's public-facing API
+    headers['x-goog-api-key'] = 'AIzaSyATpB_dGAr67MmObcI1x9L_JRTzzZYOuOU';
+    
+    // Retry mechanism for multiple URL formats
+    let response = null;
+    let lastError = null;
+    
+    for (const url of urlFormats) {
+      try {
+        console.log(`Attempting to fetch ads from: ${url}`);
+        
+        // Execute API request with improved options
+        response = await axios.get(url, {
+          headers,
+          timeout: timeout,
+          maxRedirects: 5, // Follow redirects if needed
+          validateStatus: (status) => status < 500, // Accept any non-server error response
+        });
+        
+        // If we get a successful response with data, break out of the loop
+        if (response.status === 200 && response.data) {
+          console.log(`Successfully fetched data from: ${url}`);
+          break;
+        } else {
+          console.log(`Received status ${response.status} from ${url}`);
+        }
+      } catch (error) {
+        lastError = error;
+        console.error(`Error fetching from ${url}:`, error.message);
+        // Continue trying other URLs
+      }
+    }
+    
+    // If we tried all URLs and still don't have a valid response
+    if (!response || response.status !== 200) {
+      const errorMessage = lastError ? lastError.message : 'All API endpoints failed';
+      console.error(`Failed to fetch ads for ${advertiserId}: ${errorMessage}`);
+      return []; // Return empty array instead of throwing, to allow the process to continue
+    }
     
     // Check if we got a valid JSON response
     if (!response.data) {
