@@ -24,6 +24,7 @@ interface GoogleAdData {
   platformDetails?: string | null; // YouTube, Search, Display, etc.
   lastSeen?: string | null;
   advertiserId?: string;
+  rawData?: any; // For storing the raw API response data
 }
 
 interface ScrapingOptions {
@@ -271,7 +272,7 @@ export function transformGoogleAds(googleAds: GoogleAdData[], userId?: number, i
       style_description: null, // We'll generate this separately using AI
       metadata: {
         lastSeen: ad.lastSeen,
-        raw_google_data: ad // Store the original data for reference
+        raw_google_data: ad.rawData || ad // Store the original data for reference
       }
     };
     
@@ -401,7 +402,7 @@ export function findRelevantAdvertisers(query: string): string[] {
 
 /**
  * Search for ads in Google's Ads Transparency Center
- * Using HTTP and Cheerio for reliability
+ * Using direct API endpoint requests
  */
 export async function searchGoogleAds(query: string, options: {
   queryType?: 'brand' | 'keyword' | 'industry';
@@ -453,7 +454,7 @@ export async function searchGoogleAds(query: string, options: {
     // Search for each advertiser
     for (const advertiser of limitedAdvertisers) {
       try {
-        // Scrape ads for this advertiser using HTTP and Cheerio
+        // Fetch ads for this advertiser using direct API requests
         const googleAds = await scrapeGoogleAdsForAdvertiser(advertiser, {
           searchType: advertiser.startsWith('AR') ? 'brand' : options.queryType,
           region: options.region,
