@@ -1,17 +1,17 @@
 /**
- * Google Ads Transparency Center Scraper
+ * Google Ads Transparency Center API Client
  * Handles fetching competitor ads from Google's Ads Transparency Center
- * Using direct HTTP requests and Cheerio parsing for web scraping
+ * Using direct XHR requests to the internal API endpoints
  */
 
 import { CompetitorAd, InsertCompetitorAd } from '@shared/schema';
 import { db } from '../db';
 import { competitorAds } from '@shared/schema';
 import axios from 'axios';
-import * as cheerio from 'cheerio';
 
-// Google Ads Transparency Center URL
+// Google Ads Transparency Center URLs
 const GOOGLE_ADS_TRANSPARENCY_URL = 'https://adstransparency.google.com';
+const GOOGLE_ADS_API_URL = 'https://adstransparency.google.com/_/adstransparencybackend/data';
 
 interface GoogleAdData {
   brand: string;
@@ -33,8 +33,8 @@ interface ScrapingOptions {
 }
 
 /**
- * Scrape ads for a specific advertiser from Google's Ads Transparency Center
- * Using HTTP requests and Cheerio (more reliable than browser automation)
+ * Fetch ads for a specific advertiser from Google's Ads Transparency Center
+ * Using direct XHR API requests to the internal JSON API endpoints
  */
 export async function scrapeGoogleAdsForAdvertiser(
   searchQuery: string,
@@ -47,234 +47,202 @@ export async function scrapeGoogleAdsForAdvertiser(
   const timeout = options.timeout || 60000; // 60 seconds
   
   console.log(`Scraping Google Ads for advertiser: ${searchQuery} in region: ${region}`);
+
+  // If this is a direct advertiser ID
+  let advertiserId = searchQuery;
   
-  // Handle different search types
-  let searchUrl = '';
-  const searchRegion = options.region || 'US';
-  
-  if (options.searchType === 'brand' && searchQuery.startsWith('AR')) {
-    // Direct advertiser ID search
-    searchUrl = `${GOOGLE_ADS_TRANSPARENCY_URL}/advertiser/${encodeURIComponent(searchQuery)}?region=${searchRegion}`;
-  } else {
-    // For keyword, brand names, and industry searches, use the search endpoint
-    searchUrl = `${GOOGLE_ADS_TRANSPARENCY_URL}/search?q=${encodeURIComponent(searchQuery)}&region=${searchRegion}`;
+  // If it's not in the right format, try to find a matching advertiser
+  if (!searchQuery.startsWith('AR')) {
+    // Clean up the query (lowercase for case-insensitive matching)
+    const cleanQuery = searchQuery.toLowerCase().trim();
+    
+    // Check if we have a known advertiser ID for this query
+    const knownId = findRelevantAdvertisers(cleanQuery)[0];
+    if (knownId) {
+      console.log(`Using known advertiser ID for brand ${cleanQuery}: ${knownId}`);
+      advertiserId = knownId;
+    } else {
+      console.log(`No known advertiser ID for: ${cleanQuery}`);
+      return [];
+    }
   }
-  
-  console.log(`Fetching ad data from: ${searchUrl}`);
-  
+
   try {
-    // Configure HTTP request
+    // Configure HTTP request to the internal API endpoint
     const headers = {
       'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+      'Accept': 'application/json',
       'Accept-Language': 'en-US,en;q=0.9',
-      'Cache-Control': 'no-cache',
-      'Pragma': 'no-cache',
-      'Sec-Fetch-Dest': 'document',
-      'Sec-Fetch-Mode': 'navigate',
-      'Sec-Fetch-Site': 'none',
-      'Sec-Fetch-User': '?1',
-      'Upgrade-Insecure-Requests': '1'
+      'Content-Type': 'application/json',
+      'Origin': GOOGLE_ADS_TRANSPARENCY_URL,
+      'Referer': `${GOOGLE_ADS_TRANSPARENCY_URL}/advertiser/${advertiserId}?region=${region}`,
+      'Sec-Fetch-Dest': 'empty',
+      'Sec-Fetch-Mode': 'cors',
+      'Sec-Fetch-Site': 'same-origin',
+      'X-Requested-With': 'XMLHttpRequest'
     };
     
-    // Execute HTTP request
-    const response = await axios.get(searchUrl, {
+    // Construct the specific API request
+    // This directly accesses the internal JSON API that the frontend uses
+    const url = `${GOOGLE_ADS_API_URL}/ads?advertiserId=${advertiserId}&region=${region}`;
+    console.log(`Fetching ads from internal API: ${url}`);
+    
+    // Execute API request
+    const response = await axios.get(url, {
       headers,
       timeout: timeout,
-      maxRedirects: 5,
     });
     
-    // Check if request was successful
-    if (response.status !== 200) {
-      console.error(`Failed to fetch data: HTTP status ${response.status}`);
+    // Check if we got a valid JSON response
+    if (!response.data) {
+      console.error(`Failed to fetch ad data: Empty response`);
+      return [];
+    }
+
+    console.log(`API response received for advertiser: ${advertiserId}`);
+    
+    // Extract the raw ad data from the response
+    // The actual structure depends on Google's internal API format
+    let rawAdData: any[] = [];
+    
+    try {
+      // The data may be nested in the response in various ways
+      // This is based on inspecting network requests to the Google Ads Transparency Center
+      if (Array.isArray(response.data)) {
+        rawAdData = response.data;
+      } else if (response.data.ads && Array.isArray(response.data.ads)) {
+        rawAdData = response.data.ads;
+      } else if (response.data.data && Array.isArray(response.data.data)) {
+        rawAdData = response.data.data;
+      } else if (response.data.data && response.data.data.ads && Array.isArray(response.data.data.ads)) {
+        rawAdData = response.data.data.ads;
+      } else {
+        // If we can't find a clear array, try to extract any objects that look like ads
+        const possibleAds = Object.values(response.data).filter(val => 
+          typeof val === 'object' && val !== null);
+        
+        if (possibleAds.length > 0) {
+          rawAdData = possibleAds;
+        }
+      }
+    } catch (err) {
+      console.error('Error parsing ad data:', err);
+    }
+    
+    // If we still don't have ad data, we need to fall back
+    if (rawAdData.length === 0) {
+      console.log(`No ad data found in API response for ${advertiserId}`);
+      
+      // Try a second endpoint format that's sometimes used
+      try {
+        const alternativeUrl = `${GOOGLE_ADS_API_URL}/advertiser?advertiserId=${advertiserId}&region=${region}`;
+        console.log(`Trying alternative API endpoint: ${alternativeUrl}`);
+        
+        const altResponse = await axios.get(alternativeUrl, {
+          headers,
+          timeout: timeout,
+        });
+        
+        // Extract advertiser info including ads if available
+        if (altResponse.data && altResponse.data.advertiser && altResponse.data.advertiser.ads) {
+          rawAdData = altResponse.data.advertiser.ads;
+          console.log(`Found ${rawAdData.length} ads from alternative endpoint`);
+        } else if (altResponse.data && altResponse.data.data && altResponse.data.data.advertiser && altResponse.data.data.advertiser.ads) {
+          rawAdData = altResponse.data.data.advertiser.ads;
+          console.log(`Found ${rawAdData.length} ads from nested alternative endpoint data`);
+        }
+      } catch (altErr) {
+        console.error('Error fetching from alternative endpoint:', altErr);
+      }
+    }
+    
+    // If we still don't have data, return empty array
+    if (rawAdData.length === 0) {
+      console.log(`No ad data available for ${advertiserId} after trying all endpoints`);
       return [];
     }
     
-    // Parse HTML using Cheerio
-    const $ = cheerio.load(response.data);
+    console.log(`Processing ${rawAdData.length} raw ads...`);
     
-    console.log('HTML fetched, parsing ad data...');
-    
-    // Attempt to extract advertiser/brand name
-    let brandName = 'Unknown';
-    const brandSelectors = [
-      '.advertiser-name', 
-      '.advertiserName', 
-      '[data-testid="advertiser-name"]',
-      '.brand-name',
-      '.company-name',
-      'h1'
-    ];
-    
-    for (const selector of brandSelectors) {
-      const el = $(selector).first();
-      if (el.length > 0 && el.text().trim()) {
-        brandName = el.text().trim();
-        break;
-      }
-    }
-    
-    // Find ad cards using various selectors
-    const adCardSelectors = [
-      '.ad-card', 
-      '.adCard', 
-      '.ad-container', 
-      '.adContainer',
-      '[data-ad-id]',
-      '[data-testid="ad-card"]',
-      '.gtc-ad-card',
-      '.ad_card'
-    ];
-    
-    let adCards: any[] = [];
-    for (const selector of adCardSelectors) {
-      const elements = $(selector).toArray();
-      if (elements.length > 0) {
-        adCards = elements;
-        console.log(`Found ${elements.length} ads using selector: ${selector}`);
-        break;
-      }
-    }
-    
-    // If no ad cards found but it's a search page, try to find advertiser links
-    if (adCards.length === 0 && searchUrl.includes('/search?')) {
-      console.log('No ad cards found, looking for advertiser links...');
-      
-      // Extract advertiser IDs from search results
-      const advertiserLinks = $('a[href*="/advertiser/AR"]').toArray();
-      
-      if (advertiserLinks.length > 0) {
-        console.log(`Found ${advertiserLinks.length} advertisers, taking first match`);
-        
-        // Extract AR ID from href
-        const href = $(advertiserLinks[0]).attr('href') || '';
-        const advertiserId = href.match(/\/advertiser\/(AR[0-9]+)/)?.[1];
-        
-        if (advertiserId) {
-          console.log(`Found advertiser ID: ${advertiserId}, will generate sample ad`);
-          
-          // Generate a sample ad with the found advertiser
-          const advertiserName = $(advertiserLinks[0]).text().trim() || searchQuery;
-          
-          // Create simple ad data for this advertiser
-          return [{
-            brand: advertiserName,
-            headline: `${advertiserName} Advertisement`,
-            body: `This is an advertisement from ${advertiserName}.`,
-            imageUrl: null,
-            thumbnailUrl: null,
-            cta: "Learn More",
-            adId: `google-${advertiserId}-0`,
-            platformDetails: "Google Search",
-            lastSeen: new Date().toISOString().split('T')[0],
-            advertiserId: advertiserId
-          }];
-        }
-      }
-    }
-    
-    if (adCards.length === 0) {
-      console.log(`No ads found for query: ${searchQuery}`);
-      return [];
-    }
-    
-    // Extract the advertiser ID from the URL if available
-    const advertiserId = searchUrl.match(/advertiser\/(AR[0-9]+)/)?.[1] || '';
-    
-    // Helper function to extract text using selectors
-    const extractText = (element: any, selectors: string[]): string | null => {
-      for (const selector of selectors) {
-        const el = $(element).find(selector);
-        if (el.length > 0 && el.text().trim()) {
-          return el.text().trim();
-        }
-      }
-      return null;
-    };
-    
-    // Helper function to extract image URL
-    const extractImage = (element: any, selectors: string[]): string | null => {
-      for (const selector of selectors) {
-        const el = $(element).find(selector);
-        if (el.length > 0 && el.attr('src')) {
-          return el.attr('src') || null;
-        }
-      }
-      return null;
-    };
-    
-    // Process each ad card
-    const extractedAds: GoogleAdData[] = adCards
+    // Now map the raw ad data to our GoogleAdData format
+    // We need to adapt this based on the actual structure of Google's API response
+    const parsedAds: GoogleAdData[] = rawAdData
       .slice(0, maxAds)
-      .map((card, index) => {
-        // Extract elements using our helper functions
-        const headline = extractText(card, [
-          '.ad-title', 
-          '.adTitle', 
-          '.ad-headline', 
-          '[data-testid="ad-title"]',
-          'h2', 
-          'h3'
-        ]);
-        
-        const body = extractText(card, [
-          '.ad-description', 
-          '.adDescription', 
-          '.ad-body', 
-          '.adBody',
-          '[data-testid="ad-body"]',
-          'p'
-        ]);
-        
-        const imageUrl = extractImage(card, ['img', '[data-testid="ad-image"]']);
-        
-        const platformDetails = extractText(card, [
-          '.ad-platform-badge', 
-          '.adPlatform', 
-          '.platform-badge',
-          '[data-testid="ad-platform"]'
-        ]);
-        
-        const lastSeen = extractText(card, [
-          '.ad-last-seen', 
-          '.adLastSeen', 
-          '.last-seen',
-          '[data-testid="ad-last-seen"]'
-        ]);
-        
-        const cta = extractText(card, [
-          '.ad-cta', 
-          '.adCta', 
-          '.call-to-action',
-          '[data-testid="ad-cta"]',
-          'button'
-        ]);
-        
-        // Try to get ad ID from data attribute or generate one
-        let adId = $(card).attr('data-ad-id') || `google-${advertiserId || 'unknown'}-${index}`;
+      .map((ad: any, index: number) => {
+        // First, try to extract values based on likely field names
+        // This needs to be adapted based on Google's actual API structure
+        const brand = extractValue(ad, ['advertiserName', 'advertiser_name', 'brandName', 'brand', 'name']) || searchQuery;
+        const headline = extractValue(ad, ['title', 'headline', 'adTitle', 'adHeadline']);
+        const body = extractValue(ad, ['description', 'body', 'text', 'adText', 'content', 'adContent']);
+        const imageUrl = extractValue(ad, ['imageUrl', 'image_url', 'adImageUrl', 'mediaUrl', 'creativeUrl']);
+        const thumbnailUrl = extractValue(ad, ['thumbnailUrl', 'thumbnail', 'previewUrl']);
+        const cta = extractValue(ad, ['callToAction', 'cta', 'button', 'buttonText']);
+        const platformDetails = extractValue(ad, ['platform', 'adType', 'adFormat', 'format', 'surface']);
+        const lastSeen = extractValue(ad, ['lastSeen', 'last_seen', 'lastShown', 'dateLastSeen']);
+        const adId = extractValue(ad, ['id', 'adId', 'ad_id']) || `google-${advertiserId}-${index}`;
         
         return {
-          brand: brandName,
+          brand,
           headline: headline || null,
           body: body || null,
           imageUrl: imageUrl || null,
-          thumbnailUrl: imageUrl || null, // Use same image for thumbnail
+          thumbnailUrl: thumbnailUrl || imageUrl || null,
           cta: cta || null,
           adId: adId,
           platformDetails: platformDetails || null,
           lastSeen: lastSeen || null,
-          advertiserId: advertiserId || adId.split('-')[1] // Fallback
+          advertiserId: advertiserId,
+          // Include the raw data for debugging and future refinement
+          rawData: ad
         };
       });
     
-    console.log(`Found ${extractedAds.length} ads for advertiser/query: ${searchQuery}`);
+    console.log(`Successfully processed ${parsedAds.length} ads for advertiser: ${advertiserId}`);
     
-    return extractedAds;
+    return parsedAds;
     
   } catch (error) {
-    console.error(`Error scraping Google Ads for advertiser: ${searchQuery}`, error);
-    throw new Error(`Failed to scrape Google Ads Transparency Center: ${(error as Error).message}`);
+    console.error(`Error fetching Google Ads API for advertiser: ${searchQuery}`, error);
+    throw new Error(`Failed to fetch from Google Ads Transparency API: ${(error as Error).message}`);
   }
+}
+
+/**
+ * Helper function to extract values from nested objects using multiple possible keys
+ */
+function extractValue(obj: any, possibleKeys: string[]): string | null {
+  if (!obj || typeof obj !== 'object') {
+    return null;
+  }
+  
+  for (const key of possibleKeys) {
+    if (obj[key] !== undefined && obj[key] !== null) {
+      // Handle various data types
+      if (typeof obj[key] === 'string') {
+        return obj[key].trim();
+      } else if (typeof obj[key] === 'number' || typeof obj[key] === 'boolean') {
+        return String(obj[key]);
+      } else if (typeof obj[key] === 'object') {
+        // If it's an object, check for url, text, or value properties
+        if (obj[key].url) return obj[key].url;
+        if (obj[key].text) return obj[key].text;
+        if (obj[key].value) return obj[key].value;
+      }
+    }
+  }
+  
+  // Try to look one level deeper for nested properties
+  for (const key of Object.keys(obj)) {
+    if (typeof obj[key] === 'object' && obj[key] !== null) {
+      for (const possibleKey of possibleKeys) {
+        if (obj[key][possibleKey] !== undefined && obj[key][possibleKey] !== null) {
+          return String(obj[key][possibleKey]).trim();
+        }
+      }
+    }
+  }
+  
+  return null;
 }
 
 /**
