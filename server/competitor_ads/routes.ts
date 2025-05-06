@@ -87,7 +87,10 @@ export function registerCompetitorAdRoutes(app: any) {
       console.error('[GoogleAdsDiagnostic] Error in diagnostic test:', error);
       
       // Clear the timeout since we're responding with an error
-      clearTimeout(diagnosticTimeout);
+      if (timeoutHandle) {
+        clearTimeout(timeoutHandle);
+        timeoutHandle = null;
+      }
       
       return res.status(500).json({
         success: false,
@@ -100,6 +103,9 @@ export function registerCompetitorAdRoutes(app: any) {
   });
   // Search for competitor ads with improved error handling
   app.post('/api/ad-inspiration/search', isAuthenticated, async (req: Request, res: Response) => {
+    // Declare the timeout handle at the top level of the function
+    let searchTimeoutHandle: NodeJS.Timeout | null = null;
+    
     try {
       // Log the request for debugging
       console.log(`[AdInspirationAPI] Received search request:`, {
@@ -109,8 +115,9 @@ export function registerCompetitorAdRoutes(app: any) {
       });
       
       // Set timeout to prevent long-running requests
-      const searchTimeout = setTimeout(() => {
+      searchTimeoutHandle = setTimeout(() => {
         console.log(`[AdInspirationAPI] Search timed out after 40 seconds`);
+        searchTimeoutHandle = null;
         res.status(504).json({
           error: 'Search timed out after 40 seconds',
           details: 'The search operation took too long to complete. Please try a different search term or try again later.',
@@ -153,6 +160,12 @@ export function registerCompetitorAdRoutes(app: any) {
 
       console.log(`[AdInspirationAPI] Search complete for "${query}". Found ${result.ads.length} ads. SearchId: ${result.searchId}`);
       
+      // Clear the timeout since we're responding successfully
+      if (searchTimeoutHandle) {
+        clearTimeout(searchTimeoutHandle);
+        searchTimeoutHandle = null;
+      }
+      
       // Return successful response in clean JSON format
       return res.status(200).json({
         success: true,
@@ -166,6 +179,12 @@ export function registerCompetitorAdRoutes(app: any) {
       // Log details for troubleshooting
       if (error instanceof Error) {
         console.error('[AdInspirationAPI] Error stack:', error.stack);
+      }
+      
+      // Clear the timeout since we're responding with an error
+      if (searchTimeoutHandle) {
+        clearTimeout(searchTimeoutHandle);
+        searchTimeoutHandle = null;
       }
       
       return res.status(500).json({ 

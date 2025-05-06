@@ -345,6 +345,14 @@ export async function scrapeGoogleAdsForAdvertiser(
       for (let attempt = 1; attempt <= 3; attempt++) {
         console.log(`[GoogleAdsScraper] Attempt ${attempt} to find ad elements`);
         
+        // Take a screenshot at each attempt for debugging
+        try {
+          await page.screenshot({ path: `./temp/google-ads-attempt-${attempt}.png`, fullPage: true });
+          console.log(`[GoogleAdsScraper] Screenshot saved for attempt ${attempt}`);
+        } catch (error) {
+          console.error(`[GoogleAdsScraper] Failed to save attempt screenshot: ${error}`);
+        }
+        
         hasAds = await page.evaluate(() => {
           // Declare interface to extend Window
           interface CustomWindow extends Window {
@@ -393,6 +401,15 @@ export async function scrapeGoogleAdsForAdvertiser(
             }
           }
           
+          // Get all images, they might be ad-related even if not in expected containers
+          const images = document.querySelectorAll('img');
+          if (images && images.length > 0) {
+            console.log(`Found ${images.length} images on the page, might contain ads`);
+            customWindow._lastAdSelector = 'img';
+            customWindow._lastAdCount = images.length;
+            return images.length > 3; // Only consider it has ads if multiple images
+          }
+          
           return false;
         });
         
@@ -418,16 +435,122 @@ export async function scrapeGoogleAdsForAdvertiser(
           break;
         }
         
+        // If no ads found, try an alternative approach - get page content
+        if (!hasAds) {
+          // Try to get text content of the entire page
+          const pageContent = await page.evaluate(() => {
+            return {
+              title: document.title,
+              bodyText: document.body.innerText,
+              bodyHTML: document.body.innerHTML.slice(0, 10000), // First 10K chars only
+              hasContent: document.body.innerText.length > 100
+            };
+          });
+          
+          console.log(`[GoogleAdsScraper] Page title: "${pageContent.title}"`);
+          console.log(`[GoogleAdsScraper] Body text length: ${pageContent.bodyText.length} chars`);
+          
+          if (pageContent.hasContent) {
+            // Log a sample of the content
+            const textSample = pageContent.bodyText.slice(0, 300);
+            console.log(`[GoogleAdsScraper] Content sample: "${textSample}..."`);
+            
+            // Check if it contains CAPTCHA/reCAPTCHA indicators
+            if (
+              pageContent.bodyText.includes('CAPTCHA') || 
+              pageContent.bodyText.includes('captcha') ||
+              pageContent.bodyText.includes('robot') || 
+              pageContent.bodyText.includes('verification') ||
+              pageContent.bodyText.includes('suspicious') ||
+              pageContent.bodyText.includes('unusual activity')
+            ) {
+              console.log(`[GoogleAdsScraper] CAPTCHA or verification detected!`);
+            }
+          }
+        }
+        
         // If no ads found and not last attempt, wait and try again
         if (!hasAds && attempt < 3) {
           console.log(`[GoogleAdsScraper] No ads found on attempt ${attempt}, waiting to try again...`);
+          
+          // Try random mouse movements to appear more human-like
+          try {
+            await page.mouse.move(
+              100 + Math.floor(Math.random() * 500), 
+              100 + Math.floor(Math.random() * 300)
+            );
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await page.mouse.move(
+              100 + Math.floor(Math.random() * 500), 
+              100 + Math.floor(Math.random() * 300)
+            );
+          } catch (mouseError) {
+            console.log(`[GoogleAdsScraper] Mouse movement error: ${mouseError}`);
+          }
+          
+          // Try random scrolling
+          await page.evaluate(() => {
+            window.scrollBy(0, 200 + Math.floor(Math.random() * 300));
+          });
+          
           await new Promise(resolve => setTimeout(resolve, 5000));
         }
       }
       
       if (!hasAds) {
-        console.log(`[GoogleAdsScraper] No ads found for ${searchQuery} after multiple attempts`);
-        return [];
+        // Instead of returning empty array immediately, we'll try to extract any content
+        // that might help debug why no ads were found
+        try {
+          console.log(`[GoogleAdsScraper] No specific ad elements found for ${searchQuery} - capturing page data...`);
+          
+          // Extract page metadata and content
+          const pageData = await page.evaluate(() => {
+            const meta = Array.from(document.querySelectorAll('meta')).map(el => {
+              return {
+                name: el.getAttribute('name') || el.getAttribute('property') || 'unknown',
+                content: el.getAttribute('content')
+              };
+            });
+            
+            const headings = Array.from(document.querySelectorAll('h1, h2, h3')).map(el => el.textContent?.trim() || '');
+            
+            // Get all visible divs with content
+            const divContents = Array.from(document.querySelectorAll('div'))
+              .filter(div => {
+                const rect = div.getBoundingClientRect();
+                return rect.width > 50 && rect.height > 50; // Only reasonably sized divs
+              })
+              .map(div => div.textContent?.trim() || '')
+              .filter(text => text && text.length > 20) // Only those with meaningful content
+              .slice(0, 5); // Limit to 5 divs
+            
+            return {
+              url: window.location.href,
+              title: document.title,
+              meta,
+              headings,
+              divContents
+            };
+          });
+          
+          console.log(`[GoogleAdsScraper] Page data extracted:`, {
+            url: pageData.url,
+            title: pageData.title,
+            headingsCount: pageData.headings.length,
+            divsCount: pageData.divContents.length
+          });
+          
+          // If we found meaningful content, we can try to extract information even without specific ad elements
+          if (pageData.divContents.length > 0) {
+            console.log(`[GoogleAdsScraper] Found ${pageData.divContents.length} content divs, will attempt generic extraction`);
+          } else {
+            console.log(`[GoogleAdsScraper] No content elements found that could be potential ads`);
+            return [];
+          }
+        } catch (extractError) {
+          console.error(`[GoogleAdsScraper] Error extracting page data: ${extractError}`);
+          return [];
+        }
       }
     } catch (error) {
       console.log(`Error navigating to advertiser page: ${error}`);
