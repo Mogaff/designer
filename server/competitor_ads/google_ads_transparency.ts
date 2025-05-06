@@ -9,6 +9,24 @@ import { CompetitorAd, InsertCompetitorAd } from '@shared/schema';
 import { db } from '../db';
 import { competitorAds } from '@shared/schema';
 
+// Define Firecrawl result interfaces to improve type safety
+interface FirecrawlScriptResult {
+  result?: {
+    ads?: Array<{
+      headline?: string | null;
+      body?: string | null;
+      imageUrl?: string | null;
+      platformDetails?: string | null;
+      lastSeen?: string | null;
+      cta?: string | null;
+      adId?: string | null;
+    }>;
+    brandName?: string;
+    currentUrl?: string;
+  };
+  success?: boolean;
+}
+
 // Initialize Firecrawl client
 const firecrawlClient = new Firecrawl({
   apiKey: process.env.FIRECRAWL_API_KEY
@@ -45,7 +63,7 @@ export async function scrapeGoogleAdsForAdvertiser(
   options: ScrapingOptions & {
     searchType?: 'brand' | 'keyword' | 'industry';
   } = {}
-): Promise<any[]> {
+): Promise<GoogleAdData[]> {
   const region = options.region || 'US';
   const maxAds = options.maxAds || 20;
   const timeout = options.timeout || 30000; // 30 seconds
@@ -226,15 +244,17 @@ export async function scrapeGoogleAdsForAdvertiser(
     `;
     
     // Execute the scrape with Firecrawl
+    // Cast result to our custom type for better type safety
     const result = await firecrawlClient.scrapeUrl(searchUrl, {
+      // @ts-ignore - Firecrawl types are incomplete, script is a valid parameter
       script: extractionScript,
       waitFor: 5000, // Wait for 5 seconds to ensure dynamic content loads
       userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
       timeout: timeout
-    });
+    }) as FirecrawlScriptResult;
     
     // Check if we have valid results
-    if (!result || !result.result || !result.result.ads || result.result.ads.length === 0) {
+    if (!result?.result?.ads || result.result.ads.length === 0) {
       console.log(`No ads found for advertiser: ${searchQuery}`);
       return [];
     }
@@ -248,7 +268,7 @@ export async function scrapeGoogleAdsForAdvertiser(
     
     const extractedAds = result.result.ads
       .slice(0, maxAds)
-      .map((card: any, index: number) => {
+      .map((card, index) => {
         // Generate a fallback ad ID if none was found
         const adId = card.adId || `google-${advertiserId || 'unknown'}-${index}`;
         
@@ -278,7 +298,7 @@ export async function scrapeGoogleAdsForAdvertiser(
 /**
  * Transform Google ad data into our standard Competitor Ad format
  */
-export function transformGoogleAds(googleAds: any[], userId?: number, industry?: string): InsertCompetitorAd[] {
+export function transformGoogleAds(googleAds: GoogleAdData[], userId?: number, industry?: string): InsertCompetitorAd[] {
   return googleAds.map(ad => {
     // Create the transformed competitor ad
     const competitorAd: InsertCompetitorAd = {
