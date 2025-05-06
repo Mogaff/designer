@@ -490,43 +490,22 @@ export default function FlyerPreview({
                   </div>
                 )}
                 
-                {/* Beaming border animation while generating */}
+                {/* Minimalistic animated loading UI while generating */}
                 {isGenerating && showGenerationProgress && (
-                  <div 
-                    className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden"
-                    style={{
-                      animation: 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                    }}
-                  >
-                    {/* Animated border effect */}
-                    <div className="absolute inset-0 pointer-events-none">
-                      <div className="absolute inset-0 border-4 border-transparent" style={{
-                        background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent) border-box',
-                        WebkitMask: 'linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)',
-                        WebkitMaskComposite: 'xor',
-                        maskComposite: 'exclude',
-                        animation: 'border-beam 2s linear infinite',
-                      }}></div>
-                    </div>
-                    
-                    {/* Content overlay */}
-                    <div className="z-10 w-4/5 max-w-md space-y-4 bg-black/50 backdrop-blur-sm p-4 rounded-lg">
-                      <h3 className="text-lg font-semibold text-white text-center mb-4">Generating Your Design</h3>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden backdrop-blur-md">
+                    {/* Glass morphism card */}
+                    <div className="bg-black/30 backdrop-blur-xl border border-white/10 rounded-xl p-6 shadow-xl w-4/5 max-w-xs transform scale-90 animate-pulse">
+                      <h3 className="text-md font-medium text-white text-center mb-4">Generating Your Design</h3>
                       
                       {/* Progress bar */}
-                      <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
+                      <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden mb-4">
                         <div 
                           className="h-full bg-gradient-to-r from-indigo-400 to-purple-500 transition-all duration-300" 
                           style={{ width: `${progressPercent}%` }}
                         ></div>
                       </div>
                       
-                      {/* Current step text */}
-                      <div className="text-center text-white/90 text-sm">
-                        {progressSteps[Math.min(Math.floor(progressPercent / 20), 4)]}
-                      </div>
-                      
-                      {/* Progress percentage */}
+                      {/* Progress percentage - minimalistic */}
                       <div className="text-center text-white/80 text-xs">
                         {progressPercent}% Complete
                       </div>
@@ -613,25 +592,7 @@ export default function FlyerPreview({
               </div>
             </div>
             
-            {/* Progress steps at the bottom */}
-            {isGenerating && showGenerationProgress && (
-              <div className="p-4 bg-black/30 backdrop-blur-md rounded-md mx-auto mb-4 max-w-2xl">
-                <h4 className="text-xs font-medium text-white/90 mb-2">Design Generation Process</h4>
-                <div className="flex justify-between gap-2">
-                  {progressSteps.map((step, index) => (
-                    <div
-                      key={index}
-                      className={`flex flex-col items-center ${Math.floor(progressPercent / 20) >= index ? 'text-white/90' : 'text-white/40'}`}
-                    >
-                      <div 
-                        className={`w-3 h-3 rounded-full mb-1 ${Math.floor(progressPercent / 20) >= index ? 'bg-white' : 'bg-gray-600'}`}
-                      ></div>
-                      <span className="text-[10px] text-center max-w-[80px]">{step.split("...")[0]}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Progress steps removed as requested */}
           </div>
         )}
       </div>
