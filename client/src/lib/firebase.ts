@@ -21,6 +21,9 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
+// Log the current domain that needs to be added to Firebase
+console.log("Current domain that needs to be authorized in Firebase:", window.location.origin);
+
 console.log("Initializing Firebase with environment variables");
 
 // Einfache Firebase-Initialisierung ohne irgendwelche komplexen Anpassungen

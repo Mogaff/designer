@@ -165,16 +165,23 @@ export default function Login() {
                   </div>
                 </div>
                 
-                <Button 
-                  type="button" 
-                  className="w-full flex items-center justify-center gap-2"
-                  onClick={handleGoogleSignIn}
-                  disabled={isSubmitting}
-                  variant="outline"
-                >
-                  <FcGoogle className="h-5 w-5" />
-                  <span>{isSubmitting ? 'Processing...' : 'Continue with Google'}</span>
-                </Button>
+                <div className="space-y-3">
+                  <Button 
+                    type="button" 
+                    className="w-full flex items-center justify-center gap-2"
+                    onClick={handleGoogleSignIn}
+                    disabled={isSubmitting}
+                    variant="outline"
+                  >
+                    <FcGoogle className="h-5 w-5" />
+                    <span>{isSubmitting ? 'Processing...' : 'Continue with Google'}</span>
+                  </Button>
+                  
+                  <p className="text-xs text-orange-300 text-center">
+                    Note: Google login requires your Replit domain to be authorized in Firebase.
+                    Please use email login until domain authorization is complete.
+                  </p>
+                </div>
               </CardContent>
             </TabsContent>
             
