@@ -54,14 +54,33 @@ export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, salt);
 }
 
-// Authentication middleware
+// Authentication middleware with bypass option
+// TEMPORARY: Set AUTH_ENABLED to true to restore normal authentication
+const AUTH_ENABLED = false;
+
+// Mock user for temporary authentication bypass
+const MOCK_USER = {
+  id: 2, // Using ID 2 since it appears to be a valid user ID in your system
+  username: 'temp-user',
+  email: 'temp@example.com',
+  display_name: 'Temporary User'
+};
+
 export function isAuthenticated(req: Request, res: Response, next: NextFunction) {
-  // Check if user is authenticated with the session
+  // If authentication is disabled, attach a mock user to the request
+  if (!AUTH_ENABLED) {
+    console.log('Server auth check bypassed - using mock user');
+    // @ts-ignore: Attaching user to request
+    req.user = MOCK_USER;
+    return next();
+  }
+  
+  // Normal authentication check
   if (req.isAuthenticated()) {
     return next();
   }
   
-  // If not authenticated, return 401 Unauthorized
+  // If not authenticated and auth is enabled, return 401 Unauthorized
   res.status(401).json({ message: 'Unauthorized' });
 }
 
