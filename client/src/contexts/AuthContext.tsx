@@ -5,7 +5,10 @@ import {
   signInWithPopup,
   googleProvider,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile
 } from '@/lib/firebase';
 import type { User as FirebaseUser } from 'firebase/auth';
 
@@ -22,6 +25,8 @@ type AuthContextType = {
   isLoading: boolean;
   isAuthenticated: boolean;
   signInWithGoogle: () => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<void>;
+  registerWithEmail: (email: string, password: string, displayName: string) => Promise<void>;
   logout: () => Promise<void>;
 };
 
