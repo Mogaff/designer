@@ -46,7 +46,18 @@ export const useAuth = () => useContext(AuthContext);
 
 // Provider component
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  // TEMPORARY: Using a mock user to bypass authentication
+  // Set AUTH_ENABLED to true to restore normal authentication
+  const AUTH_ENABLED = false;
+  
+  const mockUser: User = {
+    uid: 'temp-user-123',
+    email: 'temp@example.com',
+    displayName: 'Temporary User',
+    photoURL: null
+  };
+  
+  const [user, setUser] = useState<User | null>(AUTH_ENABLED ? null : mockUser);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
@@ -79,8 +90,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Watch auth state changes
   useEffect(() => {
+    // If authentication is disabled, just set loading to false and use mock user
+    if (!AUTH_ENABLED) {
+      console.log('Authentication DISABLED. Using mock user.');
+      setIsLoading(false);
+      return () => {};
+    }
     
-    // Watch Firebase auth state
+    // Watch Firebase auth state if authentication is enabled
+    console.log('Authentication ENABLED. Watching Firebase auth state.');
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       setIsLoading(true);
       
@@ -127,39 +145,52 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Cleanup subscription
     return () => unsubscribe();
-  }, [toast]);
+  }, [toast, AUTH_ENABLED]);
 
-  // Einfache Google Sign-in Funktion mit Popup
+  // Google Sign-in function
   const signInWithGoogle = async () => {
     try {
       setIsLoading(true);
-      console.log('Starting Google sign-in with popup...');
       
+      // If authentication is disabled, use the mock user
+      if (!AUTH_ENABLED) {
+        console.log('Authentication disabled: Simulating Google login');
+        
+        toast({
+          title: 'Login successful',
+          description: 'You are now logged in (Auth disabled mode).',
+        });
+        
+        return;
+      }
+      
+      // Normal Firebase authentication flow
+      console.log('Starting Google sign-in with popup...');
       const result = await signInWithPopup(auth, googleProvider);
       console.log('Popup login successful:', result.user.email);
       
       toast({
-        title: 'Login erfolgreich',
-        description: 'Sie sind jetzt mit Google angemeldet.',
+        title: 'Login successful',
+        description: 'You are now logged in with Google.',
       });
     } catch (error: any) {
-      let errorMessage = 'Anmeldung mit Google fehlgeschlagen';
+      let errorMessage = 'Google login failed';
       console.error('Google sign-in error:', error);
       
-      // Bessere Fehlermeldungen für häufige Fehler
+      // Better error messages for common errors
       if (error.code === 'auth/popup-closed-by-user') {
-        errorMessage = 'Anmeldung abgebrochen. Bitte versuchen Sie es erneut.';
+        errorMessage = 'Login canceled. Please try again.';
       } else if (error.code === 'auth/popup-blocked') {
-        errorMessage = 'Anmelde-Popup wurde blockiert. Bitte aktivieren Sie Popups für diese Seite.';
+        errorMessage = 'Login popup was blocked. Please enable popups for this site.';
       } else if (error.code === 'auth/unauthorized-domain') {
-        errorMessage = 'Authentifizierungsproblem: Diese Domain muss in der Firebase-Konsole autorisiert werden.';
-        console.error('Domain nicht autorisiert:', window.location.origin, 'Bitte in Firebase-Konsole hinzufügen');
+        errorMessage = 'Authentication problem: This domain must be authorized in the Firebase console.';
+        console.error('Domain not authorized:', window.location.origin, 'Please add it to Firebase console');
       } else if (error.code) {
-        errorMessage = `Authentifizierungsfehler: ${error.code}`;
+        errorMessage = `Authentication error: ${error.code}`;
       }
       
       toast({
-        title: 'Anmeldung fehlgeschlagen',
+        title: 'Login failed',
         description: errorMessage,
         variant: 'destructive',
       });
@@ -172,8 +203,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       setIsLoading(true);
+      
+      // If authentication is disabled, just simulate logout
+      if (!AUTH_ENABLED) {
+        console.log('Authentication disabled: Simulating logout');
+        
+        // We won't actually log out in disabled mode, as we want to stay "logged in"
+        toast({
+          title: 'Logout simulated',
+          description: 'Auth is disabled, staying logged in with mock user',
+        });
+        
+        return;
+      }
+      
+      // Normal logout flow
       await signOut(auth);
-      // Toast message removed to simplify the logout experience
     } catch (error: any) {
       toast({
         title: 'Logout Failed',
@@ -186,10 +231,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-    // Email/password registration
+  // Email/password registration
   const registerWithEmail = async (email: string, password: string, displayName: string) => {
     try {
       setIsLoading(true);
+      
+      // If authentication is disabled, use the mock user
+      if (!AUTH_ENABLED) {
+        console.log('Authentication disabled: Simulating email registration');
+        
+        toast({
+          title: 'Registration successful',
+          description: 'Your account has been created (Auth disabled mode).',
+        });
+        
+        return;
+      }
       
       // Create user with email and password
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -237,6 +294,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithEmail = async (email: string, password: string) => {
     try {
       setIsLoading(true);
+      
+      // If authentication is disabled, use the mock user
+      if (!AUTH_ENABLED) {
+        console.log('Authentication disabled: Simulating email login');
+        
+        toast({
+          title: 'Login successful',
+          description: 'You are now logged in (Auth disabled mode).',
+        });
+        
+        return;
+      }
       
       // Sign in with email and password
       await signInWithEmailAndPassword(auth, email, password);
