@@ -36,6 +36,8 @@ const AuthContext = createContext<AuthContextType>({
   isLoading: true,
   isAuthenticated: false,
   signInWithGoogle: async () => {},
+  signInWithEmail: async () => {},
+  registerWithEmail: async () => {},
   logout: async () => {},
 });
 
@@ -184,11 +186,101 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+    // Email/password registration
+  const registerWithEmail = async (email: string, password: string, displayName: string) => {
+    try {
+      setIsLoading(true);
+      
+      // Create user with email and password
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // Update profile to add display name
+      await updateProfile(userCredential.user, {
+        displayName: displayName
+      });
+      
+      // Sync with backend
+      await syncUserWithBackend(userCredential.user);
+      
+      toast({
+        title: 'Registration successful',
+        description: 'Your account has been created.',
+      });
+      
+    } catch (error: any) {
+      let errorMessage = 'Registration failed';
+      console.error('Email registration error:', error);
+      
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = 'This email is already in use. Please try logging in instead.';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email address.';
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = 'Password is too weak. Please use a stronger password.';
+      } else if (error.code) {
+        errorMessage = `Registration error: ${error.code}`;
+      }
+      
+      toast({
+        title: 'Registration failed',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+      
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Email/password login
+  const signInWithEmail = async (email: string, password: string) => {
+    try {
+      setIsLoading(true);
+      
+      // Sign in with email and password
+      await signInWithEmailAndPassword(auth, email, password);
+      
+      toast({
+        title: 'Login successful',
+        description: 'You are now logged in.',
+      });
+      
+    } catch (error: any) {
+      let errorMessage = 'Login failed';
+      console.error('Email login error:', error);
+      
+      if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email address.';
+      } else if (error.code === 'auth/user-disabled') {
+        errorMessage = 'This account has been disabled.';
+      } else if (error.code === 'auth/user-not-found') {
+        errorMessage = 'No account found with this email.';
+      } else if (error.code === 'auth/wrong-password') {
+        errorMessage = 'Incorrect password.';
+      } else if (error.code) {
+        errorMessage = `Login error: ${error.code}`;
+      }
+      
+      toast({
+        title: 'Login failed',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+      
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const value = {
     user,
     isLoading,
     isAuthenticated: !!user,
     signInWithGoogle,
+    signInWithEmail,
+    registerWithEmail,
     logout,
   };
 

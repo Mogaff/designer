@@ -21,7 +21,7 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-console.log("Initializing Firebase with standard configuration");
+console.log("Initializing Firebase with environment variables");
 
 // Einfache Firebase-Initialisierung ohne irgendwelche komplexen Anpassungen
 const app = initializeApp(firebaseConfig);
