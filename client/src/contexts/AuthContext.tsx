@@ -46,9 +46,9 @@ export const useAuth = () => useContext(AuthContext);
 
 // Provider component
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  // TEMPORARY: Using a mock user to bypass authentication
-  // Set AUTH_ENABLED to true to restore normal authentication
-  const AUTH_ENABLED = false;
+  // Authentication enabled to use Firebase
+  // Set AUTH_ENABLED to false to use mock user
+  const AUTH_ENABLED = true;
   
   const mockUser: User = {
     uid: 'temp-user-123',
