@@ -173,6 +173,7 @@ export default function AdInspirationPage() {
       }
       
       // Verwendet jetzt die POST-Methode wie das CompetitorInspirationPanel
+      // apiRequest gibt bereits ein JSON-Objekt zurück, daher ist kein .json() nötig
       const response = await apiRequest(
         'POST', 
         '/api/ad-inspiration/search',
@@ -184,7 +185,7 @@ export default function AdInspirationPage() {
         }
       );
       
-      return response.json() as Promise<SearchResults>;
+      return response as SearchResults;
     },
     onSuccess: (data) => {
       if (data.ads && data.ads.length > 0) {
