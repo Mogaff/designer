@@ -534,13 +534,13 @@ export default function AdInspirationPage() {
           
           {/* History tab content */}
           {currentTab === 'history' && (
-            <div className="p-6 rounded-xl border border-white/30 bg-white/20 backdrop-blur-md">
-              <h2 className="text-lg font-medium mb-4 text-white">Recent Searches</h2>
-              <div className="text-white/90 text-sm mb-6">
+            <div className="p-3 rounded-lg border border-white/30 bg-white/20 backdrop-blur-md">
+              <h2 className="text-sm font-medium mb-2 text-white">Recent Searches</h2>
+              <div className="text-white/90 text-xs mb-3">
                 Your previous competitor ad searches
               </div>
-              <div className="text-center py-12 bg-white/10 rounded-lg border border-white/20">
-                <p className="text-white/80 mb-4">
+              <div className="text-center py-4 bg-white/10 rounded-lg border border-white/20">
+                <p className="text-white/80 mb-2">
                   Search history feature coming soon...
                 </p>
               </div>
