@@ -285,34 +285,61 @@ export default function AdInspirationPage() {
   return (
     <div className="min-h-screen">
       <div className="flex flex-col h-[calc(100vh-2rem)] mx-auto">
-        <header className="py-4 px-6 backdrop-blur-md bg-black/20 border-b border-white/10">
-          <h1 className="text-2xl font-bold gradient-text">Ad Inspiration Explorer</h1>
-          <p className="text-white/70 text-sm">
-            Search for competitor ads and generate copywriting and design inspiration
-          </p>
+        <header className="py-4 px-6 backdrop-blur-md bg-white/20 border-b border-white/30">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-500">Ad Inspiration Explorer</h1>
+              <p className="text-white/90 text-sm">
+                Search for competitor ads and generate copywriting inspiration
+              </p>
+            </div>
+            <div className="pill-nav">
+              <button 
+                className={`pill-nav-item ${currentTab === 'search' ? 'active' : ''}`}
+                onClick={() => setCurrentTab('search')}
+              >
+                <Search className="h-3.5 w-3.5 mr-1.5" />
+                <span className="text-xs">Search</span>
+              </button>
+              <button 
+                className={`pill-nav-item ${currentTab === 'inspiration' ? 'active' : ''}`}
+                onClick={() => setCurrentTab('inspiration')}
+              >
+                <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                <span className="text-xs">Inspiration</span>
+              </button>
+              <button 
+                className={`pill-nav-item ${currentTab === 'history' ? 'active' : ''}`}
+                onClick={() => setCurrentTab('history')}
+              >
+                <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                <span className="text-xs">History</span>
+              </button>
+            </div>
+          </div>
         </header>
       
         <div className="flex flex-1 overflow-hidden">
-          {/* Left sidebar with Tabs */}
-          <div className="w-16 backdrop-blur-md bg-black/10 border-r border-white/10 flex flex-col">
+          {/* Left sidebar */}
+          <div className="w-16 backdrop-blur-md bg-white/10 border-r border-white/30 flex flex-col">
             <div className="p-2 flex flex-col items-center">
               <div className="flex flex-col space-y-4 py-4 items-center">
                 <button 
-                  className={`relative rounded-full p-2 ${currentTab === 'search' ? 'bg-white/20 text-white' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
+                  className={`relative rounded-full p-2 ${currentTab === 'search' ? 'bg-white/30 text-white' : 'text-white/70 hover:text-white hover:bg-white/20'}`}
                   onClick={() => setCurrentTab('search')}
                   title="Search"
                 >
                   <Search className="h-4 w-4" />
                 </button>
                 <button 
-                  className={`relative rounded-full p-2 ${currentTab === 'inspiration' ? 'bg-white/20 text-white' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
+                  className={`relative rounded-full p-2 ${currentTab === 'inspiration' ? 'bg-white/30 text-white' : 'text-white/70 hover:text-white hover:bg-white/20'}`}
                   onClick={() => setCurrentTab('inspiration')}
                   title="Inspiration"
                 >
                   <ExternalLink className="h-4 w-4" />
                 </button>
                 <button 
-                  className={`relative rounded-full p-2 ${currentTab === 'history' ? 'bg-white/20 text-white' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
+                  className={`relative rounded-full p-2 ${currentTab === 'history' ? 'bg-white/30 text-white' : 'text-white/70 hover:text-white hover:bg-white/20'}`}
                   onClick={() => setCurrentTab('history')}
                   title="History"
                 >
@@ -325,7 +352,7 @@ export default function AdInspirationPage() {
           </div>
           
           {/* Main content */}
-          <div className="flex-1 overflow-y-auto p-6 h-full bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-md">
+          <div className="flex-1 overflow-y-auto p-6 h-full bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-md">
             {/* Search form in main content when Search tab is active */}
             {currentTab === 'search' && (
               <div className="mb-6">
