@@ -6,12 +6,13 @@ import {
   signInWithRedirect,
   getRedirectResult,
   googleProvider,
-  signOut,
+  signOut as firebaseSignOut,
   onAuthStateChanged,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   updateProfile
 } from '@/lib/firebase';
+import { Auth } from 'firebase/auth';
 import type { User as FirebaseUser } from 'firebase/auth';
 
 // Types for our auth context
@@ -245,8 +246,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
       
-      // Normal logout flow
-      await signOut(auth);
+      // Normal logout flow using the renamed function
+      await firebaseSignOut(auth);
     } catch (error: any) {
       toast({
         title: 'Logout Failed',

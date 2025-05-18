@@ -11,7 +11,8 @@ import {
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
-  updateProfile
+  updateProfile,
+  Auth
 } from 'firebase/auth';
 
 // Firebase configuration with correct values
@@ -28,17 +29,17 @@ const firebaseConfig = {
 console.log("Current domain:", window.location.origin);
 
 // Initialize Firebase once
-let app;
-let auth;
+let firebaseApp;
 
 // Check if Firebase is already initialized
 if (getApps().length === 0) {
-  app = initializeApp(firebaseConfig);
+  firebaseApp = initializeApp(firebaseConfig);
 } else {
-  app = getApps()[0];
+  firebaseApp = getApps()[0];
 }
 
-auth = getAuth(app);
+// Define auth with proper type
+const auth = getAuth(firebaseApp);
 
 // Google Auth Provider
 const googleProvider = new GoogleAuthProvider();
