@@ -1,0 +1,66 @@
+index-BdY88Ffg.js:48 
+ GET https://designer.haitucreations.ai/api/creations 500 (Internal Server Error)
+(anonym)	@	index-BdY88Ffg.js:48
+s	@	index-BdY88Ffg.js:48
+x	@	index-BdY88Ffg.js:48
+start	@	index-BdY88Ffg.js:48
+fetch	@	index-BdY88Ffg.js:48
+Du	@	index-BdY88Ffg.js:48
+(anonym)	@	index-BdY88Ffg.js:48
+setInterval		
+iw	@	index-BdY88Ffg.js:48
+rw	@	index-BdY88Ffg.js:48
+onQueryUpdate	@	index-BdY88Ffg.js:48
+(anonym)	@	index-BdY88Ffg.js:48
+(anonym)	@	index-BdY88Ffg.js:48
+batch	@	index-BdY88Ffg.js:48
+Fs	@	index-BdY88Ffg.js:48
+l	@	index-BdY88Ffg.js:48
+g	@	index-BdY88Ffg.js:48
+(anonym)	@	index-BdY88Ffg.js:48
+Promise.catch		
+x	@	index-BdY88Ffg.js:48
+start	@	index-BdY88Ffg.js:48
+fetch	@	index-BdY88Ffg.js:48
+Du	@	index-BdY88Ffg.js:48
+(anonym)	@	index-BdY88Ffg.js:48
+setInterval		
+iw	@	index-BdY88Ffg.js:48
+rw	@	index-BdY88Ffg.js:48
+onQueryUpdate	@	index-BdY88Ffg.js:48
+(anonym)	@	index-BdY88Ffg.js:48
+(anonym)	@	index-BdY88Ffg.js:48
+batch	@	index-BdY88Ffg.js:48
+Fs	@	index-BdY88Ffg.js:48
+l	@	index-BdY88Ffg.js:48
+g	@	index-BdY88Ffg.js:48
+(anonym)	@	index-BdY88Ffg.js:48
+
+index-BdY88Ffg.js:1955 Calculating dimensions for aspect ratio: original
+index-BdY88Ffg.js:1955 Aspect ratio value from lookup: 1/1
+index-BdY88Ffg.js:1955 Raw width/height parsed: 1, 1
+index-BdY88Ffg.js:1955 Using square format, baseSize: 800
+index-BdY88Ffg.js:1955 Landscape calculation: 800px × 800px
+index-BdY88Ffg.js:1955 Final dimensions for original: 800px × 800px
+index-BdY88Ffg.js:1955 Calculating dimensions for aspect ratio: original
+index-BdY88Ffg.js:1955 Aspect ratio value from lookup: 1/1
+index-BdY88Ffg.js:1955 Raw width/height parsed: 1, 1
+index-BdY88Ffg.js:1955 Using square format, baseSize: 800
+index-BdY88Ffg.js:1955 Landscape calculation: 800px × 800px
+index-BdY88Ffg.js:1955 Final dimensions for original: 800px × 800px
+index-BdY88Ffg.js:1955 Calculating dimensions for aspect ratio: original
+index-BdY88Ffg.js:1955 Aspect ratio value from lookup: 1/1
+index-BdY88Ffg.js:1955 Raw width/height parsed: 1, 1
+index-BdY88Ffg.js:1955 Using square format, baseSize: 800
+index-BdY88Ffg.js:1955 Landscape calculation: 800px × 800px
+index-BdY88Ffg.js:1955 Final dimensions for original: 800px × 800px
+index-BdY88Ffg.js:1955 Calculating dimensions for aspect ratio: original
+index-BdY88Ffg.js:1955 Aspect ratio value from lookup: 1/1
+index-BdY88Ffg.js:1955 Raw width/height parsed: 1, 1
+index-BdY88Ffg.js:1955 Using square format, baseSize: 800
+index-BdY88Ffg.js:1955 Landscape calculation: 800px × 800px
+index-BdY88Ffg.js:1955 Final dimensions for original: 800px × 800px
+index-BdY88Ffg.js:48 
+ GET https://designer.haitucreations.ai/api/creations 500 (Internal Server Error)
+﻿
+
