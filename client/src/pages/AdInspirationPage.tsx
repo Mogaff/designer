@@ -58,7 +58,7 @@ const AdCard = ({
   onToggleSelect: () => void;
 }) => {
   return (
-    <div className={`glass-panel p-4 mb-4 overflow-hidden transition-all ${isSelected ? 'ring-2 ring-primary/50' : ''}`}>
+    <div className={`glass-card p-4 mb-4 overflow-hidden transition-all ${isSelected ? 'ring-2 ring-primary/50' : ''}`}>
       <div className="pb-2 mb-2 border-b border-white/10">
         <div className="flex justify-between items-start">
           <div>
@@ -284,7 +284,7 @@ export default function AdInspirationPage() {
   return (
     <div className="min-h-screen">
       <div className="flex flex-col h-[calc(100vh-2rem)] mx-auto">
-        <header className="py-4 px-6 backdrop-blur-md bg-black/40 border-b border-white/10">
+        <header className="py-4 px-6 backdrop-blur-md bg-black/20 border-b border-white/10">
           <h1 className="text-2xl font-bold gradient-text">Ad Inspiration Explorer</h1>
           <p className="text-white/70 text-sm">
             Search for competitor ads and generate copywriting and design inspiration
@@ -293,7 +293,7 @@ export default function AdInspirationPage() {
       
         <div className="flex flex-1 overflow-hidden">
           {/* Left sidebar with Tabs */}
-          <div className="w-64 backdrop-blur-md bg-black/40 border-r border-white/10 flex flex-col">
+          <div className="w-64 backdrop-blur-md bg-black/10 border-r border-white/10 flex flex-col">
             <div className="p-4">
               <div className="mb-4 text-white/80 text-sm font-medium">Navigation</div>
               <div className="pill-nav mb-4">
@@ -412,7 +412,7 @@ export default function AdInspirationPage() {
           </div>
           
           {/* Main content */}
-          <div className="flex-1 overflow-y-auto p-6 h-full glass-panel bg-black/40">
+          <div className="flex-1 overflow-y-auto p-6 h-full glass-panel bg-black/10">
             {/* Results toolbar for search tab */}
             {currentTab === 'search' && searchMutation.data?.ads && searchMutation.data.ads.length > 0 && (
               <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/10">
@@ -449,7 +449,7 @@ export default function AdInspirationPage() {
             {searchMutation.isPending && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[1, 2, 3, 4].map(i => (
-                  <div key={i} className="glass-panel p-4">
+                  <div key={i} className="glass-card p-4">
                     <div className="pb-2 border-b border-white/10 mb-3">
                       <Skeleton className="h-6 w-40 bg-white/10" />
                     </div>
@@ -465,7 +465,7 @@ export default function AdInspirationPage() {
             
             {/* Empty search state */}
             {currentTab === 'search' && !searchMutation.isPending && (!searchMutation.data || !searchMutation.data.ads || searchMutation.data.ads.length === 0) && (
-              <div className="text-center py-12 glass-panel h-full flex flex-col items-center justify-center">
+              <div className="text-center py-12 glass-card h-full flex flex-col items-center justify-center">
                 <Search className="mx-auto h-12 w-12 text-white opacity-20 mb-4" />
                 <h3 className="text-lg font-medium mb-2 text-white">No Results Yet</h3>
                 <p className="text-white/70 max-w-md mx-auto">
@@ -492,7 +492,7 @@ export default function AdInspirationPage() {
             
             {/* Inspiration tab content */}
             {currentTab === 'inspiration' && (
-              <div className="glass-panel p-6">
+              <div className="glass-card p-6">
                 <h2 className="text-lg font-medium mb-4 text-white">Inspiration from Selected Ads</h2>
                 <div className="text-white/80 text-sm mb-6">
                   Use these insights to inspire your ad copy and design
@@ -534,7 +534,7 @@ export default function AdInspirationPage() {
             
             {/* History tab content */}
             {currentTab === 'history' && (
-              <div className="glass-panel p-6">
+              <div className="glass-card p-6">
                 <h2 className="text-lg font-medium mb-4 text-white">Recent Searches</h2>
                 <div className="text-white/80 text-sm mb-6">
                   Your previous competitor ad searches
