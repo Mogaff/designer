@@ -293,27 +293,27 @@ export default function AdInspirationPage() {
                 Search for competitor ads and generate copywriting inspiration
               </p>
             </div>
-            <div className="pill-nav">
+            <div className="flex space-x-1 bg-white/10 backdrop-blur-md rounded-full p-0.5 border border-white/20">
               <button 
-                className={`pill-nav-item ${currentTab === 'search' ? 'active' : ''}`}
+                className={`flex items-center px-2 py-0.5 rounded-full text-[10px] transition-all ${currentTab === 'search' ? 'bg-white/20 text-white' : 'text-white/60 hover:text-white/90'}`}
                 onClick={() => setCurrentTab('search')}
               >
-                <Search className="h-3.5 w-3.5 mr-1.5" />
-                <span className="text-xs">Search</span>
+                <Search className="h-2.5 w-2.5 mr-1" />
+                Search
               </button>
               <button 
-                className={`pill-nav-item ${currentTab === 'inspiration' ? 'active' : ''}`}
+                className={`flex items-center px-2 py-0.5 rounded-full text-[10px] transition-all ${currentTab === 'inspiration' ? 'bg-white/20 text-white' : 'text-white/60 hover:text-white/90'}`}
                 onClick={() => setCurrentTab('inspiration')}
               >
-                <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-                <span className="text-xs">Inspiration</span>
+                <ExternalLink className="h-2.5 w-2.5 mr-1" />
+                Inspiration
               </button>
               <button 
-                className={`pill-nav-item ${currentTab === 'history' ? 'active' : ''}`}
+                className={`flex items-center px-2 py-0.5 rounded-full text-[10px] transition-all ${currentTab === 'history' ? 'bg-white/20 text-white' : 'text-white/60 hover:text-white/90'}`}
                 onClick={() => setCurrentTab('history')}
               >
-                <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
-                <span className="text-xs">History</span>
+                <RefreshCw className="h-2.5 w-2.5 mr-1" />
+                History
               </button>
             </div>
           </div>
