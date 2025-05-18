@@ -634,7 +634,7 @@ export function registerAdInspirationIntegrationRoutes(app: any) {
     }
   });
   
-  // Get Google Search API configuration status using OAuth
+  // Get Google Search API configuration status using direct API key
   app.get('/api/ad-inspiration/google-search-status', isAuthenticated, async (req: Request, res: Response) => {
     try {
       // Get the user ID from the authenticated session
@@ -645,48 +645,59 @@ export function registerAdInspirationIntegrationRoutes(app: any) {
       }
       
       try {
-        // Import the necessary functions
-        const { checkGoogleApiKeys } = await import('./google_ads_transparency');
+        // Try the new direct Google search first
+        const { checkGoogleApiConfiguration } = await import('../services/googleDirectSearch');
+        const isDirectConfigured = await checkGoogleApiConfiguration();
         
-        // Check if Google OAuth and CSE ID are configured
-        const isConfigured = await checkGoogleApiKeys();
+        if (isDirectConfigured) {
+          return res.status(200).json({
+            configured: true,
+            directApiConfigured: true,
+            cseIdConfigured: true,
+            message: "Google Search API is configured using direct API key"
+          });
+        }
+        
+        // Fall back to checking OAuth configuration if direct API is not configured
+        const { checkGoogleApiKeys } = await import('./google_ads_transparency');
+        const isOAuthConfigured = await checkGoogleApiKeys();
         
         // Get the OAuth status separately to provide more detailed information
         const { checkGoogleOAuthConfig } = await import('../services/googleOAuth');
-        const isOAuthConfigured = await checkGoogleOAuthConfig();
+        const isOAuthStatus = await checkGoogleOAuthConfig();
         const hasCseId = !!process.env.GOOGLE_CSE_ID;
+        const hasApiKey = !!process.env.GOOGLE_API_KEY;
         
         return res.status(200).json({
-          configured: isConfigured,
-          oauthConfigured: isOAuthConfigured,
+          configured: isOAuthConfigured || (hasApiKey && hasCseId),
+          oauthConfigured: isOAuthStatus,
+          directApiConfigured: hasApiKey,
           cseIdConfigured: hasCseId,
-          message: isConfigured 
-            ? "Google Search API is fully configured" 
-            : isOAuthConfigured && !hasCseId 
-              ? "Google OAuth is configured, but Custom Search Engine ID is missing"
-              : !isOAuthConfigured && hasCseId
-                ? "Custom Search Engine ID is configured, but Google OAuth is missing"
+          message: hasApiKey && hasCseId
+            ? "Google Search API is configured using direct API key" 
+            : hasCseId && !hasApiKey
+              ? "Custom Search Engine ID is configured, but API key is missing"
+              : hasApiKey && !hasCseId
+                ? "API key is configured, but Custom Search Engine ID is missing"
                 : "Google Search API is not configured"
         });
-      } catch (oauthError) {
-        // If there's a specific error related to OAuth environment limitations, handle it gracefully
-        console.warn('OAuth error checking Google Search API status:', oauthError);
+      } catch (apiError) {
+        // If there's a specific error related to API configuration, handle it gracefully
+        console.warn('Error checking Google Search API status:', apiError);
         
-        const errorMessage = oauthError instanceof Error ? oauthError.message : String(oauthError);
-        let userFriendlyMessage = "Google Search API authentication unavailable in this environment.";
+        const errorMessage = apiError instanceof Error ? apiError.message : String(apiError);
+        let userFriendlyMessage = "Google Search API configuration check failed.";
         
         // Check for specific error types to provide better messages
-        if (errorMessage.includes('ECONNREFUSED 169.254.169.254') || 
+        if (errorMessage.includes('ECONNREFUSED') || 
             errorMessage.includes('compute/metadata')) {
-          userFriendlyMessage = "Google OAuth requires a Google Cloud environment, which is not available in Replit.";
-        } else if (errorMessage.includes('Could not refresh access token')) {
-          userFriendlyMessage = "Unable to authenticate with Google APIs. Using alternative data sources only.";
+          userFriendlyMessage = "Google authentication requires a different environment. Using direct API access instead.";
         }
         
         // Return a 200 status with detailed error information, but as a non-critical error
         return res.status(200).json({
-          configured: false,
-          oauthConfigured: false,
+          configured: !!process.env.GOOGLE_API_KEY && !!process.env.GOOGLE_CSE_ID,
+          directApiConfigured: !!process.env.GOOGLE_API_KEY,
           cseIdConfigured: !!process.env.GOOGLE_CSE_ID,
           message: userFriendlyMessage,
           envLimitation: true  // Flag to indicate this is an environment limitation, not a configuration error
@@ -698,9 +709,9 @@ export function registerAdInspirationIntegrationRoutes(app: any) {
       // to avoid breaking the UI when this endpoint is polled
       return res.status(200).json({ 
         configured: false,
-        oauthConfigured: false,
-        cseIdConfigured: false,
-        message: `Google Search API unavailable: ${error instanceof Error ? error.message : String(error)}`,
+        directApiConfigured: !!process.env.GOOGLE_API_KEY,
+        cseIdConfigured: !!process.env.GOOGLE_CSE_ID,
+        message: `Google Search API configuration check failed: ${error instanceof Error ? error.message : String(error)}`,
         error: true
       });
     }

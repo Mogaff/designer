@@ -74,23 +74,53 @@ export async function searchCompetitorAds(
       
       // Check if we should search Google
       if (!options.platforms || options.platforms.includes('google')) {
-        console.log('Searching Google Ads using OAuth and Custom Search API...');
-        
-        // Check if Google OAuth and CSE ID are configured before attempting search
-        const isGoogleConfigured = await checkGoogleApiKeys();
-        
-        if (isGoogleConfigured) {
-          const googleAds = await searchGoogleAds(query, {
-            queryType,
-            userId: options.userId,
-            maxAds: options.limit,
-            region: options.region
-          });
+        // First try the direct API method
+        try {
+          // Import the direct search functionality
+          const { 
+            checkGoogleApiConfiguration, 
+            findCompetitorAdsViaGoogle 
+          } = await import('../services/googleDirectSearch');
           
-          allAds = [...allAds, ...googleAds];
-          console.log(`Found ${googleAds.length} ads from Google Search API`);
-        } else {
-          console.warn('Google Search API is not fully configured. OAuth authentication and/or Custom Search Engine ID may be missing.');
+          // Check if direct API is configured
+          const isDirectApiConfigured = await checkGoogleApiConfiguration();
+          
+          if (isDirectApiConfigured) {
+            console.log('Searching Google Ads using direct API key...');
+            
+            // Search using the direct API method
+            const googleAds = await findCompetitorAdsViaGoogle(query, {
+              userId: options.userId,
+              maxResults: options.limit,
+              region: options.region
+            });
+            
+            allAds = [...allAds, ...googleAds];
+            console.log(`Found ${googleAds.length} ads from Google Search API (direct)`);
+          } else {
+            // Fall back to OAuth method if direct API is not configured
+            console.log('Direct API not configured, falling back to OAuth method...');
+            
+            // Check if Google OAuth and CSE ID are configured before attempting search
+            const isGoogleConfigured = await checkGoogleApiKeys();
+            
+            if (isGoogleConfigured) {
+              const googleAds = await searchGoogleAds(query, {
+                queryType,
+                userId: options.userId,
+                maxAds: options.limit,
+                region: options.region
+              });
+              
+              allAds = [...allAds, ...googleAds];
+              console.log(`Found ${googleAds.length} ads from Google Search API (OAuth)`);
+            } else {
+              console.warn('Google Search API is not fully configured. Authentication and/or Custom Search Engine ID may be missing.');
+            }
+          }
+        } catch (error) {
+          console.error('Error searching Google Ads:', error);
+          console.warn('Google Search API encountered an error. Using alternative sources only.');
         }
       }
       
