@@ -26,6 +26,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Search, Copy, XCircle, Check, ExternalLink, RefreshCw } from 'lucide-react';
+import { FaGoogle, FaFacebook } from 'react-icons/fa';
 
 // Define the interface for a competitor ad
 interface CompetitorAd {
@@ -324,18 +325,18 @@ export default function AdInspirationPage() {
           </div>
           
           {/* Main content */}
-          <div className="flex-1 overflow-y-auto p-6 h-full glass-panel bg-white/5">
+          <div className="flex-1 overflow-y-auto p-6 h-full bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-md">
             {/* Search form in main content when Search tab is active */}
             {currentTab === 'search' && (
               <div className="mb-6">
-                <div className="p-5 mb-6 rounded-xl border border-white/20 bg-gradient-to-r from-white/20 to-white/10 backdrop-blur-md shadow-lg animate-pulse-glow">
+                <div className="p-5 mb-6 rounded-xl border border-white/30 bg-gradient-to-r from-white/30 to-white/20 backdrop-blur-md shadow-lg">
                   <form onSubmit={handleSearch} className="flex flex-wrap gap-4 items-end">
                     <div className="flex-1 min-w-[180px]">
                       <label htmlFor="searchType" className="text-xs font-medium text-white mb-1 block">
                         Search Type
                       </label>
                       <Select value={searchType} onValueChange={(value: any) => setSearchType(value)}>
-                        <SelectTrigger className="bg-white/20 border-white/30 text-white text-sm h-9 hover:bg-white/30 transition-all">
+                        <SelectTrigger className="bg-white/30 border-white/40 text-white text-sm h-9 hover:bg-white/40 transition-all">
                           <SelectValue placeholder="Select search type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -361,18 +362,19 @@ export default function AdInspirationPage() {
                               ? 'e.g. Fitness, Healthcare'
                               : 'e.g. running shoes, weight loss'
                         }
-                        className="bg-white/20 border-white/30 text-white text-sm h-9 hover:bg-white/30 transition-all focus:ring-2 focus:ring-white/30"
+                        className="bg-white/30 border-white/40 text-white text-sm h-9 hover:bg-white/40 transition-all focus:ring-2 focus:ring-white/40"
                       />
                     </div>
                     
                     <div className="flex space-x-4 items-center">
-                      <div className="flex items-center space-x-2 bg-white/10 rounded-full px-3 py-1.5">
+                      <div className="flex items-center space-x-2 bg-white/30 rounded-full px-3 py-1.5 border border-white/40">
                         <Checkbox 
                           id="platform-meta" 
                           checked={platforms.includes('meta')}
                           onCheckedChange={() => togglePlatform('meta')}
-                          className="bg-white/20 border-white/30 h-4 w-4"
+                          className="bg-white/30 border-white/40 h-4 w-4"
                         />
+                        <FaFacebook className="h-3 w-3 text-blue-400" />
                         <label 
                           htmlFor="platform-meta" 
                           className="text-xs font-medium text-white"
@@ -380,13 +382,14 @@ export default function AdInspirationPage() {
                           Meta
                         </label>
                       </div>
-                      <div className="flex items-center space-x-2 bg-white/10 rounded-full px-3 py-1.5">
+                      <div className="flex items-center space-x-2 bg-white/30 rounded-full px-3 py-1.5 border border-white/40">
                         <Checkbox 
                           id="platform-google" 
                           checked={platforms.includes('google')}
                           onCheckedChange={() => togglePlatform('google')}
-                          className="bg-white/20 border-white/30 h-4 w-4"
+                          className="bg-white/30 border-white/40 h-4 w-4"
                         />
+                        <FaGoogle className="h-3 w-3 text-red-400" />
                         <label 
                           htmlFor="platform-google" 
                           className="text-xs font-medium text-white"
@@ -452,14 +455,14 @@ export default function AdInspirationPage() {
             {searchMutation.isPending && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[1, 2, 3, 4].map(i => (
-                  <div key={i} className="glass-card p-4">
-                    <div className="pb-2 border-b border-white/10 mb-3">
-                      <Skeleton className="h-6 w-40 bg-white/10" />
+                  <div key={i} className="p-4 rounded-xl border border-white/30 bg-white/20 backdrop-blur-md">
+                    <div className="pb-2 border-b border-white/20 mb-3">
+                      <Skeleton className="h-6 w-40 bg-white/20" />
                     </div>
                     <div className="space-y-3">
-                      <Skeleton className="h-[160px] w-full bg-white/10" />
-                      <Skeleton className="h-4 w-full bg-white/10" />
-                      <Skeleton className="h-4 w-3/4 bg-white/10" />
+                      <Skeleton className="h-[160px] w-full bg-white/20" />
+                      <Skeleton className="h-4 w-full bg-white/20" />
+                      <Skeleton className="h-4 w-3/4 bg-white/20" />
                     </div>
                   </div>
                 ))}
@@ -468,10 +471,10 @@ export default function AdInspirationPage() {
             
             {/* Empty search state */}
             {currentTab === 'search' && !searchMutation.isPending && (!searchMutation.data || !searchMutation.data.ads || searchMutation.data.ads.length === 0) && (
-              <div className="text-center py-12 glass-card h-full flex flex-col items-center justify-center">
-                <Search className="mx-auto h-12 w-12 text-white opacity-20 mb-4" />
+              <div className="text-center py-12 border border-white/30 bg-white/20 backdrop-blur-md rounded-xl h-full flex flex-col items-center justify-center">
+                <Search className="mx-auto h-12 w-12 text-white opacity-40 mb-4" />
                 <h3 className="text-lg font-medium mb-2 text-white">No Results Yet</h3>
-                <p className="text-white/70 max-w-md mx-auto">
+                <p className="text-white/90 max-w-md mx-auto">
                   {searchMutation.isError
                     ? 'An error occurred while searching. Please try again.'
                     : 'Search for competitor ads to see results here. Try specific brand names or relevant keywords for your industry.'}
@@ -495,28 +498,28 @@ export default function AdInspirationPage() {
             
             {/* Inspiration tab content */}
             {currentTab === 'inspiration' && (
-              <div className="glass-card p-6">
+              <div className="p-6 rounded-xl border border-white/30 bg-white/20 backdrop-blur-md">
                 <h2 className="text-lg font-medium mb-4 text-white">Inspiration from Selected Ads</h2>
-                <div className="text-white/80 text-sm mb-6">
+                <div className="text-white/90 text-sm mb-6">
                   Use these insights to inspire your ad copy and design
                 </div>
                 
                 {!copiedText ? (
-                  <div className="text-center py-12 bg-white/5 rounded-lg border border-white/10">
-                    <p className="text-white/60 mb-4">
+                  <div className="text-center py-12 bg-white/10 rounded-lg border border-white/20">
+                    <p className="text-white/80 mb-4">
                       No inspiration generated yet. Select ads and click "Generate Inspiration" to create content.
                     </p>
                     <Button 
                       onClick={() => setCurrentTab('search')}
-                      className="bg-white/10 hover:bg-white/20 text-white"
+                      className="bg-white/20 hover:bg-white/30 text-white border border-white/30"
                     >
                       Go to Search
                     </Button>
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <ScrollArea className="h-[400px] w-full rounded-md border border-white/10 p-4 bg-black/20">
-                      <div className="whitespace-pre-wrap font-mono text-sm text-white/80">
+                    <ScrollArea className="h-[400px] w-full rounded-md border border-white/30 p-4 bg-white/10">
+                      <div className="whitespace-pre-wrap font-mono text-sm text-white/90">
                         {copiedText}
                       </div>
                     </ScrollArea>
@@ -524,7 +527,7 @@ export default function AdInspirationPage() {
                     <div className="flex justify-end">
                       <Button 
                         onClick={() => copyToClipboard(copiedText)}
-                        className="bg-white/10 hover:bg-white/20 text-white"
+                        className="bg-white/20 hover:bg-white/30 text-white border border-white/30"
                       >
                         <Copy className="h-4 w-4 mr-2" />
                         Copy All
@@ -537,13 +540,13 @@ export default function AdInspirationPage() {
             
             {/* History tab content */}
             {currentTab === 'history' && (
-              <div className="glass-card p-6">
+              <div className="p-6 rounded-xl border border-white/30 bg-white/20 backdrop-blur-md">
                 <h2 className="text-lg font-medium mb-4 text-white">Recent Searches</h2>
-                <div className="text-white/80 text-sm mb-6">
+                <div className="text-white/90 text-sm mb-6">
                   Your previous competitor ad searches
                 </div>
-                <div className="text-center py-12 bg-white/5 rounded-lg border border-white/10">
-                  <p className="text-white/60 mb-4">
+                <div className="text-center py-12 bg-white/10 rounded-lg border border-white/20">
+                  <p className="text-white/80 mb-4">
                     Search history feature coming soon...
                   </p>
                 </div>
