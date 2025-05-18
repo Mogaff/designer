@@ -717,8 +717,8 @@ export function registerAdInspirationIntegrationRoutes(app: any) {
     }
   });
   
-  // Test the Google Search API using OAuth
-  app.get('/api/ad-inspiration/test-google-search', isAuthenticated, async (req: Request, res: Response) => {
+  // Test the Google Search API (now supports both direct API key and OAuth methods)
+  app.post('/api/ad-inspiration/test-google-search', isAuthenticated, async (req: Request, res: Response) => {
     try {
       // Get the user ID from the authenticated session
       const userId = (req.user as any)?.id;
@@ -727,6 +727,48 @@ export function registerAdInspirationIntegrationRoutes(app: any) {
         return res.status(401).json({ error: 'User must be authenticated' });
       }
       
+      // Try the direct API method first
+      try {
+        // Import the direct search functionality
+        const { 
+          checkGoogleApiConfiguration, 
+          searchGoogleDirectly 
+        } = await import('../services/googleDirectSearch');
+        
+        // Check if direct API is configured
+        const isDirectApiConfigured = await checkGoogleApiConfiguration();
+        
+        if (isDirectApiConfigured) {
+          console.log('Testing Google Search with direct API key...');
+          
+          // Perform a test search using direct API
+          const testQuery = 'test advertisement';
+          const searchResults = await searchGoogleDirectly(testQuery, { maxResults: 2 });
+          
+          if (!searchResults || searchResults.length === 0) {
+            return res.json({
+              success: true,
+              method: 'direct_api',
+              message: 'Google Search API (direct) is configured, but no results found for test query.',
+              results: []
+            });
+          }
+          
+          return res.json({
+            success: true,
+            method: 'direct_api',
+            message: 'Google Search API (direct) test was successful!',
+            results: searchResults.slice(0, 1) // Only return one result to keep response size reasonable
+          });
+        } else {
+          console.log('Direct API not configured, falling back to OAuth...');
+        }
+      } catch (directApiError) {
+        console.warn('Error testing direct Google API:', directApiError);
+        // Continue to try OAuth method as fallback
+      }
+      
+      // Fall back to OAuth method if direct API is not available
       try {
         // Import the check function
         const { checkGoogleApiKeys } = await import('./google_ads_transparency');
