@@ -3,46 +3,43 @@
  * Handles authentication with Google APIs using service account
  */
 
-import { GoogleAuth } from 'google-auth-library';
+import { GoogleAuth, JWT } from 'google-auth-library';
 import { google } from 'googleapis';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
-// Function to create credentials file from JSON string in environment variable
-function setupCredentialsFile() {
-  try {
-    if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
-      const tmpdir = os.tmpdir();
-      const credentialsPath = path.join(tmpdir, 'google-credentials.json');
-      
-      // Write the credentials JSON to a temporary file
-      fs.writeFileSync(credentialsPath, process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
-      
-      // Set the environment variable to point to this file
-      process.env.GOOGLE_APPLICATION_CREDENTIALS = credentialsPath;
-      
-      console.log('Google credentials file created from environment variable');
-      return credentialsPath;
-    }
-    return null;
-  } catch (error) {
-    console.error('Error setting up Google credentials file:', error);
-    return null;
+// Create a direct JWT client from credentials
+let authClient: any = null;
+
+try {
+  if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
+    // Parse the credentials JSON
+    const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
+    
+    // Create a JWT client directly with the parsed credentials
+    authClient = new JWT({
+      email: credentials.client_email,
+      key: credentials.private_key,
+      scopes: [
+        'https://www.googleapis.com/auth/adwords',
+        'https://www.googleapis.com/auth/customsearch'
+      ],
+    });
+    
+    console.log('Google JWT client created from credentials JSON');
   }
+} catch (error) {
+  console.error('Error creating JWT client:', error);
+  // Fall back to other authentication methods
 }
 
-// Setup credentials file if JSON is provided
-const credentialsPath = setupCredentialsFile();
-
-// Create a Google Auth client using environment variables
-const auth = new GoogleAuth({
+// Fallback to GoogleAuth if JWT client creation failed
+const auth = authClient || new GoogleAuth({
   scopes: [
     'https://www.googleapis.com/auth/adwords',
     'https://www.googleapis.com/auth/customsearch'
-  ],
-  // If a credentials file was created or exists, use it
-  keyFilename: credentialsPath || process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH || undefined
+  ]
 });
 
 /**
@@ -82,10 +79,16 @@ export async function getCustomSearchClient() {
 export async function checkGoogleOAuthConfig(): Promise<boolean> {
   try {
     // Try to get a token to verify the authentication works
-    const client = await auth.getClient();
-    await client.getAccessToken();
+    if (authClient) {
+      await authClient.getAccessToken();
+      return true;
+    } else if (typeof auth.getClient === 'function') {
+      const client = await auth.getClient();
+      await client.getAccessToken();
+      return true;
+    }
     
-    return true;
+    return false;
   } catch (error) {
     console.error('Google OAuth is not configured:', error);
     return false;
