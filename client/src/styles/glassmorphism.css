@@ -1,0 +1,64 @@
+/* Glasmorphism Effects für AdInspirationPage und andere Komponenten */
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.5rem;
+}
+
+.glass-header {
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-button {
+  background: rgba(79, 70, 229, 0.7);
+  backdrop-filter: blur(4px);
+  transition: all 0.2s ease;
+}
+
+.glass-button:hover {
+  background: rgba(79, 70, 229, 0.9);
+}
+
+.glass-tabs {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+}
+
+.glass-tab-active {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.gradient-text {
+  background: linear-gradient(to right, #4f46e5, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+}
+
+.glass-card-ad {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.glass-card-ad:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.glass-card-selected {
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.6);
+}
