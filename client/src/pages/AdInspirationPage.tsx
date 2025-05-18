@@ -293,88 +293,91 @@ export default function AdInspirationPage() {
       
         <div className="flex flex-1 overflow-hidden">
           {/* Left sidebar with Tabs */}
-          <div className="w-64 backdrop-blur-md bg-black/10 border-r border-white/10 flex flex-col">
-            <div className="p-4">
-              <div className="mb-4 text-white/80 text-sm font-medium">Navigation</div>
-              <div className="pill-nav mb-4">
+          <div className="w-16 backdrop-blur-md bg-black/10 border-r border-white/10 flex flex-col">
+            <div className="p-2 flex flex-col items-center">
+              <div className="flex flex-col space-y-4 py-4 items-center">
                 <button 
-                  className={`pill-nav-item ${currentTab === 'search' ? 'active' : ''}`}
+                  className={`relative rounded-full p-2 ${currentTab === 'search' ? 'bg-white/20 text-white' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
                   onClick={() => setCurrentTab('search')}
+                  title="Search"
                 >
-                  <Search className="h-3 w-3 mr-1.5" />
-                  <span className="text-xs">Search</span>
+                  <Search className="h-4 w-4" />
                 </button>
                 <button 
-                  className={`pill-nav-item ${currentTab === 'inspiration' ? 'active' : ''}`}
+                  className={`relative rounded-full p-2 ${currentTab === 'inspiration' ? 'bg-white/20 text-white' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
                   onClick={() => setCurrentTab('inspiration')}
+                  title="Inspiration"
                 >
-                  <ExternalLink className="h-3 w-3 mr-1.5" />
-                  <span className="text-xs">Inspiration</span>
+                  <ExternalLink className="h-4 w-4" />
                 </button>
                 <button 
-                  className={`pill-nav-item ${currentTab === 'history' ? 'active' : ''}`}
+                  className={`relative rounded-full p-2 ${currentTab === 'history' ? 'bg-white/20 text-white' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
                   onClick={() => setCurrentTab('history')}
+                  title="History"
                 >
-                  <RefreshCw className="h-3 w-3 mr-1.5" />
-                  <span className="text-xs">History</span>
+                  <RefreshCw className="h-4 w-4" />
                 </button>
               </div>
             </div>
           
-            {/* Search form in sidebar when Search tab is active */}
+            {/* Search form moved to main content area */}
+          </div>
+          
+          {/* Main content */}
+          <div className="flex-1 overflow-y-auto p-6 h-full glass-panel bg-black/10">
+            {/* Search form in main content when Search tab is active */}
             {currentTab === 'search' && (
-              <div className="p-4 space-y-4 border-t border-white/10">
-                <form onSubmit={handleSearch} className="space-y-4">
-                  <div className="flex flex-col space-y-2">
-                    <label htmlFor="searchType" className="text-xs font-medium text-white/90">
-                      Search Type
-                    </label>
-                    <Select value={searchType} onValueChange={(value: any) => setSearchType(value)}>
-                      <SelectTrigger className="bg-white/10 border-white/20 text-white text-sm">
-                        <SelectValue placeholder="Select search type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="brand">Brand Name</SelectItem>
-                        <SelectItem value="keyword">Keyword</SelectItem>
-                        <SelectItem value="industry">Industry</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="flex flex-col space-y-2">
-                    <label htmlFor="searchQuery" className="text-xs font-medium text-white/90">
-                      Search Query
-                    </label>
-                    <Input
-                      id="searchQuery"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder={
-                        searchType === 'brand' 
-                          ? 'e.g. Nike, Coca-Cola' 
-                          : searchType === 'industry'
-                            ? 'e.g. Fitness, Healthcare'
-                            : 'e.g. running shoes, weight loss'
-                      }
-                      className="bg-white/10 border-white/20 text-white text-sm"
-                    />
-                  </div>
-                  
-                  <div className="flex flex-col space-y-2">
-                    <label className="text-xs font-medium text-white/90">Platforms</label>
-                    <div className="flex flex-col space-y-2">
+              <div className="mb-6">
+                <div className="glass-card p-4 mb-6">
+                  <form onSubmit={handleSearch} className="flex flex-wrap gap-4 items-end">
+                    <div className="flex-1 min-w-[180px]">
+                      <label htmlFor="searchType" className="text-xs font-medium text-white/90 mb-1 block">
+                        Search Type
+                      </label>
+                      <Select value={searchType} onValueChange={(value: any) => setSearchType(value)}>
+                        <SelectTrigger className="bg-white/10 border-white/20 text-white text-sm h-9">
+                          <SelectValue placeholder="Select search type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="brand">Brand Name</SelectItem>
+                          <SelectItem value="keyword">Keyword</SelectItem>
+                          <SelectItem value="industry">Industry</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="flex-[2] min-w-[250px]">
+                      <label htmlFor="searchQuery" className="text-xs font-medium text-white/90 mb-1 block">
+                        Search Query
+                      </label>
+                      <Input
+                        id="searchQuery"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder={
+                          searchType === 'brand' 
+                            ? 'e.g. Nike, Coca-Cola' 
+                            : searchType === 'industry'
+                              ? 'e.g. Fitness, Healthcare'
+                              : 'e.g. running shoes, weight loss'
+                        }
+                        className="bg-white/10 border-white/20 text-white text-sm h-9"
+                      />
+                    </div>
+                    
+                    <div className="flex space-x-3 items-center">
                       <div className="flex items-center space-x-2">
                         <Checkbox 
                           id="platform-meta" 
                           checked={platforms.includes('meta')}
                           onCheckedChange={() => togglePlatform('meta')}
-                          className="bg-white/10 border-white/20"
+                          className="bg-white/10 border-white/20 h-4 w-4"
                         />
                         <label 
                           htmlFor="platform-meta" 
                           className="text-xs font-medium text-white/90"
                         >
-                          Meta (Facebook/Instagram)
+                          Meta
                         </label>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -382,37 +385,34 @@ export default function AdInspirationPage() {
                           id="platform-google" 
                           checked={platforms.includes('google')}
                           onCheckedChange={() => togglePlatform('google')}
-                          className="bg-white/10 border-white/20"
+                          className="bg-white/10 border-white/20 h-4 w-4"
                         />
                         <label 
                           htmlFor="platform-google" 
                           className="text-xs font-medium text-white/90"
                         >
-                          Google Ads
+                          Google
                         </label>
                       </div>
                     </div>
-                  </div>
-                  
-                  <Button 
-                    type="submit" 
-                    className="w-full btn-glass"
-                    disabled={searchMutation.isPending || !searchQuery.trim()}
-                  >
-                    {searchMutation.isPending ? (
-                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <Search className="h-4 w-4 mr-2" />
-                    )}
-                    Search
-                  </Button>
-                </form>
+                    
+                    <Button 
+                      type="submit" 
+                      className="btn-glass h-9"
+                      disabled={searchMutation.isPending || !searchQuery.trim()}
+                    >
+                      {searchMutation.isPending ? (
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Search className="h-4 w-4 mr-2" />
+                      )}
+                      Search
+                    </Button>
+                  </form>
+                </div>
               </div>
             )}
-          </div>
-          
-          {/* Main content */}
-          <div className="flex-1 overflow-y-auto p-6 h-full glass-panel bg-black/10">
+            
             {/* Results toolbar for search tab */}
             {currentTab === 'search' && searchMutation.data?.ads && searchMutation.data.ads.length > 0 && (
               <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/10">
