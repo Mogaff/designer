@@ -400,14 +400,22 @@ export default function CompetitorInspirationPanel({
                     <h4 className="text-[8px] font-medium">{ad.brand}</h4>
                     <p className="text-[7px] text-white/70">{ad.headline || ad.body?.substring(0, 50) || 'No text'}</p>
                   </div>
-                  {ad.imageUrl && (
+                  {ad.image_url && (
                     <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0 bg-black/20">
                       <img 
-                        src={ad.imageUrl} 
+                        src={ad.image_url} 
                         alt={ad.brand} 
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
+                          // Versuche es mit dem Thumbnail, falls das Hauptbild nicht lädt
+                          if (ad.thumbnail_url) {
+                            (e.target as HTMLImageElement).src = ad.thumbnail_url;
+                            (e.target as HTMLImageElement).onerror = () => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            };
+                          } else {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }
                         }}
                       />
                     </div>
