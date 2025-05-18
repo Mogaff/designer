@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import '../styles/glassmorphism.css';
 import {
   Card,
   CardContent,
@@ -283,24 +284,24 @@ export default function AdInspirationPage() {
   
   return (
     <div className="container py-8">
-      <h1 className="text-3xl font-bold mb-2">Ad Inspiration Explorer</h1>
+      <h1 className="text-3xl font-bold mb-2 gradient-text">Ad Inspiration Explorer</h1>
       <p className="text-muted-foreground mb-8">
         Search for competitor ads and generate copywriting and design inspiration
       </p>
       
       <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
-        <TabsList className="mb-6">
-          <TabsTrigger value="search">Search Ads</TabsTrigger>
-          <TabsTrigger value="inspiration">Inspiration</TabsTrigger>
-          <TabsTrigger value="history">Search History</TabsTrigger>
+        <TabsList className="mb-6 glass-tabs">
+          <TabsTrigger value="search" className="data-[state=active]:glass-tab-active">Search Ads</TabsTrigger>
+          <TabsTrigger value="inspiration" className="data-[state=active]:glass-tab-active">Inspiration</TabsTrigger>
+          <TabsTrigger value="history" className="data-[state=active]:glass-tab-active">Search History</TabsTrigger>
         </TabsList>
         
         <TabsContent value="search" className="space-y-6">
           {/* Search Form */}
-          <Card>
-            <CardHeader>
+          <Card className="glass-card">
+            <CardHeader className="glass-header">
               <CardTitle>Search for Competitor Ads</CardTitle>
-              <CardDescription>
+              <CardDescription className="text-white/70">
                 Find ads from competitors or industry leaders to inspire your designs
               </CardDescription>
             </CardHeader>
@@ -311,7 +312,7 @@ export default function AdInspirationPage() {
                     Search Type
                   </label>
                   <Select value={searchType} onValueChange={(value: any) => setSearchType(value)}>
-                    <SelectTrigger>
+                    <SelectTrigger className="glass-input">
                       <SelectValue placeholder="Select search type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -338,9 +339,13 @@ export default function AdInspirationPage() {
                             ? 'e.g. Fitness, Healthcare, Finance'
                             : 'e.g. running shoes, weight loss, investment'
                       }
-                      className="flex-1"
+                      className="flex-1 glass-input"
                     />
-                    <Button type="submit" disabled={searchMutation.isPending || !searchQuery.trim()}>
+                    <Button 
+                      type="submit" 
+                      disabled={searchMutation.isPending || !searchQuery.trim()}
+                      className="glass-button"
+                    >
                       {searchMutation.isPending ? (
                         <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                       ) : (
