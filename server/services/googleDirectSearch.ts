@@ -40,18 +40,20 @@ export async function searchGoogleDirectly(query: string, options: {
     
     // Set default options
     const maxResults = options.maxResults || 10;
-    const region = options.region || 'us';
+    const region = options.region || 'US'; // Beachte: Ländercode sollte großgeschrieben sein
     
-    // Construct the query
-    const params = {
+    // Construct the query - nur die absolut notwendigen Parameter verwenden
+    const params: Record<string, any> = {
       key: GOOGLE_API_KEY,
       cx: GOOGLE_CSE_ID,
       q: query,
-      num: maxResults,
-      gl: region, // Geographic location
-      sort: 'date', // Sort by date to get recent results
-      filter: '1', // Filter duplicates
+      num: maxResults > 10 ? 10 : maxResults, // Google erlaubt max. 10 Ergebnisse pro Anfrage
     };
+    
+    // Optionale Parameter nur hinzufügen, wenn sie benötigt werden
+    if (region && region.length === 2) {
+      params.gl = region.toUpperCase(); // Geographic location (Ländercode)
+    }
     
     console.log(`Performing direct Google search for: "${query}"`);
     
@@ -65,8 +67,15 @@ export async function searchGoogleDirectly(query: string, options: {
     console.log(`Found ${response.data.items.length} search results for "${query}"`);
     
     return response.data.items;
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error searching Google directly:', error);
+    // Sicheren Zugriff auf Axios-Fehlerdetails implementieren
+    if (typeof error === 'object' && error !== null) {
+      const axiosError = error as any;
+      if (axiosError.response?.data?.error) {
+        console.error('Google API error details:', axiosError.response.data.error);
+      }
+    }
     return [];
   }
 }
