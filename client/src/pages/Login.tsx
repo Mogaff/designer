@@ -180,7 +180,7 @@ export default function Login() {
                   </Button>
                   
                   <p className="text-xs text-white/70 text-center mt-2">
-                    Having trouble? Make sure popups are enabled in your browser.
+                    Using Google Sign-In for secure login. Your Replit domain is authorized.
                   </p>
                 </div>
               </CardContent>

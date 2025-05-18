@@ -1,8 +1,10 @@
 // Import Firebase SDK
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps } from 'firebase/app';
 import { 
   getAuth, 
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   signOut,
   onAuthStateChanged,
@@ -12,23 +14,31 @@ import {
   updateProfile
 } from 'firebase/auth';
 
-// Firebase configuration directly from environment variables
+// Firebase configuration with correct values
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+  apiKey: "AIzaSyA84jOtKbd_aFr07gt4EKH_md_XVhX-RZw",
+  authDomain: "dieseiner-7c81b.firebaseapp.com",
+  projectId: "dieseiner-7c81b",
+  storageBucket: "dieseiner-7c81b.firebasestorage.app",
+  messagingSenderId: "558539292154",
+  appId: "1:558539292154:web:5c6a993fd80165e4e2f843",
+  measurementId: "G-N4LRJ0Z0B1"
 };
 
-// Log config for debugging (values will be hidden in production)
-console.log("Current domain that needs to be authorized in Firebase:", window.location.origin);
-console.log("Firebase config loaded with auth domain:", firebaseConfig.authDomain);
+console.log("Current domain:", window.location.origin);
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+// Initialize Firebase once
+let app;
+let auth;
+
+// Check if Firebase is already initialized
+if (getApps().length === 0) {
+  app = initializeApp(firebaseConfig);
+} else {
+  app = getApps()[0];
+}
+
+auth = getAuth(app);
 
 // Google Auth Provider
 const googleProvider = new GoogleAuthProvider();
@@ -44,6 +54,8 @@ googleProvider.setCustomParameters({
 export { 
   auth, 
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   googleProvider,
   signOut,
   onAuthStateChanged,

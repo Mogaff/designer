@@ -3,6 +3,8 @@ import { useToast } from '@/hooks/use-toast';
 import { 
   auth, 
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   googleProvider,
   signOut,
   onAuthStateChanged,
@@ -88,7 +90,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Watch auth state changes
+  // Watch auth state changes and handle redirect result
   useEffect(() => {
     // If authentication is disabled, just set loading to false and use mock user
     if (!AUTH_ENABLED) {
@@ -99,6 +101,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     // Watch Firebase auth state if authentication is enabled
     console.log('Authentication ENABLED. Watching Firebase auth state.');
+    
+    // Handle redirect result first
+    (async function checkRedirectResult() {
+      try {
+        // Check if we're coming back from a redirect sign-in
+        const result = await getRedirectResult(auth);
+        if (result) {
+          console.log('Redirect login successful:', result.user.email);
+          
+          // Sync with our backend
+          await syncUserWithBackend(result.user);
+          
+          toast({
+            title: 'Login successful',
+            description: 'You are now logged in with Google.',
+          });
+        }
+      } catch (error: any) {
+        console.error('Error handling redirect result:', error);
+        
+        if (error.code === 'auth/unauthorized-domain') {
+          toast({
+            title: 'Login failed',
+            description: 'Authentication problem: This domain must be authorized in Firebase.',
+            variant: 'destructive',
+          });
+        }
+      }
+    })();
+    
+    // Then set up the normal auth state listener
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       setIsLoading(true);
       
@@ -147,7 +180,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, [toast, AUTH_ENABLED]);
 
-  // Google Sign-in function
+  // Google Sign-in function using redirect method
   const signInWithGoogle = async () => {
     try {
       setIsLoading(true);
@@ -164,52 +197,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
       
-      console.log('Starting Google sign-in with popup...');
-      console.log('Current domain:', window.location.origin);
+      console.log('Starting Google sign-in with redirect...');
       
-      // Add better browser compatibility for popup
-      const browserWidth = window.innerWidth;
-      const browserHeight = window.innerHeight;
-      const popupWidth = 500;
-      const popupHeight = 600;
-      const left = (browserWidth - popupWidth) / 2;
-      const top = (browserHeight - popupHeight) / 2;
+      // Use redirect method instead of popup
+      await signInWithRedirect(auth, googleProvider);
       
-      auth.useDeviceLanguage(); // Set language to browser's language
+      // The page will redirect to Google and then back to our app
+      // The result will be handled in useEffect below
       
-      // Create popup and handle the authentication flow
-      const result = await signInWithPopup(auth, googleProvider);
-      console.log('Popup login successful:', result.user.email);
-      
-      // Sync with our backend to create/update user
-      await syncUserWithBackend(result.user);
-      
-      toast({
-        title: 'Login successful',
-        description: 'You are now logged in with Google.',
-      });
     } catch (error: any) {
       let errorMessage = 'Google login failed';
       console.error('Google sign-in error:', error);
       
-      // Detailed error logging for debugging
-      console.error('Error details:', {
-        code: error.code,
-        message: error.message,
-        stack: error.stack,
-        fullError: error
-      });
-      
       // Better error messages for common errors
-      if (error.code === 'auth/popup-closed-by-user') {
-        errorMessage = 'Login canceled. Please try again.';
-      } else if (error.code === 'auth/popup-blocked') {
-        errorMessage = 'Login popup was blocked. Please enable popups for this site.';
-      } else if (error.code === 'auth/unauthorized-domain') {
+      if (error.code === 'auth/unauthorized-domain') {
         errorMessage = 'Authentication problem: This domain must be authorized in the Firebase console.';
-        console.error('Domain not authorized:', window.location.origin, 'Please add it to Firebase console');
-      } else if (error.code === 'auth/cancelled-popup-request') {
-        errorMessage = 'Multiple popup requests - please try again.';
+        console.error('Domain not authorized:', window.location.origin);
       } else if (error.code) {
         errorMessage = `Authentication error: ${error.code}`;
       }
@@ -219,7 +222,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         description: errorMessage,
         variant: 'destructive',
       });
-    } finally {
+      
       setIsLoading(false);
     }
   };
