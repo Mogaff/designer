@@ -324,18 +324,18 @@ export default function AdInspirationPage() {
           </div>
           
           {/* Main content */}
-          <div className="flex-1 overflow-y-auto p-6 h-full glass-panel bg-black/10">
+          <div className="flex-1 overflow-y-auto p-6 h-full glass-panel bg-white/5">
             {/* Search form in main content when Search tab is active */}
             {currentTab === 'search' && (
               <div className="mb-6">
-                <div className="glass-card p-4 mb-6">
+                <div className="p-5 mb-6 rounded-xl border border-white/20 bg-gradient-to-r from-white/20 to-white/10 backdrop-blur-md shadow-lg animate-pulse-glow">
                   <form onSubmit={handleSearch} className="flex flex-wrap gap-4 items-end">
                     <div className="flex-1 min-w-[180px]">
-                      <label htmlFor="searchType" className="text-xs font-medium text-white/90 mb-1 block">
+                      <label htmlFor="searchType" className="text-xs font-medium text-white mb-1 block">
                         Search Type
                       </label>
                       <Select value={searchType} onValueChange={(value: any) => setSearchType(value)}>
-                        <SelectTrigger className="bg-white/10 border-white/20 text-white text-sm h-9">
+                        <SelectTrigger className="bg-white/20 border-white/30 text-white text-sm h-9 hover:bg-white/30 transition-all">
                           <SelectValue placeholder="Select search type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -347,7 +347,7 @@ export default function AdInspirationPage() {
                     </div>
                     
                     <div className="flex-[2] min-w-[250px]">
-                      <label htmlFor="searchQuery" className="text-xs font-medium text-white/90 mb-1 block">
+                      <label htmlFor="searchQuery" className="text-xs font-medium text-white mb-1 block">
                         Search Query
                       </label>
                       <Input
@@ -361,35 +361,35 @@ export default function AdInspirationPage() {
                               ? 'e.g. Fitness, Healthcare'
                               : 'e.g. running shoes, weight loss'
                         }
-                        className="bg-white/10 border-white/20 text-white text-sm h-9"
+                        className="bg-white/20 border-white/30 text-white text-sm h-9 hover:bg-white/30 transition-all focus:ring-2 focus:ring-white/30"
                       />
                     </div>
                     
-                    <div className="flex space-x-3 items-center">
-                      <div className="flex items-center space-x-2">
+                    <div className="flex space-x-4 items-center">
+                      <div className="flex items-center space-x-2 bg-white/10 rounded-full px-3 py-1.5">
                         <Checkbox 
                           id="platform-meta" 
                           checked={platforms.includes('meta')}
                           onCheckedChange={() => togglePlatform('meta')}
-                          className="bg-white/10 border-white/20 h-4 w-4"
+                          className="bg-white/20 border-white/30 h-4 w-4"
                         />
                         <label 
                           htmlFor="platform-meta" 
-                          className="text-xs font-medium text-white/90"
+                          className="text-xs font-medium text-white"
                         >
                           Meta
                         </label>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2 bg-white/10 rounded-full px-3 py-1.5">
                         <Checkbox 
                           id="platform-google" 
                           checked={platforms.includes('google')}
                           onCheckedChange={() => togglePlatform('google')}
-                          className="bg-white/10 border-white/20 h-4 w-4"
+                          className="bg-white/20 border-white/30 h-4 w-4"
                         />
                         <label 
                           htmlFor="platform-google" 
-                          className="text-xs font-medium text-white/90"
+                          className="text-xs font-medium text-white"
                         >
                           Google
                         </label>
@@ -398,15 +398,18 @@ export default function AdInspirationPage() {
                     
                     <Button 
                       type="submit" 
-                      className="btn-glass h-9"
+                      className={`relative overflow-hidden transition-all duration-300 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 border border-white/20 hover:from-blue-500/90 hover:to-indigo-500/90 text-white rounded-lg px-4 h-9 ${searchMutation.isPending ? 'animate-pulse' : ''}`}
                       disabled={searchMutation.isPending || !searchQuery.trim()}
                     >
-                      {searchMutation.isPending ? (
-                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                      ) : (
-                        <Search className="h-4 w-4 mr-2" />
-                      )}
-                      Search
+                      <span className={`flex items-center transition-transform duration-300 ${searchMutation.isPending ? 'scale-110' : ''}`}>
+                        {searchMutation.isPending ? (
+                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <Search className="h-4 w-4 mr-2" />
+                        )}
+                        Search
+                      </span>
+                      <span className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-indigo-400/20 transform translate-x-full animate-border-beam"></span>
                     </Button>
                   </form>
                 </div>
