@@ -39,9 +39,11 @@ export default function Login() {
   const handleGoogleSignIn = async () => {
     setIsSubmitting(true);
     try {
+      console.log('Starting Google sign-in from Login page');
       await signInWithGoogle();
+      // If successful, the auth context will handle the redirect
     } catch (error) {
-      console.error('Google Sign-in error:', error);
+      console.error('Google Sign-in error in Login component:', error);
       setIsSubmitting(false);
     }
   };
@@ -177,9 +179,8 @@ export default function Login() {
                     <span>{isSubmitting ? 'Processing...' : 'Continue with Google'}</span>
                   </Button>
                   
-                  <p className="text-xs text-orange-300 text-center">
-                    Note: Google login requires your Replit domain to be authorized in Firebase.
-                    Please use email login until domain authorization is complete.
+                  <p className="text-xs text-white/70 text-center mt-2">
+                    Having trouble? Make sure popups are enabled in your browser.
                   </p>
                 </div>
               </CardContent>

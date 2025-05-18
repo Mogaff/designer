@@ -12,30 +12,30 @@ import {
   updateProfile
 } from 'firebase/auth';
 
-// Firebase configuration using environment variables
+// Firebase configuration directly from environment variables
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.appspot.com`,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-// Log the current domain that needs to be added to Firebase
+// Log config for debugging (values will be hidden in production)
 console.log("Current domain that needs to be authorized in Firebase:", window.location.origin);
+console.log("Firebase config loaded with auth domain:", firebaseConfig.authDomain);
 
-console.log("Initializing Firebase with environment variables");
-
-// Einfache Firebase-Initialisierung ohne irgendwelche komplexen Anpassungen
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// Standard Google Auth Provider ohne zusätzliche Parameter
+// Google Auth Provider
 const googleProvider = new GoogleAuthProvider();
 googleProvider.addScope('email');
 googleProvider.addScope('profile');
 
-// Einfache Einstellungen für den Login-Dialog
+// Login dialog settings
 googleProvider.setCustomParameters({
   prompt: 'select_account'
 });

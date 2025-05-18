@@ -164,10 +164,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
       
-      // Normal Firebase authentication flow
       console.log('Starting Google sign-in with popup...');
+      console.log('Current domain:', window.location.origin);
+      
+      // Add better browser compatibility for popup
+      const browserWidth = window.innerWidth;
+      const browserHeight = window.innerHeight;
+      const popupWidth = 500;
+      const popupHeight = 600;
+      const left = (browserWidth - popupWidth) / 2;
+      const top = (browserHeight - popupHeight) / 2;
+      
+      auth.useDeviceLanguage(); // Set language to browser's language
+      
+      // Create popup and handle the authentication flow
       const result = await signInWithPopup(auth, googleProvider);
       console.log('Popup login successful:', result.user.email);
+      
+      // Sync with our backend to create/update user
+      await syncUserWithBackend(result.user);
       
       toast({
         title: 'Login successful',
@@ -177,6 +192,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       let errorMessage = 'Google login failed';
       console.error('Google sign-in error:', error);
       
+      // Detailed error logging for debugging
+      console.error('Error details:', {
+        code: error.code,
+        message: error.message,
+        stack: error.stack,
+        fullError: error
+      });
+      
       // Better error messages for common errors
       if (error.code === 'auth/popup-closed-by-user') {
         errorMessage = 'Login canceled. Please try again.';
@@ -185,6 +208,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } else if (error.code === 'auth/unauthorized-domain') {
         errorMessage = 'Authentication problem: This domain must be authorized in the Firebase console.';
         console.error('Domain not authorized:', window.location.origin, 'Please add it to Firebase console');
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        errorMessage = 'Multiple popup requests - please try again.';
       } else if (error.code) {
         errorMessage = `Authentication error: ${error.code}`;
       }
