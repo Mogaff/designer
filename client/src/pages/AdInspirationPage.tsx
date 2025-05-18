@@ -58,33 +58,33 @@ const AdCard = ({
   onToggleSelect: () => void;
 }) => {
   return (
-    <Card className={`mb-4 overflow-hidden transition-all ${isSelected ? 'ring-2 ring-primary' : ''}`}>
-      <CardHeader className="pb-2">
+    <div className={`glass-panel p-4 mb-4 overflow-hidden transition-all ${isSelected ? 'ring-2 ring-primary/50' : ''}`}>
+      <div className="pb-2 mb-2 border-b border-white/10">
         <div className="flex justify-between items-start">
           <div>
-            <CardTitle className="text-lg flex items-center">
+            <h3 className="text-lg flex items-center text-white">
               {ad.brand}
-              <Badge variant="outline" className="ml-2 text-xs">
+              <Badge variant="outline" className="ml-2 text-xs bg-white/10 text-white border-white/20">
                 {ad.platform}
               </Badge>
               {ad.platform_details && (
-                <Badge variant="secondary" className="ml-2 text-xs">
+                <Badge variant="secondary" className="ml-2 text-xs bg-white/5 text-white/80">
                   {ad.platform_details}
                 </Badge>
               )}
-            </CardTitle>
+            </h3>
           </div>
           <Checkbox 
             checked={isSelected}
             onCheckedChange={() => onToggleSelect()}
-            className="h-5 w-5"
+            className="h-5 w-5 bg-white/10 border-white/20"
           />
         </div>
-      </CardHeader>
+      </div>
       
-      <CardContent className="pb-2">
+      <div className="pb-2">
         {ad.image_url && (
-          <div className="relative mb-3 rounded-md overflow-hidden bg-slate-100 dark:bg-slate-800">
+          <div className="relative mb-3 rounded-md overflow-hidden bg-black/20 border border-white/10">
             <img 
               src={ad.image_url} 
               alt={`${ad.brand} ad`} 
@@ -98,32 +98,33 @@ const AdCard = ({
         )}
         
         {ad.headline && (
-          <div className="font-medium text-base mb-1">{ad.headline}</div>
+          <div className="font-medium text-base mb-1 text-white">{ad.headline}</div>
         )}
         
         {ad.body && (
-          <div className="text-sm text-muted-foreground mb-3">{ad.body}</div>
+          <div className="text-sm text-white/70 mb-3">{ad.body}</div>
         )}
         
         {ad.cta && (
-          <Badge variant="secondary" className="mb-2">
+          <Badge variant="secondary" className="mb-2 bg-white/10 text-white/90 border-white/10">
             {ad.cta}
           </Badge>
         )}
         
         {ad.style_description && (
-          <div className="mt-3 p-2 bg-slate-50 dark:bg-slate-900 rounded-md text-xs">
-            <div className="font-medium mb-1">Style Analysis:</div>
-            <div className="text-muted-foreground">{ad.style_description}</div>
+          <div className="mt-3 p-2 bg-white/5 rounded-md text-xs border border-white/10">
+            <div className="font-medium mb-1 text-white/90">Style Analysis:</div>
+            <div className="text-white/70">{ad.style_description}</div>
           </div>
         )}
-      </CardContent>
+      </div>
       
-      <CardFooter className="flex justify-between pt-2">
+      <div className="flex justify-between pt-2 border-t border-white/10">
         <Button 
           variant="ghost" 
           size="sm"
           onClick={() => onToggleSelect()}
+          className="text-white/80 hover:text-white hover:bg-white/10"
         >
           {isSelected ? (
             <>
@@ -145,13 +146,14 @@ const AdCard = ({
             onClick={() => {
               navigator.clipboard.writeText(`${ad.headline}\n\n${ad.body}`);
             }}
+            className="text-white/80 hover:text-white hover:bg-white/10"
           >
             <Copy className="h-4 w-4 mr-1" />
             Copy
           </Button>
         )}
-      </CardFooter>
-    </Card>
+      </div>
+    </div>
   );
 };
 
@@ -172,8 +174,6 @@ export default function AdInspirationPage() {
         throw new Error('Search query is required');
       }
       
-      // Verwendet jetzt die POST-Methode wie das CompetitorInspirationPanel
-      // apiRequest gibt bereits ein JSON-Objekt zurück, daher ist kein .json() nötig
       const response = await apiRequest(
         'POST', 
         '/api/ad-inspiration/search',
@@ -221,7 +221,7 @@ export default function AdInspirationPage() {
         adIds: selectedAds
       });
       
-      return response.json();
+      return response;
     },
     onSuccess: (data) => {
       if (data.copyInspirations) {
@@ -295,36 +295,30 @@ export default function AdInspirationPage() {
           {/* Left sidebar with Tabs */}
           <div className="w-64 backdrop-blur-md bg-black/40 border-r border-white/10 flex flex-col">
             <div className="p-4">
-              <Tabs 
-                value={currentTab} 
-                onValueChange={setCurrentTab} 
-                orientation="vertical" 
-                className="w-full h-full"
-              >
-                <TabsList className="flex flex-col space-y-1 h-auto w-full bg-transparent">
-                  <TabsTrigger 
-                    value="search" 
-                    className="justify-start w-full px-4 py-2 text-sm text-white/80 data-[state=active]:bg-white/10"
-                  >
-                    <Search className="h-4 w-4 mr-2" />
-                    Search Ads
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="inspiration" 
-                    className="justify-start w-full px-4 py-2 text-sm text-white/80 data-[state=active]:bg-white/10"
-                  >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Inspiration
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="history" 
-                    className="justify-start w-full px-4 py-2 text-sm text-white/80 data-[state=active]:bg-white/10"
-                  >
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    History
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+              <div className="mb-4 text-white/80 text-sm font-medium">Navigation</div>
+              <div className="pill-nav mb-4">
+                <button 
+                  className={`pill-nav-item ${currentTab === 'search' ? 'active' : ''}`}
+                  onClick={() => setCurrentTab('search')}
+                >
+                  <Search className="h-3 w-3 mr-1.5" />
+                  <span className="text-xs">Search</span>
+                </button>
+                <button 
+                  className={`pill-nav-item ${currentTab === 'inspiration' ? 'active' : ''}`}
+                  onClick={() => setCurrentTab('inspiration')}
+                >
+                  <ExternalLink className="h-3 w-3 mr-1.5" />
+                  <span className="text-xs">Inspiration</span>
+                </button>
+                <button 
+                  className={`pill-nav-item ${currentTab === 'history' ? 'active' : ''}`}
+                  onClick={() => setCurrentTab('history')}
+                >
+                  <RefreshCw className="h-3 w-3 mr-1.5" />
+                  <span className="text-xs">History</span>
+                </button>
+              </div>
             </div>
           
             {/* Search form in sidebar when Search tab is active */}
@@ -418,30 +412,63 @@ export default function AdInspirationPage() {
           </div>
           
           {/* Main content */}
-          <div className="flex-1 overflow-y-auto p-6 glass-panel bg-black/40 h-full">
+          <div className="flex-1 overflow-y-auto p-6 h-full glass-panel bg-black/40">
+            {/* Results toolbar for search tab */}
+            {currentTab === 'search' && searchMutation.data?.ads && searchMutation.data.ads.length > 0 && (
+              <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/10">
+                <h2 className="text-lg font-medium text-white">Results ({searchMutation.data.ads.length})</h2>
+                <div className="flex space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedAds([])}
+                    disabled={selectedAds.length === 0}
+                    className="bg-white/10 hover:bg-white/20 border-white/20 text-white text-xs"
+                  >
+                    Clear Selection
+                  </Button>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => inspirationMutation.mutate()}
+                    disabled={selectedAds.length === 0 || inspirationMutation.isPending}
+                    className="bg-white/20 hover:bg-white/30 text-white text-xs"
+                  >
+                    {inspirationMutation.isPending ? (
+                      <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                    ) : (
+                      <ExternalLink className="h-3 w-3 mr-1" />
+                    )}
+                    Generate Inspiration
+                  </Button>
+                </div>
+              </div>
+            )}
             
+            {/* Loading skeletons */}
             {searchMutation.isPending && (
-              <div className="space-y-4">
-                {[1, 2, 3].map(i => (
-                  <Card key={i} className="mb-4">
-                    <CardHeader className="pb-2">
-                      <Skeleton className="h-6 w-40" />
-                    </CardHeader>
-                    <CardContent>
-                      <Skeleton className="h-[200px] w-full mb-4" />
-                      <Skeleton className="h-4 w-full mb-2" />
-                      <Skeleton className="h-4 w-3/4" />
-                    </CardContent>
-                  </Card>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="glass-panel p-4">
+                    <div className="pb-2 border-b border-white/10 mb-3">
+                      <Skeleton className="h-6 w-40 bg-white/10" />
+                    </div>
+                    <div className="space-y-3">
+                      <Skeleton className="h-[160px] w-full bg-white/10" />
+                      <Skeleton className="h-4 w-full bg-white/10" />
+                      <Skeleton className="h-4 w-3/4 bg-white/10" />
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
             
-            {!searchMutation.isPending && (!searchMutation.data || !searchMutation.data.ads || searchMutation.data.ads.length === 0) && (
-              <div className="text-center py-12 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                <Search className="mx-auto h-12 w-12 text-muted-foreground opacity-50 mb-4" />
-                <h3 className="text-lg font-medium mb-2">No Results Yet</h3>
-                <p className="text-muted-foreground max-w-md mx-auto">
+            {/* Empty search state */}
+            {currentTab === 'search' && !searchMutation.isPending && (!searchMutation.data || !searchMutation.data.ads || searchMutation.data.ads.length === 0) && (
+              <div className="text-center py-12 glass-panel h-full flex flex-col items-center justify-center">
+                <Search className="mx-auto h-12 w-12 text-white opacity-20 mb-4" />
+                <h3 className="text-lg font-medium mb-2 text-white">No Results Yet</h3>
+                <p className="text-white/70 max-w-md mx-auto">
                   {searchMutation.isError
                     ? 'An error occurred while searching. Please try again.'
                     : 'Search for competitor ads to see results here. Try specific brand names or relevant keywords for your industry.'}
@@ -449,8 +476,9 @@ export default function AdInspirationPage() {
               </div>
             )}
             
-            {!searchMutation.isPending && searchMutation.data?.ads && searchMutation.data.ads.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Search results */}
+            {currentTab === 'search' && !searchMutation.isPending && searchMutation.data?.ads && searchMutation.data.ads.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {searchMutation.data.ads.map(ad => (
                   <AdCard
                     key={ad.id}
@@ -461,66 +489,66 @@ export default function AdInspirationPage() {
                 ))}
               </div>
             )}
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="inspiration">
-          <Card>
-            <CardHeader>
-              <CardTitle>Inspiration from Selected Ads</CardTitle>
-              <CardDescription>
-                Use these insights to inspire your ad copy and design
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {!copiedText ? (
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground mb-4">
-                    No inspiration generated yet. Select ads and click "Generate Inspiration" to create content.
-                  </p>
-                  <Button onClick={() => setCurrentTab('search')}>
-                    Go to Search
-                  </Button>
+            
+            {/* Inspiration tab content */}
+            {currentTab === 'inspiration' && (
+              <div className="glass-panel p-6">
+                <h2 className="text-lg font-medium mb-4 text-white">Inspiration from Selected Ads</h2>
+                <div className="text-white/80 text-sm mb-6">
+                  Use these insights to inspire your ad copy and design
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  <ScrollArea className="h-[400px] w-full rounded-md border p-4">
-                    <div className="whitespace-pre-wrap font-mono text-sm">
-                      {copiedText}
-                    </div>
-                  </ScrollArea>
-                  
-                  <div className="flex justify-end">
+                
+                {!copiedText ? (
+                  <div className="text-center py-12 bg-white/5 rounded-lg border border-white/10">
+                    <p className="text-white/60 mb-4">
+                      No inspiration generated yet. Select ads and click "Generate Inspiration" to create content.
+                    </p>
                     <Button 
-                      onClick={() => copyToClipboard(copiedText)}
-                      className="min-w-[120px]"
+                      onClick={() => setCurrentTab('search')}
+                      className="bg-white/10 hover:bg-white/20 text-white"
                     >
-                      <Copy className="h-4 w-4 mr-2" />
-                      Copy All
+                      Go to Search
                     </Button>
                   </div>
+                ) : (
+                  <div className="space-y-4">
+                    <ScrollArea className="h-[400px] w-full rounded-md border border-white/10 p-4 bg-black/20">
+                      <div className="whitespace-pre-wrap font-mono text-sm text-white/80">
+                        {copiedText}
+                      </div>
+                    </ScrollArea>
+                    
+                    <div className="flex justify-end">
+                      <Button 
+                        onClick={() => copyToClipboard(copiedText)}
+                        className="bg-white/10 hover:bg-white/20 text-white"
+                      >
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copy All
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* History tab content */}
+            {currentTab === 'history' && (
+              <div className="glass-panel p-6">
+                <h2 className="text-lg font-medium mb-4 text-white">Recent Searches</h2>
+                <div className="text-white/80 text-sm mb-6">
+                  Your previous competitor ad searches
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="history">
-          <Card>
-            <CardHeader>
-              <CardTitle>Search History</CardTitle>
-              <CardDescription>
-                Your recent ad searches and results
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-center py-12 text-muted-foreground">
-                Search history feature coming soon. This will show your recent searches and let you quickly revisit them.
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                <div className="text-center py-12 bg-white/5 rounded-lg border border-white/10">
+                  <p className="text-white/60 mb-4">
+                    Search history feature coming soon...
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
