@@ -5,6 +5,35 @@
 
 import { GoogleAuth } from 'google-auth-library';
 import { google } from 'googleapis';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
+
+// Function to create credentials file from JSON string in environment variable
+function setupCredentialsFile() {
+  try {
+    if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
+      const tmpdir = os.tmpdir();
+      const credentialsPath = path.join(tmpdir, 'google-credentials.json');
+      
+      // Write the credentials JSON to a temporary file
+      fs.writeFileSync(credentialsPath, process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
+      
+      // Set the environment variable to point to this file
+      process.env.GOOGLE_APPLICATION_CREDENTIALS = credentialsPath;
+      
+      console.log('Google credentials file created from environment variable');
+      return credentialsPath;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error setting up Google credentials file:', error);
+    return null;
+  }
+}
+
+// Setup credentials file if JSON is provided
+const credentialsPath = setupCredentialsFile();
 
 // Create a Google Auth client using environment variables
 const auth = new GoogleAuth({
@@ -12,9 +41,8 @@ const auth = new GoogleAuth({
     'https://www.googleapis.com/auth/adwords',
     'https://www.googleapis.com/auth/customsearch'
   ],
-  // If a service account key is provided as an environment variable, use it
-  // Otherwise, try to use application default credentials
-  keyFilename: process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH || undefined
+  // If a credentials file was created or exists, use it
+  keyFilename: credentialsPath || process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH || undefined
 });
 
 /**
