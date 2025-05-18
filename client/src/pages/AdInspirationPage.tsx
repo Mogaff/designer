@@ -59,8 +59,8 @@ const AdCard = ({
   onToggleSelect: () => void;
 }) => {
   return (
-    <div className={`glass-card p-4 mb-4 overflow-hidden transition-all ${isSelected ? 'ring-2 ring-primary/50' : ''}`}>
-      <div className="pb-2 mb-2 border-b border-white/10">
+    <div className={`p-4 rounded-xl mb-4 overflow-hidden transition-all border border-white/30 bg-white/20 backdrop-blur-md ${isSelected ? 'ring-2 ring-primary/50' : ''}`}>
+      <div className="pb-2 mb-2 border-b border-white/20">
         <div className="flex justify-between items-start">
           <div>
             <h3 className="text-lg flex items-center text-white">
@@ -319,268 +319,234 @@ export default function AdInspirationPage() {
           </div>
         </header>
       
-        <div className="flex flex-1 overflow-hidden">
-          {/* Left sidebar */}
-          <div className="w-16 backdrop-blur-md bg-white/10 border-r border-white/30 flex flex-col">
-            <div className="p-2 flex flex-col items-center">
-              <div className="flex flex-col space-y-4 py-4 items-center">
-                <button 
-                  className={`relative rounded-full p-2 ${currentTab === 'search' ? 'bg-white/30 text-white' : 'text-white/70 hover:text-white hover:bg-white/20'}`}
-                  onClick={() => setCurrentTab('search')}
-                  title="Search"
-                >
-                  <Search className="h-4 w-4" />
-                </button>
-                <button 
-                  className={`relative rounded-full p-2 ${currentTab === 'inspiration' ? 'bg-white/30 text-white' : 'text-white/70 hover:text-white hover:bg-white/20'}`}
-                  onClick={() => setCurrentTab('inspiration')}
-                  title="Inspiration"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                </button>
-                <button 
-                  className={`relative rounded-full p-2 ${currentTab === 'history' ? 'bg-white/30 text-white' : 'text-white/70 hover:text-white hover:bg-white/20'}`}
-                  onClick={() => setCurrentTab('history')}
-                  title="History"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                </button>
+        <main className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-md">
+          {/* Search form in main content when Search tab is active */}
+          {currentTab === 'search' && (
+            <div className="mb-6">
+              <div className="p-5 mb-6 rounded-xl border border-white/30 bg-gradient-to-r from-white/30 to-white/20 backdrop-blur-md shadow-lg">
+                <form onSubmit={handleSearch} className="flex flex-wrap gap-4 items-end">
+                  <div className="flex-1 min-w-[180px]">
+                    <label htmlFor="searchType" className="text-xs font-medium text-white mb-1 block">
+                      Search Type
+                    </label>
+                    <Select value={searchType} onValueChange={(value: any) => setSearchType(value)}>
+                      <SelectTrigger className="bg-white/30 border-white/40 text-white text-sm h-9 hover:bg-white/40 transition-all">
+                        <SelectValue placeholder="Select search type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="brand">Brand Name</SelectItem>
+                        <SelectItem value="keyword">Keyword</SelectItem>
+                        <SelectItem value="industry">Industry</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="flex-[2] min-w-[250px]">
+                    <label htmlFor="searchQuery" className="text-xs font-medium text-white mb-1 block">
+                      Search Query
+                    </label>
+                    <Input
+                      id="searchQuery"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder={
+                        searchType === 'brand' 
+                          ? 'e.g. Nike, Coca-Cola' 
+                          : searchType === 'industry'
+                            ? 'e.g. Fitness, Healthcare'
+                            : 'e.g. running shoes, weight loss'
+                      }
+                      className="bg-white/30 border-white/40 text-white text-sm h-9 hover:bg-white/40 transition-all focus:ring-2 focus:ring-white/40"
+                    />
+                  </div>
+                  
+                  <div className="flex space-x-4 items-center">
+                    <div className="flex items-center space-x-2 bg-white/30 rounded-full px-3 py-1.5 border border-white/40">
+                      <Checkbox 
+                        id="platform-meta" 
+                        checked={platforms.includes('meta')}
+                        onCheckedChange={() => togglePlatform('meta')}
+                        className="bg-white/30 border-white/40 h-4 w-4"
+                      />
+                      <FaFacebook className="h-3 w-3 text-blue-400" />
+                      <label 
+                        htmlFor="platform-meta" 
+                        className="text-xs font-medium text-white"
+                      >
+                        Meta
+                      </label>
+                    </div>
+                    <div className="flex items-center space-x-2 bg-white/30 rounded-full px-3 py-1.5 border border-white/40">
+                      <Checkbox 
+                        id="platform-google" 
+                        checked={platforms.includes('google')}
+                        onCheckedChange={() => togglePlatform('google')}
+                        className="bg-white/30 border-white/40 h-4 w-4"
+                      />
+                      <FaGoogle className="h-3 w-3 text-red-400" />
+                      <label 
+                        htmlFor="platform-google" 
+                        className="text-xs font-medium text-white"
+                      >
+                        Google
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <Button 
+                    type="submit" 
+                    className={`relative overflow-hidden transition-all duration-300 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 border border-white/20 hover:from-blue-500/90 hover:to-indigo-500/90 text-white rounded-lg px-4 h-9 ${searchMutation.isPending ? 'animate-pulse' : ''}`}
+                    disabled={searchMutation.isPending || !searchQuery.trim()}
+                  >
+                    <span className={`flex items-center transition-transform duration-300 ${searchMutation.isPending ? 'scale-110' : ''}`}>
+                      {searchMutation.isPending ? (
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Search className="h-4 w-4 mr-2" />
+                      )}
+                      Search
+                    </span>
+                    <span className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-indigo-400/20 transform translate-x-full animate-border-beam"></span>
+                  </Button>
+                </form>
               </div>
             </div>
+          )}
           
-            {/* Search form moved to main content area */}
-          </div>
+          {/* Results toolbar for search tab */}
+          {currentTab === 'search' && searchMutation.data?.ads && searchMutation.data.ads.length > 0 && (
+            <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/20">
+              <h2 className="text-lg font-medium text-white">Results ({searchMutation.data.ads.length})</h2>
+              <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedAds([])}
+                  disabled={selectedAds.length === 0}
+                  className="bg-white/20 hover:bg-white/30 border-white/30 text-white text-xs"
+                >
+                  Clear Selection
+                </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => inspirationMutation.mutate()}
+                  disabled={selectedAds.length === 0 || inspirationMutation.isPending}
+                  className="bg-white/20 hover:bg-white/30 text-white text-xs border border-white/30"
+                >
+                  {inspirationMutation.isPending ? (
+                    <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                  ) : (
+                    <ExternalLink className="h-3 w-3 mr-1" />
+                  )}
+                  Generate Inspiration
+                </Button>
+              </div>
+            </div>
+          )}
           
-          {/* Main content */}
-          <div className="flex-1 overflow-y-auto p-6 h-full bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-md">
-            {/* Search form in main content when Search tab is active */}
-            {currentTab === 'search' && (
-              <div className="mb-6">
-                <div className="p-5 mb-6 rounded-xl border border-white/30 bg-gradient-to-r from-white/30 to-white/20 backdrop-blur-md shadow-lg">
-                  <form onSubmit={handleSearch} className="flex flex-wrap gap-4 items-end">
-                    <div className="flex-1 min-w-[180px]">
-                      <label htmlFor="searchType" className="text-xs font-medium text-white mb-1 block">
-                        Search Type
-                      </label>
-                      <Select value={searchType} onValueChange={(value: any) => setSearchType(value)}>
-                        <SelectTrigger className="bg-white/30 border-white/40 text-white text-sm h-9 hover:bg-white/40 transition-all">
-                          <SelectValue placeholder="Select search type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="brand">Brand Name</SelectItem>
-                          <SelectItem value="keyword">Keyword</SelectItem>
-                          <SelectItem value="industry">Industry</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="flex-[2] min-w-[250px]">
-                      <label htmlFor="searchQuery" className="text-xs font-medium text-white mb-1 block">
-                        Search Query
-                      </label>
-                      <Input
-                        id="searchQuery"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder={
-                          searchType === 'brand' 
-                            ? 'e.g. Nike, Coca-Cola' 
-                            : searchType === 'industry'
-                              ? 'e.g. Fitness, Healthcare'
-                              : 'e.g. running shoes, weight loss'
-                        }
-                        className="bg-white/30 border-white/40 text-white text-sm h-9 hover:bg-white/40 transition-all focus:ring-2 focus:ring-white/40"
-                      />
-                    </div>
-                    
-                    <div className="flex space-x-4 items-center">
-                      <div className="flex items-center space-x-2 bg-white/30 rounded-full px-3 py-1.5 border border-white/40">
-                        <Checkbox 
-                          id="platform-meta" 
-                          checked={platforms.includes('meta')}
-                          onCheckedChange={() => togglePlatform('meta')}
-                          className="bg-white/30 border-white/40 h-4 w-4"
-                        />
-                        <FaFacebook className="h-3 w-3 text-blue-400" />
-                        <label 
-                          htmlFor="platform-meta" 
-                          className="text-xs font-medium text-white"
-                        >
-                          Meta
-                        </label>
-                      </div>
-                      <div className="flex items-center space-x-2 bg-white/30 rounded-full px-3 py-1.5 border border-white/40">
-                        <Checkbox 
-                          id="platform-google" 
-                          checked={platforms.includes('google')}
-                          onCheckedChange={() => togglePlatform('google')}
-                          className="bg-white/30 border-white/40 h-4 w-4"
-                        />
-                        <FaGoogle className="h-3 w-3 text-red-400" />
-                        <label 
-                          htmlFor="platform-google" 
-                          className="text-xs font-medium text-white"
-                        >
-                          Google
-                        </label>
-                      </div>
-                    </div>
-                    
-                    <Button 
-                      type="submit" 
-                      className={`relative overflow-hidden transition-all duration-300 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 border border-white/20 hover:from-blue-500/90 hover:to-indigo-500/90 text-white rounded-lg px-4 h-9 ${searchMutation.isPending ? 'animate-pulse' : ''}`}
-                      disabled={searchMutation.isPending || !searchQuery.trim()}
-                    >
-                      <span className={`flex items-center transition-transform duration-300 ${searchMutation.isPending ? 'scale-110' : ''}`}>
-                        {searchMutation.isPending ? (
-                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                        ) : (
-                          <Search className="h-4 w-4 mr-2" />
-                        )}
-                        Search
-                      </span>
-                      <span className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-indigo-400/20 transform translate-x-full animate-border-beam"></span>
-                    </Button>
-                  </form>
-                </div>
-              </div>
-            )}
-            
-            {/* Results toolbar for search tab */}
-            {currentTab === 'search' && searchMutation.data?.ads && searchMutation.data.ads.length > 0 && (
-              <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/10">
-                <h2 className="text-lg font-medium text-white">Results ({searchMutation.data.ads.length})</h2>
-                <div className="flex space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSelectedAds([])}
-                    disabled={selectedAds.length === 0}
-                    className="bg-white/10 hover:bg-white/20 border-white/20 text-white text-xs"
-                  >
-                    Clear Selection
-                  </Button>
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={() => inspirationMutation.mutate()}
-                    disabled={selectedAds.length === 0 || inspirationMutation.isPending}
-                    className="bg-white/20 hover:bg-white/30 text-white text-xs"
-                  >
-                    {inspirationMutation.isPending ? (
-                      <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
-                    ) : (
-                      <ExternalLink className="h-3 w-3 mr-1" />
-                    )}
-                    Generate Inspiration
-                  </Button>
-                </div>
-              </div>
-            )}
-            
-            {/* Loading skeletons */}
-            {searchMutation.isPending && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[1, 2, 3, 4].map(i => (
-                  <div key={i} className="p-4 rounded-xl border border-white/30 bg-white/20 backdrop-blur-md">
-                    <div className="pb-2 border-b border-white/20 mb-3">
-                      <Skeleton className="h-6 w-40 bg-white/20" />
-                    </div>
-                    <div className="space-y-3">
-                      <Skeleton className="h-[160px] w-full bg-white/20" />
-                      <Skeleton className="h-4 w-full bg-white/20" />
-                      <Skeleton className="h-4 w-3/4 bg-white/20" />
-                    </div>
+          {/* Loading skeletons */}
+          {searchMutation.isPending && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="p-4 rounded-xl border border-white/30 bg-white/20 backdrop-blur-md">
+                  <div className="pb-2 border-b border-white/20 mb-3">
+                    <Skeleton className="h-6 w-40 bg-white/20" />
                   </div>
-                ))}
-              </div>
-            )}
-            
-            {/* Empty search state */}
-            {currentTab === 'search' && !searchMutation.isPending && (!searchMutation.data || !searchMutation.data.ads || searchMutation.data.ads.length === 0) && (
-              <div className="text-center py-12 border border-white/30 bg-white/20 backdrop-blur-md rounded-xl h-full flex flex-col items-center justify-center">
-                <Search className="mx-auto h-12 w-12 text-white opacity-40 mb-4" />
-                <h3 className="text-lg font-medium mb-2 text-white">No Results Yet</h3>
-                <p className="text-white/90 max-w-md mx-auto">
-                  {searchMutation.isError
-                    ? 'An error occurred while searching. Please try again.'
-                    : 'Search for competitor ads to see results here. Try specific brand names or relevant keywords for your industry.'}
-                </p>
-              </div>
-            )}
-            
-            {/* Search results */}
-            {currentTab === 'search' && !searchMutation.isPending && searchMutation.data?.ads && searchMutation.data.ads.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {searchMutation.data.ads.map(ad => (
-                  <AdCard
-                    key={ad.id}
-                    ad={ad}
-                    isSelected={selectedAds.includes(ad.id)}
-                    onToggleSelect={() => toggleSelectAd(ad.id)}
-                  />
-                ))}
-              </div>
-            )}
-            
-            {/* Inspiration tab content */}
-            {currentTab === 'inspiration' && (
-              <div className="p-6 rounded-xl border border-white/30 bg-white/20 backdrop-blur-md">
-                <h2 className="text-lg font-medium mb-4 text-white">Inspiration from Selected Ads</h2>
-                <div className="text-white/90 text-sm mb-6">
-                  Use these insights to inspire your ad copy and design
-                </div>
-                
-                {!copiedText ? (
-                  <div className="text-center py-12 bg-white/10 rounded-lg border border-white/20">
-                    <p className="text-white/80 mb-4">
-                      No inspiration generated yet. Select ads and click "Generate Inspiration" to create content.
-                    </p>
-                    <Button 
-                      onClick={() => setCurrentTab('search')}
-                      className="bg-white/20 hover:bg-white/30 text-white border border-white/30"
-                    >
-                      Go to Search
-                    </Button>
+                  <div className="space-y-3">
+                    <Skeleton className="h-[160px] w-full bg-white/20" />
+                    <Skeleton className="h-4 w-full bg-white/20" />
+                    <Skeleton className="h-4 w-3/4 bg-white/20" />
                   </div>
-                ) : (
-                  <div className="space-y-4">
-                    <ScrollArea className="h-[400px] w-full rounded-md border border-white/30 p-4 bg-white/10">
-                      <div className="whitespace-pre-wrap font-mono text-sm text-white/90">
-                        {copiedText}
-                      </div>
-                    </ScrollArea>
-                    
-                    <div className="flex justify-end">
-                      <Button 
-                        onClick={() => copyToClipboard(copiedText)}
-                        className="bg-white/20 hover:bg-white/30 text-white border border-white/30"
-                      >
-                        <Copy className="h-4 w-4 mr-2" />
-                        Copy All
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-            
-            {/* History tab content */}
-            {currentTab === 'history' && (
-              <div className="p-6 rounded-xl border border-white/30 bg-white/20 backdrop-blur-md">
-                <h2 className="text-lg font-medium mb-4 text-white">Recent Searches</h2>
-                <div className="text-white/90 text-sm mb-6">
-                  Your previous competitor ad searches
                 </div>
+              ))}
+            </div>
+          )}
+          
+          {/* Empty search state */}
+          {currentTab === 'search' && !searchMutation.isPending && (!searchMutation.data || !searchMutation.data.ads || searchMutation.data.ads.length === 0) && (
+            <div className="text-center py-12 border border-white/30 bg-white/20 backdrop-blur-md rounded-xl h-full flex flex-col items-center justify-center">
+              <Search className="mx-auto h-12 w-12 text-white opacity-40 mb-4" />
+              <h3 className="text-lg font-medium mb-2 text-white">No Results Yet</h3>
+              <p className="text-white/90 max-w-md mx-auto">
+                {searchMutation.isError
+                  ? 'An error occurred while searching. Please try again.'
+                  : 'Search for competitor ads to see results here. Try specific brand names or relevant keywords for your industry.'}
+              </p>
+            </div>
+          )}
+          
+          {/* Search results */}
+          {currentTab === 'search' && !searchMutation.isPending && searchMutation.data?.ads && searchMutation.data.ads.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {searchMutation.data.ads.map(ad => (
+                <AdCard
+                  key={ad.id}
+                  ad={ad}
+                  isSelected={selectedAds.includes(ad.id)}
+                  onToggleSelect={() => toggleSelectAd(ad.id)}
+                />
+              ))}
+            </div>
+          )}
+          
+          {/* Inspiration tab content */}
+          {currentTab === 'inspiration' && (
+            <div className="p-6 rounded-xl border border-white/30 bg-white/20 backdrop-blur-md">
+              <h2 className="text-lg font-medium mb-4 text-white">Inspiration from Selected Ads</h2>
+              <div className="text-white/90 text-sm mb-6">
+                Use these insights to inspire your ad copy and design
+              </div>
+              
+              {!copiedText ? (
                 <div className="text-center py-12 bg-white/10 rounded-lg border border-white/20">
                   <p className="text-white/80 mb-4">
-                    Search history feature coming soon...
+                    No inspiration generated yet. Select ads and click "Generate Inspiration" to create content.
                   </p>
+                  <Button 
+                    onClick={() => setCurrentTab('search')}
+                    className="bg-white/20 hover:bg-white/30 text-white border border-white/30"
+                  >
+                    Go to Search
+                  </Button>
                 </div>
+              ) : (
+                <div className="space-y-4">
+                  <ScrollArea className="h-[400px] w-full rounded-md border border-white/30 p-4 bg-white/10">
+                    <div className="whitespace-pre-wrap font-mono text-sm text-white/90">
+                      {copiedText}
+                    </div>
+                  </ScrollArea>
+                  
+                  <div className="flex justify-end">
+                    <Button 
+                      onClick={() => copyToClipboard(copiedText)}
+                      className="bg-white/20 hover:bg-white/30 text-white border border-white/30"
+                    >
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copy All
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* History tab content */}
+          {currentTab === 'history' && (
+            <div className="p-6 rounded-xl border border-white/30 bg-white/20 backdrop-blur-md">
+              <h2 className="text-lg font-medium mb-4 text-white">Recent Searches</h2>
+              <div className="text-white/90 text-sm mb-6">
+                Your previous competitor ad searches
               </div>
-            )}
-          </div>
-        </div>
+              <div className="text-center py-12 bg-white/10 rounded-lg border border-white/20">
+                <p className="text-white/80 mb-4">
+                  Search history feature coming soon...
+                </p>
+              </div>
+            </div>
+          )}
+        </main>
       </div>
     </div>
   );
