@@ -172,10 +172,16 @@ export default function AdInspirationPage() {
         throw new Error('Search query is required');
       }
       
+      // Verwendet jetzt die POST-Methode wie das CompetitorInspirationPanel
       const response = await apiRequest(
-        'GET', 
-        `/api/ad-inspiration/search?query=${encodeURIComponent(searchQuery)}&queryType=${searchType}&platforms=${platforms.join(',')}&limit=20`,
-        null
+        'POST', 
+        '/api/ad-inspiration/search',
+        {
+          query: searchQuery,
+          queryType: searchType,
+          platforms: platforms,
+          limit: 20
+        }
       );
       
       return response.json() as Promise<SearchResults>;

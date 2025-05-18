@@ -18,15 +18,19 @@ interface CompetitorInspirationPanelProps {
   isOpen: boolean;
 }
 
+// Interface für Suchergebnisse von Wettbewerber-Anzeigen
+// Achtung: Verwende snake_case Felder wie in der API-Antwort
 type AdSearchResult = {
   id: number;
   platform: string;
   brand: string;
-  headline: string;
-  body: string;
-  cta: string;
-  imageUrl?: string;
-  style_description?: string;
+  headline: string | null;
+  body: string | null;
+  cta: string | null;
+  image_url: string | null;
+  thumbnail_url: string | null;
+  style_description: string | null;
+  platform_details: string | null;
 };
 
 export default function CompetitorInspirationPanel({
