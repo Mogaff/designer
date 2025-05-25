@@ -166,308 +166,323 @@ export default function SocialScheduler() {
   });
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Social Media Scheduler</h1>
-          <p className="text-muted-foreground mt-2">
-            Schedule and manage your social media posts across platforms
-          </p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 relative overflow-hidden">
+      {/* Background effects */}
+      <div className="absolute inset-0 bg-black/20"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/5"></div>
+      
+      <div className="relative z-10 container mx-auto p-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-6 shadow-2xl">
+            <h1 className="text-3xl font-bold text-white">Social Media Scheduler</h1>
+            <p className="text-white/70 mt-2">
+              Schedule and manage your social media posts across platforms
+            </p>
+          </div>
         
-        <div className="flex gap-2">
-          <Dialog open={showAccountDialog} onOpenChange={setShowAccountDialog}>
-            <DialogTrigger asChild>
-              <Button variant="outline">
-                <Settings className="h-4 w-4 mr-2" />
-                Manage Accounts
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add Social Media Account</DialogTitle>
-                <DialogDescription>
-                  Connect your Instagram or LinkedIn business account
-                </DialogDescription>
-              </DialogHeader>
-              
-              <form onSubmit={accountForm.handleSubmit((data) => addAccountMutation.mutate(data))} className="space-y-4">
-                <div>
-                  <Label htmlFor="platform">Platform</Label>
-                  <Select onValueChange={(value) => accountForm.setValue('platform', value as 'instagram' | 'linkedin')}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select platform" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="instagram">
-                        <div className="flex items-center gap-2">
-                          <Instagram className="h-4 w-4" />
-                          Instagram Business
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="linkedin">
-                        <div className="flex items-center gap-2">
-                          <Linkedin className="h-4 w-4" />
-                          LinkedIn
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Label htmlFor="username">Username</Label>
-                  <Input 
-                    {...accountForm.register('username')} 
-                    placeholder="Your username" 
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="password">Password</Label>
-                  <Input 
-                    type="password"
-                    {...accountForm.register('password')} 
-                    placeholder="Your password" 
-                  />
-                </div>
-                
-                <Button type="submit" disabled={addAccountMutation.isPending} className="w-full">
-                  {addAccountMutation.isPending ? 'Adding...' : 'Add Account'}
+          <div className="flex gap-2">
+            <Dialog open={showAccountDialog} onOpenChange={setShowAccountDialog}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="backdrop-blur-xl bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-300">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Manage Accounts
                 </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
-
-          <Dialog open={showPostDialog} onOpenChange={setShowPostDialog}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Schedule Post
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Schedule New Post</DialogTitle>
-                <DialogDescription>
-                  Create and schedule a post for your social media accounts
-                </DialogDescription>
-              </DialogHeader>
-              
-              <form onSubmit={postForm.handleSubmit((data) => schedulePostMutation.mutate(data))} className="space-y-4">
-                <div>
-                  <Label>Account</Label>
-                  <Select onValueChange={(value) => postForm.setValue('social_account_id', parseInt(value))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select account" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {accounts.map((account: SocialAccount) => (
-                        <SelectItem key={account.id} value={account.id.toString()}>
+              </DialogTrigger>
+              <DialogContent className="backdrop-blur-xl bg-black/40 border border-white/20">
+                <DialogHeader>
+                  <DialogTitle className="text-white">Add Social Media Account</DialogTitle>
+                  <DialogDescription className="text-white/70">
+                    Connect your Instagram or LinkedIn business account
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <form onSubmit={accountForm.handleSubmit((data) => addAccountMutation.mutate(data))} className="space-y-4">
+                  <div>
+                    <Label htmlFor="platform" className="text-white">Platform</Label>
+                    <Select onValueChange={(value) => accountForm.setValue('platform', value as 'instagram' | 'linkedin')}>
+                      <SelectTrigger className="backdrop-blur-xl bg-white/10 border border-white/20 text-white">
+                        <SelectValue placeholder="Select platform" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="instagram">
                           <div className="flex items-center gap-2">
-                            {getPlatformIcon(account.platform)}
-                            @{account.username} ({account.platform})
+                            <Instagram className="h-4 w-4" />
+                            Instagram Business
                           </div>
                         </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label>Design (Optional)</Label>
-                  <Select onValueChange={(value) => postForm.setValue('creation_id', parseInt(value))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a design to post" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {creations.map((creation: UserCreation) => (
-                        <SelectItem key={creation.id} value={creation.id.toString()}>
-                          {creation.name}
+                        <SelectItem value="linkedin">
+                          <div className="flex items-center gap-2">
+                            <Linkedin className="h-4 w-4" />
+                            LinkedIn
+                          </div>
                         </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Label htmlFor="caption">Caption</Label>
-                  <Textarea 
-                    {...postForm.register('caption')} 
-                    placeholder="Write your post caption..." 
-                    rows={4}
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="hashtags">Hashtags</Label>
-                  <Input 
-                    {...postForm.register('hashtags')} 
-                    placeholder="#design, #marketing, #business" 
-                  />
-                </div>
-                
-                <div>
-                  <Label>Schedule Time</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-start">
-                        <CalendarIcon className="h-4 w-4 mr-2" />
-                        {postForm.watch('scheduled_time') ? 
-                          format(postForm.watch('scheduled_time'), 'PPP p') : 
-                          'Pick a date and time'
-                        }
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={postForm.watch('scheduled_time')}
-                        onSelect={(date) => date && postForm.setValue('scheduled_time', date)}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                
-                <Button type="submit" disabled={schedulePostMutation.isPending} className="w-full">
-                  {schedulePostMutation.isPending ? 'Scheduling...' : 'Schedule Post'}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="username" className="text-white">Username</Label>
+                    <Input 
+                      {...accountForm.register('username')} 
+                      placeholder="Your username" 
+                      className="backdrop-blur-xl bg-white/10 border border-white/20 text-white placeholder:text-white/50"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="password" className="text-white">Password</Label>
+                    <Input 
+                      type="password"
+                      {...accountForm.register('password')} 
+                      placeholder="Your password" 
+                      className="backdrop-blur-xl bg-white/10 border border-white/20 text-white placeholder:text-white/50"
+                    />
+                  </div>
+                  
+                  <Button type="submit" disabled={addAccountMutation.isPending} className="w-full backdrop-blur-xl bg-white/20 hover:bg-white/30 text-white border border-white/20">
+                    {addAccountMutation.isPending ? 'Adding...' : 'Add Account'}
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={showPostDialog} onOpenChange={setShowPostDialog}>
+              <DialogTrigger asChild>
+                <Button className="backdrop-blur-xl bg-white/20 hover:bg-white/30 text-white border border-white/20 transition-all duration-300">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Schedule Post
                 </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl backdrop-blur-xl bg-black/40 border border-white/20">
+                <DialogHeader>
+                  <DialogTitle className="text-white">Schedule New Post</DialogTitle>
+                  <DialogDescription className="text-white/70">
+                    Create and schedule a post for your social media accounts
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <form onSubmit={postForm.handleSubmit((data) => schedulePostMutation.mutate(data))} className="space-y-4">
+                  <div>
+                    <Label className="text-white">Account</Label>
+                    <Select onValueChange={(value) => postForm.setValue('social_account_id', parseInt(value))}>
+                      <SelectTrigger className="backdrop-blur-xl bg-white/10 border border-white/20 text-white">
+                        <SelectValue placeholder="Select account" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {accounts.map((account: SocialAccount) => (
+                          <SelectItem key={account.id} value={account.id.toString()}>
+                            <div className="flex items-center gap-2">
+                              {getPlatformIcon(account.platform)}
+                              @{account.username} ({account.platform})
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-white">Design (Optional)</Label>
+                    <Select onValueChange={(value) => postForm.setValue('creation_id', parseInt(value))}>
+                      <SelectTrigger className="backdrop-blur-xl bg-white/10 border border-white/20 text-white">
+                        <SelectValue placeholder="Select a design to post" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {creations.map((creation: UserCreation) => (
+                          <SelectItem key={creation.id} value={creation.id.toString()}>
+                            {creation.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="caption" className="text-white">Caption</Label>
+                    <Textarea 
+                      {...postForm.register('caption')} 
+                      placeholder="Write your post caption..." 
+                      rows={4}
+                      className="backdrop-blur-xl bg-white/10 border border-white/20 text-white placeholder:text-white/50"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="hashtags" className="text-white">Hashtags</Label>
+                    <Input 
+                      {...postForm.register('hashtags')} 
+                      placeholder="#design, #marketing, #business" 
+                      className="backdrop-blur-xl bg-white/10 border border-white/20 text-white placeholder:text-white/50"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label className="text-white">Schedule Time</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="w-full justify-start backdrop-blur-xl bg-white/10 border border-white/20 text-white hover:bg-white/20">
+                          <CalendarIcon className="h-4 w-4 mr-2" />
+                          {postForm.watch('scheduled_time') ? 
+                            format(postForm.watch('scheduled_time'), 'PPP p') : 
+                            'Pick a date and time'
+                          }
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={postForm.watch('scheduled_time')}
+                          onSelect={(date) => date && postForm.setValue('scheduled_time', date)}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  
+                  <Button type="submit" disabled={schedulePostMutation.isPending} className="w-full backdrop-blur-xl bg-white/20 hover:bg-white/30 text-white border border-white/20">
+                    {schedulePostMutation.isPending ? 'Scheduling...' : 'Schedule Post'}
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
-      </div>
 
-      <Tabs defaultValue="calendar" className="w-full">
-        <TabsList>
-          <TabsTrigger value="calendar">Calendar View</TabsTrigger>
-          <TabsTrigger value="accounts">Connected Accounts</TabsTrigger>
-          <TabsTrigger value="posts">All Posts</TabsTrigger>
-        </TabsList>
+        <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-6 shadow-2xl">
+          <Tabs defaultValue="calendar" className="w-full">
+            <TabsList className="backdrop-blur-xl bg-white/10 border border-white/20">
+              <TabsTrigger value="calendar" className="text-white data-[state=active]:bg-white/20">Calendar View</TabsTrigger>
+              <TabsTrigger value="accounts" className="text-white data-[state=active]:bg-white/20">Connected Accounts</TabsTrigger>
+              <TabsTrigger value="posts" className="text-white data-[state=active]:bg-white/20">All Posts</TabsTrigger>
+            </TabsList>
 
-        <TabsContent value="calendar" className="space-y-4">
-          <div className="grid md:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Calendar</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={(date) => date && setSelectedDate(date)}
-                  className="rounded-md border"
-                />
-              </CardContent>
-            </Card>
+            <TabsContent value="calendar" className="space-y-4">
+              <div className="grid md:grid-cols-3 gap-6">
+                <Card className="backdrop-blur-xl bg-white/10 border border-white/20">
+                  <CardHeader>
+                    <CardTitle className="text-white">Calendar</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={(date) => date && setSelectedDate(date)}
+                      className="rounded-md border border-white/20 text-white"
+                    />
+                  </CardContent>
+                </Card>
 
-            <div className="md:col-span-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle>
-                    Posts for {format(selectedDate, 'MMMM d, yyyy')}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {postsForDate.length === 0 ? (
-                    <p className="text-muted-foreground text-center py-8">
-                      No posts scheduled for this date
-                    </p>
-                  ) : (
-                    <div className="space-y-3">
-                      {postsForDate.map((post: SocialPost) => (
-                        <div key={post.id} className="flex items-center gap-3 p-3 border rounded-lg">
-                          <div className="flex items-center gap-2">
-                            {getPlatformIcon(post.platform)}
-                            {getStatusIcon(post.status)}
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-medium truncate">{post.caption}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {post.scheduled_time && format(new Date(post.scheduled_time), 'p')}
-                            </p>
-                          </div>
-                          <div className="flex gap-1">
-                            <Button size="sm" variant="ghost">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button size="sm" variant="ghost">
-                              <Edit3 className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="ghost"
-                              onClick={() => deletePostMutation.mutate(post.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
+                <div className="md:col-span-2">
+                  <Card className="backdrop-blur-xl bg-white/10 border border-white/20">
+                    <CardHeader>
+                      <CardTitle className="text-white">
+                        Posts for {format(selectedDate, 'MMMM d, yyyy')}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {postsForDate.length === 0 ? (
+                        <p className="text-white/70 text-center py-8">
+                          No posts scheduled for this date
+                        </p>
+                      ) : (
+                        <div className="space-y-3">
+                          {postsForDate.map((post: SocialPost) => (
+                            <div key={post.id} className="flex items-center gap-3 p-3 backdrop-blur-xl bg-white/10 border border-white/20 rounded-lg">
+                              <div className="flex items-center gap-2">
+                                {getPlatformIcon(post.platform)}
+                                {getStatusIcon(post.status)}
+                              </div>
+                              <div className="flex-1">
+                                <p className="font-medium truncate text-white">{post.caption}</p>
+                                <p className="text-sm text-white/70">
+                                  {post.scheduled_time && format(new Date(post.scheduled_time), 'p')}
+                                </p>
+                              </div>
+                              <div className="flex gap-1">
+                                <Button size="sm" variant="ghost" className="text-white hover:bg-white/20">
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button size="sm" variant="ghost" className="text-white hover:bg-white/20">
+                                  <Edit3 className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="ghost"
+                                  className="text-white hover:bg-white/20"
+                                  onClick={() => deletePostMutation.mutate(post.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </TabsContent>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </TabsContent>
 
-        <TabsContent value="accounts">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {accounts.map((account: SocialAccount) => (
-              <Card key={account.id}>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    {getPlatformIcon(account.platform)}
-                    @{account.username}
-                  </CardTitle>
-                  <CardDescription>
-                    {account.platform} • {account.account_type}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex justify-between items-center">
-                    <Badge variant={account.is_active ? "default" : "secondary"}>
-                      {account.is_active ? "Active" : "Inactive"}
-                    </Badge>
-                    <Button size="sm" variant="outline">
-                      <Settings className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="posts">
-          <Card>
-            <CardHeader>
-              <CardTitle>All Scheduled Posts</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {posts.map((post: SocialPost) => (
-                  <div key={post.id} className="flex items-center gap-3 p-3 border rounded-lg">
-                    <div className="flex items-center gap-2">
-                      {getPlatformIcon(post.platform)}
-                      {getStatusIcon(post.status)}
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium truncate">{post.caption}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {post.scheduled_time && format(new Date(post.scheduled_time), 'PPP p')}
-                      </p>
-                    </div>
-                    <Badge variant="outline">{post.status}</Badge>
-                  </div>
+            <TabsContent value="accounts">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {accounts.map((account: SocialAccount) => (
+                  <Card key={account.id} className="backdrop-blur-xl bg-white/10 border border-white/20">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-white">
+                        {getPlatformIcon(account.platform)}
+                        @{account.username}
+                      </CardTitle>
+                      <CardDescription className="text-white/70">
+                        {account.platform} • {account.account_type}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex justify-between items-center">
+                        <Badge variant={account.is_active ? "default" : "secondary"} className="backdrop-blur-xl bg-white/20 text-white border-white/20">
+                          {account.is_active ? "Active" : "Inactive"}
+                        </Badge>
+                        <Button size="sm" variant="outline" className="backdrop-blur-xl bg-white/10 border border-white/20 text-white hover:bg-white/20">
+                          <Settings className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            </TabsContent>
+
+            <TabsContent value="posts">
+              <Card className="backdrop-blur-xl bg-white/10 border border-white/20">
+                <CardHeader>
+                  <CardTitle className="text-white">All Scheduled Posts</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {posts.map((post: SocialPost) => (
+                      <div key={post.id} className="flex items-center gap-3 p-3 backdrop-blur-xl bg-white/10 border border-white/20 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          {getPlatformIcon(post.platform)}
+                          {getStatusIcon(post.status)}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium truncate text-white">{post.caption}</p>
+                          <p className="text-sm text-white/70">
+                            {post.scheduled_time && format(new Date(post.scheduled_time), 'PPP p')}
+                          </p>
+                        </div>
+                        <Badge variant="outline" className="backdrop-blur-xl bg-white/20 text-white border-white/20">
+                          {post.status}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
     </div>
   );
 }
