@@ -79,6 +79,14 @@ function Router() {
         </ProtectedRoute>
       </Route>
       
+      <Route path="/social-scheduler">
+        <ProtectedRoute>
+          <AppLayout>
+            <SocialScheduler />
+          </AppLayout>
+        </ProtectedRoute>
+      </Route>
+      
       {/* 404 page also requires authentication */}
       <Route>
         <ProtectedRoute>

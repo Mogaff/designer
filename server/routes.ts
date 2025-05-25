@@ -11,7 +11,7 @@ import multer from "multer";
 import { log } from "./vite";
 import passport from "./auth";
 import { hashPassword, isAuthenticated } from "./auth";
-import { insertUserSchema, insertDesignConfigSchema, insertUserCreditsSchema, insertUserCreationSchema, insertBrandKitSchema } from "@shared/schema";
+import { insertUserSchema, insertDesignConfigSchema, insertUserCreditsSchema, insertUserCreationSchema, insertBrandKitSchema, insertSocialAccountSchema, insertSocialPostSchema } from "@shared/schema";
 import { createCheckoutSession, verifyCheckoutSession, handleStripeWebhook, CREDIT_PACKAGES } from "./stripe";
 import { registerAdBurstApiRoutes } from "./adburst_factory/adburst_api";
 import { registerCompetitorAdRoutes, registerAdInspirationIntegrationRoutes } from "./competitor_ads/routes";
@@ -1411,6 +1411,100 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       res.status(500).json({ message: `Payment verification failed: ${errorMessage}` });
+    }
+  });
+
+  // Social Media Scheduler API Routes
+  
+  // Get all social accounts for user
+  app.get("/api/social-accounts", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const accounts = await storage.getSocialAccounts(userId);
+      res.json({ accounts });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to fetch social accounts: ${errorMessage}` });
+    }
+  });
+
+  // Add new social account
+  app.post("/api/social-accounts", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      
+      const validationResult = insertSocialAccountSchema.safeParse({
+        ...req.body,
+        user_id: userId
+      });
+      
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          message: "Invalid input", 
+          errors: validationResult.error.format() 
+        });
+      }
+      
+      const account = await storage.createSocialAccount(validationResult.data);
+      res.status(201).json(account);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to create social account: ${errorMessage}` });
+    }
+  });
+
+  // Get all scheduled posts for user
+  app.get("/api/social-posts", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const posts = await storage.getSocialPosts(userId);
+      res.json({ posts });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to fetch social posts: ${errorMessage}` });
+    }
+  });
+
+  // Schedule new post
+  app.post("/api/social-posts", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      
+      const validationResult = insertSocialPostSchema.safeParse({
+        ...req.body,
+        user_id: userId
+      });
+      
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          message: "Invalid input", 
+          errors: validationResult.error.format() 
+        });
+      }
+      
+      const post = await storage.createSocialPost(validationResult.data);
+      res.status(201).json(post);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to schedule post: ${errorMessage}` });
+    }
+  });
+
+  // Delete scheduled post
+  app.delete("/api/social-posts/:id", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const postId = parseInt(req.params.id);
+      
+      if (isNaN(postId)) {
+        return res.status(400).json({ message: "Invalid post ID" });
+      }
+      
+      await storage.deleteSocialPost(postId, userId);
+      res.json({ message: "Post deleted successfully" });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to delete post: ${errorMessage}` });
     }
   });
 

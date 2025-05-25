@@ -1,10 +1,12 @@
 import { 
-  users, userCredits, designConfigs, userCreations, brandKits,
+  users, userCredits, designConfigs, userCreations, brandKits, socialAccounts, socialPosts,
   type User, type InsertUser, 
   type UserCredits, type InsertUserCredits,
   type DesignConfig, type InsertDesignConfig,
   type UserCreation, type InsertUserCreation, 
-  type BrandKit, type InsertBrandKit
+  type BrandKit, type InsertBrandKit,
+  type SocialAccount, type InsertSocialAccount,
+  type SocialPost, type InsertSocialPost
 } from "@shared/schema";
 
 // Storage interface with CRUD methods for users, credits, design configurations, and user creations
@@ -40,6 +42,13 @@ export interface IStorage {
   createUserCreation(creation: InsertUserCreation): Promise<UserCreation>;
   updateUserCreation(id: number, updates: Partial<InsertUserCreation>, userId?: number): Promise<UserCreation | undefined>;
   deleteUserCreation(id: number, userId?: number): Promise<boolean>;
+  
+  // Social Media management
+  getSocialAccounts(userId: number): Promise<SocialAccount[]>;
+  createSocialAccount(account: InsertSocialAccount): Promise<SocialAccount>;
+  getSocialPosts(userId: number): Promise<SocialPost[]>;
+  createSocialPost(post: InsertSocialPost): Promise<SocialPost>;
+  deleteSocialPost(id: number, userId: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -801,6 +810,59 @@ export class DatabaseStorage implements IStorage {
         .returning({ id: brandKits.id });
       return result.length > 0;
     }
+  }
+
+  // Social Media management methods
+  async getSocialAccounts(userId: number): Promise<SocialAccount[]> {
+    const accounts = await db
+      .select()
+      .from(socialAccounts)
+      .where(eq(socialAccounts.user_id, userId));
+    return accounts;
+  }
+
+  async createSocialAccount(account: InsertSocialAccount): Promise<SocialAccount> {
+    const [newAccount] = await db
+      .insert(socialAccounts)
+      .values({
+        ...account,
+        created_at: new Date(),
+        updated_at: new Date()
+      })
+      .returning();
+    return newAccount;
+  }
+
+  async getSocialPosts(userId: number): Promise<SocialPost[]> {
+    const posts = await db
+      .select()
+      .from(socialPosts)
+      .where(eq(socialPosts.user_id, userId))
+      .orderBy(desc(socialPosts.scheduled_time));
+    return posts;
+  }
+
+  async createSocialPost(post: InsertSocialPost): Promise<SocialPost> {
+    const [newPost] = await db
+      .insert(socialPosts)
+      .values({
+        ...post,
+        created_at: new Date(),
+        updated_at: new Date()
+      })
+      .returning();
+    return newPost;
+  }
+
+  async deleteSocialPost(id: number, userId: number): Promise<boolean> {
+    const result = await db
+      .delete(socialPosts)
+      .where(and(
+        eq(socialPosts.id, id),
+        eq(socialPosts.user_id, userId)
+      ))
+      .returning({ id: socialPosts.id });
+    return result.length > 0;
   }
 }
 
