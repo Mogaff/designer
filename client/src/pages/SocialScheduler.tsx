@@ -33,6 +33,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import type { SocialAccount, SocialPost, UserCreation } from '@shared/schema';
+import meshGradient from "@assets/image-mesh-gradient (18).png";
 
 const accountSchema = z.object({
   platform: z.enum(['instagram', 'linkedin']),
@@ -166,10 +167,12 @@ export default function SocialScheduler() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 relative overflow-hidden">
-      {/* Background effects */}
-      <div className="absolute inset-0 bg-black/20"></div>
-      <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/5"></div>
+    <div className="flex flex-col min-h-screen overflow-hidden relative">
+      {/* Background gradient image - same as Home page */}
+      <div className="absolute inset-0 z-0">
+        <img src={meshGradient} alt="" className="w-full h-full object-cover opacity-90" />
+        <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+      </div>
       
       <div className="relative z-10 container mx-auto p-6 space-y-6">
         <div className="flex justify-between items-center">
