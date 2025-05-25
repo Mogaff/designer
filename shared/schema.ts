@@ -201,3 +201,62 @@ export const insertAdSearchQuerySchema = createInsertSchema(adSearchQueries).pic
 });
 export type InsertAdSearchQuery = z.infer<typeof insertAdSearchQuerySchema>;
 export type AdSearchQuery = typeof adSearchQueries.$inferSelect;
+
+// Social Media Scheduling Tables
+export const socialAccounts = pgTable("social_accounts", {
+  id: serial("id").primaryKey(),
+  user_id: integer("user_id").references(() => users.id).notNull(),
+  platform: text("platform").notNull(), // "instagram", "linkedin"
+  username: text("username").notNull(),
+  password: text("password").notNull(), // encrypted
+  account_type: text("account_type").default("business"), // "business", "personal"
+  is_active: boolean("is_active").default(true).notNull(),
+  last_used: timestamp("last_used"),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+
+export const socialPosts = pgTable("social_posts", {
+  id: serial("id").primaryKey(),
+  user_id: integer("user_id").references(() => users.id).notNull(),
+  creation_id: integer("creation_id").references(() => userCreations.id),
+  social_account_id: integer("social_account_id").references(() => socialAccounts.id).notNull(),
+  platform: text("platform").notNull(), // "instagram", "linkedin"
+  caption: text("caption"),
+  hashtags: text("hashtags").array(),
+  scheduled_time: timestamp("scheduled_time"),
+  status: text("status").default("scheduled").notNull(), // "scheduled", "posted", "failed", "draft"
+  posted_at: timestamp("posted_at"),
+  platform_post_id: text("platform_post_id"),
+  error_message: text("error_message"),
+  metadata: jsonb("metadata"),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+
+export const insertSocialAccountSchema = createInsertSchema(socialAccounts).pick({
+  user_id: true,
+  platform: true,
+  username: true,
+  password: true,
+  account_type: true,
+  is_active: true,
+});
+
+export const insertSocialPostSchema = createInsertSchema(socialPosts).pick({
+  user_id: true,
+  creation_id: true,
+  social_account_id: true,
+  platform: true,
+  caption: true,
+  hashtags: true,
+  scheduled_time: true,
+  status: true,
+  metadata: true,
+});
+
+export type InsertSocialAccount = z.infer<typeof insertSocialAccountSchema>;
+export type SocialAccount = typeof socialAccounts.$inferSelect;
+
+export type InsertSocialPost = z.infer<typeof insertSocialPostSchema>;
+export type SocialPost = typeof socialPosts.$inferSelect;

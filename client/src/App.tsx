@@ -11,6 +11,7 @@ import Settings from "@/pages/Settings";
 import AdBurst from "@/pages/AdBurst";
 import DesignEditor from "@/pages/DesignEditor";
 import AdInspirationPage from "@/pages/AdInspirationPage";
+import SocialScheduler from "@/pages/SocialScheduler";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { UserSettingsProvider } from "@/contexts/UserSettingsContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
