@@ -44,6 +44,7 @@ export default function CompetitorInspirationPanel({
   const [results, setResults] = useState<AdSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedAds, setSelectedAds] = useState<number[]>([]);
+  const [showQuickInspiration, setShowQuickInspiration] = useState(false);
   const [googleApiStatus, setGoogleApiStatus] = useState<{
     configured: boolean;
     oauthConfigured?: boolean;
@@ -280,7 +281,37 @@ export default function CompetitorInspirationPanel({
     );
   };
   
-  // Get quick inspiration based on the current search query
+  // Smart Quick Inspiration that analyzes the user's existing prompt
+  const getSmartInspiration = () => {
+    if (!originalPrompt.trim()) {
+      toast({
+        title: 'Write your prompt first',
+        description: 'Please describe your design idea first, then I can find relevant competitor inspiration',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    // Extract keywords from the user's prompt to find relevant competitor ads
+    const promptKeywords = originalPrompt.toLowerCase().match(/\b\w{3,}\b/g) || [];
+    const relevantKeyword = promptKeywords.find(word => 
+      !['the', 'and', 'for', 'with', 'that', 'this', 'will', 'can', 'are', 'you', 'your'].includes(word)
+    ) || promptKeywords[0] || 'business';
+    
+    const data = { 
+      keyword: relevantKeyword,
+      limit: 5 
+    };
+    
+    toast({
+      title: 'Analyzing your prompt',
+      description: `Finding competitor inspiration for "${relevantKeyword}"...`,
+    });
+    
+    enhanceMutation.mutate(data);
+  };
+  
+  // Get inspiration based on manual search
   const getQuickInspiration = () => {
     if (!searchQuery.trim()) {
       toast({
@@ -460,6 +491,36 @@ export default function CompetitorInspirationPanel({
         </TabsContent>
         
         <TabsContent value="quick" className="space-y-1 mt-1">
+          {/* Smart Inspiration - Analyzes user's prompt first */}
+          {originalPrompt.trim() && (
+            <div className="space-y-1">
+              <p className="text-[8px] text-white/70">
+                I'll analyze your prompt and find relevant competitor inspiration
+              </p>
+              <Button 
+                onClick={getSmartInspiration}
+                className="w-full h-6 text-[8px] py-0 rounded-full bg-gradient-to-r from-amber-500/80 to-orange-500/80 hover:from-amber-500 hover:to-orange-500 font-medium"
+                disabled={enhanceMutation.isPending}
+              >
+                {enhanceMutation.isPending ? (
+                  <Loader className="h-2.5 w-2.5 animate-spin mr-1" />
+                ) : (
+                  <Zap className="h-2.5 w-2.5 mr-1" />
+                )}
+                Get Smart Inspiration from Your Prompt
+              </Button>
+              <div className="border-t border-white/10 pt-1">
+                <p className="text-[7px] text-white/50 text-center">or search manually below</p>
+              </div>
+            </div>
+          )}
+          
+          {!originalPrompt.trim() && (
+            <div className="p-2 bg-amber-500/20 border border-amber-500/30 rounded text-[8px] text-amber-300">
+              💡 <strong>Tip:</strong> Write your design prompt first, then I can find targeted competitor inspiration for you!
+            </div>
+          )}
+          
           <p className="text-[8px] text-white/70">
             Get instant inspiration from competitor ads without reviewing individual results
           </p>
