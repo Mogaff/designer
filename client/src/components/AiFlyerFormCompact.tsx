@@ -478,7 +478,7 @@ export default function AiFlyerFormCompact({
           <div className="flex items-center justify-between mb-0.5">
             <Label htmlFor="prompt" className="text-[9px] text-white/70 flex items-center gap-1">
               <TypeIcon className="h-2 w-2" />
-              Creative Brief
+              Prompt
             </Label>
             
             <Button
