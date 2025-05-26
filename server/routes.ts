@@ -466,25 +466,10 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
         for (const result of parallelResults) {
           if (result.status === 'fulfilled' && result.value !== null) {
             successfulDesigns.push(result.value);
-            successfulDesigns.push({
-              imageBuffer: screenshot,
-              style: styleVariation
-            });
-            
-            // Minimal delay between requests to avoid hitting rate limits
-            if (index < styleVariations.length - 1) {
-              await new Promise(resolve => setTimeout(resolve, 50)); // Reduced delay from 200ms to 50ms
-            }
-          } catch (error) {
-            log(`Error generating design variation ${index + 1}: ${error}`, "generator");
-            // If this is a quota error, stop trying more variations
-            const errorMessage = String(error);
-            if (errorMessage.includes("API quota limit reached") || errorMessage.includes("429 Too Many Requests")) {
-              log("Stopping design generation due to API quota limits", "generator");
-              break;
-            }
           }
         }
+        
+        log(`Parallel generation completed. Generated ${successfulDesigns.length} out of ${designsToGenerate} requested designs`, "generator");
       }
       
       if (successfulDesigns.length === 0) {
