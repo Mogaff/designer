@@ -432,22 +432,40 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
         
         log(`Will generate exactly ${designsToGenerate} designs (user requested: ${numDesigns})`, "generator");
         
-        // Try each style variation until we have the requested number of successful designs
-        for (let index = 0; index < designsToGenerate; index++) {
+        // Generate all designs in parallel for much faster processing
+        log(`Starting parallel generation of ${designsToGenerate} designs`, "generator");
+        
+        const designPromises = Array.from({ length: designsToGenerate }, (_, index) => {
           const styleVariation = styleVariations[index];
-          try {
-            const variantOptions = {
-              ...generationOptions,
-              prompt: `${generationOptions.prompt} ${styleVariation}`,
-              aspectRatio: aspectRatio,
-              templateInfo: parsedTemplateInfo, // Pass the template info to the render function
-              logoBase64: "" // CRITICAL FIX: Ensure no logo is sent to Claude for now
-            };
-            
-            log(`Generating design variation ${index + 1}: ${styleVariation}`, "generator");
-            // Use Claude AI instead of Gemini for flyer generation (upgraded on April 29, 2025)
-            // Claude 3.7 Sonnet is the latest model with enhanced image generation capabilities
-            const screenshot = await renderFlyerFromClaude(variantOptions);
+          const variantOptions = {
+            ...generationOptions,
+            prompt: `${generationOptions.prompt} ${styleVariation}`,
+            aspectRatio: aspectRatio,
+            templateInfo: parsedTemplateInfo,
+            logoBase64: "" // CRITICAL FIX: Ensure no logo is sent to Claude for now
+          };
+          
+          log(`Starting parallel generation ${index + 1}: ${styleVariation}`, "generator");
+          
+          return renderFlyerFromClaude(variantOptions)
+            .then(screenshot => ({
+              imageBuffer: screenshot,
+              style: styleVariation,
+              index: index
+            }))
+            .catch(error => {
+              log(`Error in parallel generation ${index + 1}: ${error}`, "generator");
+              return null; // Return null for failed generations
+            });
+        });
+        
+        // Wait for all designs to complete simultaneously
+        const parallelResults = await Promise.allSettled(designPromises);
+        
+        // Process successful results
+        for (const result of parallelResults) {
+          if (result.status === 'fulfilled' && result.value !== null) {
+            successfulDesigns.push(result.value);
             successfulDesigns.push({
               imageBuffer: screenshot,
               style: styleVariation

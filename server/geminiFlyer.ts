@@ -128,7 +128,7 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
       
       // Add explicit instructions to use the image as background
       parts.push({
-        text: "IMPORTANT: Use the above image as the BACKGROUND of your flyer design. Do not try to reference it with an img tag - I will handle embedding it for you. Instead, directly create HTML that assumes the image is already the background. Use appropriate text colors that contrast well with the image's colors. Add overlays or semi-transparent elements as needed to maintain text readability over the background image."
+        text: "IMPORTANT: Use the above image as the BACKGROUND of your flyer design. Do not try to reference it with an img tag - I will handle embedding it for you. Instead, directly create HTML that assumes the image is already the background. PRESERVE the original brightness and colors of the background image - avoid dark overlays. Use bright, bold text colors with text shadows only where absolutely needed for readability. Let the background image shine through as the main visual element."
       });
     }
     

@@ -91,7 +91,7 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
     - Use CSS positioning, gradients, and effects (not HTML structure) to create a professional design
     - The design should work visually as a flattened single image when captured
     - Focus on typography, color, and spacing that complements the background
-    - Add semi-transparent overlays to ensure text readability against any background
+    - Only add overlays when absolutely necessary for text readability, preserve the original image brightness
     - Use absolute positioning within the flyer-container to place elements precisely
     
     ${options.templateInfo 
@@ -137,8 +137,9 @@ export async function generateFlyerContent(options: GenerationOptions): Promise<
 BACKGROUND IMAGE INSTRUCTIONS:
 1. I will automatically apply a background image to your design - do NOT include any image tags
 2. Design your flyer to work well with a background image underneath
-3. Create semi-transparent colored overlays (using divs with rgba backgrounds) for text readability
-4. Use contrasting colors that will be visible against various background colors
+3. PRESERVE the original brightness and colors of the background image - avoid dark overlays
+4. Use bright, bold text colors with text shadows or subtle backgrounds only where needed for readability
+5. Let the background image shine through as the main visual element
 `;
     }
     
@@ -344,7 +345,7 @@ export async function renderFlyerFromClaude(options: GenerationOptions): Promise
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.3));
+            background: transparent;
             pointer-events: none;
             z-index: 1;
           }
