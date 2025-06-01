@@ -475,34 +475,12 @@ export default function AiFlyerFormCompact({
       <form onSubmit={handleSubmit} className="space-y-1.5 flex-grow flex flex-col">
         {/* Creative Brief */}
         <div>
-          <div className="flex items-center justify-between mb-0.5">
+          <div className="mb-0.5">
             <Label htmlFor="prompt" className="text-[9px] text-white/70 flex items-center gap-1">
               <TypeIcon className="h-2 w-2" />
               Prompt
             </Label>
-            
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={() => setIsInspirationPanelOpen(!isInspirationPanelOpen)}
-              className="h-4 text-[8px] px-1.5 py-0 text-white/80 hover:text-white hover:bg-white/10 bg-white/5 backdrop-blur-md shadow-sm border border-white/10 rounded-full"
-            >
-              <Lightbulb className="h-2 w-2 mr-0.5" />
-              {isInspirationPanelOpen ? "Hide inspiration" : "Get inspiration"}
-            </Button>
           </div>
-          
-          {/* Competitor Inspiration Panel */}
-          {isInspirationPanelOpen && (
-            <div className="mb-1 p-1 rounded-md border border-white/10 bg-white/5 backdrop-blur-md shadow-sm">
-              <CompetitorInspirationPanel 
-                onEnhancePrompt={handleEnhancePrompt}
-                originalPrompt={prompt}
-                isOpen={isInspirationPanelOpen}
-              />
-            </div>
-          )}
           
           <Textarea
             id="prompt"
@@ -512,6 +490,31 @@ export default function AiFlyerFormCompact({
             className="h-12 resize-none bg-white/10 backdrop-blur-md shadow-lg border-white/10 text-white placeholder:text-white/40 rounded-md text-[9px]"
             required
           />
+          
+          {/* Get Inspiration Button - Moved below the prompt */}
+          <div className="mt-1">
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => setIsInspirationPanelOpen(!isInspirationPanelOpen)}
+              className="h-5 text-[8px] px-2 py-0 text-white/80 hover:text-white hover:bg-white/10 bg-white/5 backdrop-blur-md shadow-sm border border-white/10 rounded-full"
+            >
+              <Lightbulb className="h-2 w-2 mr-0.5" />
+              {isInspirationPanelOpen ? "Hide inspiration" : "Get inspiration"}
+            </Button>
+          </div>
+          
+          {/* Competitor Inspiration Panel */}
+          {isInspirationPanelOpen && (
+            <div className="mt-1 p-1 rounded-md border border-white/10 bg-white/5 backdrop-blur-md shadow-sm">
+              <CompetitorInspirationPanel 
+                onEnhancePrompt={handleEnhancePrompt}
+                originalPrompt={prompt}
+                isOpen={isInspirationPanelOpen}
+              />
+            </div>
+          )}
         </div>
 
         {/* Image Upload Row - 3 glass-blurry cube elements in a row */}
