@@ -491,27 +491,13 @@ export default function AiFlyerFormCompact({
             required
           />
           
-          {/* Get Inspiration Button - Moved below the prompt */}
-          <div className="mt-1">
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={() => setIsInspirationPanelOpen(!isInspirationPanelOpen)}
-              className="h-5 text-[8px] px-2 py-0 text-white/80 hover:text-white hover:bg-white/10 bg-white/5 backdrop-blur-md shadow-sm border border-white/10 rounded-full"
-            >
-              <Lightbulb className="h-2 w-2 mr-0.5" />
-              {isInspirationPanelOpen ? "Hide inspiration" : "Get inspiration"}
-            </Button>
-          </div>
-          
-          {/* Competitor Inspiration Panel */}
-          {isInspirationPanelOpen && (
+          {/* Competitor Inspiration Panel - Always visible when prompt exists */}
+          {prompt.trim() && (
             <div className="mt-1 p-1 rounded-md border border-white/10 bg-white/5 backdrop-blur-md shadow-sm">
               <CompetitorInspirationPanel 
                 onEnhancePrompt={handleEnhancePrompt}
                 originalPrompt={prompt}
-                isOpen={isInspirationPanelOpen}
+                isOpen={true}
               />
             </div>
           )}
