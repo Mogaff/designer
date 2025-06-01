@@ -14,6 +14,7 @@ import { hashPassword, isAuthenticated } from "./auth";
 import { insertUserSchema, insertDesignConfigSchema, insertUserCreditsSchema, insertUserCreationSchema, insertBrandKitSchema, insertSocialAccountSchema, insertSocialPostSchema } from "@shared/schema";
 import { createCheckoutSession, verifyCheckoutSession, handleStripeWebhook, CREDIT_PACKAGES } from "./stripe";
 import { registerAdBurstApiRoutes } from "./adburst_factory/adburst_api";
+import { registerEnhancedAdBurstRoutes } from "./adburst_factory/adburst_api_enhanced";
 import { registerCompetitorAdRoutes, registerAdInspirationIntegrationRoutes } from "./competitor_ads/routes";
 
 // Using the built-in type definitions from @types/multer
@@ -35,6 +36,7 @@ const uploadFields = upload.fields([
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize and register the AdBurst Factory routes
   registerAdBurstApiRoutes(app);
+  registerEnhancedAdBurstRoutes(app);
   
   // Register the competitor ad search and inspiration routes
   registerCompetitorAdRoutes(app);

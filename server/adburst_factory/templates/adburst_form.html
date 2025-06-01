@@ -112,6 +112,34 @@
                 </div>
                 
                 <div>
+                    <label for="videoDuration" class="block text-sm font-medium text-gray-700 mb-1">Video Duration *</label>
+                    <select id="videoDuration" name="videoDuration" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="15">15 seconds (3-4 images)</option>
+                        <option value="30" selected>30 seconds (5-6 images)</option>
+                        <option value="45">45 seconds (7-8 images)</option>
+                        <option value="60">60 seconds (8-12 images)</option>
+                    </select>
+                    <p class="text-sm text-gray-500 mt-1">Longer videos require more images for smooth transitions</p>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Image Source *</label>
+                    <div class="space-y-3">
+                        <label class="flex items-center space-x-3 cursor-pointer">
+                            <input type="radio" name="imageSource" value="upload" checked
+                                class="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                            <span class="text-sm text-gray-700">Upload my own images</span>
+                        </label>
+                        <label class="flex items-center space-x-3 cursor-pointer">
+                            <input type="radio" name="imageSource" value="ai"
+                                class="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                            <span class="text-sm text-gray-700">Generate images with AI based on product story</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div>
                     <label for="targetAudience" class="block text-sm font-medium text-gray-700 mb-1">Target Audience</label>
                     <input type="text" id="targetAudience" name="targetAudience"
                         class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -220,6 +248,54 @@
             
             let uploadedFiles = [];
             
+            // Get form elements
+            const videoDuration = document.getElementById('videoDuration');
+            const imageSourceRadios = document.querySelectorAll('input[name="imageSource"]');
+            const uploadSection = document.getElementById('upload-section');
+            
+            // Handle image source selection
+            imageSourceRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.value === 'ai') {
+                        uploadSection.style.display = 'none';
+                        uploadedFiles = [];
+                        updatePreview();
+                        updateGenerateButton();
+                    } else {
+                        uploadSection.style.display = 'block';
+                    }
+                });
+            });
+            
+            // Update image requirements based on duration
+            videoDuration.addEventListener('change', function() {
+                updateImageRequirements();
+                updateGenerateButton();
+            });
+            
+            function updateImageRequirements() {
+                const duration = parseInt(videoDuration.value);
+                const selectedSource = document.querySelector('input[name="imageSource"]:checked').value;
+                
+                if (selectedSource === 'upload') {
+                    let requirements;
+                    if (duration <= 15) requirements = '3-4 images';
+                    else if (duration <= 30) requirements = '5-6 images';
+                    else if (duration <= 45) requirements = '7-8 images';
+                    else requirements = '8-12 images';
+                    
+                    // Update the option text to show current requirements
+                    const options = videoDuration.querySelectorAll('option');
+                    options.forEach(option => {
+                        const value = parseInt(option.value);
+                        if (value <= 15) option.textContent = `${value} seconds (3-4 images)`;
+                        else if (value <= 30) option.textContent = `${value} seconds (5-6 images)`;
+                        else if (value <= 45) option.textContent = `${value} seconds (7-8 images)`;
+                        else option.textContent = `${value} seconds (8-12 images)`;
+                    });
+                }
+            }
+            
             // Handle drag and drop events
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
                 dragDropArea.addEventListener(eventName, preventDefaults, false);
@@ -263,8 +339,15 @@
             });
             
             function handleFiles(files) {
-                if (files.length + uploadedFiles.length > 3) {
-                    showError('Maximum 3 images allowed');
+                const duration = parseInt(videoDuration.value);
+                let maxImages;
+                if (duration <= 15) maxImages = 4;
+                else if (duration <= 30) maxImages = 6;
+                else if (duration <= 45) maxImages = 8;
+                else maxImages = 12;
+                
+                if (files.length + uploadedFiles.length > maxImages) {
+                    showError(`Maximum ${maxImages} images allowed for ${duration}-second video`);
                     return;
                 }
                 
@@ -318,15 +401,37 @@
             
             function validateFiles() {
                 hideError();
+                updateGenerateButton();
+            }
+            
+            function updateGenerateButton() {
+                const selectedSource = document.querySelector('input[name="imageSource"]:checked').value;
+                const duration = parseInt(videoDuration.value);
                 
-                if (uploadedFiles.length !== 3) {
-                    generateBtn.disabled = true;
-                    if (uploadedFiles.length > 0) {
-                        showError('Please upload exactly 3 images');
-                    }
-                } else {
+                if (selectedSource === 'ai') {
+                    // AI generation doesn't need uploaded files
                     generateBtn.disabled = false;
+                } else {
+                    // Upload mode - check minimum requirements
+                    let minImages;
+                    if (duration <= 15) minImages = 3;
+                    else if (duration <= 30) minImages = 5;
+                    else if (duration <= 45) minImages = 7;
+                    else minImages = 8;
+                    
+                    if (uploadedFiles.length < minImages) {
+                        generateBtn.disabled = true;
+                        if (uploadedFiles.length > 0) {
+                            showError(`Please upload at least ${minImages} images for ${duration}-second video`);
+                        }
+                    } else {
+                        generateBtn.disabled = false;
+                    }
                 }
+            }
+            
+            function updatePreview() {
+                previewContainer.innerHTML = '';
             }
             
             function showError(message) {
@@ -341,24 +446,52 @@
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 
-                if (uploadedFiles.length !== 3) {
-                    showError('Please upload exactly 3 images');
-                    return;
+                const selectedSource = document.querySelector('input[name="imageSource"]:checked').value;
+                const duration = parseInt(videoDuration.value);
+                
+                // Validate based on selected mode
+                if (selectedSource === 'upload') {
+                    let minImages;
+                    if (duration <= 15) minImages = 3;
+                    else if (duration <= 30) minImages = 5;
+                    else if (duration <= 45) minImages = 7;
+                    else minImages = 8;
+                    
+                    if (uploadedFiles.length < minImages) {
+                        showError(`Please upload at least ${minImages} images for ${duration}-second video`);
+                        return;
+                    }
                 }
                 
                 const formData = new FormData();
                 formData.append('productName', document.getElementById('productName').value);
                 formData.append('productDescription', document.getElementById('productDescription').value);
                 formData.append('targetAudience', document.getElementById('targetAudience').value);
+                formData.append('videoDuration', duration.toString());
+                formData.append('useAiImages', selectedSource === 'ai' ? 'true' : 'false');
                 
-                // Add each file with a unique field name
-                formData.append('image1', uploadedFiles[0]);
-                formData.append('image2', uploadedFiles[1]);
-                formData.append('image3', uploadedFiles[2]);
+                // Add uploaded files if in upload mode
+                if (selectedSource === 'upload') {
+                    uploadedFiles.forEach((file, index) => {
+                        formData.append(`image${index + 1}`, file);
+                    });
+                }
                 
                 loadingOverlay.style.display = 'flex';
                 
-                fetch('/api/adburst', {
+                // Update loading message based on duration and mode
+                const loadingText = document.querySelector('#loading-overlay p:first-of-type');
+                const loadingSubtext = document.querySelector('#loading-overlay p:last-of-type');
+                
+                if (selectedSource === 'ai') {
+                    loadingText.textContent = 'Generating images and creating your ad...';
+                    loadingSubtext.textContent = duration <= 30 ? 'This may take 3-5 minutes' : 'This may take 5-8 minutes';
+                } else {
+                    loadingText.textContent = 'Creating your ad...';
+                    loadingSubtext.textContent = duration <= 30 ? 'This may take 2-3 minutes' : 'This may take 4-6 minutes';
+                }
+                
+                fetch('/api/adburst/enhanced', {
                     method: 'POST',
                     body: formData
                 })
