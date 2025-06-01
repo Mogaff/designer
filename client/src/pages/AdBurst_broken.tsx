@@ -25,7 +25,6 @@ interface AdBurstResponse {
     aspectRatio: string;
     imagesUsed: number;
     scriptWordCount: number;
-    generatedWithAI?: boolean;
   };
 }
 
@@ -132,6 +131,13 @@ export default function AdBurst() {
       });
     }
     
+    console.log('Form data prepared:', {
+      productName,
+      productDescription: prompt,
+      targetAudience: callToAction,
+      aspectRatio
+    });
+    
     try {
       // Set up progress monitoring
       const progressInterval = setInterval(() => {
@@ -141,39 +147,44 @@ export default function AdBurst() {
         });
       }, 1000);
       
+      console.log('Sending request to /api/adburst/enhanced...');
       const response = await fetch('/api/adburst/enhanced', {
         method: 'POST',
         body: formData,
       });
       
       clearInterval(progressInterval);
+      console.log(`Request completed with status: ${response.status}`);
       
       if (response.ok) {
         const data = await response.json();
+        console.log('Success response:', data);
         setProgress(100);
         setResult(data);
         toast({
-          title: "Video generated successfully!",
-          description: "Your ad video is ready to download and share",
+          title: "Success!",
+          description: "Your video ad has been created successfully.",
         });
       } else {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to generate video');
+        console.error('Error response:', errorData);
+        toast({
+          title: "Error",
+          description: errorData.message || "Failed to generate ad video",
+          variant: "destructive"
+        });
       }
     } catch (error) {
-      console.error('Error generating video:', error);
+      console.error('Exception during request:', error);
       toast({
-        title: "Generation failed",
-        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        title: "Error",
+        description: error instanceof Error ? error.message : 'Failed to generate ad video',
         variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
   };
-
-  // Check if form is valid for submission
-  const isFormValid = useAiImages || files.length >= imageRequirements.min;
 
   return (
     <div className="flex h-full">
@@ -216,6 +227,7 @@ export default function AdBurst() {
         </p>
         
         <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Main content area */}
           <div className="space-y-5">
             {/* Video Duration Selection */}
             <div className="space-y-2">
@@ -248,6 +260,7 @@ export default function AdBurst() {
                     checked={!useAiImages}
                     onChange={() => {
                       setUseAiImages(false);
+                      // Clear files when switching modes if needed
                     }}
                     disabled={loading}
                     className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
@@ -297,56 +310,56 @@ export default function AdBurst() {
                   className="border border-dashed border-indigo-500/40 bg-white/10 hover:bg-white/15 backdrop-blur-sm rounded-lg p-4 text-center transition-colors cursor-pointer"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <input
-                    id="file-upload"
-                    ref={fileInputRef}
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleFileChange}
-                    disabled={loading}
-                  />
+                <input
+                  id="file-upload"
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFileChange}
+                  disabled={loading}
+                />
+                
+                <div className="flex flex-col items-center justify-center py-4">
+                  <ImageIcon className="h-8 w-8 text-indigo-400 mb-2" />
+                  <p className="text-sm font-medium text-white mb-1">
+                    Upload product images
+                  </p>
+                  <p className="text-xs text-white/60">
+                    Select {imageRequirements.min}-{imageRequirements.max} high-quality product images
+                  </p>
+                </div>
+              </div>
+              
+              {files.length > 0 && (
+                <div className="mt-3">
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="text-xs font-medium text-white/80">Selected Images ({files.length}/{imageRequirements.max})</h3>
+                  </div>
                   
-                  <div className="flex flex-col items-center justify-center py-4">
-                    <ImageIcon className="h-8 w-8 text-indigo-400 mb-2" />
-                    <p className="text-sm font-medium text-white mb-1">
-                      Upload product images
-                    </p>
-                    <p className="text-xs text-white/60">
-                      Select {imageRequirements.min}-{imageRequirements.max} high-quality product images
-                    </p>
+                  <div className="grid grid-cols-5 gap-2">
+                    {files.map((file, index) => (
+                      <div key={index} className="relative group rounded-md overflow-hidden border border-indigo-500/20">
+                        <img
+                          src={URL.createObjectURL(file)}
+                          alt={`Preview ${index + 1}`}
+                          className="h-16 w-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          className="absolute top-1 right-1 bg-black/50 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => removeFile(index)}
+                          disabled={loading}
+                        >
+                          <Trash2 className="h-3 w-3 text-white" />
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 </div>
-                
-                {files.length > 0 && (
-                  <div className="mt-3">
-                    <div className="flex justify-between items-center mb-2">
-                      <h3 className="text-xs font-medium text-white/80">Selected Images ({files.length}/{imageRequirements.max})</h3>
-                    </div>
-                    
-                    <div className="grid grid-cols-5 gap-2">
-                      {files.map((file, index) => (
-                        <div key={index} className="relative group rounded-md overflow-hidden border border-indigo-500/20">
-                          <img
-                            src={URL.createObjectURL(file)}
-                            alt={`Preview ${index + 1}`}
-                            className="h-16 w-full object-cover"
-                          />
-                          <button
-                            type="button"
-                            className="absolute top-1 right-1 bg-black/50 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => removeFile(index)}
-                            disabled={loading}
-                          >
-                            <Trash2 className="h-3 w-3 text-white" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+              )}
+            </div>
             )}
             
             <Separator className="bg-white/10" />
@@ -414,12 +427,12 @@ export default function AdBurst() {
             {/* Generate button */}
             <Button
               type="submit"
-              disabled={loading || !isFormValid}
+              disabled={loading || files.length < 3}
               className="w-full bg-indigo-500/40 hover:bg-indigo-500/60 backdrop-blur-md text-white border border-indigo-500/40 shadow-md transition-all"
               size="default"
             >
               <WandSparkles className="h-4 w-4 mr-2" />
-              {loading ? `Processing ${videoDuration}s Video...` : `Generate ${videoDuration}s Video Ad`}
+              {loading ? 'Processing Video...' : 'Generate Video Ad'}
             </Button>
             
             <div className="text-center text-xs text-white/60">
@@ -435,7 +448,7 @@ export default function AdBurst() {
           <div className="w-full h-full">
             <div className="text-xl font-semibold text-white flex items-center mb-4">
               <Video className="h-5 w-5 mr-2 text-indigo-400" />
-              Your {videoDuration}s Ad Video is Ready!
+              Your Ad Video is Ready!
             </div>
             
             <div className="flex flex-wrap gap-6">
@@ -502,8 +515,8 @@ export default function AdBurst() {
                             <p className="text-white/80">{result.metadata.scriptWordCount} words</p>
                           </div>
                           <div className="text-xs">
-                            <p className="text-white/50">Images</p>
-                            <p className="text-white/80">{result.metadata.generatedWithAI ? 'AI Generated' : 'User Uploaded'}</p>
+                            <p className="text-white/50">Format</p>
+                            <p className="text-white/80">{result.metadata.aspectRatio}</p>
                           </div>
                           <div className="text-xs">
                             <p className="text-white/50">Generated</p>
@@ -522,8 +535,8 @@ export default function AdBurst() {
             <div className="flex flex-col items-center max-w-md text-center space-y-3">
               <Video className="h-12 w-12 mb-2 text-white/20" />
               <h3 className="text-xl font-medium text-white/90">Create Your Video Ad</h3>
-              <p>Choose your video duration ({videoDuration}s), then either upload {imageRequirements.min}-{imageRequirements.max} product images or use AI to generate them from your product description.</p>
-              <p className="text-sm">AI will create a professional script and video based on your inputs!</p>
+              <p>Upload 3-5 product images and add a description to generate an engaging video advertisement for your product.</p>
+              <p className="text-sm">AI will create a professional script and animation based on your inputs!</p>
             </div>
           </div>
         )}
