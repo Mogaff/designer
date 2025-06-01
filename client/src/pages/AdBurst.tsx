@@ -35,6 +35,8 @@ export default function AdBurst() {
   const [prompt, setPrompt] = useState<string>('');
   const [callToAction, setCallToAction] = useState<string>('');
   const [aspectRatio, setAspectRatio] = useState<string>('vertical');
+  const [videoDuration, setVideoDuration] = useState<number>(30);
+  const [useAiImages, setUseAiImages] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
   const [result, setResult] = useState<AdBurstResponse | null>(null);
@@ -48,15 +50,25 @@ export default function AdBurst() {
   
   const activeBrandKit = activeBrandKitData?.brandKit;
 
+  // Calculate required images based on video duration
+  const getImageRequirements = (duration: number) => {
+    if (duration <= 15) return { min: 3, max: 4, recommended: 3 };
+    if (duration <= 30) return { min: 5, max: 6, recommended: 5 };
+    if (duration <= 45) return { min: 7, max: 8, recommended: 7 };
+    return { min: 8, max: 12, recommended: 10 };
+  };
+
+  const imageRequirements = getImageRequirements(videoDuration);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const selectedFiles = Array.from(e.target.files);
       
-      // Limit to 5 files maximum
-      if (selectedFiles.length + files.length > 5) {
+      // Limit to dynamic maximum based on duration
+      if (selectedFiles.length + files.length > imageRequirements.max) {
         toast({
           title: "Maximum files exceeded",
-          description: "You can only upload up to 5 images",
+          description: `You can only upload up to ${imageRequirements.max} images for ${videoDuration}-second video`,
           variant: "destructive"
         });
         return;
@@ -89,10 +101,11 @@ export default function AdBurst() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (files.length < 3) {
+    // Validate based on selected mode
+    if (!useAiImages && files.length < imageRequirements.min) {
       toast({
         title: "Not enough images",
-        description: "Please upload at least 3 product images",
+        description: `Please upload at least ${imageRequirements.min} images for ${videoDuration}-second video`,
         variant: "destructive"
       });
       return;
@@ -103,21 +116,20 @@ export default function AdBurst() {
     
     const formData = new FormData();
     
-    // Log what we're sending to help debug
-    console.log(`Uploading ${files.length} images`);
-    
-    // Backend expects images with specific field names (image1, image2, etc.)
-    files.forEach((file, index) => {
-      console.log(`Adding image${index + 1}: ${file.name} (${file.size} bytes)`);
-      formData.append(`image${index + 1}`, file);
-    });
-    
     // Add product information
     const productName = 'Product';  // Default product name
     formData.append('productName', productName);
     formData.append('productDescription', prompt);
     formData.append('targetAudience', callToAction);
-    formData.append('aspectRatio', aspectRatio);
+    formData.append('videoDuration', videoDuration.toString());
+    formData.append('useAiImages', useAiImages.toString());
+    
+    // Add uploaded files if not using AI generation
+    if (!useAiImages) {
+      files.forEach((file, index) => {
+        formData.append(`image${index + 1}`, file);
+      });
+    }
     
     console.log('Form data prepared:', {
       productName,
@@ -135,8 +147,8 @@ export default function AdBurst() {
         });
       }, 1000);
       
-      console.log('Sending request to /api/adburst...');
-      const response = await fetch('/api/adburst', {
+      console.log('Sending request to /api/adburst/enhanced...');
+      const response = await fetch('/api/adburst/enhanced', {
         method: 'POST',
         body: formData,
       });
@@ -211,7 +223,7 @@ export default function AdBurst() {
         )}
         
         <p className="text-xs text-white/70 mb-4">
-          AdBurst Factory creates engaging 8-20 second video ads from your product images using AI. Perfect for Instagram Reels and TikTok.
+          AdBurst Factory creates engaging 15-60 second video ads from your images or AI-generated visuals. Perfect for social media platforms.
         </p>
         
         <form onSubmit={handleSubmit} className="space-y-5">
