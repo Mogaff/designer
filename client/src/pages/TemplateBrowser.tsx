@@ -210,51 +210,51 @@ export default function TemplateBrowser() {
                           {renderFeatureBadges(template.features)}
                         </div>
                         
-                        <div className="text-sm text-gray-600">
+                        <div className="text-sm text-white/60">
                           <span className="font-medium">Placeholders:</span> {template.placeholders.length} fields
                         </div>
 
                         <Dialog>
                           <DialogTrigger asChild>
                             <Button 
-                              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                              className="w-full bg-white text-black hover:bg-white/90 font-medium"
                               onClick={() => setSelectedTemplate(template)}
                             >
                               Use Template
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="max-w-2xl bg-white/90 backdrop-blur-md border-white/30">
+                          <DialogContent className="max-w-2xl bg-black/90 backdrop-blur-md border border-white/10">
                             <DialogHeader>
-                              <DialogTitle>Generate with {template.name}</DialogTitle>
-                              <DialogDescription>
+                              <DialogTitle className="text-white">Generate with {template.name}</DialogTitle>
+                              <DialogDescription className="text-white/70">
                                 Enter your prompt and customize the template with your content
                               </DialogDescription>
                             </DialogHeader>
                             
                             <div className="space-y-4 mt-4">
                               <div>
-                                <Label htmlFor="prompt">Content Prompt</Label>
+                                <Label htmlFor="prompt" className="text-white">Content Prompt</Label>
                                 <Textarea
                                   id="prompt"
                                   placeholder="Describe what you want to create... (e.g., 'A summer music festival flyer for electronic music')"
                                   value={prompt}
                                   onChange={(e) => setPrompt(e.target.value)}
                                   rows={4}
-                                  className="bg-white/50"
+                                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
                                 />
                               </div>
 
                               {brandKits.length > 0 && (
                                 <div>
-                                  <Label htmlFor="brandKit">Brand Kit (Optional)</Label>
+                                  <Label htmlFor="brandKit" className="text-white">Brand Kit (Optional)</Label>
                                   <Select value={selectedBrandKit} onValueChange={setSelectedBrandKit}>
-                                    <SelectTrigger className="bg-white/50">
+                                    <SelectTrigger className="bg-white/10 border-white/20 text-white">
                                       <SelectValue placeholder="Choose a brand kit" />
                                     </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="none">No brand kit</SelectItem>
+                                    <SelectContent className="bg-black/90 border-white/20">
+                                      <SelectItem value="none" className="text-white">No brand kit</SelectItem>
                                       {brandKits.map((kit: BrandKit) => (
-                                        <SelectItem key={kit.id} value={kit.id.toString()}>
+                                        <SelectItem key={kit.id} value={kit.id.toString()} className="text-white">
                                           {kit.name}
                                         </SelectItem>
                                       ))}
@@ -263,11 +263,11 @@ export default function TemplateBrowser() {
                                 </div>
                               )}
 
-                              <div className="bg-gray-50/50 p-4 rounded-lg">
-                                <h4 className="font-medium mb-2 text-gray-800">Template Fields:</h4>
+                              <div className="bg-white/10 p-4 rounded-lg border border-white/20">
+                                <h4 className="font-medium mb-2 text-white">Template Fields:</h4>
                                 <div className="flex flex-wrap gap-2">
                                   {template.placeholders.map((placeholder) => (
-                                    <Badge key={placeholder} variant="outline" className="text-xs bg-white/40">
+                                    <Badge key={placeholder} variant="outline" className="text-xs bg-white/10 text-white border-white/20">
                                       {placeholder}
                                     </Badge>
                                   ))}
@@ -277,7 +277,7 @@ export default function TemplateBrowser() {
                               <Button 
                                 onClick={handleGenerate}
                                 disabled={generateMutation.isPending}
-                                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                                className="w-full bg-white text-black hover:bg-white/90 font-medium"
                               >
                                 {generateMutation.isPending ? 'Generating...' : 'Generate Design'}
                               </Button>
@@ -294,11 +294,11 @@ export default function TemplateBrowser() {
 
           {generatedHtml && (
             <div className="mt-8">
-              <h2 className="text-2xl font-bold mb-4 text-gray-800">Generated Design</h2>
-              <div className="bg-white/60 backdrop-blur-sm p-4 rounded-lg border border-white/30">
+              <h2 className="text-2xl font-bold mb-4 text-white">Generated Design</h2>
+              <div className="bg-black/30 backdrop-blur-md p-4 rounded-lg border border-white/10">
                 <iframe
                   srcDoc={generatedHtml}
-                  className="w-full h-96 border rounded"
+                  className="w-full h-96 border rounded border-white/20"
                   title="Generated Template"
                 />
               </div>
@@ -313,11 +313,11 @@ export default function TemplateBrowser() {
                     a.click();
                     URL.revokeObjectURL(url);
                   }}
-                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                  className="bg-white text-black hover:bg-white/90 font-medium"
                 >
                   Download HTML
                 </Button>
-                <Button variant="outline" className="bg-white/40 border-white/30">
+                <Button variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
                   Generate PNG
                 </Button>
               </div>
