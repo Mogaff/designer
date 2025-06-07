@@ -189,7 +189,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log('Starting Google sign-in with redirect...');
       
       // Use the login function from firebase.ts with proper error handling
-      await login();
+      const result = await login();
+      
+      // If popup succeeded, handle the result immediately
+      if (result && result.user) {
+        console.log('Popup login successful:', result.user.email);
+        await syncUserWithBackend(result.user);
+        
+        toast({
+          title: 'Login successful',
+          description: 'You are now logged in with Google.',
+        });
+        
+        setIsLoading(false);
+        return;
+      }
       
       // The page will redirect to Google and then back to our app
       // The result will be handled in useEffect below

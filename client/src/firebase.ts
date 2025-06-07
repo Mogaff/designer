@@ -2,6 +2,7 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { 
   getAuth, 
   signInWithRedirect, 
+  signInWithPopup,
   GoogleAuthProvider, 
   getRedirectResult,
   onAuthStateChanged,
@@ -24,7 +25,9 @@ console.log('Firebase Config:', {
   hasApiKey: !!import.meta.env.VITE_FIREBASE_API_KEY,
   hasProjectId: !!import.meta.env.VITE_FIREBASE_PROJECT_ID,
   hasAppId: !!import.meta.env.VITE_FIREBASE_APP_ID,
-  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`
+  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
+  currentDomain: window.location.hostname,
+  currentOrigin: window.location.origin
 });
 
 // Initialize Firebase app or use existing one
@@ -59,8 +62,23 @@ export async function login() {
     provider.setCustomParameters({
       prompt: 'select_account'
     });
+
+    // Log the exact domain for Firebase configuration
+    console.log('Current domain for Firebase:', window.location.origin);
+    console.log('Add this exact domain to Firebase authorized domains:', window.location.hostname);
     
-    await signInWithRedirect(auth, provider);
+    // Try popup first (works better with domain restrictions), fallback to redirect
+    try {
+      const result = await signInWithPopup(auth, provider);
+      return result;
+    } catch (popupError: any) {
+      console.log('Popup failed, trying redirect:', popupError.code);
+      if (popupError.code === 'auth/popup-blocked' || popupError.code === 'auth/popup-closed-by-user') {
+        await signInWithRedirect(auth, provider);
+      } else {
+        throw popupError;
+      }
+    }
   } catch (error) {
     console.error('Firebase login error:', error);
     throw error;
