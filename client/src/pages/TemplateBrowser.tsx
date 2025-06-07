@@ -147,26 +147,26 @@ export default function TemplateBrowser() {
   };
 
   return (
-    <div className="min-h-screen relative">
-      {/* Glass blur background matching create design tab */}
-      <div className="fixed inset-0 bg-gradient-to-br from-blue-50/80 via-white/40 to-purple-50/80 backdrop-blur-sm"></div>
+    <div className="min-h-screen relative bg-black">
+      {/* Glass blur background matching dashboard exactly */}
+      <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900"></div>
       
       <div className="relative z-10 container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold mb-4 text-white">
               Template Library
             </h1>
-            <p className="text-lg text-gray-700 max-w-2xl mx-auto">
+            <p className="text-lg text-white/70 max-w-2xl mx-auto">
               Choose from our curated collection of professional templates powered by Tailwind CSS, DaisyUI, and Flowbite
             </p>
           </div>
 
           <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-8">
-            <TabsList className="grid w-full grid-cols-6 bg-white/20 backdrop-blur-md border-white/20">
-              <TabsTrigger value="">All Templates</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-6 bg-black/30 backdrop-blur-md border border-white/10">
+              <TabsTrigger value="" className="text-white/70 data-[state=active]:text-white data-[state=active]:bg-white/10">All Templates</TabsTrigger>
               {categories.map((category: TemplateCategory) => (
-                <TabsTrigger key={category.id} value={category.id}>
+                <TabsTrigger key={category.id} value={category.id} className="text-white/70 data-[state=active]:text-white data-[state=active]:bg-white/10">
                   {category.name}
                 </TabsTrigger>
               ))}
@@ -175,22 +175,22 @@ export default function TemplateBrowser() {
             <TabsContent value={selectedCategory} className="mt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {templates.map((template: Template) => (
-                  <Card key={template.id} className="hover:shadow-lg transition-shadow cursor-pointer bg-white/60 backdrop-blur-sm border-white/30">
+                  <Card key={template.id} className="hover:shadow-lg transition-shadow cursor-pointer bg-black/30 backdrop-blur-md border border-white/10">
                     <CardHeader>
                       <div className="flex justify-between items-start">
                         <div>
-                          <CardTitle className="text-lg text-gray-800">{template.name}</CardTitle>
-                          <CardDescription className="mt-1 text-gray-600">
+                          <CardTitle className="text-lg text-white">{template.name}</CardTitle>
+                          <CardDescription className="mt-1 text-white/70">
                             {template.description}
                           </CardDescription>
                         </div>
-                        <Badge variant="outline" className="bg-white/40">{template.category}</Badge>
+                        <Badge variant="outline" className="bg-white/10 text-white border-white/20">{template.category}</Badge>
                       </div>
                     </CardHeader>
                     
                     {/* Template Preview */}
                     <div className="px-6 mb-4">
-                      <div className="w-full h-40 bg-gray-100/50 rounded-lg overflow-hidden border border-white/30">
+                      <div className="w-full h-40 bg-black/20 rounded-lg overflow-hidden border border-white/20">
                         <iframe 
                           src={`/api/templates/${encodeURIComponent(template.id)}/preview`}
                           title={`${template.name} preview`}
