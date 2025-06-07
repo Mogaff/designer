@@ -182,15 +182,15 @@ export default function TemplateBrowser() {
                   {/* Template Preview */}
                   <div className="px-6 mb-4">
                     <div className="w-full h-40 bg-gray-100 rounded-lg overflow-hidden border">
-                      <iframe 
+                      <img 
                         src={`/api/templates/${encodeURIComponent(template.id)}/preview`}
-                        title={`${template.name} preview`}
-                        className="w-full h-full border-0"
-                        style={{ 
-                          pointerEvents: 'none',
-                          background: '#f3f4f6'
-                        }}
+                        alt={`${template.name} preview`}
+                        className="w-full h-full object-cover"
                         loading="lazy"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIzMDAiIGZpbGw9IiNGM0Y0RjYiLz48dGV4dCB4PSIyMDAiIHk9IjE1MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzZCNzI4MCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0Ij5QcmV2aWV3IFVuYXZhaWxhYmxlPC90ZXh0Pjwvc3ZnPg==';
+                        }}
                       />
                     </div>
                   </div>
