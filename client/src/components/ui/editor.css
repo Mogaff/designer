@@ -1,3 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Optional: Plugins */
+@import "flowbite";
+
 /* Editor specific styles for the enhanced design editor */
 
 .editor-container {
