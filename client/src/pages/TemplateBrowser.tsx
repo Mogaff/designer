@@ -89,39 +89,10 @@ export default function TemplateBrowser() {
       prompt: string; 
       brandKitId?: string;
     }) => {
-      // Initialize session first
-      await fetch('/api/auth/init', {
-        method: 'GET',
-        credentials: 'include'
-      });
-      
       const payload: any = { prompt };
       if (brandKitId) payload.brand_kit_id = brandKitId;
       
-      const response = await fetch(`/api/templates/${templateId}/generate`, {
-        method: 'POST',
-        body: JSON.stringify(payload),
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        credentials: 'include' // Include cookies for session handling
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Template generation failed:', errorText);
-        throw new Error(`Failed to generate template: ${response.status}`);
-      }
-      
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        const responseText = await response.text();
-        console.error('Non-JSON response received:', responseText);
-        throw new Error('Server returned invalid response format');
-      }
-      
-      return response.json();
+      return await apiRequest('POST', `/api/templates/${templateId}/generate`, payload);
     },
     onSuccess: (data) => {
       setGeneratedHtml(data.html_content);
