@@ -115,6 +115,12 @@ export class MemStorage implements IStorage {
     );
   }
 
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.usersMap.values()).find(
+      (user) => user.email === email,
+    );
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.userIdCounter++;
     const now = new Date();
@@ -459,6 +465,56 @@ export class MemStorage implements IStorage {
     
     // Otherwise delete the brand kit
     this.brandKitsMap.delete(id);
+    return true;
+  }
+
+  // Social Media methods (stub implementations for MemStorage)
+  async getSocialAccounts(userId: number): Promise<SocialAccount[]> {
+    // Return empty array as MemStorage doesn't persist social accounts
+    return [];
+  }
+
+  async createSocialAccount(account: InsertSocialAccount): Promise<SocialAccount> {
+    // Stub implementation for MemStorage
+    const now = new Date();
+    return {
+      id: 1,
+      user_id: account.user_id,
+      platform: account.platform,
+      account_name: account.account_name,
+      access_token: account.access_token || null,
+      refresh_token: account.refresh_token || null,
+      expires_at: account.expires_at || null,
+      created_at: now,
+      updated_at: now,
+      is_active: account.is_active ?? true
+    };
+  }
+
+  async getSocialPosts(userId: number): Promise<SocialPost[]> {
+    // Return empty array as MemStorage doesn't persist social posts
+    return [];
+  }
+
+  async createSocialPost(post: InsertSocialPost): Promise<SocialPost> {
+    // Stub implementation for MemStorage
+    const now = new Date();
+    return {
+      id: 1,
+      user_id: post.user_id,
+      platform: post.platform,
+      content: post.content,
+      image_urls: post.image_urls || null,
+      scheduled_at: post.scheduled_at || null,
+      posted_at: post.posted_at || null,
+      status: post.status || 'draft',
+      created_at: now,
+      updated_at: now
+    };
+  }
+
+  async deleteSocialPost(id: number, userId: number): Promise<boolean> {
+    // Stub implementation for MemStorage
     return true;
   }
 }

@@ -170,10 +170,10 @@ export async function handleStripeWebhook(
         const invoice = event.data.object as Stripe.Invoice;
         
         // Die Metadata ist an der Subscription, nicht an der Rechnung
-        if (invoice.subscription) {
+        if ((invoice as any).subscription) {
           try {
             const subscription = await stripe.subscriptions.retrieve(
-              invoice.subscription as string
+              (invoice as any).subscription as string
             );
             
             // Metadaten aus der ursprünglichen Checkout-Session abrufen

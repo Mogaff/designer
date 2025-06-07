@@ -49,7 +49,7 @@ export default function AiFlyerForm({
 }: AiFlyerFormProps) {
   const { toast } = useToast();
   const isMobile = useIsMobile();
-  const { userSettings } = useUserSettings();
+  // const { userSettings } = useUserSettings(); // Commented out since userSettings doesn't exist
   
   // State for form inputs
   const [prompt, setPrompt] = useState<string>("");
@@ -103,7 +103,6 @@ export default function AiFlyerForm({
             content: `Design style: ${data.designs[0].style || "Custom"}`,
             stylePrompt: data.designs[0].style || prompt,
             template: "ai",
-            prompt: prompt,
           });
         }
       } else {

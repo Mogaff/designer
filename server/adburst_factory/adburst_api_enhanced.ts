@@ -154,7 +154,7 @@ async function generateImagesWithFlux(prompts: string[]): Promise<string[]> {
       }
     } catch (error) {
       console.error(`Error generating image ${i + 1}:`, error);
-      throw new Error(`Failed to generate image ${i + 1}: ${error.message}`);
+      throw new Error(`Failed to generate image ${i + 1}: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
   
@@ -311,7 +311,7 @@ export async function processEnhancedAdBurst(req: Request, res: Response) {
         console.error('AI image generation failed:', error);
         return res.status(500).json({
           success: false,
-          message: `AI image generation failed: ${error.message}`
+          message: `AI image generation failed: ${error instanceof Error ? error.message : String(error)}`
         });
       }
     } else {
@@ -390,7 +390,7 @@ export async function processEnhancedAdBurst(req: Request, res: Response) {
     console.error('Enhanced AdBurst processing error:', error);
     return res.status(500).json({
       success: false,
-      message: `Processing failed: ${error.message}`
+      message: `Processing failed: ${error instanceof Error ? error.message : String(error)}`
     });
   }
 }
