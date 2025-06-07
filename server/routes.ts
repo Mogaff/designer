@@ -1630,6 +1630,47 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
     }
   });
 
+  // Generate template preview
+  app.get("/api/templates/:templateId/preview", async (req: Request, res: Response) => {
+    try {
+      const { templateId } = req.params;
+      const template = await templateManager.loadTemplate(templateId);
+      
+      if (!template) {
+        return res.status(404).json({ message: "Template not found" });
+      }
+
+      // Generate sample content for preview
+      const sampleContent = await templateManager.generateSampleContent(template.placeholders);
+      let previewHtml = templateManager.replacePlaceholders(template.htmlContent, sampleContent);
+
+      const puppeteer = require('puppeteer');
+      const browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+      });
+
+      const page = await browser.newPage();
+      await page.setViewport({ width: 400, height: 300 });
+      await page.setContent(previewHtml, { waitUntil: 'networkidle0' });
+      
+      const screenshot = await page.screenshot({
+        type: 'png',
+        fullPage: false
+      });
+
+      await browser.close();
+
+      res.setHeader('Content-Type', 'image/png');
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      res.send(screenshot);
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Preview generation failed: ${errorMessage}` });
+    }
+  });
+
   // Render template to image
   app.post("/api/templates/render", isAuthenticated, async (req: Request, res: Response) => {
     try {
@@ -1639,9 +1680,7 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
         return res.status(400).json({ message: "HTML content is required" });
       }
 
-      // Use existing Puppeteer rendering from Claude/Gemini flyers
       const puppeteer = require('puppeteer');
-      
       const browser = await puppeteer.launch({
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox']

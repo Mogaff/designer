@@ -24,6 +24,41 @@
       "id": "posters",
       "name": "Posters",
       "description": "Large format promotional and informational posters"
+    },
+    {
+      "id": "flowbite",
+      "name": "Flowbite Components",
+      "description": "Modern UI components and sections using Flowbite"
+    },
+    {
+      "id": "landing-pages",
+      "name": "Landing Pages",
+      "description": "Complete landing page sections and layouts"
+    },
+    {
+      "id": "pricing",
+      "name": "Pricing Tables",
+      "description": "Pricing plans, subscription tiers, and comparison tables"
+    },
+    {
+      "id": "testimonials",
+      "name": "Testimonials",
+      "description": "Customer reviews, testimonials, and social proof sections"
+    },
+    {
+      "id": "features",
+      "name": "Feature Sections",
+      "description": "Product features, service highlights, and benefit showcases"
+    },
+    {
+      "id": "cta",
+      "name": "Call to Action",
+      "description": "CTA sections, newsletter signups, and conversion-focused designs"
+    },
+    {
+      "id": "newsletters",
+      "name": "Email Templates",
+      "description": "Email newsletters, promotional emails, and transactional templates"
     }
   ]
 }
