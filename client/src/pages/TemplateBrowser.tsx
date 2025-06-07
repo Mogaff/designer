@@ -48,19 +48,32 @@ export default function TemplateBrowser() {
   // Fetch template categories
   const { data: categoriesData } = useQuery({
     queryKey: ['/api/templates/categories'],
-    queryFn: () => apiRequest('/api/templates/categories')
+    queryFn: async () => {
+      const response = await fetch('/api/templates/categories');
+      if (!response.ok) throw new Error('Failed to fetch categories');
+      return response.json();
+    }
   });
 
   // Fetch templates
   const { data: templatesData, refetch: refetchTemplates } = useQuery({
     queryKey: ['/api/templates', selectedCategory],
-    queryFn: () => apiRequest(`/api/templates${selectedCategory ? `?category=${selectedCategory}` : ''}`)
+    queryFn: async () => {
+      const url = `/api/templates${selectedCategory ? `?category=${selectedCategory}` : ''}`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch templates');
+      return response.json();
+    }
   });
 
   // Fetch brand kits
   const { data: brandKitsData } = useQuery({
     queryKey: ['/api/brand-kits'],
-    queryFn: () => apiRequest('/api/brand-kits')
+    queryFn: async () => {
+      const response = await fetch('/api/brand-kits');
+      if (!response.ok) throw new Error('Failed to fetch brand kits');
+      return response.json();
+    }
   });
 
   // Generate template mutation
@@ -73,11 +86,14 @@ export default function TemplateBrowser() {
       const payload: any = { prompt };
       if (brandKitId) payload.brand_kit_id = brandKitId;
       
-      return apiRequest(`/api/templates/${templateId}/generate`, {
+      const response = await fetch(`/api/templates/${templateId}/generate`, {
         method: 'POST',
         body: JSON.stringify(payload),
         headers: { 'Content-Type': 'application/json' }
       });
+      
+      if (!response.ok) throw new Error('Failed to generate template');
+      return response.json();
     },
     onSuccess: (data) => {
       setGeneratedHtml(data.html_content);

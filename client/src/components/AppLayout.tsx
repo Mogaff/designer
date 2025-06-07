@@ -26,7 +26,8 @@ import {
   Palette,
   Search,
   Lightbulb,
-  Calendar
+  Calendar,
+  FileText
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -149,6 +150,17 @@ export default function AppLayout({ children }: AppLayoutProps) {
                     <Button variant="ghost" className={`w-full justify-start ${location === '/social-scheduler' ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white hover:bg-white/10'}`}>
                       <Calendar className="h-5 w-5" />
                       <span className="sidebar-text ml-2">Social Planner</span>
+                    </Button>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href="/templates">
+                    <Button variant="ghost" className={`w-full justify-start ${location === '/templates' ? 'bg-white/10 text-white' : 'text-white/70 hover:text-white hover:bg-white/10'}`}>
+                      <FileText className="h-5 w-5" />
+                      <span className="sidebar-text ml-2">Template Library</span>
                     </Button>
                   </Link>
                 </SidebarMenuButton>

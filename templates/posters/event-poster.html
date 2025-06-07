@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Poster Template</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+    <style>
+        .poster-gradient {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+        }
+        .text-glow {
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+        }
+        .geometric-pattern {
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 2px, transparent 2px),
+                radial-gradient(circle at 75% 75%, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 p-8">
+    <div class="max-w-2xl mx-auto bg-black rounded-3xl overflow-hidden shadow-2xl">
+        <!-- Header Section -->
+        <div class="poster-gradient geometric-pattern relative p-12 text-white text-center">
+            <div class="absolute inset-0 bg-black bg-opacity-20"></div>
+            <div class="relative z-10">
+                <div class="text-sm font-semibold mb-4 text-white text-opacity-80">
+                    {{EVENT_DATE}} • {{EVENT_TIME}}
+                </div>
+                <h1 class="text-6xl font-black mb-4 text-glow leading-tight">
+                    {{EVENT_TITLE}}
+                </h1>
+                <p class="text-xl text-white text-opacity-90 mb-6">
+                    {{EVENT_SUBTITLE}}
+                </p>
+                <div class="inline-block bg-white bg-opacity-20 backdrop-blur-sm rounded-full px-6 py-2">
+                    <span class="font-bold">{{VENUE_NAME}}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Section -->
+        <div class="bg-white p-12">
+            <div class="grid grid-cols-2 gap-8 mb-8">
+                <!-- Left Column -->
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800 mb-3">Featured Artists</h3>
+                        <div class="space-y-2">
+                            <div class="text-gray-700">{{ARTIST_1}}</div>
+                            <div class="text-gray-700">{{ARTIST_2}}</div>
+                            <div class="text-gray-700">{{ARTIST_3}}</div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800 mb-3">Location</h3>
+                        <div class="text-gray-700">
+                            <div class="font-semibold">{{VENUE_NAME}}</div>
+                            <div class="text-sm">{{VENUE_ADDRESS}}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800 mb-3">Tickets</h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-700">Early Bird</span>
+                                <span class="font-semibold">{{EARLY_BIRD_PRICE}}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-700">Regular</span>
+                                <span class="font-semibold">{{REGULAR_PRICE}}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-700">VIP</span>
+                                <span class="font-semibold">{{VIP_PRICE}}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800 mb-3">Schedule</h3>
+                        <div class="space-y-1 text-sm text-gray-700">
+                            <div>{{SCHEDULE_1}}</div>
+                            <div>{{SCHEDULE_2}}</div>
+                            <div>{{SCHEDULE_3}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-3">About the Event</h3>
+                <p class="text-gray-700 leading-relaxed">
+                    {{EVENT_DESCRIPTION}}
+                </p>
+            </div>
+
+            <!-- Call to Action -->
+            <div class="text-center">
+                <button class="poster-gradient text-white font-bold py-4 px-8 rounded-full text-lg hover:shadow-lg transition duration-300">
+                    {{CTA_TEXT}}
+                </button>
+                <div class="mt-4 text-sm text-gray-600">
+                    {{CONTACT_INFO}}
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="bg-gray-900 text-white text-center py-6">
+            <div class="text-sm">
+                Presented by <span class="font-semibold">{{ORGANIZER_NAME}}</span>
+            </div>
+            <div class="text-xs text-gray-400 mt-1">
+                {{WEBSITE}} • {{SOCIAL_MEDIA}}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
