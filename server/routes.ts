@@ -1630,7 +1630,7 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
     }
   });
 
-  // Generate template preview using HTML to Canvas conversion
+  // Generate template preview using html2canvas
   app.get("/api/templates/:templateId/preview", async (req: Request, res: Response) => {
     try {
       const { templateId } = req.params;
@@ -1644,32 +1644,36 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
       const sampleContent = await templateManager.generateSampleContent(template.placeholders);
       let previewHtml = templateManager.replacePlaceholders(template.htmlContent, sampleContent);
 
-      // Create a simple SVG placeholder image for templates
-      const templateName = template.name || 'Template';
-      const category = template.category || 'General';
-      
-      const svgContent = `
-        <svg width="400" height="300" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#4f46e5;stop-opacity:1" />
-              <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1" />
-            </linearGradient>
-          </defs>
-          <rect width="400" height="300" fill="url(#bg)"/>
-          <rect x="20" y="20" width="360" height="260" rx="8" fill="white" fill-opacity="0.95"/>
-          <rect x="40" y="40" width="320" height="40" rx="4" fill="#4f46e5" fill-opacity="0.8"/>
-          <rect x="40" y="100" width="240" height="20" rx="2" fill="#6b7280" fill-opacity="0.6"/>
-          <rect x="40" y="130" width="180" height="15" rx="2" fill="#6b7280" fill-opacity="0.4"/>
-          <rect x="40" y="180" width="120" height="30" rx="4" fill="#059669"/>
-          <text x="200" y="250" text-anchor="middle" fill="#374151" font-family="Arial, sans-serif" font-size="14" font-weight="bold">${templateName}</text>
-          <text x="200" y="270" text-anchor="middle" fill="#6b7280" font-family="Arial, sans-serif" font-size="12">${category}</text>
-        </svg>
+      // Return the actual HTML template with proper scaling for preview
+      const fullHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <script src="https://cdn.tailwindcss.com"></script>
+          <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+          <style>
+            body { 
+              margin: 0; 
+              padding: 0;
+              transform: scale(0.25);
+              transform-origin: top left;
+              width: 400%;
+              height: 400%;
+              overflow: hidden;
+            }
+          </style>
+        </head>
+        <body>
+          ${previewHtml}
+        </body>
+        </html>
       `;
 
-      res.setHeader('Content-Type', 'image/svg+xml');
+      res.setHeader('Content-Type', 'text/html');
       res.setHeader('Cache-Control', 'public, max-age=3600');
-      res.send(svgContent);
+      res.send(fullHtml);
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";

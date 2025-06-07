@@ -182,13 +182,15 @@ export default function TemplateBrowser() {
                   {/* Template Preview */}
                   <div className="px-6 mb-4">
                     <div className="w-full h-40 bg-gray-100 rounded-lg overflow-hidden border">
-                      <img 
+                      <iframe 
                         src={`/api/templates/${encodeURIComponent(template.id)}/preview`}
-                        alt={`${template.name} preview`}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMDAgMTUwTDI1MCAyMDBIMTUwTDIwMCAxNTBaIiBmaWxsPSIjOUM4OEFBIi8+CjwvdGc+';
+                        title={`${template.name} preview`}
+                        className="w-full h-full border-0"
+                        style={{ 
+                          pointerEvents: 'none',
+                          background: '#f3f4f6'
                         }}
+                        loading="lazy"
                       />
                     </div>
                   </div>

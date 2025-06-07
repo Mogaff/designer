@@ -484,8 +484,7 @@ class TemplateManager {
       'PAGE_TITLE': 'Welcome to Our Platform',
       'PAGE_DESCRIPTION': 'Discover amazing features and capabilities',
       
-      // Product Card Data
-      'PRODUCT_CATEGORY': 'Electronics',
+      // Additional Product Card Data
       'PRODUCT_RATING': '4.8',
       'PRODUCT_PRICE': '299.99',
       'ADD_TO_CART_TEXT': 'Add to Cart',
