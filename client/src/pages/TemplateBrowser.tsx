@@ -97,7 +97,19 @@ export default function TemplateBrowser() {
         headers: { 'Content-Type': 'application/json' }
       });
       
-      if (!response.ok) throw new Error('Failed to generate template');
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Template generation failed:', errorText);
+        throw new Error(`Failed to generate template: ${response.status}`);
+      }
+      
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const responseText = await response.text();
+        console.error('Non-JSON response received:', responseText);
+        throw new Error('Server returned invalid response format');
+      }
+      
       return response.json();
     },
     onSuccess: (data) => {
