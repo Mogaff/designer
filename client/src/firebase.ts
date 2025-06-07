@@ -34,8 +34,19 @@ export {
 };
 
 // Call this function when the user clicks on the "Login" button
-export function login() {
-  signInWithRedirect(auth, provider);
+export async function login() {
+  try {
+    console.log('Firebase config check:', {
+      apiKey: import.meta.env.VITE_FIREBASE_API_KEY ? 'Present' : 'Missing',
+      projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID ? 'Present' : 'Missing',
+      appId: import.meta.env.VITE_FIREBASE_APP_ID ? 'Present' : 'Missing'
+    });
+    
+    await signInWithRedirect(auth, provider);
+  } catch (error) {
+    console.error('Firebase login error:', error);
+    throw error;
+  }
 }
 
 // Call this function on page load when the user is redirected back to your site

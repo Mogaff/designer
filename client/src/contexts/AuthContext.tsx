@@ -38,9 +38,9 @@ export const useAuth = () => useContext(AuthContext);
 
 // Provider component
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  // Authentication enabled to use Firebase
-  // Set AUTH_ENABLED to false to use mock user
-  const AUTH_ENABLED = true;
+  // Authentication temporarily disabled until Firebase domain is authorized
+  // Set AUTH_ENABLED to true once Firebase is properly configured
+  const AUTH_ENABLED = false;
   
   const mockUser: User = {
     uid: 'temp-user-123',
@@ -189,8 +189,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       console.log('Starting Google sign-in with redirect...');
       
-      // Use the login function from firebase.ts
-      login();
+      // Use the login function from firebase.ts with proper error handling
+      await login();
       
       // The page will redirect to Google and then back to our app
       // The result will be handled in useEffect below
@@ -201,10 +201,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       // Better error messages for common errors
       if (error.code === 'auth/unauthorized-domain') {
-        errorMessage = 'Authentication problem: This domain must be authorized in the Firebase console.';
+        errorMessage = 'This domain must be authorized in Firebase. Please add this domain to your Firebase project settings.';
         console.error('Domain not authorized:', window.location.origin);
+      } else if (error.code === 'auth/invalid-api-key') {
+        errorMessage = 'Invalid Firebase API key. Please check your Firebase configuration.';
+      } else if (error.code === 'auth/configuration-not-found') {
+        errorMessage = 'Firebase project not found. Please check your project ID.';
       } else if (error.code) {
         errorMessage = `Authentication error: ${error.code}`;
+      } else if (error.message) {
+        errorMessage = error.message;
       }
       
       toast({
