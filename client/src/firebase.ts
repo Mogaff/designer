@@ -2,9 +2,8 @@ import { initializeApp } from "firebase/app";
 import { 
   getAuth, 
   signInWithRedirect, 
-  signInWithPopup,
   GoogleAuthProvider, 
-  getRedirectResult, 
+  getRedirectResult,
   onAuthStateChanged,
   signOut,
   createUserWithEmailAndPassword,
@@ -22,23 +21,30 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-export const googleProvider = new GoogleAuthProvider();
 
-export function login() {
-  signInWithRedirect(auth, googleProvider);
-}
+const provider = new GoogleAuthProvider();
 
-export function handleRedirect() {
-  return getRedirectResult(auth);
-}
-
+// Export all Firebase auth functions for use in components
 export { 
   onAuthStateChanged, 
-  signInWithRedirect,
-  signInWithPopup,
-  getRedirectResult,
-  signOut as firebaseSignOut,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  updateProfile
+  signOut, 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  updateProfile 
 };
+
+// Call this function when the user clicks on the "Login" button
+export function login() {
+  signInWithRedirect(auth, provider);
+}
+
+// Call this function on page load when the user is redirected back to your site
+export async function handleRedirect() {
+  try {
+    const result = await getRedirectResult(auth);
+    return result;
+  } catch (error) {
+    console.error('Redirect handling error:', error);
+    throw error;
+  }
+}

@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { auth, login, handleRedirect, onAuthStateChanged } from '../firebase';
+import { auth, login, handleRedirect, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from '../firebase';
 import type { User as FirebaseUser } from 'firebase/auth';
+import { apiRequest } from '@/lib/queryClient';
 
 // Types for our auth context
 type User = {
@@ -188,8 +189,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       console.log('Starting Google sign-in with redirect...');
       
-      // Use redirect method instead of popup
-      await signInWithRedirect(auth, googleProvider);
+      // Use the login function from firebase.ts
+      login();
       
       // The page will redirect to Google and then back to our app
       // The result will be handled in useEffect below

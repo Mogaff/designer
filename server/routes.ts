@@ -1612,9 +1612,7 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
           password: '', // No password for OAuth users
           firebase_uid: uid,
           email,
-          display_name: displayName || email.split('@')[0],
-          credits_balance: 100, // Give new users 100 credits
-          is_premium: false
+          display_name: displayName || email.split('@')[0]
         });
       } else {
         // Update existing user credits if needed
