@@ -175,6 +175,23 @@ class TemplateManager {
 
 
   /**
+   * Extract placeholder variables from HTML content
+   */
+  private extractPlaceholders(htmlContent: string): string[] {
+    const placeholderRegex = /\{\{([^}]+)\}\}/g;
+    const placeholders: string[] = [];
+    let match;
+
+    while ((match = placeholderRegex.exec(htmlContent)) !== null) {
+      if (!placeholders.includes(match[1])) {
+        placeholders.push(match[1]);
+      }
+    }
+
+    return placeholders;
+  }
+
+  /**
    * Analyze template features based on CSS classes and content
    */
   private analyzeFeatures(htmlContent: string): Template['features'] {

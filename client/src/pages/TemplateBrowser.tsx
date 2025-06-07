@@ -1,20 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
 
 interface Template {
   id: string;
   name: string;
-  category: string;
   description: string;
+  category: string;
   placeholders: string[];
   features: {
     glassMorphism: boolean;
@@ -33,20 +33,22 @@ interface TemplateCategory {
 interface BrandKit {
   id: number;
   name: string;
-  primary_color: string;
-  secondary_color: string;
+  logo?: string;
+  primaryColor: string;
+  secondaryColor?: string;
+  fontFamily: string;
+  isActive: boolean;
 }
 
 export default function TemplateBrowser() {
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [prompt, setPrompt] = useState('');
   const [selectedBrandKit, setSelectedBrandKit] = useState<string>('');
   const [generatedHtml, setGeneratedHtml] = useState<string>('');
   const { toast } = useToast();
 
-  // Fetch template categories
-  const { data: categoriesData } = useQuery({
+  const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
     queryKey: ['/api/templates/categories'],
     queryFn: async () => {
       const response = await fetch('/api/templates/categories');
@@ -55,18 +57,18 @@ export default function TemplateBrowser() {
     }
   });
 
-  // Fetch templates
-  const { data: templatesData, refetch: refetchTemplates } = useQuery({
+  const { data: templatesData, isLoading: templatesLoading } = useQuery({
     queryKey: ['/api/templates', selectedCategory],
     queryFn: async () => {
-      const url = `/api/templates${selectedCategory ? `?category=${selectedCategory}` : ''}`;
+      const url = selectedCategory 
+        ? `/api/templates?category=${selectedCategory}`
+        : '/api/templates';
       const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch templates');
       return response.json();
     }
   });
 
-  // Fetch brand kits
   const { data: brandKitsData } = useQuery({
     queryKey: ['/api/brand-kits'],
     queryFn: async () => {
@@ -76,12 +78,15 @@ export default function TemplateBrowser() {
     }
   });
 
-  // Generate template mutation
   const generateMutation = useMutation({
-    mutationFn: async ({ templateId, prompt, brandKitId }: { 
+    mutationFn: async ({ 
+      templateId, 
+      prompt, 
+      brandKitId 
+    }: { 
       templateId: string; 
       prompt: string; 
-      brandKitId?: string 
+      brandKitId?: string;
     }) => {
       const payload: any = { prompt };
       if (brandKitId) payload.brand_kit_id = brandKitId;
@@ -142,179 +147,183 @@ export default function TemplateBrowser() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Template Library
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Choose from our curated collection of professional templates powered by Tailwind CSS, DaisyUI, and Flowbite
-          </p>
-        </div>
-
-        <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-8">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="">All Templates</TabsTrigger>
-            {categories.map((category: TemplateCategory) => (
-              <TabsTrigger key={category.id} value={category.id}>
-                {category.name}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          <TabsContent value={selectedCategory} className="mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {templates.map((template: Template) => (
-                <Card key={template.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-lg">{template.name}</CardTitle>
-                        <CardDescription className="mt-1">
-                          {template.description}
-                        </CardDescription>
-                      </div>
-                      <Badge variant="outline">{template.category}</Badge>
-                    </div>
-                  </CardHeader>
-                  
-                  {/* Template Preview */}
-                  <div className="px-6 mb-4">
-                    <div className="w-full h-40 bg-gray-100 rounded-lg overflow-hidden border">
-                      <iframe 
-                        src={`/api/templates/${encodeURIComponent(template.id)}/preview`}
-                        title={`${template.name} preview`}
-                        className="w-full h-full border-0"
-                        style={{ 
-                          pointerEvents: 'none',
-                          background: '#f8fafc'
-                        }}
-                        loading="lazy"
-                      />
-                    </div>
-                  </div>
-                  
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex flex-wrap gap-2">
-                        {renderFeatureBadges(template.features)}
-                      </div>
-                      
-                      <div className="text-sm text-gray-600">
-                        <strong>Placeholders:</strong> {template.placeholders.length} fields
-                      </div>
-
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button 
-                            className="w-full"
-                            onClick={() => setSelectedTemplate(template)}
-                          >
-                            Use Template
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-2xl">
-                          <DialogHeader>
-                            <DialogTitle>Generate with {template.name}</DialogTitle>
-                            <DialogDescription>
-                              Create your design using this template. Describe what you want to create.
-                            </DialogDescription>
-                          </DialogHeader>
-                          
-                          <div className="space-y-4">
-                            <div>
-                              <label className="text-sm font-medium mb-2 block">
-                                Prompt (describe your design)
-                              </label>
-                              <Textarea
-                                placeholder="E.g., Create a flyer for a bakery grand opening with warm colors..."
-                                value={prompt}
-                                onChange={(e) => setPrompt(e.target.value)}
-                                rows={3}
-                              />
-                            </div>
-
-                            {brandKits.length > 0 && (
-                              <div>
-                                <label className="text-sm font-medium mb-2 block">
-                                  Brand Kit (optional)
-                                </label>
-                                <Select value={selectedBrandKit} onValueChange={setSelectedBrandKit}>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Choose a brand kit" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="none">No brand kit</SelectItem>
-                                    {brandKits.map((kit: BrandKit) => (
-                                      <SelectItem key={kit.id} value={kit.id.toString()}>
-                                        {kit.name}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                            )}
-
-                            <div className="bg-gray-50 p-4 rounded-lg">
-                              <h4 className="font-medium mb-2">Template Fields:</h4>
-                              <div className="flex flex-wrap gap-2">
-                                {template.placeholders.map((placeholder) => (
-                                  <Badge key={placeholder} variant="outline" className="text-xs">
-                                    {placeholder}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-
-                            <Button 
-                              onClick={handleGenerate}
-                              disabled={generateMutation.isPending}
-                              className="w-full"
-                            >
-                              {generateMutation.isPending ? 'Generating...' : 'Generate Design'}
-                            </Button>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-        </Tabs>
-
-        {generatedHtml && (
-          <div className="mt-8">
-            <h2 className="text-2xl font-bold mb-4">Generated Design</h2>
-            <div className="bg-gray-100 p-4 rounded-lg">
-              <iframe
-                srcDoc={generatedHtml}
-                className="w-full h-96 border rounded"
-                title="Generated Template"
-              />
-            </div>
-            <div className="mt-4 flex gap-4">
-              <Button 
-                onClick={() => {
-                  const blob = new Blob([generatedHtml], { type: 'text/html' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = 'generated-design.html';
-                  a.click();
-                  URL.revokeObjectURL(url);
-                }}
-              >
-                Download HTML
-              </Button>
-              <Button variant="outline">
-                Generate PNG
-              </Button>
-            </div>
+    <div className="min-h-screen relative">
+      {/* Glass blur background matching create design tab */}
+      <div className="fixed inset-0 bg-gradient-to-br from-blue-50/80 via-white/40 to-purple-50/80 backdrop-blur-sm"></div>
+      
+      <div className="relative z-10 container mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Template Library
+            </h1>
+            <p className="text-lg text-gray-700 max-w-2xl mx-auto">
+              Choose from our curated collection of professional templates powered by Tailwind CSS, DaisyUI, and Flowbite
+            </p>
           </div>
-        )}
+
+          <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-8">
+            <TabsList className="grid w-full grid-cols-6 bg-white/20 backdrop-blur-md border-white/20">
+              <TabsTrigger value="">All Templates</TabsTrigger>
+              {categories.map((category: TemplateCategory) => (
+                <TabsTrigger key={category.id} value={category.id}>
+                  {category.name}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            <TabsContent value={selectedCategory} className="mt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {templates.map((template: Template) => (
+                  <Card key={template.id} className="hover:shadow-lg transition-shadow cursor-pointer bg-white/60 backdrop-blur-sm border-white/30">
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-lg text-gray-800">{template.name}</CardTitle>
+                          <CardDescription className="mt-1 text-gray-600">
+                            {template.description}
+                          </CardDescription>
+                        </div>
+                        <Badge variant="outline" className="bg-white/40">{template.category}</Badge>
+                      </div>
+                    </CardHeader>
+                    
+                    {/* Template Preview */}
+                    <div className="px-6 mb-4">
+                      <div className="w-full h-40 bg-gray-100/50 rounded-lg overflow-hidden border border-white/30">
+                        <iframe 
+                          src={`/api/templates/${encodeURIComponent(template.id)}/preview`}
+                          title={`${template.name} preview`}
+                          className="w-full h-full border-0"
+                          style={{ 
+                            pointerEvents: 'none',
+                            background: '#f8fafc'
+                          }}
+                          loading="lazy"
+                        />
+                      </div>
+                    </div>
+                    
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex flex-wrap gap-2">
+                          {renderFeatureBadges(template.features)}
+                        </div>
+                        
+                        <div className="text-sm text-gray-600">
+                          <span className="font-medium">Placeholders:</span> {template.placeholders.length} fields
+                        </div>
+
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button 
+                              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                              onClick={() => setSelectedTemplate(template)}
+                            >
+                              Use Template
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-2xl bg-white/90 backdrop-blur-md border-white/30">
+                            <DialogHeader>
+                              <DialogTitle>Generate with {template.name}</DialogTitle>
+                              <DialogDescription>
+                                Enter your prompt and customize the template with your content
+                              </DialogDescription>
+                            </DialogHeader>
+                            
+                            <div className="space-y-4 mt-4">
+                              <div>
+                                <Label htmlFor="prompt">Content Prompt</Label>
+                                <Textarea
+                                  id="prompt"
+                                  placeholder="Describe what you want to create... (e.g., 'A summer music festival flyer for electronic music')"
+                                  value={prompt}
+                                  onChange={(e) => setPrompt(e.target.value)}
+                                  rows={4}
+                                  className="bg-white/50"
+                                />
+                              </div>
+
+                              {brandKits.length > 0 && (
+                                <div>
+                                  <Label htmlFor="brandKit">Brand Kit (Optional)</Label>
+                                  <Select value={selectedBrandKit} onValueChange={setSelectedBrandKit}>
+                                    <SelectTrigger className="bg-white/50">
+                                      <SelectValue placeholder="Choose a brand kit" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="none">No brand kit</SelectItem>
+                                      {brandKits.map((kit: BrandKit) => (
+                                        <SelectItem key={kit.id} value={kit.id.toString()}>
+                                          {kit.name}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              )}
+
+                              <div className="bg-gray-50/50 p-4 rounded-lg">
+                                <h4 className="font-medium mb-2 text-gray-800">Template Fields:</h4>
+                                <div className="flex flex-wrap gap-2">
+                                  {template.placeholders.map((placeholder) => (
+                                    <Badge key={placeholder} variant="outline" className="text-xs bg-white/40">
+                                      {placeholder}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+
+                              <Button 
+                                onClick={handleGenerate}
+                                disabled={generateMutation.isPending}
+                                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                              >
+                                {generateMutation.isPending ? 'Generating...' : 'Generate Design'}
+                              </Button>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          {generatedHtml && (
+            <div className="mt-8">
+              <h2 className="text-2xl font-bold mb-4 text-gray-800">Generated Design</h2>
+              <div className="bg-white/60 backdrop-blur-sm p-4 rounded-lg border border-white/30">
+                <iframe
+                  srcDoc={generatedHtml}
+                  className="w-full h-96 border rounded"
+                  title="Generated Template"
+                />
+              </div>
+              <div className="mt-4 flex gap-4">
+                <Button 
+                  onClick={() => {
+                    const blob = new Blob([generatedHtml], { type: 'text/html' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'generated-design.html';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                >
+                  Download HTML
+                </Button>
+                <Button variant="outline" className="bg-white/40 border-white/30">
+                  Generate PNG
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
