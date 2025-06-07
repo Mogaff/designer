@@ -1576,12 +1576,11 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
   <style>
     body { margin: 0; padding: 8px; font-family: Arial, sans-serif; background: #f8fafc; }
     .preview-container { transform: scale(0.3); transform-origin: top left; width: 333%; height: 333%; }
-    ${template.styles || ''}
   </style>
 </head>
 <body>
   <div class="preview-container">
-    ${template.html}
+    ${template.htmlContent}
   </div>
 </body>
 </html>`;

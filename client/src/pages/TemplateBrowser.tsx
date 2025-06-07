@@ -94,7 +94,11 @@ export default function TemplateBrowser() {
       const response = await fetch(`/api/templates/${templateId}/generate`, {
         method: 'POST',
         body: JSON.stringify(payload),
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        credentials: 'include' // Include cookies for session handling
       });
       
       if (!response.ok) {
