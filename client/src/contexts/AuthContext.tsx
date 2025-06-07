@@ -38,9 +38,8 @@ export const useAuth = () => useContext(AuthContext);
 
 // Provider component
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  // Authentication temporarily disabled until Firebase domain is authorized
-  // Set AUTH_ENABLED to true once Firebase is properly configured
-  const AUTH_ENABLED = false;
+  // Authentication enabled for live system
+  const AUTH_ENABLED = true;
   
   const mockUser: User = {
     uid: 'temp-user-123',

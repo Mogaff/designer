@@ -1,4 +1,4 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { 
   getAuth, 
   signInWithRedirect, 
@@ -15,11 +15,21 @@ const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebasestorage.app`,
+  storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.appspot.com`,
+  messagingSenderId: "123456789",
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
+console.log('Firebase Config:', {
+  hasApiKey: !!import.meta.env.VITE_FIREBASE_API_KEY,
+  hasProjectId: !!import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  hasAppId: !!import.meta.env.VITE_FIREBASE_APP_ID,
+  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`
+});
+
+// Initialize Firebase app or use existing one
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+
 export const auth = getAuth(app);
 
 const provider = new GoogleAuthProvider();
@@ -36,10 +46,18 @@ export {
 // Call this function when the user clicks on the "Login" button
 export async function login() {
   try {
-    console.log('Firebase config check:', {
-      apiKey: import.meta.env.VITE_FIREBASE_API_KEY ? 'Present' : 'Missing',
-      projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID ? 'Present' : 'Missing',
-      appId: import.meta.env.VITE_FIREBASE_APP_ID ? 'Present' : 'Missing'
+    console.log('Initiating Firebase Google sign-in...');
+    
+    // Check if Firebase is properly configured
+    if (!import.meta.env.VITE_FIREBASE_API_KEY || !import.meta.env.VITE_FIREBASE_PROJECT_ID) {
+      throw new Error('Firebase configuration missing. Please check environment variables.');
+    }
+    
+    // Add additional provider options for better compatibility
+    provider.addScope('email');
+    provider.addScope('profile');
+    provider.setCustomParameters({
+      prompt: 'select_account'
     });
     
     await signInWithRedirect(auth, provider);

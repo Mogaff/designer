@@ -1,7 +1,7 @@
 import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcryptjs';
-import { storage } from './storage';
+import { storage } from './storage-simple';
 import type { User } from '@shared/schema';
 import { Request, Response, NextFunction } from 'express';
 
@@ -54,8 +54,7 @@ export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, salt);
 }
 
-// Authentication middleware with bypass option
-// TEMPORARY: Set AUTH_ENABLED to true to restore normal authentication
+// Authentication middleware - always enabled for production
 const AUTH_ENABLED = true;
 
 // Mock user for temporary authentication bypass
