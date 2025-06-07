@@ -42,6 +42,11 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
             {isSigningIn ? 'Signing in...' : 'Continue with Google'}
           </Button>
           
+          <div className="text-center text-xs text-white/50 bg-white/10 p-2 rounded">
+            If Google login fails, add this domain to Firebase:<br />
+            <code className="text-white/70">a394d6be-d839-4ac3-b040-85f112dce593-00-1ycygq1q10mdo.riker.replit.dev</code>
+          </div>
+          
           <div className="text-center text-sm text-white/60">
             New users get 100 credits • Premium users get unlimited access
           </div>

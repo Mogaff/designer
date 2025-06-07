@@ -200,8 +200,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       // Better error messages for common errors
       if (error.code === 'auth/unauthorized-domain') {
-        errorMessage = 'This domain must be authorized in Firebase. Please add this domain to your Firebase project settings.';
-        console.error('Domain not authorized:', window.location.origin);
+        const currentDomain = window.location.origin;
+        errorMessage = `Domain authorization required. Add ${currentDomain} to Firebase Console > Authentication > Settings > Authorized domains`;
+        console.error('Domain not authorized:', currentDomain);
+        
+        // Show detailed instructions
+        toast({
+          title: 'Firebase Setup Required',
+          description: `Go to Firebase Console > Authentication > Settings > Authorized domains and add: ${currentDomain}`,
+          variant: 'destructive',
+        });
       } else if (error.code === 'auth/invalid-api-key') {
         errorMessage = 'Invalid Firebase API key. Please check your Firebase configuration.';
       } else if (error.code === 'auth/configuration-not-found') {
