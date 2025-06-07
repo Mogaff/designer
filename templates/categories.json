@@ -1,0 +1,29 @@
+{
+  "categories": [
+    {
+      "id": "flyers",
+      "name": "Flyers",
+      "description": "Event announcements, business promotions, and informational flyers"
+    },
+    {
+      "id": "ads",
+      "name": "Advertisements",
+      "description": "Display ads, social media ads, and promotional banners"
+    },
+    {
+      "id": "social-posts",
+      "name": "Social Media Posts",
+      "description": "Instagram posts, Facebook graphics, and social media content"
+    },
+    {
+      "id": "business-cards",
+      "name": "Business Cards",
+      "description": "Professional business card designs"
+    },
+    {
+      "id": "posters",
+      "name": "Posters",
+      "description": "Large format promotional and informational posters"
+    }
+  ]
+}

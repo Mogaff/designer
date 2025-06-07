@@ -2,7 +2,12 @@ import type { Config } from "tailwindcss";
 
 export default {
   darkMode: ["class"],
-  content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
+  content: [
+    "./client/index.html", 
+    "./client/src/**/*.{js,jsx,ts,tsx}",
+    "./templates/**/*.html",
+    "./node_modules/flowbite/**/*.js"
+  ],
   theme: {
     extend: {
       borderRadius: {
@@ -108,14 +113,29 @@ export default {
           '0%': { opacity: '0', transform: 'translateY(-5px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' }
         },
+        'gradient': {
+          '0%, 100%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+        },
+        'float': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "pulse-slow": "pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         "fadeIn": "fadeIn 0.3s ease-in-out forwards",
+        'gradient': 'gradient 8s ease infinite',
+        'float': 'float 6s ease-in-out infinite',
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
+  plugins: [
+    require("tailwindcss-animate"), 
+    require("@tailwindcss/typography"),
+    require("daisyui"),
+    require("flowbite/plugin")
+  ],
 } satisfies Config;
