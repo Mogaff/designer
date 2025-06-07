@@ -1556,6 +1556,44 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
     }
   });
 
+  // Get template preview HTML
+  app.get("/api/templates/:templateId/preview", async (req: Request, res: Response) => {
+    try {
+      const { templateId } = req.params;
+      const template = await templateManager.loadTemplate(templateId);
+      
+      if (!template) {
+        return res.status(404).send('<div style="padding: 20px; text-align: center; color: #666;">Template not found</div>');
+      }
+      
+      // Return the raw HTML with inline styles for preview
+      const previewHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { margin: 0; padding: 8px; font-family: Arial, sans-serif; background: #f8fafc; }
+    .preview-container { transform: scale(0.3); transform-origin: top left; width: 333%; height: 333%; }
+    ${template.styles || ''}
+  </style>
+</head>
+<body>
+  <div class="preview-container">
+    ${template.html}
+  </div>
+</body>
+</html>`;
+      
+      res.setHeader('Content-Type', 'text/html');
+      res.send(previewHtml);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).send(`<div style="padding: 20px; text-align: center; color: #666;">Preview error: ${errorMessage}</div>`);
+    }
+  });
+
   // Generate design using template
   app.post("/api/templates/:templateId/generate", async (req: Request, res: Response) => {
     try {
