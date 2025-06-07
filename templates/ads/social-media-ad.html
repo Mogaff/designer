@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Ad Template</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+    <style>
+        .neon-glow {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5), 0 0 40px rgba(59, 130, 246, 0.3);
+        }
+        .gradient-text {
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body class="bg-black p-8">
+    <div class="max-w-sm mx-auto bg-gradient-to-br from-gray-900 to-black rounded-3xl overflow-hidden neon-glow">
+        <!-- Hero Image Section -->
+        <div class="relative h-64 bg-gradient-to-br from-blue-600 to-purple-700">
+            <div class="absolute inset-0 bg-black bg-opacity-20"></div>
+            <div class="relative z-10 p-6 h-full flex items-center justify-center">
+                <div class="text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <h2 class="text-white text-xl font-bold">{{BRAND_NAME}}</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Section -->
+        <div class="p-6">
+            <div class="space-y-4">
+                <h1 class="text-2xl font-bold gradient-text">{{AD_HEADLINE}}</h1>
+                
+                <p class="text-gray-300 text-sm leading-relaxed">
+                    {{AD_DESCRIPTION}}
+                </p>
+
+                <!-- Stats or Features -->
+                <div class="grid grid-cols-2 gap-4 mt-6">
+                    <div class="text-center p-3 bg-gray-800 rounded-lg">
+                        <div class="text-2xl font-bold text-blue-400">{{STAT_1_VALUE}}</div>
+                        <div class="text-xs text-gray-400">{{STAT_1_LABEL}}</div>
+                    </div>
+                    <div class="text-center p-3 bg-gray-800 rounded-lg">
+                        <div class="text-2xl font-bold text-purple-400">{{STAT_2_VALUE}}</div>
+                        <div class="text-xs text-gray-400">{{STAT_2_LABEL}}</div>
+                    </div>
+                </div>
+
+                <!-- Offer Badge -->
+                <div class="text-center py-2">
+                    <span class="inline-block bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-xs font-bold px-4 py-2 rounded-full">
+                        {{OFFER_TEXT}}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="px-6 pb-6">
+            <button class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-4 rounded-2xl transition duration-300 shadow-lg">
+                {{CTA_TEXT}}
+            </button>
+            <p class="text-center text-xs text-gray-500 mt-3">{{TERMS_CONDITIONS}}</p>
+        </div>
+    </div>
+</body>
+</html>

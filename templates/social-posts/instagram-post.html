@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Post Template</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+    <style>
+        .instagram-gradient {
+            background: linear-gradient(45deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d);
+        }
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="w-80 h-80 mx-auto instagram-gradient rounded-3xl p-1">
+        <div class="w-full h-full bg-white rounded-3xl overflow-hidden relative">
+            <!-- Background Pattern -->
+            <div class="absolute inset-0 opacity-10">
+                <div class="w-full h-full bg-gradient-to-br from-pink-200 to-purple-200"></div>
+            </div>
+            
+            <!-- Content Container -->
+            <div class="relative z-10 h-full flex flex-col justify-between p-6">
+                <!-- Header -->
+                <div class="flex items-center justify-between">
+                    <div class="glass-morphism p-2 rounded-full">
+                        <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 2L13 7L18 7L14.5 11L16 16L10 13L4 16L5.5 11L2 7L7 7L10 2Z"/>
+                        </svg>
+                    </div>
+                    <span class="text-xs font-semibold text-gray-600 glass-morphism px-3 py-1 rounded-full">
+                        {{POST_TYPE}}
+                    </span>
+                </div>
+
+                <!-- Main Content -->
+                <div class="text-center space-y-4">
+                    <h1 class="text-2xl font-bold text-gray-800 leading-tight">{{POST_HEADLINE}}</h1>
+                    
+                    <p class="text-gray-600 text-sm leading-relaxed max-w-xs mx-auto">
+                        {{POST_CONTENT}}
+                    </p>
+
+                    <!-- Hashtags -->
+                    <div class="text-xs text-purple-600 font-medium">
+                        {{HASHTAGS}}
+                    </div>
+                </div>
+
+                <!-- Footer CTA -->
+                <div class="text-center">
+                    <button class="instagram-gradient text-white font-bold py-2 px-6 rounded-full text-sm shadow-lg hover:shadow-xl transition duration-300">
+                        {{CTA_TEXT}}
+                    </button>
+                    <p class="text-xs text-gray-500 mt-2">{{BRAND_HANDLE}}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

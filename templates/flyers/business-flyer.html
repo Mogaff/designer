@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Flyer Template</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .shadow-custom {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-md mx-auto bg-white rounded-xl shadow-custom overflow-hidden">
+        <!-- Header Section -->
+        <div class="gradient-bg px-6 py-8 text-white">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
+                    </svg>
+                </div>
+                <span class="text-sm opacity-90">{{CATEGORY}}</span>
+            </div>
+            <h1 class="text-2xl font-bold mb-2">{{HEADLINE}}</h1>
+            <p class="text-white text-opacity-90 text-sm">{{SUBHEADLINE}}</p>
+        </div>
+
+        <!-- Content Section -->
+        <div class="px-6 py-6">
+            <div class="space-y-4">
+                <div class="text-gray-700 text-sm leading-relaxed">
+                    {{CONTENT}}
+                </div>
+                
+                <!-- Features List -->
+                <div class="space-y-2">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <span class="text-sm text-gray-600">{{FEATURE_1}}</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <span class="text-sm text-gray-600">{{FEATURE_2}}</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <span class="text-sm text-gray-600">{{FEATURE_3}}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="px-6 pb-6">
+            <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md">
+                {{CTA_TEXT}}
+            </button>
+            <div class="text-center mt-3">
+                <p class="text-xs text-gray-500">{{CONTACT_INFO}}</p>
+            </div>
+        </div>
+
+        <!-- Background Image Placeholder -->
+        <div class="hidden" id="background-image">
+            {{BACKGROUND_IMAGE}}
+        </div>
+    </div>
+</body>
+</html>

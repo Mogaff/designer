@@ -16,6 +16,7 @@ import { createCheckoutSession, verifyCheckoutSession, handleStripeWebhook, CRED
 import { registerAdBurstApiRoutes } from "./adburst_factory/adburst_api";
 import { registerEnhancedAdBurstRoutes } from "./adburst_factory/adburst_api_enhanced";
 import { registerCompetitorAdRoutes, registerAdInspirationIntegrationRoutes } from "./competitor_ads/routes";
+import { templateManager } from "./templateManager";
 
 // Using the built-in type definitions from @types/multer
 
