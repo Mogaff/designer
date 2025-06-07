@@ -62,7 +62,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = (req.user as any).id;
       
       // Parse template information if provided
-      let parsedTemplateInfo;
+      let parsedTemplateInfo: any = null;
       if (templateInfo) {
         try {
           parsedTemplateInfo = JSON.parse(templateInfo);
@@ -1511,6 +1511,159 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       res.status(500).json({ message: `Failed to delete post: ${errorMessage}` });
+    }
+  });
+
+  // Template Management API Routes
+  
+  // Get all template categories
+  app.get("/api/templates/categories", async (req: Request, res: Response) => {
+    try {
+      const categories = await templateManager.getCategories();
+      res.json({ categories });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to fetch categories: ${errorMessage}` });
+    }
+  });
+
+  // List templates by category
+  app.get("/api/templates", async (req: Request, res: Response) => {
+    try {
+      const { category } = req.query;
+      const templates = await templateManager.listTemplates(category as string);
+      res.json({ templates });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to fetch templates: ${errorMessage}` });
+    }
+  });
+
+  // Get specific template by ID
+  app.get("/api/templates/:templateId", async (req: Request, res: Response) => {
+    try {
+      const { templateId } = req.params;
+      const template = await templateManager.loadTemplate(templateId);
+      
+      if (!template) {
+        return res.status(404).json({ message: "Template not found" });
+      }
+      
+      res.json({ template });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Failed to fetch template: ${errorMessage}` });
+    }
+  });
+
+  // Generate design using template
+  app.post("/api/templates/:templateId/generate", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const userId = (req.user as any).id;
+      const { templateId } = req.params;
+      const { prompt, brand_kit_id } = req.body;
+
+      if (!prompt) {
+        return res.status(400).json({ message: "Prompt is required" });
+      }
+
+      // Check user credits
+      const user = await storage.getUser(userId);
+      if (!user || user.credits_balance < 1) {
+        return res.status(402).json({ message: "Insufficient credits" });
+      }
+
+      // Get brand kit if specified
+      let brandKit = undefined;
+      if (brand_kit_id) {
+        const fetchedBrandKit = await storage.getBrandKit(parseInt(brand_kit_id));
+        if (!fetchedBrandKit || fetchedBrandKit.user_id !== userId) {
+          return res.status(404).json({ message: "Brand kit not found" });
+        }
+        brandKit = {
+          id: fetchedBrandKit.id.toString(),
+          name: fetchedBrandKit.name,
+          logo: fetchedBrandKit.logo_url || undefined,
+          primaryColor: fetchedBrandKit.primary_color || '#3b82f6',
+          secondaryColor: fetchedBrandKit.secondary_color || '#8b5cf6',
+          fontFamily: fetchedBrandKit.heading_font || 'Default',
+          isActive: fetchedBrandKit.is_active
+        };
+      }
+
+      // Generate content using template
+      const result = await templateManager.generateTemplateContent(templateId, prompt, brandKit);
+      
+      if (!result) {
+        return res.status(404).json({ message: "Template not found" });
+      }
+
+      // Deduct credit
+      await storage.updateUserCredits(userId, user.credits_balance - 1);
+
+      // Save creation record
+      const creation = await storage.createUserCreation({
+        user_id: userId,
+        name: `Template: ${templateId}`,
+        imageUrl: '', // Will be generated when rendered
+        headline: prompt.slice(0, 100),
+        content: prompt,
+        template: templateId,
+        metadata: {
+          templateId,
+          placeholders: result.placeholders,
+          brandKit: brandKit?.id
+        }
+      });
+
+      res.json({
+        success: true,
+        creation_id: creation.id,
+        html_content: result.htmlContent,
+        placeholders: result.placeholders,
+        template_id: templateId
+      });
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Template generation failed: ${errorMessage}` });
+    }
+  });
+
+  // Render template to image
+  app.post("/api/templates/render", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { html_content, width = 800, height = 600 } = req.body;
+
+      if (!html_content) {
+        return res.status(400).json({ message: "HTML content is required" });
+      }
+
+      // Use existing Puppeteer rendering from Claude/Gemini flyers
+      const puppeteer = require('puppeteer');
+      
+      const browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+      });
+
+      const page = await browser.newPage();
+      await page.setViewport({ width: parseInt(width), height: parseInt(height) });
+      await page.setContent(html_content, { waitUntil: 'networkidle0' });
+      
+      const screenshot = await page.screenshot({
+        type: 'png',
+        fullPage: false
+      });
+
+      await browser.close();
+
+      res.setHeader('Content-Type', 'image/png');
+      res.send(screenshot);
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ message: `Template rendering failed: ${errorMessage}` });
     }
   });
 

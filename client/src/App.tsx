@@ -12,6 +12,7 @@ import AdBurst from "@/pages/AdBurst";
 import DesignEditor from "@/pages/DesignEditor";
 import AdInspirationPage from "@/pages/AdInspirationPage";
 import SocialScheduler from "@/pages/SocialScheduler";
+import TemplateBrowser from "@/pages/TemplateBrowser";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { UserSettingsProvider } from "@/contexts/UserSettingsContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -83,6 +84,14 @@ function Router() {
         <ProtectedRoute>
           <AppLayout>
             <SocialScheduler />
+          </AppLayout>
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/templates">
+        <ProtectedRoute>
+          <AppLayout>
+            <TemplateBrowser />
           </AppLayout>
         </ProtectedRoute>
       </Route>
