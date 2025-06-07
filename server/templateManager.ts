@@ -170,50 +170,9 @@ class TemplateManager {
     return result;
   }
 
-  /**
-   * Generate content for template using AI prompt
-   */
-  async generateTemplateContent(templateId: string, prompt: string, brandKit?: BrandKit): Promise<{
-    htmlContent: string;
-    placeholders: Record<string, string>;
-  } | null> {
-    const template = await this.loadTemplate(templateId);
-    if (!template) {
-      throw new Error(`Template ${templateId} not found`);
-    }
 
-    // Generate content based on prompt and template placeholders
-    const placeholders = this.generatePlaceholdersFromPrompt(prompt, template.placeholders);
-    
-    let htmlContent = this.replacePlaceholders(template.htmlContent, placeholders);
-    
-    // Apply brand kit if provided
-    if (brandKit) {
-      htmlContent = this.applyBrandKit(htmlContent, brandKit);
-    }
 
-    return {
-      htmlContent,
-      placeholders
-    };
-  }
 
-  /**
-   * Extract placeholder variables from HTML content
-   */
-  private extractPlaceholders(htmlContent: string): string[] {
-    const placeholderRegex = /\{\{([^}]+)\}\}/g;
-    const placeholders: string[] = [];
-    let match;
-
-    while ((match = placeholderRegex.exec(htmlContent)) !== null) {
-      if (!placeholders.includes(match[1])) {
-        placeholders.push(match[1]);
-      }
-    }
-
-    return placeholders;
-  }
 
   /**
    * Analyze template features based on CSS classes and content
@@ -546,6 +505,34 @@ class TemplateManager {
       default:
         return fallback;
     }
+  }
+
+  /**
+   * Generate template content with AI-powered placeholder replacement
+   */
+  async generateTemplateContent(templateId: string, prompt: string, brandKit?: BrandKit): Promise<{
+    htmlContent: string;
+    placeholders: Record<string, string>;
+  } | null> {
+    const template = await this.loadTemplate(templateId);
+    if (!template) {
+      return null;
+    }
+
+    // Generate content based on prompt and template placeholders
+    const placeholders = this.generatePlaceholdersFromPrompt(prompt, template.placeholders);
+    
+    let htmlContent = this.replacePlaceholders(template.htmlContent, placeholders);
+    
+    // Apply brand kit if provided
+    if (brandKit) {
+      htmlContent = this.applyBrandKit(htmlContent, brandKit);
+    }
+
+    return {
+      htmlContent,
+      placeholders
+    };
   }
 
   /**

@@ -1630,7 +1630,7 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
     }
   });
 
-  // Generate template preview as base64 image
+  // Generate template preview as rendered HTML
   app.get("/api/templates/:templateId/preview", async (req: Request, res: Response) => {
     try {
       const { templateId } = req.params;
@@ -1644,65 +1644,63 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
       const sampleContent = await templateManager.generateSampleContent(template.placeholders);
       let previewHtml = templateManager.replacePlaceholders(template.htmlContent, sampleContent);
 
-      // Create a visual representation using canvas/SVG for reliable previews
-      const templateName = template.name || 'Template';
-      const category = template.category || 'General';
-      
-      // Extract key visual elements from the template for preview
-      const hasGradient = previewHtml.includes('gradient') || previewHtml.includes('bg-gradient');
-      const hasBlue = previewHtml.includes('blue') || previewHtml.includes('bg-blue');
-      const hasGreen = previewHtml.includes('green') || previewHtml.includes('bg-green');
-      const hasPurple = previewHtml.includes('purple') || previewHtml.includes('bg-purple');
-      
-      let primaryColor = '#4f46e5';
-      if (hasGreen) primaryColor = '#059669';
-      else if (hasPurple) primaryColor = '#7c3aed';
-      else if (hasBlue) primaryColor = '#2563eb';
-      
-      const svgPreview = `
-        <svg width="400" height="300" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:${primaryColor};stop-opacity:1" />
-              <stop offset="100%" style="stop-color:#6366f1;stop-opacity:1" />
-            </linearGradient>
-          </defs>
-          <rect width="400" height="300" fill="${hasGradient ? 'url(#bg)' : '#f8fafc'}"/>
-          <rect x="20" y="20" width="360" height="260" rx="12" fill="white" fill-opacity="0.95" stroke="#e2e8f0" stroke-width="1"/>
-          
-          <!-- Header area -->
-          <rect x="40" y="40" width="320" height="40" rx="6" fill="${primaryColor}" fill-opacity="0.9"/>
-          <rect x="50" y="50" width="80" height="8" rx="2" fill="white" fill-opacity="0.9"/>
-          <rect x="50" y="62" width="120" height="6" rx="2" fill="white" fill-opacity="0.7"/>
-          
-          <!-- Content area -->
-          <rect x="40" y="100" width="280" height="6" rx="2" fill="#374151" fill-opacity="0.8"/>
-          <rect x="40" y="115" width="240" height="6" rx="2" fill="#6b7280" fill-opacity="0.6"/>
-          <rect x="40" y="130" width="200" height="6" rx="2" fill="#6b7280" fill-opacity="0.5"/>
-          
-          <!-- Feature elements -->
-          <rect x="40" y="160" width="100" height="30" rx="6" fill="#10b981" fill-opacity="0.9"/>
-          <rect x="50" y="170" width="60" height="4" rx="1" fill="white"/>
-          <rect x="50" y="178" width="40" height="3" rx="1" fill="white" fill-opacity="0.8"/>
-          
-          <rect x="160" y="160" width="100" height="30" rx="6" fill="#3b82f6" fill-opacity="0.9"/>
-          <rect x="170" y="170" width="60" height="4" rx="1" fill="white"/>
-          <rect x="170" y="178" width="40" height="3" rx="1" fill="white" fill-opacity="0.8"/>
-          
-          <!-- Footer/CTA area -->
-          <rect x="40" y="220" width="120" height="24" rx="12" fill="${primaryColor}"/>
-          <rect x="50" y="228" width="80" height="4" rx="1" fill="white"/>
-          <rect x="50" y="235" width="60" height="3" rx="1" fill="white" fill-opacity="0.8"/>
-          
-          <!-- Labels -->
-          <text x="200" y="250" text-anchor="middle" fill="#374151" font-family="Arial, sans-serif" font-size="14" font-weight="bold">${templateName}</text>
-          <text x="200" y="270" text-anchor="middle" fill="#6b7280" font-family="Arial, sans-serif" font-size="12">${category}</text>
-        </svg>
+      // Create a complete HTML document optimized for preview
+      const fullHtml = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Template Preview</title>
+          <script src="https://cdn.tailwindcss.com"></script>
+          <script src="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/daisyui.min.js"></script>
+          <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+          <style>
+            body {
+              margin: 0;
+              padding: 0;
+              font-family: 'Inter', system-ui, -apple-system, sans-serif;
+              background: #f8fafc;
+              width: 100vw;
+              height: 100vh;
+              overflow: hidden;
+              transform: scale(0.25);
+              transform-origin: top left;
+            }
+            * {
+              box-sizing: border-box;
+            }
+            .template-container {
+              width: 400vw;
+              height: 400vh;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              padding: 20px;
+            }
+            .template-content {
+              max-width: 800px;
+              margin: 0 auto;
+              background: white;
+              border-radius: 12px;
+              box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+              overflow: hidden;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="template-container">
+            <div class="template-content">
+              ${previewHtml}
+            </div>
+          </div>
+        </body>
+        </html>
       `;
 
-      res.setHeader('Content-Type', 'image/svg+xml');
+      res.setHeader('Content-Type', 'text/html');
       res.setHeader('Cache-Control', 'public, max-age=3600');
-      res.send(svgPreview);
+      res.send(fullHtml);
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
