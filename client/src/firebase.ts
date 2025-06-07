@@ -13,19 +13,19 @@ import {
 } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || import.meta.env.FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || import.meta.env.FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || import.meta.env.FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || import.meta.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || import.meta.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || import.meta.env.FIREBASE_APP_ID,
 };
 
 console.log('Firebase Config:', {
-  hasApiKey: !!import.meta.env.VITE_FIREBASE_API_KEY,
-  hasProjectId: !!import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  hasAppId: !!import.meta.env.VITE_FIREBASE_APP_ID,
-  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
+  hasApiKey: !!(import.meta.env.VITE_FIREBASE_API_KEY || import.meta.env.FIREBASE_API_KEY),
+  hasProjectId: !!(import.meta.env.VITE_FIREBASE_PROJECT_ID || import.meta.env.FIREBASE_PROJECT_ID),
+  hasAppId: !!(import.meta.env.VITE_FIREBASE_APP_ID || import.meta.env.FIREBASE_APP_ID),
+  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID || import.meta.env.FIREBASE_PROJECT_ID}.firebaseapp.com`,
   currentDomain: window.location.hostname,
   currentOrigin: window.location.origin
 });
@@ -52,7 +52,7 @@ export async function login() {
     console.log('Initiating Firebase Google sign-in...');
     
     // Check if Firebase is properly configured
-    if (!import.meta.env.VITE_FIREBASE_API_KEY || !import.meta.env.VITE_FIREBASE_PROJECT_ID) {
+    if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
       throw new Error('Firebase configuration missing. Please check environment variables.');
     }
     
