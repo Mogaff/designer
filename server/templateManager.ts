@@ -268,7 +268,7 @@ class TemplateManager {
   /**
    * Generate sample content for template previews
    */
-  generateSampleContent(placeholders: string[]): Record<string, string> {
+  async generateSampleContent(placeholders: string[]): Promise<Record<string, string>> {
     const sampleData: Record<string, string> = {
       // Headlines and Titles
       'HEADLINE': 'Amazing Business Offer',
@@ -282,6 +282,13 @@ class TemplateManager {
       'COMPANY_NAME': 'TechCorp Solutions',
       'BRAND_NAME': 'EliteDesigns',
       'VENUE_NAME': 'Central Plaza',
+      'MAIN_HEADLINE': 'Transform Your Business Today',
+      'PRIMARY_CTA': 'Get Started Now',
+      'SECONDARY_CTA': 'Learn More',
+      'PRICING_HEADLINE': 'Choose Your Plan',
+      'TESTIMONIAL_HEADLINE': 'What Our Customers Say',
+      'FEATURES_HEADLINE': 'Powerful Features',
+      'CTA_HEADLINE': 'Join Thousands of Happy Users',
       
       // Descriptions and Content
       'CONTENT': 'Experience the finest quality with our premium products designed for modern lifestyle.',
@@ -361,7 +368,79 @@ class TemplateManager {
       'STAT_1_VALUE': '1000+',
       'STAT_1_LABEL': 'Happy Customers',
       'STAT_2_VALUE': '5 Star',
-      'STAT_2_LABEL': 'Rating'
+      'STAT_2_LABEL': 'Rating',
+      
+      // Pricing Plans
+      'PLAN_1_NAME': 'Basic',
+      'PLAN_1_PRICE': '$9',
+      'PLAN_1_PERIOD': 'month',
+      'PLAN_1_DESCRIPTION': 'Perfect for individuals',
+      'PLAN_1_FEATURE_1': 'Up to 5 projects',
+      'PLAN_1_FEATURE_2': 'Basic support',
+      'PLAN_1_FEATURE_3': '5GB storage',
+      'PLAN_1_CTA': 'Choose Basic',
+      'PLAN_2_NAME': 'Pro',
+      'PLAN_2_PRICE': '$29',
+      'PLAN_2_PERIOD': 'month',
+      'PLAN_2_DESCRIPTION': 'Best for growing teams',
+      'PLAN_2_FEATURE_1': 'Unlimited projects',
+      'PLAN_2_FEATURE_2': 'Priority support',
+      'PLAN_2_FEATURE_3': '100GB storage',
+      'PLAN_2_CTA': 'Choose Pro',
+      'PLAN_3_NAME': 'Enterprise',
+      'PLAN_3_PRICE': '$99',
+      'PLAN_3_PERIOD': 'month',
+      'PLAN_3_DESCRIPTION': 'For large organizations',
+      'PLAN_3_FEATURE_1': 'Custom solutions',
+      'PLAN_3_FEATURE_2': 'Dedicated support',
+      'PLAN_3_FEATURE_3': 'Unlimited storage',
+      'PLAN_3_CTA': 'Contact Sales',
+      'FEATURED_BADGE': 'Most Popular',
+      'PRICING_DESCRIPTION': 'Choose the perfect plan for your needs',
+      
+      // Testimonials
+      'TESTIMONIAL_DESCRIPTION': 'See what our customers have to say',
+      'TESTIMONIAL_1_TEXT': 'This service has completely transformed our business operations. Highly recommended!',
+      'CUSTOMER_1_NAME': 'Sarah Johnson',
+      'CUSTOMER_1_TITLE': 'CEO, TechStart Inc.',
+      'CUSTOMER_1_INITIAL': 'SJ',
+      'TESTIMONIAL_2_TEXT': 'Outstanding support and incredible features. Worth every penny.',
+      'CUSTOMER_2_NAME': 'Michael Chen',
+      'CUSTOMER_2_TITLE': 'Marketing Director',
+      'CUSTOMER_2_INITIAL': 'MC',
+      'TESTIMONIAL_3_TEXT': 'Easy to use and powerful. Our team productivity has increased significantly.',
+      'CUSTOMER_3_NAME': 'Emma Wilson',
+      'CUSTOMER_3_TITLE': 'Project Manager',
+      'CUSTOMER_3_INITIAL': 'EW',
+      
+      // Features
+      'FEATURES_DESCRIPTION': 'Discover the powerful features that make us different',
+      'FEATURE_1_TITLE': 'Fast Performance',
+      'FEATURE_1_DESCRIPTION': 'Lightning-fast processing speeds',
+      'FEATURE_2_TITLE': 'Secure & Reliable',
+      'FEATURE_2_DESCRIPTION': 'Enterprise-grade security',
+      'FEATURE_3_TITLE': 'Easy Integration',
+      'FEATURE_3_DESCRIPTION': 'Seamless workflow integration',
+      'DETAILED_FEATURE_TITLE': 'Advanced Analytics Dashboard',
+      'DETAILED_FEATURE_DESCRIPTION': 'Get deep insights into your business performance with our comprehensive analytics suite.',
+      'BENEFIT_1_TITLE': 'Real-time Data',
+      'BENEFIT_1_DESCRIPTION': 'Monitor your metrics in real-time',
+      'BENEFIT_2_TITLE': 'Custom Reports',
+      'BENEFIT_2_DESCRIPTION': 'Generate tailored reports',
+      'BENEFIT_3_TITLE': 'Data Export',
+      'BENEFIT_3_DESCRIPTION': 'Export data in multiple formats',
+      'FEATURE_CTA': 'Explore Features',
+      'VISUAL_FEATURE_TITLE': 'Smart Automation',
+      'VISUAL_FEATURE_DESCRIPTION': 'Automate repetitive tasks and focus on what matters most',
+      
+      // CTA and Newsletter
+      'CTA_BADGE': 'Limited Time Offer',
+      'CTA_DESCRIPTION': 'Join thousands of satisfied customers and transform your business today',
+      'EMAIL_PLACEHOLDER': 'Enter your email address',
+      'SUBMIT_BUTTON_TEXT': 'Subscribe Now',
+      'PRIVACY_TEXT': 'We respect your privacy. Unsubscribe anytime.',
+      'VISUAL_HEADLINE': 'Stay Updated',
+      'VISUAL_DESCRIPTION': 'Get the latest news and updates delivered to your inbox'
     };
 
     const result: Record<string, string> = {};

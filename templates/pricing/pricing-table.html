@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing Table Template</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-extrabold text-gray-900 mb-4">{{PRICING_HEADLINE}}</h2>
+            <p class="text-xl text-gray-600">{{PRICING_DESCRIPTION}}</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Basic Plan -->
+            <div class="bg-white rounded-lg shadow-lg p-8 border border-gray-200">
+                <div class="text-center">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">{{PLAN_1_NAME}}</h3>
+                    <div class="mb-6">
+                        <span class="text-4xl font-extrabold text-gray-900">{{PLAN_1_PRICE}}</span>
+                        <span class="text-gray-600">/{{PLAN_1_PERIOD}}</span>
+                    </div>
+                    <p class="text-gray-600 mb-8">{{PLAN_1_DESCRIPTION}}</p>
+                    
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-gray-700">{{PLAN_1_FEATURE_1}}</span>
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-gray-700">{{PLAN_1_FEATURE_2}}</span>
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-gray-700">{{PLAN_1_FEATURE_3}}</span>
+                        </li>
+                    </ul>
+                    
+                    <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
+                        {{PLAN_1_CTA}}
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Pro Plan (Featured) -->
+            <div class="bg-blue-600 rounded-lg shadow-xl p-8 text-white relative transform scale-105">
+                <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                    <span class="bg-yellow-400 text-blue-800 px-4 py-1 rounded-full text-sm font-semibold">{{FEATURED_BADGE}}</span>
+                </div>
+                <div class="text-center">
+                    <h3 class="text-2xl font-bold mb-4">{{PLAN_2_NAME}}</h3>
+                    <div class="mb-6">
+                        <span class="text-4xl font-extrabold">{{PLAN_2_PRICE}}</span>
+                        <span class="text-blue-200">/{{PLAN_2_PERIOD}}</span>
+                    </div>
+                    <p class="text-blue-100 mb-8">{{PLAN_2_DESCRIPTION}}</p>
+                    
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-yellow-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-white">{{PLAN_2_FEATURE_1}}</span>
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-yellow-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-white">{{PLAN_2_FEATURE_2}}</span>
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-yellow-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-white">{{PLAN_2_FEATURE_3}}</span>
+                        </li>
+                    </ul>
+                    
+                    <button class="w-full bg-white hover:bg-gray-100 text-blue-600 font-semibold py-3 px-6 rounded-lg transition duration-200">
+                        {{PLAN_2_CTA}}
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Enterprise Plan -->
+            <div class="bg-white rounded-lg shadow-lg p-8 border border-gray-200">
+                <div class="text-center">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">{{PLAN_3_NAME}}</h3>
+                    <div class="mb-6">
+                        <span class="text-4xl font-extrabold text-gray-900">{{PLAN_3_PRICE}}</span>
+                        <span class="text-gray-600">/{{PLAN_3_PERIOD}}</span>
+                    </div>
+                    <p class="text-gray-600 mb-8">{{PLAN_3_DESCRIPTION}}</p>
+                    
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-gray-700">{{PLAN_3_FEATURE_1}}</span>
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-gray-700">{{PLAN_3_FEATURE_2}}</span>
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-gray-700">{{PLAN_3_FEATURE_3}}</span>
+                        </li>
+                    </ul>
+                    
+                    <button class="w-full bg-gray-800 hover:bg-gray-900 text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
+                        {{PLAN_3_CTA}}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
