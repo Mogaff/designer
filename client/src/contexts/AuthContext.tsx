@@ -51,7 +51,7 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Authentication enabled to use Firebase
   // Set AUTH_ENABLED to false to use mock user
-  const AUTH_ENABLED = true;
+  const AUTH_ENABLED = false;
   
   const mockUser: User = {
     uid: 'temp-user-123',
