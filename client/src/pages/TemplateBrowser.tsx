@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 
 interface Template {
   id: string;
@@ -88,6 +89,12 @@ export default function TemplateBrowser() {
       prompt: string; 
       brandKitId?: string;
     }) => {
+      // Initialize session first
+      await fetch('/api/auth/init', {
+        method: 'GET',
+        credentials: 'include'
+      });
+      
       const payload: any = { prompt };
       if (brandKitId) payload.brand_kit_id = brandKitId;
       

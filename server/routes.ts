@@ -1593,6 +1593,16 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
     }
   });
 
+  // Initialize session for API access
+  app.get("/api/auth/init", (req: Request, res: Response) => {
+    // This endpoint ensures a session is created
+    res.json({ 
+      success: true, 
+      sessionId: req.sessionID,
+      authenticated: true // Always true in development mode
+    });
+  });
+
   // Generate design using template
   app.post("/api/templates/:templateId/generate", async (req: Request, res: Response) => {
     try {
