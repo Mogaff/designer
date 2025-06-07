@@ -128,7 +128,7 @@ export default function TemplateBrowser() {
     generateMutation.mutate({
       templateId: selectedTemplate.id,
       prompt: prompt.trim(),
-      brandKitId: selectedBrandKit || undefined
+      brandKitId: selectedBrandKit && selectedBrandKit !== 'none' ? selectedBrandKit : undefined
     });
   };
 
@@ -228,7 +228,7 @@ export default function TemplateBrowser() {
                                     <SelectValue placeholder="Choose a brand kit" />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="">No brand kit</SelectItem>
+                                    <SelectItem value="none">No brand kit</SelectItem>
                                     {brandKits.map((kit: BrandKit) => (
                                       <SelectItem key={kit.id} value={kit.id.toString()}>
                                         {kit.name}
