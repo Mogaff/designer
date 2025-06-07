@@ -212,18 +212,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       let errorMessage = 'Google login failed';
       console.error('Google sign-in error:', error);
       
-      // Better error messages for common errors
+      // Handle domain authorization error with fallback
       if (error.code === 'auth/unauthorized-domain') {
-        const currentDomain = window.location.origin;
-        errorMessage = `Domain authorization required. Add ${currentDomain} to Firebase Console > Authentication > Settings > Authorized domains`;
+        const currentDomain = window.location.hostname;
         console.error('Domain not authorized:', currentDomain);
         
-        // Show detailed instructions
+        // Provide exact Firebase setup instructions
         toast({
-          title: 'Firebase Setup Required',
-          description: `Go to Firebase Console > Authentication > Settings > Authorized domains and add: ${currentDomain}`,
+          title: 'Add Domain to Firebase',
+          description: `Add: ${currentDomain} to Firebase Console > Authentication > Settings > Authorized domains`,
           variant: 'destructive',
         });
+        
+        // Show detailed modal with copy-paste domain
+        const domainModal = document.createElement('div');
+        domainModal.innerHTML = `
+          <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+            <div style="background: white; padding: 20px; border-radius: 8px; max-width: 500px; text-align: center;">
+              <h3 style="margin: 0 0 15px 0; color: #333;">Firebase Domain Authorization Required</h3>
+              <p style="margin: 0 0 15px 0; color: #666;">Copy this domain and add it to Firebase:</p>
+              <input type="text" value="${currentDomain}" readonly style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: #f9f9f9; text-align: center; font-family: monospace;">
+              <p style="margin: 15px 0; color: #666; font-size: 14px;">Go to Firebase Console > Authentication > Settings > Authorized domains</p>
+              <button onclick="this.parentElement.parentElement.remove()" style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Close</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(domainModal);
+        
+        errorMessage = `Domain authorization required: ${currentDomain}`;
       } else if (error.code === 'auth/invalid-api-key') {
         errorMessage = 'Invalid Firebase API key. Please check your Firebase configuration.';
       } else if (error.code === 'auth/configuration-not-found') {
