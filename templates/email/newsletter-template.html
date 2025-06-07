@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newsletter Email Template</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-8 text-white text-center">
+            <h1 class="text-2xl font-bold mb-2">{{NEWSLETTER_TITLE}}</h1>
+            <p class="text-blue-100">{{NEWSLETTER_SUBTITLE}}</p>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="p-8">
+            <div class="mb-8">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">{{MAIN_ARTICLE_TITLE}}</h2>
+                <div class="w-full h-48 bg-gray-200 rounded-lg mb-4"></div>
+                <p class="text-gray-700 leading-relaxed mb-4">{{MAIN_ARTICLE_CONTENT}}</p>
+                <a href="#" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded transition duration-200">
+                    {{READ_MORE_CTA}}
+                </a>
+            </div>
+            
+            <!-- Secondary Articles -->
+            <div class="border-t pt-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-6">{{SECONDARY_SECTION_TITLE}}</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <div class="w-full h-32 bg-gray-200 rounded mb-3"></div>
+                        <h4 class="font-semibold text-gray-900 mb-2">{{ARTICLE_2_TITLE}}</h4>
+                        <p class="text-gray-600 text-sm">{{ARTICLE_2_EXCERPT}}</p>
+                    </div>
+                    <div>
+                        <div class="w-full h-32 bg-gray-200 rounded mb-3"></div>
+                        <h4 class="font-semibold text-gray-900 mb-2">{{ARTICLE_3_TITLE}}</h4>
+                        <p class="text-gray-600 text-sm">{{ARTICLE_3_EXCERPT}}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CTA Section -->
+            <div class="bg-gray-50 rounded-lg p-6 mt-8 text-center">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">{{CTA_SECTION_TITLE}}</h3>
+                <p class="text-gray-600 mb-4">{{CTA_SECTION_DESCRIPTION}}</p>
+                <button class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-200">
+                    {{CTA_BUTTON_TEXT}}
+                </button>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="bg-gray-800 text-white p-6 text-center text-sm">
+            <p class="mb-2">{{FOOTER_TEXT}}</p>
+            <p class="text-gray-400">{{UNSUBSCRIBE_TEXT}}</p>
+        </div>
+    </div>
+</body>
+</html>

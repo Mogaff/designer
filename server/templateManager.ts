@@ -440,7 +440,36 @@ class TemplateManager {
       'SUBMIT_BUTTON_TEXT': 'Subscribe Now',
       'PRIVACY_TEXT': 'We respect your privacy. Unsubscribe anytime.',
       'VISUAL_HEADLINE': 'Stay Updated',
-      'VISUAL_DESCRIPTION': 'Get the latest news and updates delivered to your inbox'
+      'VISUAL_DESCRIPTION': 'Get the latest news and updates delivered to your inbox',
+      
+      // Hero Section Data
+      'HERO_BADGE': 'New Release',
+      'HERO_HEADLINE': 'Build Amazing Products Faster',
+      'HERO_DESCRIPTION': 'Streamline your workflow with our powerful tools and features designed for modern teams',
+      'TRUST_METRIC_1_VALUE': '10K+',
+      'TRUST_METRIC_1_LABEL': 'Active Users',
+      'TRUST_METRIC_2_VALUE': '99.9%',
+      'TRUST_METRIC_2_LABEL': 'Uptime',
+      'TRUST_METRIC_3_VALUE': '24/7',
+      'TRUST_METRIC_3_LABEL': 'Support',
+      'SOCIAL_PROOF_TEXT': 'Trusted by leading companies worldwide',
+      
+      // Newsletter Email Data
+      'NEWSLETTER_TITLE': 'Weekly Updates',
+      'NEWSLETTER_SUBTITLE': 'Stay informed with our latest news and insights',
+      'MAIN_ARTICLE_TITLE': 'Product Launch: Revolutionary Features',
+      'MAIN_ARTICLE_CONTENT': 'Discover the exciting new capabilities that will transform how you work.',
+      'READ_MORE_CTA': 'Read Full Article',
+      'SECONDARY_SECTION_TITLE': 'Latest News',
+      'ARTICLE_2_TITLE': 'Industry Insights Report',
+      'ARTICLE_2_EXCERPT': 'Key trends shaping the future of technology',
+      'ARTICLE_3_TITLE': 'Customer Success Story',
+      'ARTICLE_3_EXCERPT': 'How Company X achieved 300% growth',
+      'CTA_SECTION_TITLE': 'Ready to Get Started?',
+      'CTA_SECTION_DESCRIPTION': 'Join thousands of satisfied customers today',
+      'CTA_BUTTON_TEXT': 'Start Free Trial',
+      'FOOTER_TEXT': 'Thank you for being part of our community',
+      'UNSUBSCRIBE_TEXT': 'Click here to unsubscribe from future emails'
     };
 
     const result: Record<string, string> = {};
