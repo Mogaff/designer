@@ -469,7 +469,55 @@ class TemplateManager {
       'CTA_SECTION_DESCRIPTION': 'Join thousands of satisfied customers today',
       'CTA_BUTTON_TEXT': 'Start Free Trial',
       'FOOTER_TEXT': 'Thank you for being part of our community',
-      'UNSUBSCRIBE_TEXT': 'Click here to unsubscribe from future emails'
+      'UNSUBSCRIBE_TEXT': 'Click here to unsubscribe from future emails',
+      
+      // Navigation Data
+      'USER_NAME': 'John Doe',
+      'USER_EMAIL': 'john.doe@example.com',
+      'NAV_ITEM_1': 'Home',
+      'NAV_ITEM_2': 'Products',
+      'NAV_ITEM_3': 'About',
+      'NAV_ITEM_4': 'Contact',
+      'DROPDOWN_ITEM_1': 'Web Design',
+      'DROPDOWN_ITEM_2': 'Mobile Apps',
+      'DROPDOWN_ITEM_3': 'Consulting',
+      'PAGE_TITLE': 'Welcome to Our Platform',
+      'PAGE_DESCRIPTION': 'Discover amazing features and capabilities',
+      
+      // Product Card Data
+      'PRODUCT_CATEGORY': 'Electronics',
+      'PRODUCT_RATING': '4.8',
+      'PRODUCT_PRICE': '299.99',
+      'ADD_TO_CART_TEXT': 'Add to Cart',
+      
+      // Contact Form Data
+      'FORM_TITLE': 'Get in Touch',
+      'FORM_DESCRIPTION': 'Send us a message and we will get back to you',
+      'FIRST_NAME_LABEL': 'First Name',
+      'FIRST_NAME_PLACEHOLDER': 'Enter your first name',
+      'LAST_NAME_LABEL': 'Last Name',
+      'LAST_NAME_PLACEHOLDER': 'Enter your last name',
+      'EMAIL_LABEL': 'Email Address',
+      'SUBJECT_LABEL': 'Subject',
+      'SUBJECT_OPTION_1': 'General Inquiry',
+      'SUBJECT_OPTION_2': 'Support Request',
+      'SUBJECT_OPTION_3': 'Business Partnership',
+      'MESSAGE_LABEL': 'Your Message',
+      'MESSAGE_PLACEHOLDER': 'Tell us how we can help you...',
+      'TERMS_TEXT': 'I agree to the terms and conditions',
+      
+      // Modal Data
+      'MODAL_TITLE': 'Important Notice',
+      'MODAL_DESCRIPTION': 'Please review this information carefully',
+      'MODAL_CONFIRM_TEXT': 'I Understand',
+      'MODAL_CANCEL_TEXT': 'Cancel',
+      
+      // Dashboard Data
+      'DASHBOARD_TITLE': 'Analytics Dashboard',
+      'TOTAL_USERS': '12,345',
+      'TOTAL_REVENUE': '$45,678',
+      'CONVERSION_RATE': '3.2%',
+      'GROWTH_RATE': '+15%'
     };
 
     const result: Record<string, string> = {};

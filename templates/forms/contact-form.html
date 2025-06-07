@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Form Template</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold text-gray-900 mb-2">{{FORM_TITLE}}</h2>
+            <p class="text-gray-600">{{FORM_DESCRIPTION}}</p>
+        </div>
+        
+        <form class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="first-name" class="block mb-2 text-sm font-medium text-gray-900">{{FIRST_NAME_LABEL}}</label>
+                    <input type="text" id="first-name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="{{FIRST_NAME_PLACEHOLDER}}" required>
+                </div>
+                <div>
+                    <label for="last-name" class="block mb-2 text-sm font-medium text-gray-900">{{LAST_NAME_LABEL}}</label>
+                    <input type="text" id="last-name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="{{LAST_NAME_PLACEHOLDER}}" required>
+                </div>
+            </div>
+            
+            <div>
+                <label for="email" class="block mb-2 text-sm font-medium text-gray-900">{{EMAIL_LABEL}}</label>
+                <input type="email" id="email" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="{{EMAIL_PLACEHOLDER}}" required>
+            </div>
+            
+            <div>
+                <label for="subject" class="block mb-2 text-sm font-medium text-gray-900">{{SUBJECT_LABEL}}</label>
+                <select id="subject" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                    <option>{{SUBJECT_OPTION_1}}</option>
+                    <option>{{SUBJECT_OPTION_2}}</option>
+                    <option>{{SUBJECT_OPTION_3}}</option>
+                </select>
+            </div>
+            
+            <div>
+                <label for="message" class="block mb-2 text-sm font-medium text-gray-900">{{MESSAGE_LABEL}}</label>
+                <textarea id="message" rows="4" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500" placeholder="{{MESSAGE_PLACEHOLDER}}"></textarea>
+            </div>
+            
+            <div class="flex items-start">
+                <div class="flex items-center h-5">
+                    <input id="terms" type="checkbox" value="" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300" required>
+                </div>
+                <label for="terms" class="ms-2 text-sm font-medium text-gray-900">{{TERMS_TEXT}}</label>
+            </div>
+            
+            <button type="submit" class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+                {{SUBMIT_BUTTON_TEXT}}
+            </button>
+        </form>
+    </div>
+</body>
+</html>
