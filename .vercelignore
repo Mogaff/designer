@@ -1,0 +1,14 @@
+node_modules
+.git
+.env
+.env.*
+temp/
+attached_assets/
+.config/
+*.log
+.DS_Store
+README*.md
+CURSOR_SETUP.md
+FIREBASE_DOMAIN_FIX.md
+.vercel
+generated-icon.png 
