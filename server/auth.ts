@@ -56,7 +56,7 @@ export async function hashPassword(password: string): Promise<string> {
 
 // Authentication middleware with bypass option
 // TEMPORARY: Set AUTH_ENABLED to true to restore normal authentication
-const AUTH_ENABLED = false;
+const AUTH_ENABLED = true;
 
 // Mock user for temporary authentication bypass
 const MOCK_USER = {
