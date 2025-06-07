@@ -59,8 +59,8 @@ An advanced AI-driven design platform that leverages cutting-edge artificial int
 
 ```bash
 # Clone the repository
-git clone https://github.com/mogaff/ai-design-platform.git
-cd ai-design-platform
+git clone https://github.com/Mogaff/designer.git
+cd designer
 
 # Install dependencies
 npm install
@@ -209,6 +209,6 @@ For support and questions:
 
 ---
 
-**Built with ❤️ by [Mo Gaff](https://github.com/mogaff)**
+**Built with ❤️ by [Mo Gaff](https://github.com/Mogaff)**
 
-*Transforming creative workflows with AI-powered design tools.* 
+*Transforming creative workflows with AI-powered design tools.*
