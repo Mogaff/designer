@@ -96,7 +96,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     (async function checkRedirectResult() {
       try {
         // Check if we're coming back from a redirect sign-in
-        const result = await getRedirectResult(auth);
+        const result = await handleRedirect();
         if (result) {
           console.log('Redirect login successful:', result.user.email);
           
@@ -236,7 +236,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       
       // Normal logout flow using the renamed function
-      await firebaseSignOut(auth);
+      await signOut(auth);
     } catch (error: any) {
       toast({
         title: 'Logout Failed',
