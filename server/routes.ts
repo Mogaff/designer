@@ -1644,8 +1644,8 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
       const sampleContent = await templateManager.generateSampleContent(template.placeholders);
       let previewHtml = templateManager.replacePlaceholders(template.htmlContent, sampleContent);
 
-      const puppeteer = require('puppeteer');
-      const browser = await puppeteer.launch({
+      const puppeteer = await import('puppeteer');
+      const browser = await puppeteer.default.launch({
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
       });
@@ -1680,8 +1680,8 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
         return res.status(400).json({ message: "HTML content is required" });
       }
 
-      const puppeteer = require('puppeteer');
-      const browser = await puppeteer.launch({
+      const puppeteer = await import('puppeteer');
+      const browser = await puppeteer.default.launch({
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
       });
