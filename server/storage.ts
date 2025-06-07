@@ -14,6 +14,7 @@ export interface IStorage {
   // User management
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   getUserByFirebaseUid(firebaseUid: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserCredits(userId: number, newBalance: number): Promise<User | undefined>;
@@ -50,6 +51,8 @@ export interface IStorage {
   createSocialPost(post: InsertSocialPost): Promise<SocialPost>;
   deleteSocialPost(id: number, userId: number): Promise<boolean>;
 }
+
+
 
 export class MemStorage implements IStorage {
   private usersMap: Map<number, User>;

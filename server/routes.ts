@@ -1,6 +1,6 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { storage } from "./storage-simple";
 import path from "path";
 import fs from "fs";
 import { generateFlyer } from "./flyerGenerator";
@@ -1593,14 +1593,54 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
     }
   });
 
-  // Initialize session for API access
-  app.get("/api/auth/init", (req: Request, res: Response) => {
-    // This endpoint ensures a session is created
-    res.json({ 
-      success: true, 
-      sessionId: req.sessionID,
-      authenticated: true // Always true in development mode
-    });
+  // Firebase user sync route
+  app.post("/api/auth/firebase-sync", async (req: Request, res: Response) => {
+    try {
+      const { uid, email, displayName } = req.body;
+      
+      if (!uid || !email) {
+        return res.status(400).json({ message: "UID and email are required" });
+      }
+
+      // Check if user exists by email
+      let user = await storage.getUserByEmail(email);
+      
+      if (!user) {
+        // Create new user with Firebase data
+        user = await storage.createUser({
+          username: email.split('@')[0],
+          password: '', // No password for OAuth users
+          firebase_uid: uid,
+          email,
+          display_name: displayName || email.split('@')[0],
+          credits_balance: 100, // Give new users 100 credits
+          is_premium: false
+        });
+      } else {
+        // Update existing user credits if needed
+        if (user.credits_balance <= 0) {
+          await storage.updateUserCredits(user.id, 50); // Refill credits
+          user.credits_balance = 50;
+        }
+      }
+
+      // Store user in session
+      (req.session as any).userId = user.id;
+      req.session.save();
+
+      res.json({ 
+        success: true, 
+        user: {
+          id: user.id,
+          email: user.email,
+          display_name: user.display_name,
+          credits_balance: user.credits_balance
+        }
+      });
+    } catch (error) {
+      console.error('Firebase sync error:', error);
+      res.status(500).json({ message: "Failed to sync user" });
+    }
   });
 
   // Generate design using template
