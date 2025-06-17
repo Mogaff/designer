@@ -186,7 +186,7 @@ export default function TemplateBrowser() {
                     <div className="px-6 mb-4">
                       <div className="w-full h-40 bg-black/20 rounded-lg overflow-hidden border border-white/20">
                         <iframe 
-                          src={`/api/templates/${encodeURIComponent(template.id)}/preview`}
+                          src={`/api/templates/${template.id}/preview`}
                           title={`${template.name} preview`}
                           className="w-full h-full border-0"
                           style={{ 

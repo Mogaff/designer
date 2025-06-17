@@ -141,7 +141,7 @@ export async function processAdBurst(req: Request, res: Response) {
     // Step 2: Generate audio from script using ElevenLabs
     const audioPath = await generateAudio({ script });
     
-    // Step 3: Generate video from images using Gemini Veo 2
+    // Step 3: Generate video from images using video generation APIs
     const videoPath = await generateVideo(options);
     
     // Step 4: Combine video and audio

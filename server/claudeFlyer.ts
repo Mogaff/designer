@@ -6,6 +6,11 @@ import { promisify } from "util";
 import * as fs from "fs";
 import * as path from "path";
 
+// Browser pool to prevent conflicts on macOS
+let browserPool: any = null;
+let browserUsageCount = 0;
+const MAX_BROWSER_USAGE = 10; // Restart browser after 10 uses
+
 // the newest Anthropic model is "claude-3-7-sonnet-20250219" which was released February 24, 2025
 
 const execAsync = promisify(exec);
@@ -13,6 +18,65 @@ const execAsync = promisify(exec);
 // Initialize Anthropic with API key
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
+});
+
+// Browser pool management for macOS
+async function getBrowser() {
+  if (!browserPool || browserUsageCount >= MAX_BROWSER_USAGE) {
+    // Close existing browser if it exists
+    if (browserPool) {
+      try {
+        await browserPool.close();
+        log("Closed old browser instance", "claude");
+      } catch (e) {
+        log("Error closing old browser", "claude");
+      }
+    }
+
+    // Get Chromium executable path
+    const { stdout: chromiumPath } = await execAsync("which chromium");
+    
+    // Create new browser instance
+    browserPool = await puppeteer.launch({
+      headless: true,
+      args: [
+        "--no-sandbox", 
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+        "--disable-extensions",
+        "--disable-default-apps",
+        "--disable-features=TranslateUI",
+        "--disable-ipc-flooding-protection",
+        "--single-process",
+        "--no-zygote",
+        "--disable-background-timer-throttling",
+        "--disable-backgrounding-occluded-windows",
+        "--disable-renderer-backgrounding"
+      ],
+      executablePath: chromiumPath.trim(),
+    });
+    
+    browserUsageCount = 0;
+    log("Created new browser instance", "claude");
+  }
+  
+  browserUsageCount++;
+  return browserPool;
+}
+
+// Clean up browser on process exit
+process.on('exit', async () => {
+  if (browserPool) {
+    await browserPool.close();
+  }
+});
+
+process.on('SIGINT', async () => {
+  if (browserPool) {
+    await browserPool.close();
+  }
+  process.exit(0);
 });
 
 type ClaudeResponse = {
@@ -42,6 +106,8 @@ interface GenerationOptions {
  */
 export async function generateFlyerContent(options: GenerationOptions): Promise<ClaudeResponse> {
   log("Generating flyer content with Claude AI", "claude");
+  
+
   
   try {
     // Get sizing info for the prompt based on aspect ratio
@@ -565,24 +631,13 @@ export async function renderFlyerFromClaude(options: GenerationOptions): Promise
     fs.writeFileSync(htmlPath, fullHtml);
     log(`Saved generated HTML to: ${htmlPath}`, "claude");
     
-    // Get Chromium executable path
-    const { stdout: chromiumPath } = await execAsync("which chromium");
-    log(`Found Chromium at: ${chromiumPath.trim()}`, "claude");
+    // Use browser pool instead of creating new instance
+    log("Getting browser from pool", "claude");
+    const browser = await getBrowser();
     
-    // Launch puppeteer
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        "--no-sandbox", 
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-gpu"
-      ],
-      executablePath: chromiumPath.trim(),
-    });
-    
+    let page;
     try {
-      const page = await browser.newPage();
+      page = await browser.newPage();
       
       // Set viewport based on aspect ratio if provided
       let viewportWidth = 800;
@@ -777,7 +832,14 @@ export async function renderFlyerFromClaude(options: GenerationOptions): Promise
         throw err;
       }
     } finally {
-      await browser.close();
+      // Don't close browser - keep it in pool for reuse
+      // Just close the page to free memory
+      try {
+        await page.close();
+        log("Closed page", "claude");
+      } catch (e) {
+        log("Error closing page", "claude");
+      }
       
       // Clean up the temp HTML file
       try {
@@ -802,14 +864,7 @@ export async function renderFlyerFromClaude(options: GenerationOptions): Promise
     // Try to create a basic error image as fallback
     try {
       log("Attempting to create error image fallback", "claude");
-      const browser = await puppeteer.launch({
-        headless: true,
-        args: [
-          "--no-sandbox", 
-          "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage"
-        ],
-      });
+      const browser = await getBrowser();
       
       const page = await browser.newPage();
       await page.setContent(`
@@ -854,7 +909,7 @@ export async function renderFlyerFromClaude(options: GenerationOptions): Promise
       `);
       
       const screenshot = await page.screenshot({ type: 'jpeg', quality: 90 });
-      await browser.close();
+      await page.close(); // Close page instead of browser
       
       // Also fix the error fallback image
       const properBuffer = Buffer.from(screenshot);

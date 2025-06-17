@@ -7,7 +7,8 @@
 - axios: For making HTTP requests (already installed)
 
 ## External API Keys Required
-- GEMINI_API_KEY: Google Gemini Veo 2 API key for video generation
+- KLING_API_KEY: Kling AI API key for video generation
+- FAL_KEY: Fal AI API key for video generation (alternative)
 - OPENAI_API_KEY: OpenAI GPT-4o API key for voice-over text generation
 - ELEVENLABS_API_KEY: ElevenLabs API key for text-to-speech
 - BUFFER_API_KEY: Buffer API key for social media scheduling

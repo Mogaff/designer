@@ -46,7 +46,6 @@ const anthropic = new Anthropic({
 });
 
 // Import all our API integrations
-import { imageToVideo as geminiImageToVideo } from './veo_api';
 import { imageToVideo as klingImageToVideo, checkKlingApiKey } from './kling_api';
 import { imageToVideo as falImageToVideo, checkFalApiKey } from './fal_i2v_api';
 import { generateAdScript } from './openai_api';
@@ -61,7 +60,6 @@ import { createMultiImageVideo } from './video_processor';
  */
 export async function checkAllApiKeys() {
   const results = {
-    gemini: false,
     claude: false,
     openai: false,
     elevenlabs: false,
@@ -70,15 +68,6 @@ export async function checkAllApiKeys() {
   };
   
   try {
-    // Check Gemini API key
-    if (process.env.GEMINI_API_KEY) {
-      const keyLength = process.env.GEMINI_API_KEY.length;
-      console.log(`✓ Gemini API key found (${keyLength} chars): ${process.env.GEMINI_API_KEY.substring(0, 4)}...${process.env.GEMINI_API_KEY.substring(keyLength - 4)}`);
-      results.gemini = true;
-    } else {
-      console.error('✗ Gemini API key is not set');
-    }
-    
     // Check Claude API key
     if (process.env.ANTHROPIC_API_KEY) {
       const keyLength = process.env.ANTHROPIC_API_KEY.length;
@@ -439,30 +428,34 @@ export async function processAdBurstRequest(req: Request, res: Response) {
               } catch (klingError) {
                 console.error('Error with Kling fallback:', klingError);
                 
-                // Try Gemini as final fallback
-                if (apiKeyStatus.gemini) {
-                  console.log('Trying Gemini Veo as final fallback...');
-                  try {
-                    rawVideoPath = await geminiImageToVideo(imagePaths[0]);
-                    console.log('Video generation with Gemini Veo complete:', rawVideoPath);
-                  } catch (geminiError) {
-                    throw new Error(`All video generation methods failed: Multi-image: ${videoError instanceof Error ? videoError.message : 'Unknown error'} | Fal AI: ${falError instanceof Error ? falError.message : 'Unknown error'} | Kling: ${klingError instanceof Error ? klingError.message : 'Unknown error'} | Gemini: ${geminiError instanceof Error ? geminiError.message : 'Unknown error'}`);
-                  }
-                } else {
-                  throw new Error(`Multiple video generation methods failed: ${falError instanceof Error ? falError.message : 'Unknown error'} | ${klingError instanceof Error ? klingError.message : 'Unknown error'}`);
+                // Try multi-image video generation as final fallback
+                console.log('Trying multi-image video as final fallback...');
+                try {
+                  rawVideoPath = await createMultiImageVideo(imagePaths, {
+                    productName,
+                    productDescription: productDescription,
+                    targetAudience: targetAudience,
+                    totalDuration: targetDuration
+                  });
+                  console.log('Multi-image video generation complete:', rawVideoPath);
+                } catch (multiImageError) {
+                  throw new Error(`All video generation methods failed: Fal AI: ${falError instanceof Error ? falError.message : 'Unknown error'} | Kling: ${klingError instanceof Error ? klingError.message : 'Unknown error'} | Multi-image: ${multiImageError instanceof Error ? multiImageError.message : 'Unknown error'}`);
                 }
               }
-            } else if (apiKeyStatus.gemini) {
-              // If no Kling API key, try Gemini directly
-              console.log('Trying Gemini Veo as fallback...');
-              try {
-                rawVideoPath = await geminiImageToVideo(imagePaths[0]);
-                console.log('Video generation with Gemini Veo complete:', rawVideoPath);
-              } catch (geminiError) {
-                throw new Error(`Multiple video generation methods failed: ${videoError instanceof Error ? videoError.message : 'Unknown error'} | ${falError instanceof Error ? falError.message : 'Unknown error'} | ${geminiError instanceof Error ? geminiError.message : 'Unknown error'}`);
-              }
             } else {
-              throw falError; // Re-throw if we don't have any other fallbacks
+              // If no Kling API key, try multi-image video directly
+              console.log('Trying multi-image video as fallback...');
+              try {
+                rawVideoPath = await createMultiImageVideo(imagePaths, {
+                  productName,
+                  productDescription: productDescription,
+                  targetAudience: targetAudience,
+                  totalDuration: targetDuration
+                });
+                console.log('Multi-image video generation complete:', rawVideoPath);
+              } catch (multiImageError) {
+                throw new Error(`Multiple video generation methods failed: ${falError instanceof Error ? falError.message : 'Unknown error'} | Multi-image: ${multiImageError instanceof Error ? multiImageError.message : 'Unknown error'}`);
+              }
             }
           }
         }
@@ -484,26 +477,34 @@ export async function processAdBurstRequest(req: Request, res: Response) {
           } catch (klingError) {
             console.error('Error generating video with Kling:', klingError);
             
-            // Try Gemini as fallback
-            if (apiKeyStatus.gemini) {
-              console.log('Falling back to Gemini Veo for video generation...');
-              try {
-                rawVideoPath = await geminiImageToVideo(imagePaths[0]);
-                console.log('Video generation with Gemini Veo complete:', rawVideoPath);
-              } catch (geminiError) {
-                throw new Error(`Both Kling and Gemini Veo failed: ${klingError instanceof Error ? klingError.message : 'Unknown error'} | ${geminiError instanceof Error ? geminiError.message : 'Unknown error'}`);
-              }
-            } else {
-              throw klingError; // Re-throw if we don't have a fallback
+            // Try multi-image video as fallback
+            console.log('Falling back to multi-image video generation...');
+            try {
+              rawVideoPath = await createMultiImageVideo(imagePaths, {
+                productName,
+                productDescription: productDescription,
+                targetAudience: targetAudience,
+                totalDuration: targetDuration
+              });
+              console.log('Multi-image video generation complete:', rawVideoPath);
+            } catch (multiImageError) {
+              throw new Error(`Both Kling and multi-image video failed: ${klingError instanceof Error ? klingError.message : 'Unknown error'} | ${multiImageError instanceof Error ? multiImageError.message : 'Unknown error'}`);
             }
           }
-        } else if (apiKeyStatus.gemini) {
-          // If no Kling API key, try Gemini
-          console.log('Using Gemini Veo for video generation...');
-          rawVideoPath = await geminiImageToVideo(imagePaths[0]);
-          console.log('Video generation with Gemini Veo complete:', rawVideoPath);
         } else {
-          throw new Error('No video generation API keys available. Please configure FAL_KEY, KLING_API_KEY, or GEMINI_API_KEY.');
+          // If no API keys available, use multi-image video generation
+          console.log('Using multi-image video generation...');
+          try {
+            rawVideoPath = await createMultiImageVideo(imagePaths, {
+              productName,
+              productDescription: productDescription,
+              targetAudience: targetAudience,
+              totalDuration: targetDuration
+            });
+            console.log('Multi-image video generation complete:', rawVideoPath);
+          } catch (multiImageError) {
+            throw new Error('No video generation API keys available and multi-image video generation failed. Please configure FAL_KEY or KLING_API_KEY.');
+          }
         }
       }
     } catch (error) {

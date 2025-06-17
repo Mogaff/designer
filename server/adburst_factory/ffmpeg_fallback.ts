@@ -1,6 +1,6 @@
 /**
  * FFmpeg Fallback for AdBurst Factory
- * Creates a simple video animation from still images when Veo 2 API is unavailable
+ * Creates a simple video animation from still images when video generation APIs are unavailable
  */
 
 import { exec } from 'child_process';

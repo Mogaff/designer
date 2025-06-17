@@ -3,37 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Business Flyer Template</title>
+    <title>{{TITLE}} - Business Flyer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family={{FONT_FAMILY}}:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: {{PRIMARY_COLOR}};
+            --secondary-color: {{SECONDARY_COLOR}};
+            --accent-color: {{ACCENT_COLOR}};
+            --cta-color: {{CTA_COLOR}};
+        }
         .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
         }
         .shadow-custom {
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
+        .custom-font {
+            font-family: '{{FONT_FAMILY}}', system-ui, -apple-system, sans-serif;
+        }
+        .badge-style {
+            background-color: var(--accent-color);
+        }
+        .accent-dot {
+            background-color: var(--accent-color);
+        }
+        .border-accent {
+            border-color: var(--accent-color);
+        }
+        .text-accent {
+            color: var(--accent-color);
+        }
+        .cta-button {
+            background-color: var(--cta-color);
+        }
+        .secondary-cta {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+        .secondary-cta:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
     </style>
 </head>
-<body class="bg-gray-50 p-8">
-    <div class="max-w-md mx-auto bg-white rounded-xl shadow-custom overflow-hidden">
+<body class="bg-gray-50 p-8 custom-font">
+    <div class="max-w-md mx-auto bg-white rounded-xl shadow-custom overflow-hidden" style="border: 2px solid #e5e7eb;">
         <!-- Header Section -->
         <div class="gradient-bg px-6 py-8 text-white">
             <div class="flex items-center justify-between mb-4">
                 <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                    <!-- Logo or Icon -->
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
                     </svg>
                 </div>
-                <span class="text-sm opacity-90">{{CATEGORY}}</span>
+                <span class="text-sm opacity-90 font-medium">{{CATEGORY}}</span>
             </div>
-            <h1 class="text-2xl font-bold mb-2">{{HEADLINE}}</h1>
+            <h1 class="text-2xl font-bold mb-2 leading-tight">{{HEADLINE}}</h1>
             <p class="text-white text-opacity-90 text-sm">{{SUBHEADLINE}}</p>
+            
+            <!-- Optional Badge -->
+            <div class="mt-2">
+                <span class="inline-block text-white px-3 py-1 rounded-full text-xs font-semibold badge-style">
+                    {{BADGE_TEXT}}
+                </span>
+            </div>
         </div>
 
         <!-- Content Section -->
         <div class="px-6 py-6">
             <div class="space-y-4">
+                <!-- Optional Description -->
+                <div class="text-gray-700 text-sm leading-relaxed">
+                    {{DESCRIPTION}}
+                </div>
+                
                 <div class="text-gray-700 text-sm leading-relaxed">
                     {{CONTENT}}
                 </div>
@@ -41,16 +87,26 @@
                 <!-- Features List -->
                 <div class="space-y-2">
                     <div class="flex items-center space-x-3">
-                        <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <div class="w-2 h-2 rounded-full accent-dot"></div>
                         <span class="text-sm text-gray-600">{{FEATURE_1}}</span>
                     </div>
                     <div class="flex items-center space-x-3">
-                        <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <div class="w-2 h-2 rounded-full accent-dot"></div>
                         <span class="text-sm text-gray-600">{{FEATURE_2}}</span>
                     </div>
                     <div class="flex items-center space-x-3">
-                        <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <div class="w-2 h-2 rounded-full accent-dot"></div>
                         <span class="text-sm text-gray-600">{{FEATURE_3}}</span>
+                    </div>
+                </div>
+
+                <!-- Optional Pricing Section -->
+                <div class="bg-gray-50 p-4 rounded-lg border-2 border-accent">
+                    <div class="text-center">
+                        <span class="text-sm text-gray-500 line-through">{{ORIGINAL_PRICE}}</span>
+                        <div class="text-2xl font-bold text-accent">{{PRICE}}</div>
+                        <span class="text-sm text-gray-600">{{PRICE_PERIOD}}</span>
+                        <div class="text-green-600 text-sm font-semibold mt-1">{{DISCOUNT_TEXT}}</div>
                     </div>
                 </div>
             </div>
@@ -58,11 +114,31 @@
 
         <!-- CTA Section -->
         <div class="px-6 pb-6">
-            <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md">
+            <button class="w-full hover:opacity-90 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md cta-button">
                 {{CTA_TEXT}}
             </button>
+            
+            <!-- Optional Secondary CTA -->
+            <button class="w-full mt-2 border-2 hover:text-white font-semibold py-2 px-4 rounded-lg transition duration-200 secondary-cta">
+                {{SECONDARY_CTA}}
+            </button>
+            
             <div class="text-center mt-3">
                 <p class="text-xs text-gray-500">{{CONTACT_INFO}}</p>
+                <p class="text-xs font-medium mt-1 text-accent">{{WEBSITE}}</p>
+            </div>
+        </div>
+
+        <!-- Optional Social Proof Section -->
+        <div class="px-6 pb-4 border-t border-gray-100">
+            <div class="flex items-center justify-center space-x-4 pt-4">
+                <div class="flex items-center">
+                    <span class="text-yellow-400">★★★★★</span>
+                    <span class="text-sm text-gray-600 ml-1">{{RATING}}</span>
+                </div>
+                <div class="text-sm text-gray-600">
+                    <span class="font-semibold text-accent">{{CUSTOMER_COUNT}}</span> happy customers
+                </div>
             </div>
         </div>
 

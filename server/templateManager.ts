@@ -170,10 +170,6 @@ class TemplateManager {
     return result;
   }
 
-
-
-
-
   /**
    * Extract placeholder variables from HTML content
    */
@@ -204,41 +200,169 @@ class TemplateManager {
   }
 
   /**
-   * Generate placeholder content from AI prompt
+   * Generate placeholder content from AI prompt using Claude/OpenAI
    */
-  private generatePlaceholdersFromPrompt(prompt: string, placeholders: string[]): Record<string, string> {
+  private async generatePlaceholdersFromPrompt(prompt: string, placeholders: string[], templateInfo?: { name: string; category: string; description: string }): Promise<Record<string, string>> {
     const result: Record<string, string> = {};
     
-    // Basic AI-like content generation based on prompt
-    // This would typically use Claude/OpenAI API for better results
-    
-    placeholders.forEach(placeholder => {
-      switch (placeholder) {
-        case 'HEADLINE':
-        case 'AD_HEADLINE':
-        case 'EVENT_NAME':
-        case 'POST_HEADLINE':
-          result[placeholder] = this.extractOrGenerate(prompt, 'headline', 'Amazing Offer');
-          break;
-        case 'CONTENT':
-        case 'AD_DESCRIPTION':
-        case 'EVENT_DESCRIPTION':
-        case 'POST_CONTENT':
-          result[placeholder] = this.extractOrGenerate(prompt, 'description', 'Discover something amazing with our premium service.');
-          break;
-        case 'CTA_TEXT':
-          result[placeholder] = 'Get Started Now';
-          break;
-        case 'BRAND_NAME':
-        case 'COMPANY_NAME':
-          result[placeholder] = this.extractOrGenerate(prompt, 'brand', 'Your Brand');
-          break;
-        default:
-          result[placeholder] = prompt.slice(0, 50) + '...';
+    try {
+      // Import Claude for intelligent content generation
+      const claude = require('@anthropic-ai/sdk');
+      const anthropic = new claude({
+        apiKey: process.env.CLAUDE_API_KEY || process.env.ANTHROPIC_API_KEY,
+      });
+
+      // Create a comprehensive AI prompt for template content generation
+      const aiPrompt = `You are an expert content strategist and copywriter. Generate professional, engaging content for a ${templateInfo?.category || 'design'} template called "${templateInfo?.name || 'Template'}".
+
+User Request: "${prompt}"
+
+Template Description: ${templateInfo?.description || 'Modern design template'}
+
+Generate content for these specific placeholders:
+${placeholders.map(p => `- ${p}: ${this.getPlaceholderDescription(p)}`).join('\n')}
+
+Requirements:
+1. Content must be professional, engaging, and conversion-focused
+2. Headlines should be catchy and attention-grabbing (max 60 characters)
+3. Descriptions should be compelling and informative (max 150 characters)
+4. CTAs should be action-oriented and persuasive
+5. Extract relevant information from the user's prompt when possible
+6. If specific details aren't in the prompt, create realistic placeholder content
+7. Maintain consistency in tone and style throughout
+
+Return the content as a JSON object with placeholder names as keys and generated content as values.
+
+Example format:
+{
+  "HEADLINE": "Revolutionary AI Design Platform",
+  "CONTENT": "Transform your creative workflow with cutting-edge AI technology that delivers professional results in minutes.",
+  "CTA_TEXT": "Start Creating Now",
+  "BRAND_NAME": "DesignAI Pro"
+}`;
+
+      // Call Claude API for intelligent content generation
+      const response = await anthropic.messages.create({
+        model: "claude-3-haiku-20240307",
+        max_tokens: 1000,
+        messages: [{
+          role: "user",
+          content: aiPrompt
+        }]
+      });
+
+      // Parse the AI response
+      const aiContent = response.content[0].text;
+      
+      // Try to extract JSON from the response
+      const jsonMatch = aiContent.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const aiGeneratedContent = JSON.parse(jsonMatch[0]);
+        
+        // Assign AI-generated content to placeholders
+        placeholders.forEach(placeholder => {
+          if (aiGeneratedContent[placeholder]) {
+            result[placeholder] = aiGeneratedContent[placeholder];
+          } else {
+            // Fallback to intelligent extraction if AI didn't provide this placeholder
+            result[placeholder] = this.extractOrGenerate(prompt, this.getPlaceholderType(placeholder), this.getDefaultValue(placeholder));
+          }
+        });
+      } else {
+        throw new Error('Failed to parse AI response');
       }
-    });
+
+    } catch (error) {
+      console.warn('AI content generation failed, falling back to extraction method:', error);
+      
+      // Fallback to enhanced extraction method
+      placeholders.forEach(placeholder => {
+        const placeholderType = this.getPlaceholderType(placeholder);
+        const defaultValue = this.getDefaultValue(placeholder);
+        result[placeholder] = this.extractOrGenerate(prompt, placeholderType, defaultValue);
+      });
+    }
 
     return result;
+  }
+
+  /**
+   * Get description for a placeholder to help AI understand what content to generate
+   */
+  private getPlaceholderDescription(placeholder: string): string {
+    const descriptions: Record<string, string> = {
+      'HEADLINE': 'Main attention-grabbing title (max 60 chars)',
+      'AD_HEADLINE': 'Advertisement headline that drives action',
+      'EVENT_NAME': 'Name of the event or occasion',
+      'POST_HEADLINE': 'Social media post title',
+      'CONTENT': 'Main descriptive content (max 150 chars)',
+      'AD_DESCRIPTION': 'Advertisement description that sells benefits',
+      'EVENT_DESCRIPTION': 'Event details and what attendees can expect',
+      'POST_CONTENT': 'Social media post description',
+      'CTA_TEXT': 'Call-to-action button text (max 20 chars)',
+      'BRAND_NAME': 'Company or brand name',
+      'COMPANY_NAME': 'Business/organization name',
+      'CONTACT_INFO': 'Phone number, email, or website',
+      'DATE': 'Event date or deadline',
+      'TIME': 'Event time or schedule',
+      'LOCATION': 'Venue or event location',
+      'PRICE': 'Cost or pricing information',
+      'DISCOUNT': 'Special offer or discount percentage',
+      'FEATURES': 'Key features or benefits',
+      'TESTIMONIAL': 'Customer review or quote'
+    };
+    
+    return descriptions[placeholder] || `Content for ${placeholder.toLowerCase()}`;
+  }
+
+  /**
+   * Get the content type for a placeholder to guide extraction
+   */
+  private getPlaceholderType(placeholder: string): string {
+    if (placeholder.includes('HEADLINE') || placeholder.includes('TITLE') || placeholder.includes('NAME')) {
+      return 'headline';
+    } else if (placeholder.includes('DESCRIPTION') || placeholder.includes('CONTENT')) {
+      return 'description';
+    } else if (placeholder.includes('BRAND') || placeholder.includes('COMPANY')) {
+      return 'brand';
+    } else if (placeholder.includes('CTA')) {
+      return 'cta';
+    } else if (placeholder.includes('DATE') || placeholder.includes('TIME')) {
+      return 'datetime';
+    } else if (placeholder.includes('PRICE') || placeholder.includes('COST')) {
+      return 'price';
+    } else {
+      return 'general';
+    }
+  }
+
+  /**
+   * Get default value for a placeholder
+   */
+  private getDefaultValue(placeholder: string): string {
+    const defaults: Record<string, string> = {
+      'HEADLINE': 'Amazing Offer',
+      'AD_HEADLINE': 'Limited Time Deal',
+      'EVENT_NAME': 'Special Event',
+      'POST_HEADLINE': 'New Announcement',
+      'CONTENT': 'Discover something amazing with our premium service.',
+      'AD_DESCRIPTION': 'Get the best value for your money.',
+      'EVENT_DESCRIPTION': 'Join us for an unforgettable experience.',
+      'POST_CONTENT': 'Stay tuned for exciting updates.',
+      'CTA_TEXT': 'Get Started',
+      'BRAND_NAME': 'Your Brand',
+      'COMPANY_NAME': 'Your Company',
+      'CONTACT_INFO': 'Contact us for details',
+      'DATE': 'Coming Soon',
+      'TIME': 'TBA',
+      'LOCATION': 'Location TBA',
+      'PRICE': '$99',
+      'DISCOUNT': '20% OFF',
+      'FEATURES': 'Premium Features',
+      'TESTIMONIAL': 'Excellent service!'
+    };
+    
+    return defaults[placeholder] || 'Sample Content';
   }
 
   /**
@@ -537,7 +661,7 @@ class TemplateManager {
     }
 
     // Generate content based on prompt and template placeholders
-    const placeholders = this.generatePlaceholdersFromPrompt(prompt, template.placeholders);
+    const placeholders = await this.generatePlaceholdersFromPrompt(prompt, template.placeholders, { name: template.name, category: template.category, description: template.description });
     
     let htmlContent = this.replacePlaceholders(template.htmlContent, placeholders);
     

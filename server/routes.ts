@@ -17,6 +17,7 @@ import { registerAdBurstApiRoutes } from "./adburst_factory/adburst_api";
 import { registerEnhancedAdBurstRoutes } from "./adburst_factory/adburst_api_enhanced";
 import { registerCompetitorAdRoutes, registerAdInspirationIntegrationRoutes } from "./competitor_ads/routes";
 import { templateManager } from "./templateManager";
+import { UserCreation } from "@shared/schema";
 
 // Using the built-in type definitions from @types/multer
 
@@ -33,6 +34,22 @@ const uploadFields = upload.fields([
   { name: 'background_image', maxCount: 10 }, // Allow up to 10 images for carousel
   { name: 'logo', maxCount: 1 }
 ]);
+
+// Development mode in-memory storage for creations
+const developmentCreations = new Map<number, UserCreation[]>();
+
+function addDevelopmentCreation(userId: number, creation: UserCreation) {
+  if (!developmentCreations.has(userId)) {
+    developmentCreations.set(userId, []);
+  }
+  const userCreations = developmentCreations.get(userId)!;
+  userCreations.unshift(creation); // Add to beginning for newest first
+  developmentCreations.set(userId, userCreations);
+}
+
+function getDevelopmentCreations(userId: number): UserCreation[] {
+  return developmentCreations.get(userId) || [];
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize and register the AdBurst Factory routes
@@ -51,15 +68,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.sendFile(path.resolve(process.cwd(), "add-credits.html"));
   });
   // API endpoint to generate multiple flyer designs using Claude AI
-  app.post("/api/generate-ai", isAuthenticated, uploadFields, async (req: Request, res: Response) => {
+  app.post("/api/generate-ai", uploadFields, async (req: Request, res: Response) => {
     // CRITICAL FIX for design generator - May 1, 2025
     try {
       log("AI Flyer generation started - Phase 1: Design Suggestions", "generator");
       
+      // Development mode: bypass authentication
+      const isDevelopment = process.env.NODE_ENV === 'development';
+      
+      if (isDevelopment && !req.user) {
+        console.log('🔧 Development mode: Generate AI request without authentication, using mock user');
+      } else if (!req.user && !isDevelopment) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
       // Extract parameters from request body
       // Note: Client might use either designCount or design_count, so we check for both
       const { prompt, configId, designCount, design_count, aspectRatio, templateInfo, brand_kit_id } = req.body;
-      const userId = (req.user as any).id;
+      const userId = (req.user as any)?.id || 2; // Default user ID for development mode
       
       // Parse template information if provided
       let parsedTemplateInfo: any = null;
@@ -88,40 +114,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Get user's current credit balance
-      const user = await storage.getUser(userId);
+      let user;
+      try {
+        user = await storage.getUser(userId);
+      } catch (dbError) {
+        if (isDevelopment) {
+          console.log('🔧 Development mode: Database connection failed, using mock user');
+          user = {
+            id: userId,
+            credits_balance: 100,
+            username: 'dev-user',
+            email: 'dev@example.com'
+          };
+        } else {
+          throw dbError; // Re-throw in production
+        }
+      }
+      
       if (!user) {
-        return res.status(404).json({ message: "User not found" });
+        if (isDevelopment) {
+          console.log('🔧 Development mode: User not found, using mock user');
+          user = {
+            id: userId,
+            credits_balance: 100,
+            username: 'dev-user',
+            email: 'dev@example.com'
+          };
+        } else {
+          return res.status(404).json({ message: "User not found" });
+        }
       }
       
       // Get design configuration (default or user-specified)
       let designConfig;
-      if (configId) {
-        designConfig = await storage.getDesignConfig(parseInt(configId));
-        if (!designConfig) {
-          return res.status(404).json({ message: "Design configuration not found" });
-        }
-      } else {
-        // Try to get system configs first
-        const systemConfigs = await storage.getDesignConfigs(0); // System configs have user_id 0
-        
-        if (systemConfigs && systemConfigs.length > 0) {
-          designConfig = systemConfigs.find(c => c.active) || systemConfigs[0];
-        } else {
-          // Try to get user configs as fallback
-          const userConfigs = await storage.getDesignConfigs(userId);
-          
-          if (userConfigs && userConfigs.length > 0) {
-            designConfig = userConfigs.find(c => c.active) || userConfigs[0];
-          } else {
-            // Create a default config if none exists
-            designConfig = await storage.createDesignConfig({
-              user_id: userId,
-              name: 'Default Config',
-              num_variations: 3,
-              credits_per_design: 1,
-              active: true
-            });
+      try {
+        if (configId) {
+          designConfig = await storage.getDesignConfig(parseInt(configId));
+          if (!designConfig) {
+            return res.status(404).json({ message: "Design configuration not found" });
           }
+        } else {
+          // Try to get system configs first
+          const systemConfigs = await storage.getDesignConfigs(0); // System configs have user_id 0
+          
+          if (systemConfigs && systemConfigs.length > 0) {
+            designConfig = systemConfigs.find(c => c.active) || systemConfigs[0];
+          } else {
+            // Try to get user configs as fallback
+            const userConfigs = await storage.getDesignConfigs(userId);
+            
+            if (userConfigs && userConfigs.length > 0) {
+              designConfig = userConfigs.find(c => c.active) || userConfigs[0];
+            } else {
+              // Create a default config if none exists
+              designConfig = await storage.createDesignConfig({
+                user_id: userId,
+                name: 'Default Config',
+                num_variations: 3,
+                credits_per_design: 1,
+                active: true
+              });
+            }
+          }
+        }
+      } catch (dbError) {
+        if (isDevelopment) {
+          console.log('🔧 Development mode: Database error getting design config, using default config');
+          designConfig = {
+            id: 1,
+            user_id: userId,
+            name: 'Development Config',
+            num_variations: 3,
+            credits_per_design: 1,
+            active: true
+          };
+        } else {
+          throw dbError; // Re-throw in production
         }
       }
       
@@ -185,17 +253,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const brandKitId = parseInt(brand_kit_id);
         if (!isNaN(brandKitId)) {
           log(`Looking for logo in brand kit ID: ${brandKitId}`, "generator");
-          const brandKit = await storage.getBrandKit(brandKitId, userId);
-          
-          if (brandKit && brandKit.logo_url) {
-            log("Found logo in brand kit, including it in generation", "generator");
-            // If logo URL starts with data:, it's already base64
-            if (brandKit.logo_url.startsWith('data:')) {
-              // Extract the base64 part after the comma
-              const logoBase64 = brandKit.logo_url.split(',')[1];
-              if (logoBase64) {
-                generationOptions.logoBase64 = logoBase64;
+          try {
+            const brandKit = await storage.getBrandKit(brandKitId, userId);
+            
+            if (brandKit && brandKit.logo_url) {
+              log("Found logo in brand kit, including it in generation", "generator");
+              // If logo URL starts with data:, it's already base64
+              if (brandKit.logo_url.startsWith('data:')) {
+                // Extract the base64 part after the comma
+                const logoBase64 = brandKit.logo_url.split(',')[1];
+                if (logoBase64) {
+                  generationOptions.logoBase64 = logoBase64;
+                }
               }
+            }
+          } catch (dbError) {
+            if (isDevelopment) {
+              console.log('🔧 Development mode: Database error getting brand kit, skipping logo');
+            } else {
+              throw dbError; // Re-throw in production
             }
           }
         }
@@ -534,15 +610,28 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
       log(`First design - ID: ${designData[0]?.id}, Style: ${designData[0]?.style}, Has ImageBase64: ${!!designData[0]?.imageBase64}`, "generator");
       
       // Subtract credits for the successful generation based on how many designs were generated
-      await storage.addCreditsTransaction({
-        user_id: userId,
-        amount: totalRequiredCredits,
-        transaction_type: 'subtract',
-        description: `Generated ${successfulDesigns.length} flyer designs`
-      });
-      
-      // Get updated user info
-      const updatedUser = await storage.getUser(userId);
+      let updatedUser = user;
+      try {
+        await storage.addCreditsTransaction({
+          user_id: userId,
+          amount: totalRequiredCredits,
+          transaction_type: 'subtract',
+          description: `Generated ${successfulDesigns.length} flyer designs`
+        });
+        
+        // Get updated user info
+        updatedUser = await storage.getUser(userId);
+      } catch (dbError) {
+        if (isDevelopment) {
+          console.log('🔧 Development mode: Database error handling credits, using mock data');
+          updatedUser = {
+            ...user,
+            credits_balance: (user as any).credits_balance - totalRequiredCredits
+          };
+        } else {
+          throw dbError; // Re-throw in production
+        }
+      }
       
       // Create the response object
       const responseData = { 
@@ -679,12 +768,36 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
   // Credits and design configurations API endpoints
   
   // Get user's credits balance and history
-  app.get("/api/credits", isAuthenticated, async (req: Request, res: Response) => {
+  app.get("/api/credits", async (req: Request, res: Response) => {
     try {
-      const userId = (req.user as any).id;
+      const isDevelopment = process.env.NODE_ENV === 'development';
+      
+      // Development mode: bypass authentication
+      if (isDevelopment && !req.user) {
+        console.log('🔧 Development mode: Credits request without authentication, returning mock data');
+        return res.json({
+          balance: 100,
+          is_premium: false,
+          history: []
+        });
+      }
+      
+      if (!req.user && !isDevelopment) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = (req.user as any)?.id || 2;
       const user = await storage.getUser(userId);
       
       if (!user) {
+        if (isDevelopment) {
+          console.log('🔧 Development mode: User not found, returning mock credits data');
+          return res.json({
+            balance: 100,
+            is_premium: false,
+            history: []
+          });
+        }
         return res.status(404).json({ message: "User not found" });
       }
       
@@ -698,6 +811,17 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
       });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      
+      // In development, return mock data if database fails
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔧 Development mode: Credits database error, returning mock data');
+        return res.json({
+          balance: 100,
+          is_premium: false,
+          history: []
+        });
+      }
+      
       res.status(500).json({ message: `Failed to get credits info: ${errorMessage}` });
     }
   });
@@ -1003,21 +1127,61 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
   // User Creations API endpoints
   
   // Get all creations for the logged-in user
-  app.get("/api/creations", isAuthenticated, async (req: Request, res: Response) => {
+  app.get("/api/creations", async (req: Request, res: Response) => {
     try {
-      const userId = (req.user as any).id;
+      const isDevelopment = process.env.NODE_ENV === 'development';
+      
+      // Development mode: bypass authentication
+      if (isDevelopment && !req.user) {
+        console.log('🔧 Development mode: Creations request without authentication, returning development creations');
+        const devCreations = getDevelopmentCreations(2); // Default user ID
+        return res.json({ creations: devCreations });
+      }
+      
+      if (!req.user && !isDevelopment) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = (req.user as any)?.id || 2;
       if (!userId) {
         return res.status(400).json({ message: "User ID is required" });
       }
       
-      // Strict filtering by user ID to ensure privacy
-      const creations = await storage.getUserCreations(userId);
+      let creations = [];
+      
+      try {
+        // Try to get creations from database
+        creations = await storage.getUserCreations(userId);
+      } catch (dbError) {
+        if (isDevelopment) {
+          console.log('🔧 Development mode: Database error, using development storage');
+          creations = [];
+        } else {
+          throw dbError;
+        }
+      }
+      
+      // In development mode, also include development storage creations
+      if (isDevelopment) {
+        const devCreations = getDevelopmentCreations(userId);
+        creations = [...devCreations, ...creations];
+        console.log(`🔧 Development mode: Returning ${devCreations.length} dev + ${creations.length - devCreations.length} db creations`);
+      }
       
       res.json({
         creations: creations
       });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      
+      // In development, return development creations if database fails
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔧 Development mode: Database error, returning development creations only');
+        const userId = (req.user as any)?.id || 2;
+        const devCreations = getDevelopmentCreations(userId);
+        return res.json({ creations: devCreations });
+      }
+      
       res.status(500).json({ message: `Failed to get user creations: ${errorMessage}` });
     }
   });
@@ -1147,14 +1311,33 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
   // Brand Kit API routes
   
   // Get all brand kits for the authenticated user
-  app.get("/api/brand-kits", isAuthenticated, async (req: Request, res: Response) => {
+  app.get("/api/brand-kits", async (req: Request, res: Response) => {
     try {
-      const userId = (req.user as any).id;
+      const isDevelopment = process.env.NODE_ENV === 'development';
+      
+      // Development mode: bypass authentication
+      if (isDevelopment && !req.user) {
+        console.log('🔧 Development mode: Brand kits request without authentication, returning empty array');
+        return res.json({ brandKits: [] });
+      }
+      
+      if (!req.user && !isDevelopment) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = (req.user as any)?.id || 2; // Default to mock user in dev
       const brandKits = await storage.getBrandKits(userId);
       
       res.json({ brandKits });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      
+      // In development, return empty array if database fails
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔧 Development mode: Brand kits database error, returning empty array');
+        return res.json({ brandKits: [] });
+      }
+      
       res.status(500).json({ message: `Failed to get brand kits: ${errorMessage}` });
     }
   });
@@ -1539,10 +1722,11 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
     }
   });
 
-  // Get specific template by ID
-  app.get("/api/templates/:templateId", async (req: Request, res: Response) => {
+  // Get specific template by ID (category/template-name format)
+  app.get("/api/templates/:category/:templateName", async (req: Request, res: Response) => {
     try {
-      const { templateId } = req.params;
+      const { category, templateName } = req.params;
+      const templateId = `${category}/${templateName}`;
       const template = await templateManager.loadTemplate(templateId);
       
       if (!template) {
@@ -1557,13 +1741,14 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
   });
 
   // Get template preview HTML
-  app.get("/api/templates/:templateId/preview", async (req: Request, res: Response) => {
+  app.get("/api/templates/:category/:templateName/preview", async (req: Request, res: Response) => {
     try {
-      const { templateId } = req.params;
+      const { category, templateName } = req.params;
+      const templateId = `${category}/${templateName}`;
       const template = await templateManager.loadTemplate(templateId);
       
       if (!template) {
-        return res.status(404).send('<div style="padding: 20px; text-align: center; color: #666;">Template not found</div>');
+        return res.status(404).json({ message: "Template not found" });
       }
       
       // Return the raw HTML with inline styles for preview
@@ -1642,85 +1827,244 @@ YOUR DESIGN MUST FOLLOW THIS CSS EXACTLY. Do not modify these core styles.`;
   });
 
   // Generate design using template
-  app.post("/api/templates/:templateId/generate", async (req: Request, res: Response) => {
+  app.post("/api/templates/:category/:templateName/generate", async (req: Request, res: Response) => {
     try {
-      // Handle authentication bypass for development
-      let userId = 2; // Default mock user ID
+      // Development Mode - Enhanced database error handling
+      const isDevelopment = process.env.NODE_ENV === 'development';
+      let userId = 2; // Default mock user ID for development
+      
       if (req.user && (req.user as any).id) {
         userId = (req.user as any).id;
       }
       
-      const { templateId } = req.params;
+      const { category, templateName } = req.params;
+      const templateId = `${category}/${templateName}`;
       const { prompt, brand_kit_id } = req.body;
 
       if (!prompt) {
         return res.status(400).json({ message: "Prompt is required" });
       }
 
-      // Check user credits (skip for development)
-      const user = await storage.getUser(userId);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      
-      // For development, ensure user has credits
-      if (user.credits_balance < 1) {
-        console.log(`Server auth check bypassed - giving user credits`);
-        await storage.updateUserCredits(userId, 10); // Give 10 credits for development
-      }
-
-      // Get brand kit if specified
+      // Enhanced development mode - handle database failures gracefully
+      let user = null;
       let brandKit = undefined;
-      if (brand_kit_id) {
-        const fetchedBrandKit = await storage.getBrandKit(parseInt(brand_kit_id));
-        if (!fetchedBrandKit || fetchedBrandKit.user_id !== userId) {
-          return res.status(404).json({ message: "Brand kit not found" });
+      
+      try {
+        // Try to get user from database
+        user = await storage.getUser(userId);
+        
+        if (!user && isDevelopment) {
+          // Create mock user data for development
+          console.log('🔧 Development mode: Using mock user data');
+          user = {
+            id: userId,
+            credits_balance: 100,
+            username: 'dev-user',
+            email: 'dev@example.com'
+          };
+        } else if (!user) {
+          return res.status(404).json({ message: "User not found" });
         }
-        brandKit = {
-          id: fetchedBrandKit.id.toString(),
-          name: fetchedBrandKit.name,
-          logo: fetchedBrandKit.logo_url || undefined,
-          primaryColor: fetchedBrandKit.primary_color || '#3b82f6',
-          secondaryColor: fetchedBrandKit.secondary_color || '#8b5cf6',
-          fontFamily: fetchedBrandKit.heading_font || 'Default',
-          isActive: fetchedBrandKit.is_active
-        };
+        
+        // For development, ensure user has credits
+        if (user.credits_balance < 1 && isDevelopment) {
+          console.log(`🔧 Development mode: Adding credits for user`);
+          try {
+            await storage.updateUserCredits(userId, 10);
+            user.credits_balance = 10;
+          } catch (creditsError) {
+            console.log('🔧 Development mode: Database credits update failed, using mock balance');
+            user.credits_balance = 10; // Mock credits for development
+          }
+        }
+
+        // Get brand kit if specified
+        if (brand_kit_id) {
+          try {
+            const fetchedBrandKit = await storage.getBrandKit(parseInt(brand_kit_id));
+            if (fetchedBrandKit && (fetchedBrandKit.user_id === userId || isDevelopment)) {
+              brandKit = {
+                id: fetchedBrandKit.id.toString(),
+                name: fetchedBrandKit.name,
+                logo: fetchedBrandKit.logo_url || undefined,
+                primaryColor: fetchedBrandKit.primary_color || '#3b82f6',
+                secondaryColor: fetchedBrandKit.secondary_color || '#8b5cf6',
+                fontFamily: fetchedBrandKit.heading_font || 'Default',
+                isActive: fetchedBrandKit.is_active
+              };
+            }
+          } catch (brandError) {
+            console.log('🔧 Development mode: Brand kit fetch failed, continuing without brand kit');
+          }
+        }
+      } catch (dbError) {
+        if (isDevelopment) {
+          console.log('🔧 Development mode: Database connection failed, using mock data');
+          user = {
+            id: userId,
+            credits_balance: 100,
+            username: 'dev-user',
+            email: 'dev@example.com'
+          };
+        } else {
+          throw dbError; // Re-throw in production
+        }
       }
 
-      // Generate content using template
+      // Generate content using template with enhanced AI integration
+      console.log(`🎯 Generating template content for ${templateId} with AI-powered placeholders`);
       const result = await templateManager.generateTemplateContent(templateId, prompt, brandKit);
       
       if (!result) {
         return res.status(404).json({ message: "Template not found" });
       }
 
-      // Deduct credit
-      await storage.updateUserCredits(userId, user.credits_balance - 1);
+      console.log(`✅ Template generated successfully with ${Object.keys(result.placeholders).length} AI-generated placeholders`);
 
-      // Save creation record
-      const creation = await storage.createUserCreation({
-        user_id: userId,
-        name: `Template: ${templateId}`,
-        imageUrl: '', // Will be generated when rendered
-        headline: prompt.slice(0, 100),
-        content: prompt,
-        template: templateId,
-        metadata: {
-          templateId,
-          placeholders: result.placeholders,
-          brandKit: brandKit?.id
+      // Create a preview image for the gallery
+      let imageUrl = '';
+      try {
+        // Use puppeteer to generate a screenshot of the template
+        const puppeteer = await import('puppeteer');
+        const browser = await puppeteer.default.launch({
+          headless: true,
+          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+        });
+        
+        const page = await browser.newPage();
+        await page.setViewport({ width: 800, height: 600 });
+        
+        // Create a complete HTML document for rendering
+        const fullHtml = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <script src="https://cdn.tailwindcss.com"></script>
+            <style>
+              body { margin: 0; padding: 20px; background: #f8fafc; font-family: Arial, sans-serif; }
+              * { box-sizing: border-box; }
+            </style>
+          </head>
+          <body>
+            ${result.htmlContent}
+          </body>
+          </html>
+        `;
+        
+        await page.setContent(fullHtml, { waitUntil: 'networkidle0' });
+        
+        const screenshot = await page.screenshot({
+          type: 'png',
+          quality: 90,
+          fullPage: false
+        });
+        
+        await browser.close();
+        
+        // Convert screenshot to base64 data URL
+        imageUrl = `data:image/png;base64,${screenshot.toString('base64')}`;
+        console.log('📸 Generated preview image for template');
+        
+      } catch (screenshotError) {
+        console.log('⚠️ Failed to generate preview image, using placeholder:', screenshotError);
+        // Use a simple SVG placeholder if screenshot fails
+        const svgPlaceholder = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+            <rect width="400" height="300" fill="#4338ca"/>
+            <text x="200" y="150" font-family="Arial" font-size="24" fill="white" text-anchor="middle" dy=".3em">
+              ${templateId.replace('/', ' - ')}
+            </text>
+            <text x="200" y="180" font-family="Arial" font-size="14" fill="white" text-anchor="middle" dy=".3em">
+              Generated Template
+            </text>
+          </svg>
+        `;
+        imageUrl = `data:image/svg+xml;base64,${Buffer.from(svgPlaceholder).toString('base64')}`;
+      }
+
+      // Try to save to database, but don't fail if database is unavailable in development
+      let creation = null;
+      let saveSuccessful = false;
+      
+      try {
+        // Deduct credit
+        await storage.updateUserCredits(userId, user.credits_balance - 1);
+
+        // Save creation record with enhanced metadata
+        creation = await storage.createUserCreation({
+          user_id: userId,
+          name: `AI Template: ${templateId}`,
+          imageUrl: imageUrl,
+          headline: result.placeholders['HEADLINE'] || result.placeholders['AD_HEADLINE'] || prompt.slice(0, 100),
+          content: result.placeholders['CONTENT'] || result.placeholders['AD_DESCRIPTION'] || prompt,
+          template: templateId,
+          metadata: {
+            templateId,
+            placeholders: result.placeholders,
+            brandKit: brandKit?.id,
+            generatedWithAI: true,
+            originalPrompt: prompt,
+            htmlContent: result.htmlContent // Store the HTML for later editing
+          }
+        });
+        
+        saveSuccessful = true;
+        console.log('💾 Template saved to database successfully');
+        
+      } catch (saveError) {
+        if (isDevelopment) {
+          console.log('🔧 Development mode: Database save failed, using mock creation');
+          // In development mode, create a mock creation that looks real
+          creation = {
+            id: Date.now(), // Mock ID using timestamp
+            name: `AI Template: ${templateId}`,
+            user_id: userId,
+            imageUrl: imageUrl,
+            headline: result.placeholders['HEADLINE'] || result.placeholders['AD_HEADLINE'] || prompt.slice(0, 100),
+            content: result.placeholders['CONTENT'] || result.placeholders['AD_DESCRIPTION'] || prompt,
+            template: templateId,
+            created_at: new Date(),
+            favorite: false,
+            stylePrompt: null,
+            heading_font: null,
+            body_font: null,
+            metadata: {
+              templateId,
+              placeholders: result.placeholders,
+              brandKit: brandKit?.id,
+              generatedWithAI: true,
+              originalPrompt: prompt,
+              htmlContent: result.htmlContent,
+              developmentMode: true
+            }
+          };
+          console.log('💾 Created mock template for development mode');
+        } else {
+          throw saveError; // Re-throw in production
         }
-      });
+      }
+
+      // In development mode, also store the creation in our in-memory storage
+      if (isDevelopment && creation) {
+        addDevelopmentCreation(userId, creation);
+        console.log('💾 Stored creation in development in-memory storage');
+      }
 
       res.json({
         success: true,
-        creation_id: creation.id,
+        creation_id: creation?.id || Date.now(),
         html_content: result.htmlContent,
         placeholders: result.placeholders,
-        template_id: templateId
+        template_id: templateId,
+        ai_generated: true,
+        development_mode: isDevelopment,
+        saved_to_gallery: saveSuccessful || (isDevelopment && creation !== null),
+        image_url: imageUrl
       });
 
     } catch (error) {
+      console.error('Template generation error:', error);
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       res.status(500).json({ message: `Template generation failed: ${errorMessage}` });
     }
